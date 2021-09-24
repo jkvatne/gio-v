@@ -134,6 +134,7 @@ func (i *InvalidateDeadline) ClearTarget() {
 // value will choose sensible defaults for all fields.
 type TipArea struct {
 	VisibilityAnimation
+	position  f32.Point
 	Hover     InvalidateDeadline
 	Press     InvalidateDeadline
 	LongPress InvalidateDeadline
@@ -187,6 +188,9 @@ func (t *TipArea) Layout(gtx C, tip Tooltip, w layout.Widget) D {
 		if !ok {
 			continue
 		}
+		if !t.Visible() {
+			t.position = e.Position
+		}
 		switch e.Type {
 		case pointer.Enter:
 			t.Hover.SetTarget(gtx.Now.Add(t.HoverDelay))
@@ -222,26 +226,26 @@ func (t *TipArea) Layout(gtx C, tip Tooltip, w layout.Widget) D {
 			pointer.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Add(gtx.Ops)
 			pointer.InputOp{
 				Tag:   t,
-				Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave,
+				Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave | pointer.Move,
 			}.Add(gtx.Ops)
 
-			originalMin := gtx.Constraints.Min
+			//originalMin := gtx.Constraints.Min
 			gtx.Constraints.Min = image.Point{}
 			if t.Visible() {
 				macro := op.Record(gtx.Ops)
 				v := t.VisibilityAnimation.Revealed(gtx)
 				tip.Bg = Interpolate(WithAlpha(tip.Bg,0), tip.Bg, v)
 				tip.Text.Color = Interpolate(WithAlpha(tip.Text.Color,0), tip.Text.Color, v)
-				gtx.Constraints.Max.X = gtx.Metric.Px(tip.MaxWidth)
 				dims := tip.Layout(gtx)
+				if int(t.position.X)+dims.Size.X > gtx.Constraints.Max.X {
+					t.position.X = float32(gtx.Constraints.Max.X - dims.Size.X)
+				}
+				if int(t.position.Y)+dims.Size.Y > gtx.Constraints.Max.Y {
+					t.position.Y = float32(gtx.Constraints.Max.Y - dims.Size.Y)
+				}
 				call := macro.Stop()
-				xOffset := float32((originalMin.X / 2) - (dims.Size.X / 2))
-				//if (-xOffset*2>float32(originalMin.X)) {
-				xOffset = 0
-				//}
-				yOffset := float32(originalMin.Y)
 				macro = op.Record(gtx.Ops)
-				op.Offset(f32.Pt(xOffset, yOffset)).Add(gtx.Ops)
+				op.Offset(t.position.Add(f32.Pt(5,5))).Add(gtx.Ops)
 				call.Add(gtx.Ops)
 				call = macro.Stop()
 				op.Defer(gtx.Ops, call)
