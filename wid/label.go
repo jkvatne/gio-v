@@ -26,15 +26,25 @@ type LabelDef struct {
 	shaper text.Shaper
 }
 
-func Label(th *Theme, text string, align text.Alignment, size float32) func(gtx C) D {
-	if size == 0.0 {
-		size = 1.0
+func CreateLabelDef(th *Theme, text string, align text.Alignment, relSize float32) LabelDef {
+	return LabelDef{
+		Text:     text,
+		Color:    th.Palette.OnBackground,
+		TextSize: th.TextSize.Scale(relSize),
+		shaper:   th.Shaper,
+		Alignment: align,
+	}
+}
+
+func Label(th *Theme, text string, align text.Alignment, relSize float32) func(gtx C) D {
+	if relSize == 0.0 {
+		relSize = 1.0
 	}
 	return func(gtx C) D {
 		return LabelDef{
 			Text:     text,
 			Color:    th.Palette.OnBackground,
-			TextSize: th.TextSize.Scale(size),
+			TextSize: th.TextSize.Scale(relSize),
 			shaper:   th.Shaper,
 			Alignment: align,
 		}.Layout(gtx)

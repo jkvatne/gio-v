@@ -31,6 +31,8 @@ const (
 
 type ButtonDef struct {
 	Clickable
+	Tooltip
+	tipArea      *TipArea
 	th           *Theme
 	shadow       ShadowStyle
 	disabler     *bool
@@ -89,6 +91,8 @@ func Button(style ButtonStyle, th *Theme, label string, options ...Option) func(
 	b := ButtonDef{}
 	b.SetupTabs()
 	b.th = th
+	b.tipArea = &TipArea{}
+	b.Tooltip = PlatformTooltip(th, label)
 	b.Text = label
 	b.TextSize =th.TextSize
 	b.Font = text.Font{Weight: text.Bold}
@@ -269,28 +273,30 @@ func layIcon(b *ButtonDef) layout.Widget {
 }
 
 func (b *ButtonDef) Layout(gtx layout.Context) layout.Dimensions {
-	b.disabled = false
-	if b.disabler!= nil && *b.disabler || GlobalDisable {
-		gtx = gtx.Disabled()
-		b.disabled = true
-	}
-	min := gtx.Constraints.Min
-	if b.Width.V <= 1.0 {
-		min.X = gtx.Px(b.Width.Scale(float32(gtx.Constraints.Max.X)))
-	} else if min.X > gtx.Px(b.Width) {
-		min.X = gtx.Px(b.Width)
-	}
-	return layout.Stack{Alignment: layout.Center}.Layout(gtx,
-		layout.Expanded(layBackground(b)),
-		layout.Stacked(
-			func(gtx C) D {
-				gtx.Constraints.Min = min
-				return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceSides}.Layout(
-					gtx,
-					layout.Rigid(layIcon(b)),
-					layout.Rigid(layLabel(b)),
-				)
-			}),
-		layout.Expanded(b.LayoutClickable),
-	)
+	return b.tipArea.Layout(gtx, b.Tooltip, func(gtx C) D {
+		b.disabled = false
+		if b.disabler!= nil && *b.disabler || GlobalDisable {
+			gtx = gtx.Disabled()
+			b.disabled = true
+		}
+		min := gtx.Constraints.Min
+		if b.Width.V <= 1.0 {
+			min.X = gtx.Px(b.Width.Scale(float32(gtx.Constraints.Max.X)))
+		} else if min.X > gtx.Px(b.Width) {
+			min.X = gtx.Px(b.Width)
+		}
+		return layout.Stack{Alignment: layout.Center}.Layout(gtx,
+			layout.Expanded(layBackground(b)),
+			layout.Stacked(
+				func(gtx C) D {
+					gtx.Constraints.Min = min
+					return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceSides}.Layout(
+						gtx,
+						layout.Rigid(layIcon(b)),
+						layout.Rigid(layLabel(b)),
+					)
+				}),
+			layout.Expanded(b.LayoutClickable),
+		)
+	})
 }
