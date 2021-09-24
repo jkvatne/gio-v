@@ -154,9 +154,9 @@ type TipArea struct {
 }
 
 const (
-	tipAreaHoverDelay        = time.Millisecond * 1000
+	tipAreaHoverDelay        = time.Millisecond * 500
 	tipAreaLongPressDuration = time.Millisecond * 1500
-	tipAreaFadeDuration      = time.Millisecond * 1000
+	tipAreaFadeDuration      = time.Millisecond * 750
 	longPressTheshold        = time.Millisecond * 750
 )
 
@@ -229,7 +229,6 @@ func (t *TipArea) Layout(gtx C, tip Tooltip, w layout.Widget) D {
 				Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave | pointer.Move,
 			}.Add(gtx.Ops)
 
-			//originalMin := gtx.Constraints.Min
 			gtx.Constraints.Min = image.Point{}
 			if t.Visible() {
 				macro := op.Record(gtx.Ops)

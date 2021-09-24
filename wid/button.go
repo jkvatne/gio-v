@@ -52,47 +52,47 @@ type ButtonDef struct {
 	Style        ButtonStyle
 }
 
-type Option func(*ButtonDef)
+type BtnOption func(*ButtonDef)
 
-func Width(w float32) Option {
+func Width(w float32) BtnOption {
 	return func(b *ButtonDef) {
 		b.Width = unit.Dp(w)
 	}
 }
 
 // BtnIcon sets button icon
-func BtnIcon(i *Icon) Option {
+func BtnIcon(i *Icon) BtnOption {
 	return func(b *ButtonDef) {
 		b.Icon = i
 	}
 }
 
-func Handler(f func()) Option {
+func Handler(f func()) BtnOption {
 	foo := func(b bool) {f()}
 	return func(b *ButtonDef) {
 		b.handler = foo
 	}
 }
 
-func Disable(v *bool) Option {
+func Disable(v *bool) BtnOption {
 	return func(b *ButtonDef) {
 		b.disabler = v
 	}
 }
 
-func Hint(s string) Option {
+func Hint(s string) BtnOption {
 	return func(b *ButtonDef){
 		b.helptext = s
 	}
 }
 
-func (b *ButtonDef) apply(options []Option) {
+func (b *ButtonDef) apply(options []BtnOption) {
 	for _, option := range options {
 		option(b)
 	}
 }
 
-func Button(style ButtonStyle, th *Theme, label string, options ...Option) func(gtx C) D {
+func Button(style ButtonStyle, th *Theme, label string, options ...BtnOption) func(gtx C) D {
 	s := th.TextSize.Scale(0.6)
 	t := th.TextSize.Scale(0.4)
 	c := th.TextSize.Scale(0.2)
