@@ -40,7 +40,7 @@ func Combo(th *Theme, index int, items []string) func(gtx C) D {
 	b.SetupTabs()
 	b.th = th
 	b.TextSize =th.TextSize
-	b.Font = text.Font{Weight: text.Bold}
+	b.Font = text.Font{Weight: text.Medium}
 	b.shadow = Shadow(c,c)
 	b.CornerRadius = c
 	b.BorderWidth = th.TextSize.Scale(0.2)
@@ -57,21 +57,18 @@ func Combo(th *Theme, index int, items []string) func(gtx C) D {
 
 	return func(gtx C) D {
 		dims := b.Layout(gtx)
+		h := dims.Size.Y
 		b.HandleClick()
 		if b.Visible {
-			pos := f32.Pt(0, float32(gtx.Constraints.Min.Y))
 			macro := op.Record(gtx.Ops)
 			dims = b.list(gtx)
+			r := f32.Rect(0,0,float32(dims.Size.X), float32(dims.Size.Y))
 			call := macro.Stop()
-			outline := f32.Rectangle{Max: f32.Point{
-				X: float32(gtx.Constraints.Min.X),
-				Y: float32(gtx.Constraints.Min.Y),
-			}}
-			clip.UniformRRect(outline, 0).Add(gtx.Ops)
-			paint.Fill(gtx.Ops, b.th.Palette.Background)
-			paintBorder(gtx, outline, b.th.Palette.OnBackground, b.BorderWidth.V, 0)
 			macro = op.Record(gtx.Ops)
-			op.Offset(pos).Add(gtx.Ops)
+			op.Offset(f32.Pt(0, float32(h))).Add(gtx.Ops)
+			clip.UniformRRect(r,0).Add(gtx.Ops)
+			paint.Fill(gtx.Ops, b.th.Palette.Secondary)
+			paintBorder(gtx, r, b.th.Palette.OnBackground, b.BorderWidth.V, 0)
 			call.Add(gtx.Ops)
 			call = macro.Stop()
 			op.Defer(gtx.Ops, call)
@@ -103,10 +100,7 @@ func (b *ComboDef) Layout(gtx layout.Context) layout.Dimensions {
 		layout.Stacked(
 			func(gtx C) D {
 				gtx.Constraints.Min = min
-				return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceSides}.Layout(
-					gtx,
-					layout.Rigid(b.LayoutLabel()),
-				)
+				return b.LayoutLabel()(gtx)
 			}),
 		layout.Expanded(b.LayoutClickable),
 	)
@@ -136,7 +130,7 @@ func (b *ComboDef) LayoutLabel() layout.Widget {
 	return func(gtx C) D {
 		return b.LabelInset.Layout(gtx, func(gtx C) D {
 			paint.ColorOp{Color: b.th.Palette.Primary}.Add(gtx.Ops)
-			return aLabel{Alignment: text.Middle}.Layout(gtx, b.shaper, b.Font, b.TextSize, b.items[b.index])
+			return aLabel{Alignment: text.Start}.Layout(gtx, b.shaper, b.Font, b.TextSize, b.items[b.index])
 		})
 	}
 }
