@@ -9,6 +9,7 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
+	"image"
 )
 
 type ComboDef struct {
@@ -36,7 +37,7 @@ func Combo(th *Theme, index int, items []string) func(gtx C) D {
 	t := th.TextSize.Scale(0.4)
 	c := th.TextSize.Scale(0.2)
 	b := ComboDef{}
-	b.Width = unit.Dp(300)
+	b.Width = unit.Dp(200)
 	b.SetupTabs()
 	b.th = th
 	b.TextSize =th.TextSize
@@ -57,17 +58,18 @@ func Combo(th *Theme, index int, items []string) func(gtx C) D {
 
 	return func(gtx C) D {
 		dims := b.Layout(gtx)
-		h := dims.Size.Y
-		b.HandleClick()
+		b.HandleToggle(&b.Visible, nil)
 		if b.Visible {
+			gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
+			gtx.Constraints.Max = image.Pt(dims.Size.X, 9999)
 			macro := op.Record(gtx.Ops)
-			dims = b.list(gtx)
-			r := f32.Rect(0,0,float32(dims.Size.X), float32(dims.Size.Y))
+			dims2 := b.list(gtx)
+			r := f32.Rect(0,0,float32(dims2.Size.X), float32(dims2.Size.Y))
 			call := macro.Stop()
 			macro = op.Record(gtx.Ops)
-			op.Offset(f32.Pt(0, float32(h))).Add(gtx.Ops)
+			op.Offset(f32.Pt(0, float32(dims.Size.Y))).Add(gtx.Ops)
 			clip.UniformRRect(r,0).Add(gtx.Ops)
-			paint.Fill(gtx.Ops, b.th.Palette.Secondary)
+			paint.Fill(gtx.Ops, b.th.Palette.Background)
 			paintBorder(gtx, r, b.th.Palette.OnBackground, b.BorderWidth.V, 0)
 			call.Add(gtx.Ops)
 			call = macro.Stop()
@@ -94,7 +96,6 @@ func (b *ComboDef) Layout(gtx layout.Context) layout.Dimensions {
 	if min.X > gtx.Constraints.Max.X {
 		min.X = gtx.Constraints.Max.X
 	}
-	b.Visible = true
 	return layout.Stack{Alignment: layout.Center}.Layout(gtx,
 		layout.Expanded(b.LayoutBackground()),
 		layout.Stacked(
