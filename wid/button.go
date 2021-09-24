@@ -37,6 +37,8 @@ type ButtonDef struct {
 	shadow       ShadowStyle
 	disabler     *bool
 	Text         string
+	helptext     string
+	ToolTipWidth unit.Value
 	Font         text.Font
 	TextSize     unit.Value
 	CornerRadius unit.Value
@@ -78,6 +80,12 @@ func Disable(v *bool) Option {
 	}
 }
 
+func Hint(s string) Option {
+	return func(b *ButtonDef){
+		b.helptext = s
+	}
+}
+
 func (b *ButtonDef) apply(options []Option) {
 	for _, option := range options {
 		option(b)
@@ -88,11 +96,13 @@ func Button(style ButtonStyle, th *Theme, label string, options ...Option) func(
 	s := th.TextSize.Scale(0.6)
 	t := th.TextSize.Scale(0.4)
 	c := th.TextSize.Scale(0.2)
+	if style == Round {
+		t = s
+	}
 	b := ButtonDef{}
 	b.SetupTabs()
 	b.th = th
 	b.tipArea = &TipArea{}
-	b.Tooltip = PlatformTooltip(th, label)
 	b.Text = label
 	b.TextSize =th.TextSize
 	b.Font = text.Font{Weight: text.Bold}
@@ -101,13 +111,16 @@ func Button(style ButtonStyle, th *Theme, label string, options ...Option) func(
 	b.BorderWidth = th.TextSize.Scale(0.2)
 	b.shaper = th.Shaper
 	b.Style = style
-	if style == Round {
-		t = s
+	if b.ToolTipWidth.V==0 {
+		b.ToolTipWidth.V = th.TextSize.V*20
 	}
+
 	b.LabelInset = layout.Inset{Top: t, Bottom: t, Left: s, Right: s}
 	b.IconInset = layout.Inset{Top: t, Bottom: t, Left: s, Right: s}
 	b.apply(options)
-
+	if b.helptext != "" {
+		b.Tooltip = PlatformTooltip(th, b.helptext, b.ToolTipWidth)
+	}
 	if b.Icon != nil && b.Text != "" {
 		// Avoid large gap between icon and text when both are present
 		b.LabelInset.Left = unit.Dp(0)
@@ -118,11 +131,6 @@ func Button(style ButtonStyle, th *Theme, label string, options ...Option) func(
 	}
 
 	return func(gtx C) D {
-		if b.Width.V==0 {
-			b.Width = unit.Dp(4000)
-		} else if b.Width.V<=1.0 {
-			b.Width = b.TextSize.Scale(100*b.Width.V)
-		}
 		dims := b.Layout(gtx)
 		b.HandleClick()
 		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
@@ -202,7 +210,7 @@ func paintBorder(gtx layout.Context, outline f32.Rectangle, col color.NRGBA, wid
 	)
 }
 
-func layBackground(b *ButtonDef) func(gtx C) D {
+func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
 		if b.Focused() || b.Hovered() {
 			b.shadow.Layout(gtx)
@@ -282,11 +290,14 @@ func (b *ButtonDef) Layout(gtx layout.Context) layout.Dimensions {
 		min := gtx.Constraints.Min
 		if b.Width.V <= 1.0 {
 			min.X = gtx.Px(b.Width.Scale(float32(gtx.Constraints.Max.X)))
-		} else if min.X > gtx.Px(b.Width) {
+		} else if min.X < gtx.Px(b.Width) {
 			min.X = gtx.Px(b.Width)
 		}
+		if min.X>gtx.Constraints.Max.X {
+			min.X = gtx.Constraints.Max.X
+		}
 		return layout.Stack{Alignment: layout.Center}.Layout(gtx,
-			layout.Expanded(layBackground(b)),
+			layout.Expanded(b.LayoutBackground()),
 			layout.Stacked(
 				func(gtx C) D {
 					gtx.Constraints.Min = min

@@ -23,6 +23,8 @@ type Tooltip struct {
 	// CornerRadius defines the corner radius of the RRect background.
 	// of the tooltip.
 	CornerRadius unit.Value
+	// MaxWidth is the maximum width of the tool-tip box. Should be less than form width.
+	MaxWidth unit.Value
 	// Text defines the content of the tooltip.
 	Text LabelDef
 	// Bg defines the color of the RRect background.
@@ -47,7 +49,7 @@ func MobileTooltip(th *Theme, tips string) Tooltip {
 }
 
 // DesktopTooltip constructs a tooltip suitable for use on desktop devices.
-func DesktopTooltip(th *Theme, tips string) Tooltip {
+func DesktopTooltip(th *Theme, tips string, width unit.Value) Tooltip {
 	txt :=  CreateLabelDef(th, tips, text.Start,0.8)
 	txt.Color = th.OnSecondary
 	return Tooltip{
@@ -55,6 +57,7 @@ func DesktopTooltip(th *Theme, tips string) Tooltip {
 		Bg:           WithAlpha(th.Secondary, 220),
 		CornerRadius: unit.Dp(4),
 		Text:         txt,
+		MaxWidth:     width,
 	}
 }
 
@@ -159,6 +162,9 @@ const (
 // Layout renders the provided widget with the provided tooltip. The tooltip
 // will be summoned if the widget is hovered or long-pressed.
 func (t *TipArea) Layout(gtx C, tip Tooltip, w layout.Widget) D {
+	if tip.Text.Text == "" {
+		return w(gtx)
+	}
 	if !t.init {
 		t.init = true
 		t.VisibilityAnimation.State = Invisible
@@ -221,13 +227,18 @@ func (t *TipArea) Layout(gtx C, tip Tooltip, w layout.Widget) D {
 
 			originalMin := gtx.Constraints.Min
 			gtx.Constraints.Min = image.Point{}
-
 			if t.Visible() {
 				macro := op.Record(gtx.Ops)
-				tip.Bg = Interpolate(color.NRGBA{}, tip.Bg, t.VisibilityAnimation.Revealed(gtx))
+				v := t.VisibilityAnimation.Revealed(gtx)
+				tip.Bg = Interpolate(WithAlpha(tip.Bg,0), tip.Bg, v)
+				tip.Text.Color = Interpolate(WithAlpha(tip.Text.Color,0), tip.Text.Color, v)
+				gtx.Constraints.Max.X = gtx.Metric.Px(tip.MaxWidth)
 				dims := tip.Layout(gtx)
 				call := macro.Stop()
 				xOffset := float32((originalMin.X / 2) - (dims.Size.X / 2))
+				//if (-xOffset*2>float32(originalMin.X)) {
+				xOffset = 0
+				//}
 				yOffset := float32(originalMin.Y)
 				macro = op.Record(gtx.Ops)
 				op.Offset(f32.Pt(xOffset, yOffset)).Add(gtx.Ops)
