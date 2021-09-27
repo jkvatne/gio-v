@@ -11,7 +11,6 @@ import (
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
-	"gioui.org/op"
 )
 
 // Focuser implements the set/move focus
@@ -26,10 +25,10 @@ type Focuser interface {
 
 // Clickable represents a clickable area.
 type Clickable struct {
-	click  gesture.Click
-	handler func(v bool)
+	click    gesture.Click
+	handler  func(v bool)
 	eventKey int
-	clicks []Click
+	clicks   []Click
 	// prevClicks is the index into clicks that marks the clicks
 	// from the most recent Layout call. prevClicks is used to keep
 	// clicks bounded.
@@ -37,12 +36,13 @@ type Clickable struct {
 	history    []Press
 	// All clickable widgets should be able to have focus. This is needed for
 	// usability reasons - all widgets should support keyboard only operation
-	focused bool
-	hovered bool
-	disabled bool
+	focused      bool
+	hovered      bool
+	disabled     bool
 	requestFocus bool
-	next *Focuser
-	prev *Focuser
+	next         *Focuser
+	prev         *Focuser
+	index        int
 }
 
 // Click represents a click.
@@ -68,7 +68,7 @@ func (c *Clickable) Disabled() bool {
 	return c.disabled
 }
 
-func(c *Clickable) SetupTabs() {
+func (c *Clickable) SetupTabs() {
 	if prev != nil {
 		c.SetPrev(prev)
 		prev.SetNext(c)
@@ -88,7 +88,7 @@ func makeClickable() *Clickable {
 
 func (c *Clickable) HandleClick() {
 	for c.Clicked() {
-		if c.handler!=nil {
+		if c.handler != nil {
 			c.handler(true)
 		}
 	}
@@ -96,13 +96,13 @@ func (c *Clickable) HandleClick() {
 
 func (c *Clickable) HandleToggle(value *bool, changed *bool) {
 	for c.Clicked() {
-		if value!=nil {
+		if value != nil {
 			*value = !*value
-			if c.handler!=nil {
+			if c.handler != nil {
 				c.handler(*value)
 			}
 		}
-		if changed!=nil {
+		if changed != nil {
 			*changed = true
 		}
 	}
@@ -117,7 +117,7 @@ func (c *Clickable) SetPrev(f Focuser) {
 }
 
 func (c *Clickable) Next() Focuser {
-	if &c ==nil || c ==nil || c.next==nil {
+	if &c == nil || c == nil || c.next == nil {
 		return nil
 	}
 	b := *c.next
@@ -128,7 +128,7 @@ func (c *Clickable) Next() Focuser {
 }
 
 func (c *Clickable) Prev() Focuser {
-	if &c ==nil || c ==nil || c.prev==nil {
+	if &c == nil || c == nil || c.prev == nil {
 		return nil
 	}
 	b := *c.prev
@@ -141,7 +141,6 @@ func (c *Clickable) Prev() Focuser {
 func (c *Clickable) Focus() {
 	c.requestFocus = true
 }
-
 
 // Focused returns whether the editor is focused or not.
 func (c *Clickable) Focused() bool {
@@ -171,7 +170,7 @@ func (c *Clickable) Clicked() bool {
 }
 
 func (c *Clickable) HasClicks() bool {
-	return len(c.clicks)>0
+	return len(c.clicks) > 0
 }
 
 // Hovered returns whether pointer is over the element.
@@ -206,10 +205,8 @@ func (c *Clickable) History() []Press {
 // Layout and update the button state
 func (c *Clickable) LayoutClickable(gtx C) D {
 	c.update(gtx)
-	stack := op.Save(gtx.Ops)
 	pointer.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Add(gtx.Ops)
 	c.click.Add(gtx.Ops)
-	stack.Load()
 	if c.HasClicks() {
 		c.Focus()
 	}
@@ -239,7 +236,7 @@ func (c *Clickable) update(gtx layout.Context) {
 			if !c.focused || ke.State != key.Press {
 				break
 			}
-			if ke.Name == key.NameEnter || ke.Name == key.NameSpace {
+			if ke.Name == key.NameEnter || ke.Name == key.NameReturn || ke.Name == key.NameSpace {
 				c.clicks = append(c.clicks, Click{
 					Modifiers: 0,
 					NumClicks: 1,
@@ -247,6 +244,12 @@ func (c *Clickable) update(gtx layout.Context) {
 				if l := len(c.history); l > 0 {
 					c.history[l-1].End = gtx.Now
 				}
+			}
+			if ke.Name == key.NameUpArrow {
+				c.index--
+			}
+			if ke.Name == key.NameDownArrow {
+				c.index++
 			}
 			if ke.Name == key.NameTab {
 				if !ke.Modifiers.Contain(key.ModShift) {
@@ -266,7 +269,7 @@ func (c *Clickable) update(gtx layout.Context) {
 		key.FocusOp{Tag: &c.eventKey}.Add(gtx.Ops)
 		key.SoftKeyboardOp{Show: false}.Add(gtx.Ops)
 	}
-		c.requestFocus = false
+	c.requestFocus = false
 	for _, e := range c.click.Events(gtx) {
 		switch e.Type {
 		case gesture.TypeClick:

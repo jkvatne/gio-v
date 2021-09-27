@@ -1,7 +1,9 @@
 package wid
 
 import (
+	"gio-v/f32color"
 	"gioui.org/f32"
+	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -24,62 +26,108 @@ type ComboDef struct {
 	BorderWidth  unit.Value
 	shaper       text.Shaper
 	Width        unit.Value
-	items      []string
-	index int
-	Visible bool
-	list  layout.Widget
+	items        []string
+	hovered      []bool
+	Visible      bool
+	list         layout.Widget
+	options      []layout.Widget
 }
 
-
+func (b *ComboDef) option(th *Theme, i int) func(gtx C) D {
+	return func(gtx C) D {
+		b.hovered[i] = false
+		for _, e := range gtx.Events(&b.items[i]) {
+			if e, ok := e.(pointer.Event); ok {
+				switch e.Type {
+				case pointer.Release:
+					b.index = i
+					b.Visible = false
+				}
+			}
+		}
+		if b.index == i {
+			b.hovered[i]=true
+		}
+		if b.hovered[i] {
+			paint.ColorOp{Color: f32color.MulAlpha(b.th.OnBackground, 16)}.Add(gtx.Ops)
+			paint.PaintOp{}.Add(gtx.Ops)
+		}
+		paint.ColorOp{Color: th.OnBackground}.Add(gtx.Ops)
+		dims := aLabel{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, text.Font{}, th.TextSize.Scale(0.8), b.items[i])
+		pointer.Rect(image.Rect(0,0,dims.Size.X, dims.Size.Y)).Add(gtx.Ops)
+		pointer.InputOp{
+			Tag:   &b.items[i],
+			Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave,
+		}.Add(gtx.Ops)
+		return dims
+	}
+}
 
 func Combo(th *Theme, index int, items []string) func(gtx C) D {
-	s := th.TextSize.Scale(0.6)
-	t := th.TextSize.Scale(0.4)
-	c := th.TextSize.Scale(0.2)
 	b := ComboDef{}
+	m := th.TextSize.Scale(0.2)
 	b.Width = unit.Dp(200)
 	b.SetupTabs()
 	b.th = th
-	b.TextSize =th.TextSize
+	b.TextSize = th.TextSize
 	b.Font = text.Font{Weight: text.Medium}
-	b.shadow = Shadow(c,c)
-	b.CornerRadius = c
+	b.shadow = Shadow(m, m)
+	b.CornerRadius = m
 	b.BorderWidth = th.TextSize.Scale(0.2)
 	b.shaper = th.Shaper
-	b.LabelInset = layout.Inset{Top: t, Bottom: t, Left: s, Right: s}
+	b.LabelInset = layout.Inset{Top: m, Bottom: m, Left: m, Right: m}
 	b.index = index
 	b.items = items
-	b.list = MakeList(
-		th, layout.Vertical,
-		Label(th, "Option1", text.Start, 1.0),
-		Label(th, "Option2", text.Start, 1.0),
-		Label(th, "Option3", text.Start, 1.0),
-	)
+	for i, _ := range items {
+		b.options = append(b.options, b.option(th, i))
+		b.hovered = append(b.hovered, false)
+	}
+	b.list = MakeList(th, layout.Vertical, b.options...)
 
 	return func(gtx C) D {
 		dims := b.Layout(gtx)
-		b.HandleToggle(&b.Visible, nil)
+		for b.Clicked() {
+			b.Visible = !b.Visible
+		}
 		if b.Visible {
 			gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
 			gtx.Constraints.Max = image.Pt(dims.Size.X, 9999)
 			macro := op.Record(gtx.Ops)
 			dims2 := b.list(gtx)
-			r := f32.Rect(0,0,float32(dims2.Size.X), float32(dims2.Size.Y))
+			r := f32.Rect(0, 0, float32(dims2.Size.X), float32(dims2.Size.Y))
 			call := macro.Stop()
 			macro = op.Record(gtx.Ops)
 			op.Offset(f32.Pt(0, float32(dims.Size.Y))).Add(gtx.Ops)
-			clip.UniformRRect(r,0).Add(gtx.Ops)
+			clip.UniformRRect(r, 0).Add(gtx.Ops)
 			paint.Fill(gtx.Ops, b.th.Palette.Background)
+			// Draw a border around all options
 			paintBorder(gtx, r, b.th.Palette.OnBackground, b.BorderWidth.V, 0)
+			for _, ev := range gtx.Events(&b.eventKey) {
+				switch ke := ev.(type) {
+				case key.FocusEvent:
+					b.focused = ke.Focus
+				case key.Event:
+					if !b.focused || ke.State != key.Press {
+						break
+					}
+					if ke.Name == key.NameUpArrow {
+						b.index--
+					}
+					if ke.Name == key.NameDownArrow {
+						b.index++
+					}
+				}
+			}
+			key.InputOp{Tag: &b.eventKey, Hint: key.HintAny}.Add(gtx.Ops)
 			call.Add(gtx.Ops)
 			call = macro.Stop()
 			op.Defer(gtx.Ops, call)
+
 		}
 		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
 		return dims
 	}
 }
-
 
 func (b *ComboDef) Layout(gtx layout.Context) layout.Dimensions {
 	b.disabled = false
@@ -107,7 +155,6 @@ func (b *ComboDef) Layout(gtx layout.Context) layout.Dimensions {
 	)
 }
 
-
 func (b *ComboDef) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
 		if b.Focused() || b.Hovered() {
@@ -131,6 +178,8 @@ func (b *ComboDef) LayoutLabel() layout.Widget {
 	return func(gtx C) D {
 		return b.LabelInset.Layout(gtx, func(gtx C) D {
 			paint.ColorOp{Color: b.th.Palette.Primary}.Add(gtx.Ops)
+			if b.index<0 {b.index=0}
+			if b.index>=len(b.items) {b.index=len(b.items)-1}
 			return aLabel{Alignment: text.Start}.Layout(gtx, b.shaper, b.Font, b.TextSize, b.items[b.index])
 		})
 	}

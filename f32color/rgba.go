@@ -154,14 +154,26 @@ func Disabled(c color.NRGBA) (d color.NRGBA) {
 	}
 }
 
-// Hovered blends color towards a brighter color.
+// Hovered blends dark colors towards a brighter color
+// and light colors toward a darker color.
 func Hovered(c color.NRGBA) (d color.NRGBA) {
 	const r = 0x20 // lighten ratio
-	return color.NRGBA{
-		R: byte(255 - int(255-c.R)*(255-r)/256),
-		G: byte(255 - int(255-c.G)*(255-r)/256),
-		B: byte(255 - int(255-c.B)*(255-r)/256),
-		A: c.A,
+	if approxLuminance(c)>128 {
+		return color.NRGBA{
+			// Lighten
+			R: byte(255 - int(255-c.R)*(255-r)/256),
+			G: byte(255 - int(255-c.G)*(255-r)/256),
+			B: byte(255 - int(255-c.B)*(255-r)/256),
+			A: c.A,
+		}
+	} else {
+		return color.NRGBA{
+			// Darken
+			R: byte(int(c.R)*(255-r)/256),
+			G: byte(int(c.G)*(255-r)/256),
+			B: byte(int(c.B)*(255-r)/256),
+			A: c.A,
+		}
 	}
 }
 
