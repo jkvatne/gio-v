@@ -153,8 +153,10 @@ func setupForm(th *wid.Theme) *app.Window {
 			wid.Switch(th, false, doDisable),
 		),
 		wid.MakeFlex(
-			wid.Combo(th, 0, []string{"Option A", "Option B", "Option C"}),
-			wid.Combo(th, 0, []string{"Option 1", "Option 2", "Option 3"}),
+			wid.Combo(th, unit.Value{}, 0, []string{"Option A", "Option B", "Option C"}),
+			wid.Combo(th, unit.Value{200, 0}, 1, []string{"Option 1", "Option 2", "Option 3"}),
+			wid.Combo(th, unit.Value{300, 0}, 1, []string{"Option 1", "Option 2", "Option 3"}),
+			wid.Combo(th, unit.Value{}, 0, []string{"Option A", "Option B", "Option C"}),
 		),
 		wid.TextField(th, "Value 4"),
 		wid.TextField(th, "Value 5"),

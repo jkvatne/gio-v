@@ -50,7 +50,7 @@ func (b *ComboDef) option(th *Theme, i int) func(gtx C) D {
 			paint.PaintOp{}.Add(gtx.Ops)
 		}
 		paint.ColorOp{Color: th.OnBackground}.Add(gtx.Ops)
-		dims := aLabel{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, text.Font{}, th.TextSize.Scale(0.8), b.items[i])
+		dims := aLabel{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, text.Font{}, th.TextSize, b.items[i])
 		pointer.Rect(image.Rect(0,0,dims.Size.X, dims.Size.Y)).Add(gtx.Ops)
 		pointer.InputOp{
 			Tag:   &b.items[i],
@@ -60,10 +60,10 @@ func (b *ComboDef) option(th *Theme, i int) func(gtx C) D {
 	}
 }
 
-func Combo(th *Theme, index int, items []string) func(gtx C) D {
+func Combo(th *Theme, width unit.Value, index int, items []string) func(gtx C) D {
 	b := ComboDef{}
 	b.icon, _ = NewIcon(icons.NavigationArrowDropDown)
-	b.Width = unit.Dp(0)
+	b.Width = width
 	b.SetupTabs()
 	b.th = th
 	b.Font = text.Font{Weight: text.Medium}
@@ -117,15 +117,11 @@ func (b *ComboDef) Layout(gtx layout.Context) layout.Dimensions {
 	} else if min.X < gtx.Px(b.Width) {
 		min.X = gtx.Px(b.Width)
 	}
-	if min.X > gtx.Constraints.Max.X {
-		min.X = gtx.Constraints.Max.X
-	}
 	return layout.Stack{Alignment: layout.Center}.Layout(gtx,
 		layout.Expanded(b.LayoutBackground()),
 		layout.Stacked(
 			func(gtx C) D {
-				gtx.Constraints.Min = min
-				return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceSides}.Layout(
+				return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start, Spacing: layout.SpaceEnd}.Layout(
 					gtx,
 					layout.Rigid(b.LayoutLabel()),
 					layout.Rigid(b.LayoutIcon()),
@@ -156,6 +152,9 @@ func (b *ComboDef) LayoutBackground() func(gtx C) D {
 
 func (b *ComboDef) LayoutLabel() layout.Widget {
 	return func(gtx C) D {
+		if gtx.Px(b.Width)>gtx.Constraints.Min.X {
+			gtx.Constraints.Min.X = gtx.Px(b.Width)
+		}
 		return b.th.LabelInset.Layout(gtx, func(gtx C) D {
 			paint.ColorOp{Color: b.th.Palette.Primary}.Add(gtx.Ops)
 			if b.index<0 {b.index=0}
