@@ -3,6 +3,8 @@
 package wid
 
 import (
+	"gioui.org/layout"
+	"gioui.org/unit"
 	"image/color"
 	"math"
 )
@@ -140,6 +142,12 @@ func MulAlpha(c color.NRGBA, alpha uint8) color.NRGBA {
 	c.A = alpha
 	return c
 }
+
+// Pxr maps the value to pixels.
+func Pxr(c layout.Context, v unit.Value) float32 {
+	return float32(c.Metric.Px(v))
+}
+
 
 // Disabled blends color towards the luminance and multiplies alpha.
 // Blending towards luminance will desaturate the color.

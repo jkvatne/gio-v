@@ -139,7 +139,7 @@ func (b *ComboDef) LayoutBackground() func(gtx C) D {
 		if b.Focused() || b.Hovered() {
 			Shadow(b.th.CornerRadius, b.th.Elevation).Layout(gtx)
 		}
-		rr := gtx.Pxr(b.th.CornerRadius)
+		rr := Pxr(gtx, b.th.CornerRadius)
 		if rr > float32(gtx.Constraints.Min.Y)/2.0 {
 			rr = float32(gtx.Constraints.Min.Y) / 2.0
 		}

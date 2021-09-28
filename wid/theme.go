@@ -53,6 +53,8 @@ type Theme struct {
 	}
 	// FingerSize is the minimum touch target size.
 	FingerSize unit.Value
+	HintColor color.NRGBA
+	SelectionColor color.NRGBA
 	BorderThicknessActive unit.Value
 	BorderThickness unit.Value
 	BorderColor color.NRGBA
@@ -134,8 +136,8 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, p Palette) *Them
 	t.Icon.RadioChecked = mustIcon(NewIcon(icons.ToggleRadioButtonChecked))
 	t.Icon.RadioUnchecked = mustIcon(NewIcon(icons.ToggleRadioButtonUnchecked))
 	t.FingerSize = unit.Dp(38)
-	t.BorderThickness = t.TextSize.Scale(0.1)
-	t.BorderThicknessActive = t.TextSize.Scale(0.2)
+	t.BorderThickness = t.TextSize.Scale(0.5)
+	t.BorderThicknessActive = t.TextSize.Scale(0.5)
 	t.BorderColor        = WithAlpha(t.Palette.OnBackground, 128)
 	t.BorderColorHovered = WithAlpha(t.Palette.OnBackground, 231)
 	t.BorderColorActive  = t.Palette.Primary
@@ -145,6 +147,12 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, p Palette) *Them
 	t.IconInset = layout.Inset{Top:   v, Right: v, Bottom: v, Left:   v}
 	t.TooltipInset = layout.UniformInset(unit.Dp(10))
 	t.TooltipCornerRadius = unit.Dp(0)
+	if approxLuminance(t.OnBackground)<128 {
+		t.HintColor = MulAlpha(t.Palette.OnBackground, 0xc0)
+	} else {
+		t.HintColor = MulAlpha(t.Palette.OnBackground, 0x20)
+	}
+	t.SelectionColor = MulAlpha(t.Palette.Primary, 0x60)
 	return t
 }
 

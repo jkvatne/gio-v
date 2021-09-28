@@ -175,8 +175,8 @@ func paintBorder(gtx layout.Context, outline f32.Rectangle, col color.NRGBA, wid
 	paint.FillShape(gtx.Ops,
 		col,
 		clip.Stroke{
-			Path:  clip.UniformRRect(outline, gtx.Pxr(rr)).Path(gtx.Ops),
-			Style: clip.StrokeStyle{Width: gtx.Pxr(width)},
+			Path:  clip.UniformRRect(outline, Pxr(gtx, rr)).Path(gtx.Ops),
+			Style: clip.StrokeStyle{Width: Pxr(gtx, width)},
 		}.Op(),
 	)
 }
@@ -184,7 +184,7 @@ func paintBorder(gtx layout.Context, outline f32.Rectangle, col color.NRGBA, wid
 func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
 
-		rr := gtx.Pxr(b.th.CornerRadius)
+		rr := Pxr(gtx, b.th.CornerRadius)
 		if b.Style==Round {
 			rr = float32(gtx.Constraints.Min.Y) / 2.0
 		}

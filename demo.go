@@ -109,21 +109,21 @@ func setupForm(th *wid.Theme) *app.Window {
 	thb = *th
 	var w *app.Window
 	switch {
-	case alt==1:
-		// A maximized window
-		w = app.NewWindow(app.Title("Gio-v demo"), app.Maximized.Option())
 	case alt==2:
-		// Default placement of window with fixed size in upper left corner of screen
-		w = app.NewWindow(app.Title("Gio-v demo"),app.Size(unit.Px(960), unit.Px(500)))
-	case alt==3:
-		// Place at a given location.
-		w = app.NewWindow(app.Title("Gio-v demo"),app.Size(unit.Px(960), unit.Px(540)), app.Pos(unit.Px(960),unit.Px(540)))
-	case alt==4:
 		// A full-screen window
 		w = app.NewWindow(app.Title("Gio-v demo"), app.Fullscreen.Option())
+	// The out-commented options requires an updated Gio package that is not yet implemented
+	//case alt==3:
+	// Place at a given location.
+	//	w = app.NewWindow(app.Title("Gio-v demo"),app.Size(unit.Px(960), unit.Px(540))), app.Pos(unit.Px(960),unit.Px(540)))
+	//case alt==4:
+	//   A maximized window
+	//   w = app.NewWindow(app.Title("Gio-v demo"),app.Size(unit.Px(1800), unit.Px(990)), app.Maximized.Option())
+	//case alt==5:
+	// Place at center of monitor
+	//    w = app.NewWindow(app.Title("Gio-v demo"),app.Size(unit.Px(960), unit.Px(540))), app.Center())
 	default:
-		// Place at center of monitor
-		w = app.NewWindow(app.Title("Gio-v demo"),app.Size(unit.Px(960), unit.Px(540)), app.Center())
+		w = app.NewWindow(app.Title("Gio-v demo"),app.Size(unit.Px(1900), unit.Px(1000)))
 
 	}
 	icon1, _ := wid.NewIcon(icons.ContentAdd)
