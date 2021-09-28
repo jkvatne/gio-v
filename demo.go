@@ -131,11 +131,12 @@ func setupForm(th *wid.Theme) *app.Window {
 	icon3, _ := wid.NewIcon(icons.ActionCheckCircle)
 
 	root = wid.MakeList(
-		th, layout.Vertical,
+		th, layout.Vertical, th.ListInset,
 		wid.Label(th, "Demo page", text.Middle, 2.0),
 		wid.Button(wid.Contained, th, "WIDE BUTTON", wid.Width(1900),
 			wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 		wid.MakeFlex(
+			th.ListInset,
 			wid.Label(th, "Dark mode", text.Start, 1.0),
 			wid.Switch(th, darkMode, onSwitchMode),
 		),
@@ -143,6 +144,7 @@ func setupForm(th *wid.Theme) *app.Window {
 		wid.Edit(th, "Value 2"),
 		wid.Checkbox(th, "Checkbox", darkMode, nil),
 		wid.MakeFlex(
+			th.ListInset,
 			wid.Button(wid.Round, th, "", wid.BtnIcon(icon1),
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 
@@ -155,6 +157,7 @@ func setupForm(th *wid.Theme) *app.Window {
 			wid.Switch(th, false, doDisable),
 		),
 		wid.MakeFlex(
+			th.ListInset,
 			wid.Combo(th, unit.Value{}, 0, []string{"Option A", "Option B", "Option C"}),
 			wid.Combo(th, unit.Value{200, 0}, 1, []string{"Option 1", "Option 2", "Option 3"}),
 			wid.Combo(th, unit.Value{300, 0}, 1, []string{"Option 1", "Option 2", "Option 3"}),

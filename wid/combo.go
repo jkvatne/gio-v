@@ -78,7 +78,7 @@ func Combo(th *Theme, width unit.Value, index int, items []string) func(gtx C) D
 		b.options = append(b.options, b.option(th, i))
 		b.hovered = append(b.hovered, false)
 	}
-	b.list = MakeList(th, layout.Vertical, b.options...)
+	b.list = MakeList(th, layout.Vertical, layout.Inset{}, b.options...)
 
 	return func(gtx C) D {
 		dims := b.Layout(gtx)

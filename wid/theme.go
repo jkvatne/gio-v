@@ -68,6 +68,7 @@ type Theme struct {
 	TextTopInset          unit.Value
 	LabelInset            layout.Inset
 	IconInset             layout.Inset
+	ListInset			  layout.Inset
 	// Elevation is the shadow width
 	Elevation unit.Value
 	// UmbraColor is the darkest shadow color
@@ -158,6 +159,13 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, p Palette) *Them
 	t.TooltipCornerRadius = unit.Dp(0)
 	t.TooltipWidth = t.TextSize.Scale(20)
 	t.TooltipBackground = color.NRGBA{255,255,160, 233}
+	// List
+	t.ListInset = layout.Inset{
+		Top:    t.TextSize.Scale(0.2),
+		Right:  t.TextSize.Scale(0.3),
+		Bottom: t.TextSize.Scale(0.2),
+		Left:   t.TextSize.Scale(0.3),
+	}
 	return t
 }
 
