@@ -97,7 +97,7 @@ func Combo(th *Theme, width unit.Value, index int, items []string) func(gtx C) D
 			clip.UniformRRect(r, 0).Add(gtx.Ops)
 			paint.Fill(gtx.Ops, b.th.Palette.Background)
 			// Draw a border around all options
-			paintBorder(gtx, r, b.th.Palette.OnBackground, b.th.BorderThickness, unit.Value{})
+			PaintBorder(gtx, r, b.th.Palette.OnBackground, b.th.BorderThickness, unit.Value{})
 			call.Add(gtx.Ops)
 			call = macro.Stop()
 			op.Defer(gtx.Ops, call)
@@ -149,7 +149,7 @@ func (b *ComboDef) LayoutBackground() func(gtx C) D {
 		}}
 		paint.FillShape(gtx.Ops, b.th.Palette.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		clip.UniformRRect(outline, rr).Add(gtx.Ops)
-		paintBorder(gtx, outline, b.th.Palette.Primary, b.th.BorderThickness, b.th.CornerRadius)
+		PaintBorder(gtx, outline, b.th.Palette.Primary, b.th.BorderThickness, b.th.CornerRadius)
 		return layout.Dimensions{Size: gtx.Constraints.Min}
 	}
 }

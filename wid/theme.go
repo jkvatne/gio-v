@@ -136,8 +136,8 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, p Palette) *Them
 	t.Icon.RadioChecked = mustIcon(NewIcon(icons.ToggleRadioButtonChecked))
 	t.Icon.RadioUnchecked = mustIcon(NewIcon(icons.ToggleRadioButtonUnchecked))
 	t.FingerSize = unit.Dp(38)
-	t.BorderThickness = t.TextSize.Scale(0.5)
-	t.BorderThicknessActive = t.TextSize.Scale(0.5)
+	t.BorderThickness = t.TextSize.Scale(0.1)
+	t.BorderThicknessActive = t.TextSize.Scale(0.2)
 	t.BorderColor        = WithAlpha(t.Palette.OnBackground, 128)
 	t.BorderColorHovered = WithAlpha(t.Palette.OnBackground, 231)
 	t.BorderColorActive  = t.Palette.Primary

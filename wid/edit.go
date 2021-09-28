@@ -3,43 +3,31 @@
 package wid
 
 import (
+	"gioui.org/f32"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
-	"gioui.org/unit"
 	"image"
 	"image/color"
 )
 
-type Edit struct {
-	// Editor contains the edit buffer.
+type EditDef struct {
 	Editor
-	th     *Theme
-	shaper text.Shaper
-	// Alignment specifies where to anchor the text.
-	Alignment layout.Alignment
-	// Helper text to give additional context to a field.
-	//Helper string
-	// CharLimit specifies the maximum number of characters the text input
-	// will allow. Zero means "no limit".
+	th        *Theme
+	shaper    text.Shaper
+	alignment layout.Alignment
 	CharLimit uint
-	border    border
-	Font      text.Font
-	// Hint contains the text displayed when the editor is empty.
-	hint string
-}
-
-type border struct {
-	Thickness unit.Value
-	Color     color.NRGBA
+	font      text.Font
+	hint      string
 }
 
 var prev Focuser
 
 func TextField(th *Theme, hint string) func(gtx C) D {
-	c := new(Edit)
+	c := new(EditDef)
 	c.th = th
 	c.shaper = th.Shaper
 	c.hint = hint
@@ -49,30 +37,6 @@ func TextField(th *Theme, hint string) func(gtx C) D {
 	}
 }
 
-func DrawBorder(gtx C, e *Edit) (op.CallOp, D) {
-	macro := op.Record(gtx.Ops)
-	w := e.th.BorderThickness
-	c := e.th.BorderColor
-	switch {
-	case e.Focused() && !e.disabled:
-		w = e.th.BorderThicknessActive
-		c = e.th.BorderColorActive
-	case e.Hovered() && !e.disabled:
-		w = e.th.BorderThickness
-		c = e.th.BorderColorHovered
-	}
-	dims := BorderDef{Color: c, Width: w, CornerRadius: e.th.CornerRadius}.Layout(
-		gtx,
-		func(gtx C) D {
-			return D{Size: image.Point{
-				X: gtx.Constraints.Max.X,
-				Y: gtx.Constraints.Min.Y,
-			}}
-		},
-	)
-	return macro.Stop(), dims
-}
-
 func blendDisabledColor(disabled bool, c color.NRGBA) color.NRGBA {
 	if disabled {
 		return Disabled(c)
@@ -80,7 +44,7 @@ func blendDisabledColor(disabled bool, c color.NRGBA) color.NRGBA {
 	return c
 }
 
-func (e *Edit) LayoutEdit() func(gtx C) D {
+func (e *EditDef) LayoutEdit() func(gtx C) D {
 	return func(gtx C) D {
 		defer op.Save(gtx.Ops).Load()
 		macro := op.Record(gtx.Ops)
@@ -90,7 +54,7 @@ func (e *Edit) LayoutEdit() func(gtx C) D {
 			maxlines = 1
 		}
 		tl := aLabel{Alignment: e.Editor.Alignment, MaxLines: maxlines}
-		dims := tl.Layout(gtx, e.shaper, e.Font, e.th.TextSize, e.hint)
+		dims := tl.Layout(gtx, e.shaper, e.font, e.th.TextSize, e.hint)
 		call := macro.Stop()
 		if w := dims.Size.X; gtx.Constraints.Min.X < w {
 			gtx.Constraints.Min.X = w
@@ -98,7 +62,7 @@ func (e *Edit) LayoutEdit() func(gtx C) D {
 		if h := dims.Size.Y; gtx.Constraints.Min.Y < h {
 			gtx.Constraints.Min.Y = h
 		}
-		dims = e.Editor.Layout(gtx, e.shaper, e.Font, e.th.TextSize)
+		dims = e.Editor.Layout(gtx, e.shaper, e.font, e.th.TextSize)
 		disabled := gtx.Queue == nil
 		if e.Editor.Len() > 0 {
 			paint.ColorOp{Color: blendDisabledColor(disabled, e.th.SelectionColor)}.Add(gtx.Ops)
@@ -116,7 +80,7 @@ func (e *Edit) LayoutEdit() func(gtx C) D {
 	}
 }
 
-func HandleMouseHover(gtx C, in *Edit) {
+func HandleMouseHover(gtx C, in *EditDef) {
 	for _, event := range gtx.Events(in) {
 		if event, ok := event.(pointer.Event); ok {
 			switch event.Type {
@@ -129,7 +93,7 @@ func HandleMouseHover(gtx C, in *Edit) {
 	}
 }
 
-func HandleMouseClick(gtx C, in *Edit) {
+func HandleMouseClick(gtx C, in *EditDef) {
 	// Set pass-through mode so the underlying editor will recieve clicks
 	stack := op.Save(gtx.Ops)
 	pointer.PassOp{Pass: true}.Add(gtx.Ops)
@@ -139,7 +103,7 @@ func HandleMouseClick(gtx C, in *Edit) {
 	stack.Load()
 }
 
-func DeclareInputHandler(gtx C, in *Edit) {
+func DeclareInputHandler(gtx C, in *EditDef) {
 	stack := op.Save(gtx.Ops)
 	pointer.PassOp{Pass: true}.Add(gtx.Ops)
 	pointer.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Add(gtx.Ops)
@@ -150,8 +114,26 @@ func DeclareInputHandler(gtx C, in *Edit) {
 	stack.Load()
 }
 
-func (e *Edit) Layout(gtx C) D {
-	//e.border.Thickness, e.border.Color = SetupBorder(e.Clickable, e.th, gtx.Queue == nil)
+func (e *EditDef) LayoutBackground() func(gtx C) D {
+	return func(gtx C) D {
+		rr := Pxr(gtx, e.th.CornerRadius)
+		outline := f32.Rectangle{Max: f32.Point{
+			X: float32(gtx.Constraints.Min.X),
+			Y: float32(gtx.Constraints.Min.Y),
+		}}
+		clip.UniformRRect(outline, rr).Add(gtx.Ops)
+		switch {
+		case e.Hovered() || e.Focused():
+			paint.FillShape(gtx.Ops, Hovered(e.th.Palette.Background), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			PaintBorder(gtx, outline, Disabled(e.th.Palette.Primary), e.th.BorderThickness, e.th.CornerRadius)
+		default:
+			PaintBorder(gtx, outline, Disabled(e.th.Palette.Primary), e.th.BorderThickness, e.th.CornerRadius)
+		}
+		return layout.Dimensions{Size: gtx.Constraints.Min}
+	}
+}
+
+func (e *EditDef) Layout(gtx C) D {
 	defer op.Save(gtx.Ops).Load()
 	dims := layout.Flex{
 		Axis: layout.Vertical,
@@ -160,11 +142,7 @@ func (e *Edit) Layout(gtx C) D {
 		layout.Rigid(func(gtx C) D {
 			return layout.Stack{}.Layout(
 				gtx,
-				layout.Expanded(func(gtx C) D {
-					border, dims := DrawBorder(gtx, e)
-					border.Add(gtx.Ops)
-					return dims
-				}),
+				layout.Expanded(e.LayoutBackground()),
 				layout.Stacked(func(gtx C) D {
 					return e.th.LabelInset.Layout(gtx, func(gtx C) D {
 						return e.LayoutEdit()(gtx)
