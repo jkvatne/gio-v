@@ -37,7 +37,6 @@ type Clickable struct {
 	// All clickable widgets should be able to have focus. This is needed for
 	// usability reasons - all widgets should support keyboard only operation
 	focused      bool
-	hovered      bool
 	disabled     bool
 	requestFocus bool
 	next         *Focuser
@@ -175,12 +174,7 @@ func (c *Clickable) HasClicks() bool {
 
 // Hovered returns whether pointer is over the element.
 func (c *Clickable) Hovered() bool {
-	return c.hovered // click.Hovered()
-}
-
-// SetHovered returns whether pointer is over the element.
-func (c *Clickable) SetHovered(h bool) {
-	c.hovered = h
+	return c.click.Hovered()
 }
 
 // Pressed returns whether pointer is pressing the element.

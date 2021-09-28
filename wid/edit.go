@@ -4,13 +4,10 @@ package wid
 
 import (
 	"gioui.org/f32"
-	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
-	"image"
 )
 
 type EditDef struct {
@@ -73,36 +70,6 @@ func (e *EditDef) LayoutEdit() func(gtx C) D {
 	}
 }
 
-func DeclareInputHandler(gtx C, in *EditDef) {
-	stack := op.Save(gtx.Ops)
-	pointer.PassOp{Pass: true}.Add(gtx.Ops)
-	pointer.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Add(gtx.Ops)
-	pointer.InputOp{
-		Tag:   in,
-		Types: pointer.Enter | pointer.Leave | pointer.Cancel,
-	}.Add(gtx.Ops)
-	stack.Load()
-}
-
-func (e *EditDef) LayoutBackground() func(gtx C) D {
-	return func(gtx C) D {
-		rr := Pxr(gtx, e.th.CornerRadius)
-		outline := f32.Rectangle{Max: f32.Point{
-			X: float32(gtx.Constraints.Min.X),
-			Y: float32(gtx.Constraints.Min.Y),
-		}}
-		clip.UniformRRect(outline, rr).Add(gtx.Ops)
-		switch {
-		case e.Hovered() || e.Focused():
-			paint.FillShape(gtx.Ops, Hovered(e.th.Palette.Background), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			PaintBorder(gtx, outline, Disabled(e.th.Palette.Primary), e.th.BorderThickness, e.th.CornerRadius)
-		default:
-			PaintBorder(gtx, outline, Disabled(e.th.Palette.Primary), e.th.BorderThickness, e.th.CornerRadius)
-		}
-		return layout.Dimensions{Size: image.Pt(gtx.Constraints.Max.X,gtx.Constraints.Min.Y)}
-	}
-}
-
 func (e *EditDef) Layout(gtx C) D {
 	defer op.Save(gtx.Ops).Load()
 	min := gtx.Constraints.Min
@@ -113,7 +80,6 @@ func (e *EditDef) Layout(gtx C) D {
 		layout.Rigid(func(gtx C) D {
 			return layout.Stack{}.Layout(
 				gtx,
-				layout.Expanded(e.LayoutBackground()),
 				layout.Stacked(func(gtx C) D {
 					gtx.Constraints.Min = min
 					return e.th.LabelInset.Layout(gtx, func(gtx C) D {
@@ -121,7 +87,17 @@ func (e *EditDef) Layout(gtx C) D {
 					})
 				}),
 				layout.Expanded(func(gtx C) D {
-					DeclareInputHandler(gtx, e)
+					outline := f32.Rectangle{Max: f32.Point{
+						X: float32(gtx.Constraints.Min.X),
+						Y: float32(gtx.Constraints.Min.Y),
+					}}
+					if e.Focused() {
+						PaintBorder(gtx, outline, MulAlpha(e.th.Palette.Primary, 255), e.th.BorderThicknessActive, e.th.CornerRadius)
+					} else if e.Hovered() {
+						PaintBorder(gtx, outline, MulAlpha(e.th.Palette.Primary, 100), e.th.BorderThickness, e.th.CornerRadius)
+					} else {
+						PaintBorder(gtx, outline, MulAlpha(e.th.Palette.Primary, 50), e.th.BorderThickness, e.th.CornerRadius)
+					}
 					return D{}
 				}),
 			)

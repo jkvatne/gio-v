@@ -81,7 +81,7 @@ type Editor struct {
 	scroller  gesture.Scroll
 	scrollOff image.Point
 
-	clicker gesture.Click
+	//clicker gesture.Click
 
 	// events is the list of events not yet processed.
 	events []EditorEvent
@@ -312,7 +312,7 @@ func (e *Editor) processPointer(gtx layout.Context) {
 
 func (e *Editor) clickDragEvents(gtx layout.Context) []event.Event {
 	var combinedEvents []event.Event
-	for _, evt := range e.clicker.Events(gtx) {
+	for _, evt := range e.click.Events(gtx) {
 		combinedEvents = append(combinedEvents, evt)
 	}
 	for _, evt := range e.dragger.Events(gtx.Metric, gtx, gesture.Both) {
@@ -561,7 +561,7 @@ func (e *Editor) layout(gtx layout.Context) layout.Dimensions {
 	}
 	e.scroller.Add(gtx.Ops, scrollRange)
 
-	e.clicker.Add(gtx.Ops)
+	e.click.Add(gtx.Ops)
 	e.dragger.Add(gtx.Ops)
 	e.caret.on = false
 	if e.Clickable.focused {
