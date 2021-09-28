@@ -203,3 +203,8 @@ func Interpolate(a, b color.NRGBA, progress float32) color.NRGBA {
 	out.A = uint8(int16(a.A) - int16(float32(int16(a.A)-int16(b.A))*progress))
 	return out
 }
+
+func Gray(c color.NRGBA) color.NRGBA {
+	l := approxLuminance(c)
+	return color.NRGBA{l,l,l,c.A}
+}
