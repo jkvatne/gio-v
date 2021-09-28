@@ -129,6 +129,7 @@ func setupForm(th *wid.Theme) *app.Window {
 	icon1, _ := wid.NewIcon(icons.ContentAdd)
 	icon2, _ := wid.NewIcon(icons.ActionHome)
 	icon3, _ := wid.NewIcon(icons.ActionCheckCircle)
+
 	root = wid.MakeList(
 		th, layout.Vertical,
 		wid.Label(th, "Demo page", text.Middle, 2.0),

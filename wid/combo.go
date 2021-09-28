@@ -11,6 +11,7 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
+	"golang.org/x/exp/shiny/materialdesign/icons"
 	"image"
 )
 
@@ -31,6 +32,7 @@ type ComboDef struct {
 	Visible      bool
 	list         layout.Widget
 	options      []layout.Widget
+	icon         *Icon
 }
 
 func (b *ComboDef) option(th *Theme, i int) func(gtx C) D {
@@ -65,6 +67,7 @@ func (b *ComboDef) option(th *Theme, i int) func(gtx C) D {
 
 func Combo(th *Theme, index int, items []string) func(gtx C) D {
 	b := ComboDef{}
+	b.icon, _ = NewIcon(icons.NavigationArrowDropDown)
 	b.Width = unit.Dp(200)
 	b.SetupTabs()
 	b.th = th
@@ -147,7 +150,11 @@ func (b *ComboDef) Layout(gtx layout.Context) layout.Dimensions {
 		layout.Stacked(
 			func(gtx C) D {
 				gtx.Constraints.Min = min
-				return b.LayoutLabel()(gtx)
+				return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceSides}.Layout(
+					gtx,
+					layout.Rigid(b.LayoutLabel()),
+					layout.Rigid(b.LayoutIcon()),
+				)
 			}),
 		layout.Expanded(b.LayoutClickable),
 	)
@@ -181,4 +188,18 @@ func (b *ComboDef) LayoutLabel() layout.Widget {
 			return aLabel{Alignment: text.Start}.Layout(gtx, b.shaper, b.Font, b.TextSize, b.items[b.index])
 		})
 	}
+}
+
+func (b *ComboDef) LayoutIcon() layout.Widget {
+	if b.icon != nil {
+		return func(gtx C) D {
+			inset := b.th.IconInset
+			return inset.Layout(gtx, func(gtx C) D {
+				size := gtx.Px(b.th.TextSize.Scale(1.5))
+				gtx.Constraints = layout.Exact(image.Pt(size, size))
+				return b.icon.Layout(gtx, b.th.Palette.OnBackground)
+			})
+		}
+	}
+	return func(gtx C) D { return D{} }
 }
