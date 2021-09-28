@@ -11,7 +11,6 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"image"
-	"image/color"
 )
 
 type EditDef struct {
@@ -26,22 +25,16 @@ type EditDef struct {
 
 var prev Focuser
 
-func TextField(th *Theme, hint string) func(gtx C) D {
-	c := new(EditDef)
-	c.th = th
-	c.shaper = th.Shaper
-	c.hint = hint
-	c.SetupTabs()
+func Edit(th *Theme, hint string) func(gtx C) D {
+	e := new(EditDef)
+	e.th = th
+	e.shaper = th.Shaper
+	e.hint = hint
+	e.SingleLine = true
+	e.SetupTabs()
 	return func(gtx C) D {
-		return c.Layout(gtx)
+		return e.Layout(gtx)
 	}
-}
-
-func blendDisabledColor(disabled bool, c color.NRGBA) color.NRGBA {
-	if disabled {
-		return Disabled(c)
-	}
-	return c
 }
 
 func (e *EditDef) LayoutEdit() func(gtx C) D {
@@ -63,11 +56,11 @@ func (e *EditDef) LayoutEdit() func(gtx C) D {
 			gtx.Constraints.Min.Y = h
 		}
 		dims = e.Editor.Layout(gtx, e.shaper, e.font, e.th.TextSize)
-		disabled := gtx.Queue == nil
+		disabled := gtx.Queue == nil || GlobalDisable
 		if e.Editor.Len() > 0 {
-			paint.ColorOp{Color: blendDisabledColor(disabled, e.th.SelectionColor)}.Add(gtx.Ops)
+			paint.ColorOp{Color: e.th.SelectionColor}.Add(gtx.Ops)
 			e.Editor.PaintSelection(gtx)
-			paint.ColorOp{Color: blendDisabledColor(disabled, e.th.Palette.OnBackground)}.Add(gtx.Ops)
+			paint.ColorOp{Color: e.th.Palette.OnBackground}.Add(gtx.Ops)
 			e.Editor.PaintText(gtx)
 		} else {
 			call.Add(gtx.Ops)
@@ -129,12 +122,13 @@ func (e *EditDef) LayoutBackground() func(gtx C) D {
 		default:
 			PaintBorder(gtx, outline, Disabled(e.th.Palette.Primary), e.th.BorderThickness, e.th.CornerRadius)
 		}
-		return layout.Dimensions{Size: gtx.Constraints.Min}
+		return layout.Dimensions{Size: image.Pt(gtx.Constraints.Max.X,gtx.Constraints.Min.Y)}
 	}
 }
 
 func (e *EditDef) Layout(gtx C) D {
 	defer op.Save(gtx.Ops).Load()
+	min := gtx.Constraints.Min
 	dims := layout.Flex{
 		Axis: layout.Vertical,
 	}.Layout(
@@ -144,6 +138,7 @@ func (e *EditDef) Layout(gtx C) D {
 				gtx,
 				layout.Expanded(e.LayoutBackground()),
 				layout.Stacked(func(gtx C) D {
+					gtx.Constraints.Min = min
 					return e.th.LabelInset.Layout(gtx, func(gtx C) D {
 						return e.LayoutEdit()(gtx)
 					})
