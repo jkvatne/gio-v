@@ -53,18 +53,24 @@ type Theme struct {
 	}
 	// FingerSize is the minimum touch target size.
 	FingerSize unit.Value
-	BorderThicknessActive float32
-	BorderThickness float32
+	BorderThicknessActive unit.Value
+	BorderThickness unit.Value
 	BorderColor color.NRGBA
 	BorderColorHovered color.NRGBA
 	BorderColorActive color.NRGBA
 	CornerRadius unit.Value
+	TooltipInset layout.Inset
+	TooltipCornerRadius unit.Value
+	TextTopInset  unit.Value
+	LabelInset  layout.Inset
+	IconInset  layout.Inset
 	// Elevation is the shadow width
 	Elevation      unit.Value
 	// UmbraColor is the darkest shadow color
 	UmbraColor color.NRGBA
-	// PenumbraCOlor is the lightest shadow color
+	// PenumbraColor is the lightest shadow color
 	PenumbraColor color.NRGBA
+	// Text inset is the fracion of font height used for padding around text. Typically 0.2 to 0.6
 }
 
 type (
@@ -119,29 +125,26 @@ var MaterialDesignDark Palette = Palette{
 }
 
 func NewTheme(fontCollection []text.FontFace, fontSize float32, p Palette) *Theme {
-	t := &Theme{
-		Shaper: text.NewCache(fontCollection),
-	}
+	t := &Theme{Shaper: text.NewCache(fontCollection)}
 	t.Palette = p
-
 	t.TextSize = unit.Sp(fontSize)
-
+	v := t.TextSize.Scale(0.2)
 	t.Icon.CheckBoxChecked = mustIcon(NewIcon(icons.ToggleCheckBox))
 	t.Icon.CheckBoxUnchecked = mustIcon(NewIcon(icons.ToggleCheckBoxOutlineBlank))
 	t.Icon.RadioChecked = mustIcon(NewIcon(icons.ToggleRadioButtonChecked))
 	t.Icon.RadioUnchecked = mustIcon(NewIcon(icons.ToggleRadioButtonUnchecked))
-
-	// 38dp is on the lower end of possible finger size.
 	t.FingerSize = unit.Dp(38)
-
-	t.BorderThickness = float32(0.5)
-	t.BorderThicknessActive = float32(2.0)
+	t.BorderThickness = t.TextSize.Scale(0.1)
+	t.BorderThicknessActive = t.TextSize.Scale(0.2)
 	t.BorderColor        = WithAlpha(t.Palette.OnBackground, 128)
 	t.BorderColorHovered = WithAlpha(t.Palette.OnBackground, 231)
 	t.BorderColorActive  = t.Palette.Primary
-	t.CornerRadius = unit.Dp(4)
-
-	t.Elevation = unit.Dp(5)
+	t.CornerRadius = v
+	t.Elevation = t.TextSize.Scale(0.5)
+	t.LabelInset = layout.Inset{Top:   v, Right: v.Scale(2.0), Bottom: v, Left:   v.Scale(2.0)}
+	t.IconInset = layout.Inset{Top:   v, Right: v, Bottom: v, Left:   v}
+	t.TooltipInset = layout.UniformInset(unit.Dp(10))
+	t.TooltipCornerRadius = unit.Dp(0)
 	return t
 }
 

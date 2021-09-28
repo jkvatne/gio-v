@@ -39,7 +39,7 @@ type Edit struct {
 }
 
 type border struct {
-	Thickness float32
+	Thickness unit.Value
 	Color     color.NRGBA
 }
 
@@ -63,7 +63,7 @@ func TextField(th *Theme, hint string) func(gtx C) D {
 	}
 }
 
-func SetupBorder(in Clickable, th *Theme, disabled bool) (thick float32, color color.NRGBA) {
+func SetupBorder(in Clickable, th *Theme, disabled bool) (thick unit.Value, color color.NRGBA) {
 	switch {
 	case in.Focused() && !disabled:
 		return th.BorderThicknessActive, th.BorderColorActive
@@ -76,8 +76,8 @@ func SetupBorder(in Clickable, th *Theme, disabled bool) (thick float32, color c
 func drawBorder(gtx C, in *Edit, th *Theme) (op.CallOp, D){
 	macro := op.Record(gtx.Ops)
 	dims := BorderDef{
-		Color:        in.border.Color,
-		Width:        unit.Dp(in.border.Thickness),
+		Color:        th.BorderColor,
+		Width:        in.border.Thickness,
 		CornerRadius: th.CornerRadius,
 	}.Layout(
 		gtx,

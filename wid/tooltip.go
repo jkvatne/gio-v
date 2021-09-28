@@ -20,9 +20,7 @@ import (
 type Tooltip struct {
 	// Inset defines the interior padding of the Tooltip.
 	layout.Inset
-	// CornerRadius defines the corner radius of the RRect background.
-	// of the tooltip.
-	CornerRadius unit.Value
+	th *Theme
 	// MaxWidth is the maximum width of the tool-tip box. Should be less than form width.
 	MaxWidth unit.Value
 	// Text defines the content of the tooltip.
@@ -33,31 +31,24 @@ type Tooltip struct {
 
 // MobileTooltip constructs a tooltip suitable for use on mobile devices.
 func MobileTooltip(th *Theme, tips string) Tooltip {
-	txt :=  CreateLabelDef(th, tips, text.Start,0.8)
+	txt := CreateLabelDef(th, tips, text.Start, 0.8)
 	txt.Color = th.Background
 	return Tooltip{
-		Inset: layout.Inset{
-			Top:    unit.Dp(8),
-			Bottom: unit.Dp(8),
-			Left:   unit.Dp(16),
-			Right:  unit.Dp(16),
-		},
-		Bg:           WithAlpha(th.OnBackground, 220),
-		CornerRadius: unit.Dp(4),
-		Text:         txt,
+		th:   th,
+		Bg:   WithAlpha(th.OnBackground, 220),
+		Text: txt,
 	}
 }
 
 // DesktopTooltip constructs a tooltip suitable for use on desktop devices.
 func DesktopTooltip(th *Theme, tips string, width unit.Value) Tooltip {
-	txt :=  CreateLabelDef(th, tips, text.Start,0.8)
+	txt := CreateLabelDef(th, tips, text.Start, 0.8)
 	txt.Color = th.OnSecondary
 	return Tooltip{
-		Inset: layout.UniformInset(unit.Dp(8)),
-		Bg:           WithAlpha(th.Secondary, 220),
-		CornerRadius: unit.Dp(4),
-		Text:         txt,
-		MaxWidth:     width,
+		th:       th,
+		Bg:       WithAlpha(th.Secondary, 220),
+		Text:     txt,
+		MaxWidth: width,
 	}
 }
 
@@ -65,7 +56,7 @@ func DesktopTooltip(th *Theme, tips string, width unit.Value) Tooltip {
 func (t Tooltip) Layout(gtx C) D {
 	return layout.Stack{}.Layout(gtx,
 		layout.Expanded(func(gtx C) D {
-			radius := float32(gtx.Px(t.CornerRadius))
+			radius := float32(gtx.Px(t.th.TooltipCornerRadius))
 			paint.FillShape(gtx.Ops, t.Bg, clip.RRect{
 				Rect: f32.Rectangle{
 					Max: layout.FPt(gtx.Constraints.Min),
@@ -233,8 +224,8 @@ func (t *TipArea) Layout(gtx C, tip Tooltip, w layout.Widget) D {
 			if t.Visible() {
 				macro := op.Record(gtx.Ops)
 				v := t.VisibilityAnimation.Revealed(gtx)
-				tip.Bg = Interpolate(WithAlpha(tip.Bg,0), tip.Bg, v)
-				tip.Text.Color = Interpolate(WithAlpha(tip.Text.Color,0), tip.Text.Color, v)
+				tip.Bg = Interpolate(WithAlpha(tip.Bg, 0), tip.Bg, v)
+				tip.Text.Color = Interpolate(WithAlpha(tip.Text.Color, 0), tip.Text.Color, v)
 				dims := tip.Layout(gtx)
 				if int(t.position.X)+dims.Size.X > gtx.Constraints.Max.X {
 					t.position.X = float32(gtx.Constraints.Max.X - dims.Size.X)
@@ -244,7 +235,7 @@ func (t *TipArea) Layout(gtx C, tip Tooltip, w layout.Widget) D {
 				}
 				call := macro.Stop()
 				macro = op.Record(gtx.Ops)
-				op.Offset(t.position.Add(f32.Pt(5,5))).Add(gtx.Ops)
+				op.Offset(t.position.Add(f32.Pt(5, 5))).Add(gtx.Ops)
 				call.Add(gtx.Ops)
 				call = macro.Stop()
 				op.Defer(gtx.Ops, call)

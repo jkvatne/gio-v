@@ -40,14 +40,8 @@ type ButtonDef struct {
 	helptext     string
 	ToolTipWidth unit.Value
 	Font         text.Font
-	TextSize     unit.Value
-	CornerRadius unit.Value
-	LabelInset   layout.Inset
-	BorderWidth  unit.Value
-	IconInset    layout.Inset
 	shaper       text.Shaper
 	Icon         *Icon
-	IconSize     unit.Value
 	Width        unit.Value
 	Style        ButtonStyle
 }
@@ -93,41 +87,24 @@ func (b *ButtonDef) apply(options []BtnOption) {
 }
 
 func Button(style ButtonStyle, th *Theme, label string, options ...BtnOption) func(gtx C) D {
-	s := th.TextSize.Scale(0.6)
-	t := th.TextSize.Scale(0.4)
-	c := th.TextSize.Scale(0.2)
-	if style == Round {
-		t = s
-	}
 	b := ButtonDef{}
 	b.SetupTabs()
 	b.th = th
 	b.tipArea = &TipArea{}
 	b.Text = label
-	b.TextSize =th.TextSize
-	b.Font = text.Font{Weight: text.Bold}
-	b.shadow = Shadow(c,c)
-	b.CornerRadius = c
-	b.BorderWidth = th.TextSize.Scale(0.2)
+	b.Font = text.Font{Weight: text.Medium}
+	b.shadow = Shadow(th.CornerRadius, th.Elevation)
 	b.shaper = th.Shaper
 	b.Style = style
 	if b.ToolTipWidth.V==0 {
 		b.ToolTipWidth.V = th.TextSize.V*20
 	}
-
-	b.LabelInset = layout.Inset{Top: t, Bottom: t, Left: s, Right: s}
-	b.IconInset = layout.Inset{Top: t, Bottom: t, Left: s, Right: s}
 	b.apply(options)
 	if b.helptext != "" {
 		b.Tooltip = PlatformTooltip(th, b.helptext, b.ToolTipWidth)
 	}
-	if b.Icon != nil && b.Text != "" {
-		// Avoid large gap between icon and text when both are present
-		b.LabelInset.Left = unit.Dp(0)
-	}
 	if style == Round {
-		b.CornerRadius = b.TextSize.Scale(1.5) // a large value gives a circle, or half-circle at ends
-		b.shadow = Shadow(b.CornerRadius, c)
+		b.shadow = Shadow(b.th.CornerRadius, b.th.Elevation)
 	}
 
 	return func(gtx C) D {
@@ -215,8 +192,8 @@ func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 		if b.Focused() || b.Hovered() {
 			b.shadow.Layout(gtx)
 		}
-		rr := float32(gtx.Px(b.CornerRadius))
-		if rr > float32(gtx.Constraints.Min.Y)/2.0 {
+		rr := gtx.Pxr(b.th.CornerRadius)
+		if b.Style==Round {
 			rr = float32(gtx.Constraints.Min.Y) / 2.0
 		}
 		outline := f32.Rectangle{Max: f32.Point{
@@ -227,9 +204,9 @@ func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 
 		switch {
 		case b.Style == Outlined && gtx.Queue == nil:
-			paintBorder(gtx, outline, f32color.Disabled(b.th.Palette.Primary), b.BorderWidth.V, b.CornerRadius.V)
+			paintBorder(gtx, outline, f32color.Disabled(b.th.Palette.Primary), gtx.Pxr(b.th.BorderThickness), rr)
 		case b.Style == Outlined:
-			paintBorder(gtx, outline, b.th.Palette.Primary, b.BorderWidth.V, b.CornerRadius.V)
+			paintBorder(gtx, outline, b.th.Palette.Primary, gtx.Pxr(b.th.BorderThickness), rr)
 		case gtx.Queue == nil && (b.Style == Contained || b.Style == Round):
 			paint.Fill(gtx.Ops, f32color.Disabled(b.th.Palette.Primary))
 		case gtx.Queue == nil:
@@ -249,7 +226,7 @@ func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 func layLabel(b *ButtonDef) layout.Widget {
 	if b.Text != "" {
 		return func(gtx C) D {
-			return b.LabelInset.Layout(gtx, func(gtx C) D {
+			return b.th.LabelInset.Layout(gtx, func(gtx C) D {
 				switch {
 				case (b.Style == Text || b.Style == Outlined) && gtx.Queue == nil:
 					paint.ColorOp{Color: f32color.Disabled(b.th.Palette.Primary)}.Add(gtx.Ops)
@@ -260,7 +237,7 @@ func layLabel(b *ButtonDef) layout.Widget {
 				case b.Style == Outlined || b.Style == Text:
 					paint.ColorOp{Color: b.th.Palette.Primary}.Add(gtx.Ops)
 				}
-				return aLabel{Alignment: text.Middle}.Layout(gtx, b.shaper, b.Font, b.TextSize, b.Text)
+				return aLabel{Alignment: text.Middle}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.Text)
 			})
 		}
 	}
@@ -270,8 +247,13 @@ func layLabel(b *ButtonDef) layout.Widget {
 func layIcon(b *ButtonDef) layout.Widget {
 	if b.Icon != nil {
 		return func(gtx C) D {
-			return b.IconInset.Layout(gtx, func(gtx C) D {
-				size := gtx.Px(b.TextSize.Scale(1.2))
+			inset := b.th.IconInset
+			if b.Icon != nil && b.Text != "" {
+				// Avoid large gap between icon and text when both are present
+				inset.Right = unit.Dp(0)
+			}
+			return inset.Layout(gtx, func(gtx C) D {
+				size := gtx.Px(b.th.TextSize.Scale(1.2))
 				gtx.Constraints = layout.Exact(image.Pt(size, size))
 				return b.Icon.Layout(gtx, b.th.Palette.OnPrimary)
 			})

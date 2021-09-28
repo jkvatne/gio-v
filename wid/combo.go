@@ -65,17 +65,15 @@ func (b *ComboDef) option(th *Theme, i int) func(gtx C) D {
 
 func Combo(th *Theme, index int, items []string) func(gtx C) D {
 	b := ComboDef{}
-	m := th.TextSize.Scale(0.2)
 	b.Width = unit.Dp(200)
 	b.SetupTabs()
 	b.th = th
 	b.TextSize = th.TextSize
 	b.Font = text.Font{Weight: text.Medium}
-	b.shadow = Shadow(m, m)
-	b.CornerRadius = m
+	b.shadow = Shadow(th.CornerRadius, th.Elevation)
+	b.CornerRadius = th.CornerRadius
 	b.BorderWidth = th.TextSize.Scale(0.2)
 	b.shaper = th.Shaper
-	b.LabelInset = layout.Inset{Top: m, Bottom: m, Left: m, Right: m}
 	b.index = index
 	b.items = items
 	for i, _ := range items {
