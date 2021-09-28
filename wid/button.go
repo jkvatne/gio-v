@@ -93,7 +93,6 @@ func Button(style ButtonStyle, th *Theme, label string, options ...BtnOption) fu
 	b.tipArea = &TipArea{}
 	b.Text = label
 	b.Font = text.Font{Weight: text.Medium}
-	b.shadow = Shadow(th.CornerRadius, th.Elevation)
 	b.shaper = th.Shaper
 	b.Style = style
 	if b.ToolTipWidth.V==0 {
@@ -103,10 +102,6 @@ func Button(style ButtonStyle, th *Theme, label string, options ...BtnOption) fu
 	if b.helptext != "" {
 		b.Tooltip = PlatformTooltip(th, b.helptext, b.ToolTipWidth)
 	}
-	if style == Round {
-		b.shadow = Shadow(b.th.CornerRadius, b.th.Elevation)
-	}
-
 	return func(gtx C) D {
 		dims := b.Layout(gtx)
 		b.HandleClick()
@@ -189,33 +184,35 @@ func paintBorder(gtx layout.Context, outline f32.Rectangle, col color.NRGBA, wid
 
 func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
-		if b.Focused() || b.Hovered() {
-			b.shadow.Layout(gtx)
-		}
+
 		rr := gtx.Pxr(b.th.CornerRadius)
 		if b.Style==Round {
 			rr = float32(gtx.Constraints.Min.Y) / 2.0
+		}
+		if b.Focused() || b.Hovered() {
+			Shadow(unit.Px(rr), b.th.Elevation).Layout(gtx)
 		}
 		outline := f32.Rectangle{Max: f32.Point{
 			X: float32(gtx.Constraints.Min.X),
 			Y: float32(gtx.Constraints.Min.Y),
 		}}
 		clip.UniformRRect(outline, rr).Add(gtx.Ops)
-
+		bg := b.th.Palette.Background
 		switch {
 		case b.Style == Outlined && gtx.Queue == nil:
 			paintBorder(gtx, outline, f32color.Disabled(b.th.Palette.Primary), b.th.BorderThickness, b.th.CornerRadius)
 		case b.Style == Outlined:
 			paintBorder(gtx, outline, b.th.Palette.Primary, b.th.BorderThickness, b.th.CornerRadius)
 		case gtx.Queue == nil && (b.Style == Contained || b.Style == Round):
-			paint.Fill(gtx.Ops, f32color.Disabled(b.th.Palette.Primary))
+			bg = b.th.Palette.Primary
 		case gtx.Queue == nil:
 			// Transparent background when disabled
 		case (b.Hovered() || b.Focused()) && (b.Style == Contained || b.Style == Round):
-			paint.Fill(gtx.Ops, f32color.Hovered(b.th.Palette.Primary))
+			bg = b.th.Palette.Primary
 		case b.Style == Contained || b.Style == Round:
-			paint.Fill(gtx.Ops, b.th.Palette.Primary)
+			bg = b.th.Palette.Primary
 		}
+		paint.FillShape(gtx.Ops, bg, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		for _, c := range b.History() {
 			drawInk(gtx, c)
 		}

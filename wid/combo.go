@@ -134,7 +134,7 @@ func (b *ComboDef) Layout(gtx layout.Context) layout.Dimensions {
 func (b *ComboDef) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
 		if b.Focused() || b.Hovered() {
-			b.shadow.Layout(gtx)
+			Shadow(b.th.CornerRadius, b.th.Elevation).Layout(gtx)
 		}
 		rr := gtx.Pxr(b.th.CornerRadius)
 		if rr > float32(gtx.Constraints.Min.Y)/2.0 {
@@ -144,6 +144,7 @@ func (b *ComboDef) LayoutBackground() func(gtx C) D {
 			X: float32(gtx.Constraints.Min.X),
 			Y: float32(gtx.Constraints.Min.Y),
 		}}
+		paint.FillShape(gtx.Ops, b.th.Palette.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		clip.UniformRRect(outline, rr).Add(gtx.Ops)
 		paintBorder(gtx, outline, b.th.Palette.Primary, b.th.BorderThickness, b.th.CornerRadius)
 		return layout.Dimensions{Size: gtx.Constraints.Min}
