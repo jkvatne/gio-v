@@ -3,7 +3,6 @@
 package wid
 
 import (
-	"gio-v/f32color"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -50,8 +49,8 @@ func TextField(th *Theme, hint string) func(gtx C) D {
 	c.shaper = th.Shaper
 	c.TextSize = th.TextSize
 	c.Color = th.Palette.OnBackground
-	c.HintColor = f32color.MulAlpha(th.Palette.OnBackground, 0xbb)
-	c.SelectionColor = f32color.MulAlpha(th.Palette.Primary, 0x60)
+	c.HintColor = MulAlpha(th.Palette.OnBackground, 0xbb)
+	c.SelectionColor = MulAlpha(th.Palette.Primary, 0x60)
 	c.Hint = hint
 	if prev != nil {
 		c.SetPrev(prev)
@@ -101,7 +100,7 @@ func getBorder(in *Edit, th *Theme) layout.StackChild {
 
 func blendDisabledColor(disabled bool, c color.NRGBA) color.NRGBA {
 	if disabled {
-		return f32color.Disabled(c)
+		return Disabled(c)
 	}
 	return c
 }

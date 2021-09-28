@@ -1,7 +1,6 @@
 package wid
 
 import (
-	"gio-v/f32color"
 	"gioui.org/f32"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
@@ -46,7 +45,11 @@ func (b *ComboDef) option(th *Theme, i int) func(gtx C) D {
 			b.hovered[i]=true
 		}
 		if b.hovered[i] {
-			paint.ColorOp{Color: f32color.MulAlpha(b.th.OnBackground, 16)}.Add(gtx.Ops)
+			c := MulAlpha(b.th.OnBackground, 48)
+			if approxLuminance(b.th.OnBackground)>28 {
+				c = MulAlpha(b.th.OnBackground, 16)
+			}
+			paint.ColorOp{Color: c}.Add(gtx.Ops)
 			paint.PaintOp{}.Add(gtx.Ops)
 		}
 		paint.ColorOp{Color: th.OnBackground}.Add(gtx.Ops)

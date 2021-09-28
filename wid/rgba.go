@@ -136,7 +136,8 @@ func sRGBToLinear(c float32) float32 {
 
 // MulAlpha applies the alpha to the color.
 func MulAlpha(c color.NRGBA, alpha uint8) color.NRGBA {
-	c.A = uint8(uint32(c.A) * uint32(alpha) / 0xFF)
+	//c.A = uint8(uint32(c.A) * uint32(alpha) / 0xFF)
+	c.A = alpha
 	return c
 }
 

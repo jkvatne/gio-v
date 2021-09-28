@@ -3,7 +3,6 @@
 package wid
 
 import (
-	"gio-v/f32color"
 	"gioui.org/f32"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
@@ -50,7 +49,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 						return dims
 					}
 
-					background := f32color.MulAlpha(c.IconColor, 70)
+					background := MulAlpha(c.IconColor, 70)
 
 					radius := float32(size) / 2
 					paint.FillShape(gtx.Ops, background,
@@ -66,7 +65,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 						size := gtx.Px(c.Size)
 						col := c.IconColor
 						if gtx.Queue == nil {
-							col = f32color.Disabled(col)
+							col = Disabled(col)
 						}
 						gtx.Constraints.Min = image.Point{X: size}
 						icon.Layout(gtx, col)

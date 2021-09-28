@@ -3,7 +3,6 @@
 package wid
 
 import (
-	"gio-v/f32color"
 	"image"
 	"image/color"
 
@@ -33,7 +32,7 @@ func Switch(th *Theme, initialState bool, handler func(b bool)) func(gtx C) D {
 	s.SetupTabs()
 	s.Color.Enabled = th.Palette.Primary
 	s.Color.Disabled = th.Palette.Background
-	s.Color.Track = f32color.MulAlpha(th.Palette.Primary, 0x88)
+	s.Color.Track = MulAlpha(th.Palette.Primary, 0x88)
 	s.size = th.TextSize
 	s.Value = initialState
 	s.handler = handler
@@ -68,7 +67,7 @@ func (s *SwitchDef) Layout(gtx C) D {
 		col = s.Color.Enabled
 	}
 	if gtx.Queue == nil {
-		col = f32color.Disabled(col)
+		col = Disabled(col)
 	}
 	trackColor := s.Color.Track
 	op.Offset(f32.Point{Y: trackOff}).Add(gtx.Ops)
@@ -89,7 +88,7 @@ func (s *SwitchDef) Layout(gtx C) D {
 	// Draw hover.
 	if s.Hovered() || s.Focused() {
 		r := 1.7 * thumbRadius
-		background := f32color.MulAlpha(s.Color.Enabled, 70)
+		background := MulAlpha(s.Color.Enabled, 70)
 		paint.FillShape(gtx.Ops, background,
 			clip.Circle{
 				Center: f32.Point{X: thumbRadius, Y: thumbRadius},

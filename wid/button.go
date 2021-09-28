@@ -3,7 +3,6 @@
 package wid
 
 import (
-	"gio-v/f32color"
 	"image"
 	"image/color"
 	"math"
@@ -160,7 +159,7 @@ func drawInk(gtx layout.Context, c Press) {
 	alpha := 0.7 * alphat * 2 * t2 * (3.0 - 3.0*alphat)
 	ba, bc := byte(alpha*0xff), byte(0x80)
 	defer op.Save(gtx.Ops).Load()
-	rgba := f32color.MulAlpha(color.NRGBA{A: 0xff, R: bc, G: bc, B: bc}, ba)
+	rgba := MulAlpha(color.NRGBA{A: 0xff, R: bc, G: bc, B: bc}, ba)
 	ink := paint.ColorOp{Color: rgba}
 	ink.Add(gtx.Ops)
 	rr := float32( size*math.Sqrt(2.0) *sizet * sizet * (3.0 - 2.0*sizet))
@@ -197,22 +196,39 @@ func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 			Y: float32(gtx.Constraints.Min.Y),
 		}}
 		clip.UniformRRect(outline, rr).Add(gtx.Ops)
-		bg := b.th.Palette.Background
 		switch {
+		case b.Style == Text && gtx.Queue == nil:
+			// Disabled Outlined button. Text and outline is grey when disabled
+			paint.FillShape(gtx.Ops, b.th.Palette.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+		case b.Style == Text && (b.Hovered() || b.Focused()):
+			// Outline button, hovered/focused
+			paint.FillShape(gtx.Ops, Hovered(b.th.Palette.Background), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+		case b.Style == Text:
+			// Outline button, not disabled
+			paint.FillShape(gtx.Ops, b.th.Palette.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+
 		case b.Style == Outlined && gtx.Queue == nil:
-			paintBorder(gtx, outline, f32color.Disabled(b.th.Palette.Primary), b.th.BorderThickness, b.th.CornerRadius)
-		case b.Style == Outlined:
+			// Disabled Outlined button. Text and outline is grey when disabled
+			paint.FillShape(gtx.Ops, b.th.Palette.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			paintBorder(gtx, outline, Disabled(b.th.Palette.Primary), b.th.BorderThickness, b.th.CornerRadius)
+		case b.Style == Outlined && (b.Hovered() || b.Focused()):
+			// Outline button, hovered/focused
+			paint.FillShape(gtx.Ops, Hovered(b.th.Palette.Background), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 			paintBorder(gtx, outline, b.th.Palette.Primary, b.th.BorderThickness, b.th.CornerRadius)
-		case gtx.Queue == nil && (b.Style == Contained || b.Style == Round):
-			bg = b.th.Palette.Primary
-		case gtx.Queue == nil:
-			// Transparent background when disabled
-		case (b.Hovered() || b.Focused()) && (b.Style == Contained || b.Style == Round):
-			bg = b.th.Palette.Primary
+		case b.Style == Outlined:
+			// Outline button, not disabled
+			paint.FillShape(gtx.Ops, b.th.Palette.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			paintBorder(gtx, outline, b.th.Palette.Primary, b.th.BorderThickness, b.th.CornerRadius)
+		case (b.Style == Contained || b.Style == Round) && gtx.Queue == nil:
+			// Disabled contained/round button.
+			paint.FillShape(gtx.Ops, Disabled(b.th.Palette.Primary), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+		case (b.Style == Contained || b.Style == Round) && (b.Hovered() || b.Focused()):
+			// Hovered or focused contained/round button.
+			paint.FillShape(gtx.Ops, Hovered(b.th.Palette.Primary), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		case b.Style == Contained || b.Style == Round:
-			bg = b.th.Palette.Primary
+			// Contained/round button, not disabled
+			paint.FillShape(gtx.Ops, b.th.Palette.Primary, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		}
-		paint.FillShape(gtx.Ops, bg, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		for _, c := range b.History() {
 			drawInk(gtx, c)
 		}
@@ -226,9 +242,9 @@ func layLabel(b *ButtonDef) layout.Widget {
 		return b.th.LabelInset.Layout(gtx, func(gtx C) D {
 			switch {
 			case (b.Style == Text || b.Style == Outlined) && gtx.Queue == nil:
-				paint.ColorOp{Color: f32color.Disabled(b.th.Palette.Primary)}.Add(gtx.Ops)
+				paint.ColorOp{Color: Disabled(b.th.Palette.Primary)}.Add(gtx.Ops)
 			case b.Style == Outlined && b.Hovered():
-				paint.ColorOp{Color: f32color.Hovered(b.th.Palette.Primary)}.Add(gtx.Ops)
+				paint.ColorOp{Color: Hovered(b.th.Palette.Primary)}.Add(gtx.Ops)
 			case b.Style == Contained:
 				paint.ColorOp{Color: b.th.Palette.OnPrimary}.Add(gtx.Ops)
 			case b.Style == Outlined || b.Style == Text:
