@@ -22,8 +22,8 @@ type SwitchDef struct {
 		Disabled color.NRGBA
 		Track    color.NRGBA
 	}
-	size unit.Value
-	Value bool
+	size    unit.Value
+	Value   bool
 	changed bool
 }
 
@@ -38,7 +38,7 @@ func Switch(th *Theme, initialState bool, handler func(b bool)) func(gtx C) D {
 	s.handler = handler
 	return func(gtx C) D {
 		dims := s.Layout(gtx)
-		if handler!=nil {
+		if handler != nil {
 			s.HandleToggle(&s.Value, &s.changed)
 		} else {
 			s.HandleToggle(&s.Value, &s.changed)

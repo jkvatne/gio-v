@@ -70,38 +70,34 @@ func (e *EditDef) LayoutEdit() func(gtx C) D {
 	}
 }
 
+func (e *EditDef) LayoutBorder() func(gtx C) D {
+	return func(gtx C) D {
+		outline := f32.Rectangle{Max: f32.Point{
+			X: float32(gtx.Constraints.Min.X),
+			Y: float32(gtx.Constraints.Min.Y),
+		}}
+		if e.Focused() {
+			PaintBorder(gtx, outline, MulAlpha(e.th.Palette.Primary, 255), e.th.BorderThicknessActive, e.th.CornerRadius)
+		} else if e.Hovered() {
+			PaintBorder(gtx, outline, MulAlpha(e.th.Palette.Primary, 100), e.th.BorderThickness, e.th.CornerRadius)
+		} else {
+			PaintBorder(gtx, outline, MulAlpha(e.th.Palette.Primary, 50), e.th.BorderThickness, e.th.CornerRadius)
+		}
+		return D{}
+	}
+}
+
 func (e *EditDef) Layout(gtx C) D {
 	defer op.Save(gtx.Ops).Load()
 	min := gtx.Constraints.Min
-	dims := layout.Flex{
-		Axis: layout.Vertical,
-	}.Layout(
+	return layout.Stack{}.Layout(
 		gtx,
-		layout.Rigid(func(gtx C) D {
-			return layout.Stack{}.Layout(
-				gtx,
-				layout.Stacked(func(gtx C) D {
-					gtx.Constraints.Min = min
-					return e.th.LabelInset.Layout(gtx, func(gtx C) D {
-						return e.LayoutEdit()(gtx)
-					})
-				}),
-				layout.Expanded(func(gtx C) D {
-					outline := f32.Rectangle{Max: f32.Point{
-						X: float32(gtx.Constraints.Min.X),
-						Y: float32(gtx.Constraints.Min.Y),
-					}}
-					if e.Focused() {
-						PaintBorder(gtx, outline, MulAlpha(e.th.Palette.Primary, 255), e.th.BorderThicknessActive, e.th.CornerRadius)
-					} else if e.Hovered() {
-						PaintBorder(gtx, outline, MulAlpha(e.th.Palette.Primary, 100), e.th.BorderThickness, e.th.CornerRadius)
-					} else {
-						PaintBorder(gtx, outline, MulAlpha(e.th.Palette.Primary, 50), e.th.BorderThickness, e.th.CornerRadius)
-					}
-					return D{}
-				}),
-			)
+		layout.Expanded(func(gtx C) D {
+			gtx.Constraints.Min = min
+			return e.th.LabelInset.Layout(gtx, func(gtx C) D {
+				return e.LayoutEdit()(gtx)
+			})
 		}),
+		layout.Expanded(e.LayoutBorder()),
 	)
-	return dims
 }

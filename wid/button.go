@@ -61,7 +61,7 @@ func BtnIcon(i *Icon) BtnOption {
 }
 
 func Handler(f func()) BtnOption {
-	foo := func(b bool) {f()}
+	foo := func(b bool) { f() }
 	return func(b *ButtonDef) {
 		b.handler = foo
 	}
@@ -74,7 +74,7 @@ func Disable(v *bool) BtnOption {
 }
 
 func Hint(s string) BtnOption {
-	return func(b *ButtonDef){
+	return func(b *ButtonDef) {
 		b.helptext = s
 	}
 }
@@ -94,12 +94,9 @@ func Button(style ButtonStyle, th *Theme, label string, options ...BtnOption) fu
 	b.Font = text.Font{Weight: text.Medium}
 	b.shaper = th.Shaper
 	b.Style = style
-	if b.ToolTipWidth.V==0 {
-		b.ToolTipWidth.V = th.TextSize.V*20
-	}
 	b.apply(options)
 	if b.helptext != "" {
-		b.Tooltip = PlatformTooltip(th, b.helptext, b.ToolTipWidth)
+		b.Tooltip = PlatformTooltip(th, b.helptext)
 	}
 	return func(gtx C) D {
 		dims := b.Layout(gtx)
@@ -129,7 +126,7 @@ func drawInk(gtx layout.Context, c Press) {
 		}
 	}
 	// Fade in.
-	half1 := math.Max(t/0.9 + haste, 0.5)
+	half1 := math.Max(t/0.9+haste, 0.5)
 	if half1 > 0.5 {
 		half1 = 0.5
 	}
@@ -162,7 +159,7 @@ func drawInk(gtx layout.Context, c Press) {
 	rgba := MulAlpha(color.NRGBA{A: 0xff, R: bc, G: bc, B: bc}, ba)
 	ink := paint.ColorOp{Color: rgba}
 	ink.Add(gtx.Ops)
-	rr := float32( size*math.Sqrt(2.0) *sizet * sizet * (3.0 - 2.0*sizet))
+	rr := float32(size * math.Sqrt(2.0) * sizet * sizet * (3.0 - 2.0*sizet))
 	op.Offset(c.Position.Add(f32.Point{
 		X: -rr,
 		Y: -rr,
@@ -185,7 +182,7 @@ func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
 
 		rr := Pxr(gtx, b.th.CornerRadius)
-		if b.Style==Round {
+		if b.Style == Round {
 			rr = float32(gtx.Constraints.Min.Y) / 2.0
 		}
 		if b.Focused() || b.Hovered() {
@@ -237,7 +234,9 @@ func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 }
 
 func layLabel(b *ButtonDef) layout.Widget {
-	if b.Text == "" { return func(gtx C) D { return D{} } }
+	if b.Text == "" {
+		return func(gtx C) D { return D{} }
+	}
 	return func(gtx C) D {
 		return b.th.LabelInset.Layout(gtx, func(gtx C) D {
 			switch {
@@ -276,7 +275,7 @@ func layIcon(b *ButtonDef) layout.Widget {
 func (b *ButtonDef) Layout(gtx layout.Context) layout.Dimensions {
 	return b.tipArea.Layout(gtx, b.Tooltip, func(gtx C) D {
 		b.disabled = false
-		if b.disabler!= nil && *b.disabler || GlobalDisable {
+		if b.disabler != nil && *b.disabler || GlobalDisable {
 			gtx = gtx.Disabled()
 			b.disabled = true
 		}
@@ -286,7 +285,7 @@ func (b *ButtonDef) Layout(gtx layout.Context) layout.Dimensions {
 		} else if min.X < gtx.Px(b.Width) {
 			min.X = gtx.Px(b.Width)
 		}
-		if min.X>gtx.Constraints.Max.X {
+		if min.X > gtx.Constraints.Max.X {
 			min.X = gtx.Constraints.Max.X
 		}
 		return layout.Stack{Alignment: layout.Center}.Layout(gtx,

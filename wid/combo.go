@@ -74,7 +74,7 @@ func Combo(th *Theme, width unit.Value, index int, items []string) func(gtx C) D
 	b.shaper = th.Shaper
 	b.index = index
 	b.items = items
-	for i, _ := range items {
+	for i := range items {
 		b.options = append(b.options, b.option(th, i))
 		b.hovered = append(b.hovered, false)
 	}

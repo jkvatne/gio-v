@@ -18,8 +18,6 @@ import (
 // Tooltip implements a material design tool tip as defined at:
 // https://material.io/components/tooltips#specs
 type Tooltip struct {
-	// Inset defines the interior padding of the Tooltip.
-	layout.Inset
 	th *Theme
 	// MaxWidth is the maximum width of the tool-tip box. Should be less than form width.
 	MaxWidth unit.Value
@@ -41,14 +39,14 @@ func MobileTooltip(th *Theme, tips string) Tooltip {
 }
 
 // DesktopTooltip constructs a tooltip suitable for use on desktop devices.
-func DesktopTooltip(th *Theme, tips string, width unit.Value) Tooltip {
-	txt := CreateLabelDef(th, tips, text.Start, 0.8)
+func DesktopTooltip(th *Theme, tips string,) Tooltip {
+	txt := CreateLabelDef(th, tips, text.Start, 0.9)
 	txt.Color = th.OnSecondary
 	return Tooltip{
 		th:       th,
 		Bg:       WithAlpha(th.Secondary, 220),
 		Text:     txt,
-		MaxWidth: width,
+		MaxWidth: th.TooltipWidth,
 	}
 }
 
@@ -69,7 +67,7 @@ func (t Tooltip) Layout(gtx C) D {
 			return D{}
 		}),
 		layout.Stacked(func(gtx C) D {
-			return t.Inset.Layout(gtx, t.Text.Layout)
+			return t.th.TooltipInset.Layout(gtx, t.Text.Layout)
 		}),
 	)
 }
@@ -226,6 +224,7 @@ func (t *TipArea) Layout(gtx C, tip Tooltip, w layout.Widget) D {
 				v := t.VisibilityAnimation.Revealed(gtx)
 				tip.Bg = Interpolate(WithAlpha(tip.Bg, 0), tip.Bg, v)
 				tip.Text.Color = Interpolate(WithAlpha(tip.Text.Color, 0), tip.Text.Color, v)
+				gtx.Constraints.Max.X = gtx.Metric.Px(tip.MaxWidth)
 				dims := tip.Layout(gtx)
 				if int(t.position.X)+dims.Size.X > gtx.Constraints.Max.X {
 					t.position.X = float32(gtx.Constraints.Max.X - dims.Size.X)

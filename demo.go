@@ -39,7 +39,7 @@ func main() {
 
 	currentTheme = wid.NewTheme(gofont.Collection(), 24.0, wid.MaterialDesignDark)
 	go func() {
-		w := setupForm(currentTheme);
+		w := setupForm(currentTheme)
 		for {
 			select {
 			case e := <-w.Events():
@@ -134,7 +134,7 @@ func setupForm(th *wid.Theme) *app.Window {
 		th, layout.Vertical,
 		wid.Label(th, "Demo page", text.Middle, 2.0),
 		wid.Button(wid.Contained, th, "WIDE BUTTON", wid.Width(1900),
-			wid.Hint("This is a dummy button")), //  - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
+			wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 		wid.MakeFlex(
 			wid.Label(th, "Dark mode", text.Start, 1.0),
 			wid.Switch(th, darkMode, onSwitchMode),
@@ -143,8 +143,10 @@ func setupForm(th *wid.Theme) *app.Window {
 		wid.Edit(th, "Value 2"),
 		wid.Checkbox(th, "Checkbox", darkMode, nil),
 		wid.MakeFlex(
-			wid.Button(wid.Round, th, "", wid.BtnIcon(icon1)),
-			wid.Button(wid.Contained, th, "Home", wid.BtnIcon(icon2), wid.Disable(&darkMode)),
+			wid.Button(wid.Round, th, "", wid.BtnIcon(icon1),
+				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
+
+		wid.Button(wid.Contained, th, "Home", wid.BtnIcon(icon2), wid.Disable(&darkMode)),
 			wid.Button(wid.Contained, th, "Check", wid.BtnIcon(icon3)),
 			wid.Button(wid.Contained, &thb, "Change color", wid.Handler(onClick)),
 			wid.Button(wid.Text, th, "Text button"),

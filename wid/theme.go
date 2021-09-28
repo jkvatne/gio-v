@@ -52,22 +52,23 @@ type Theme struct {
 		RadioUnchecked    *Icon
 	}
 	// FingerSize is the minimum touch target size.
-	FingerSize unit.Value
-	HintColor color.NRGBA
-	SelectionColor color.NRGBA
+	FingerSize            unit.Value
+	HintColor             color.NRGBA
+	SelectionColor        color.NRGBA
 	BorderThicknessActive unit.Value
-	BorderThickness unit.Value
-	BorderColor color.NRGBA
-	BorderColorHovered color.NRGBA
-	BorderColorActive color.NRGBA
-	CornerRadius unit.Value
-	TooltipInset layout.Inset
-	TooltipCornerRadius unit.Value
-	TextTopInset  unit.Value
-	LabelInset  layout.Inset
-	IconInset  layout.Inset
+	BorderThickness       unit.Value
+	BorderColor           color.NRGBA
+	BorderColorHovered    color.NRGBA
+	BorderColorActive     color.NRGBA
+	CornerRadius          unit.Value
+	TooltipInset          layout.Inset
+	TooltipCornerRadius   unit.Value
+	TooltipWidth		  unit.Value
+	TextTopInset          unit.Value
+	LabelInset            layout.Inset
+	IconInset             layout.Inset
 	// Elevation is the shadow width
-	Elevation      unit.Value
+	Elevation unit.Value
 	// UmbraColor is the darkest shadow color
 	UmbraColor color.NRGBA
 	// PenumbraColor is the lightest shadow color
@@ -91,12 +92,12 @@ func WithAlpha(c color.NRGBA, a uint8) color.NRGBA {
 }
 
 func brightness(c uint32) uint32 {
-	return (c&0xFF + (c>>8)&0xFF + (c>>16)&0xFF)/3
+	return (c&0xFF + (c>>8)&0xFF + (c>>16)&0xFF) / 3
 }
 
 // MaterialDesign is the baseline palette for material design.
 // https://material.io/design/color/the-color-system.html#color-theme-creation
-var MaterialDesignLight Palette = Palette{
+var MaterialDesignLight = Palette{
 	Primary:          RGB(0x6200EE),
 	PrimaryVariant:   RGB(0x3700B3),
 	Secondary:        RGB(0x03DAC6),
@@ -111,7 +112,7 @@ var MaterialDesignLight Palette = Palette{
 	OnError:          RGB(0xFFFFFF),
 }
 
-var MaterialDesignDark Palette = Palette{
+var MaterialDesignDark = Palette{
 	Primary:          RGB(0xbb86fc),
 	PrimaryVariant:   RGB(0x3700b3),
 	Secondary:        RGB(0x03DAC6),
@@ -138,16 +139,17 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, p Palette) *Them
 	t.FingerSize = unit.Dp(38)
 	t.BorderThickness = t.TextSize.Scale(0.1)
 	t.BorderThicknessActive = t.TextSize.Scale(0.12)
-	t.BorderColor        = WithAlpha(t.Palette.OnBackground, 128)
+	t.BorderColor = WithAlpha(t.Palette.OnBackground, 128)
 	t.BorderColorHovered = WithAlpha(t.Palette.OnBackground, 231)
-	t.BorderColorActive  = t.Palette.Primary
+	t.BorderColorActive = t.Palette.Primary
 	t.CornerRadius = v
 	t.Elevation = t.TextSize.Scale(0.5)
-	t.LabelInset = layout.Inset{Top:   v, Right: v.Scale(2.0), Bottom: v, Left:   v.Scale(2.0)}
-	t.IconInset = layout.Inset{Top:   v, Right: v, Bottom: v, Left:   v}
+	t.LabelInset = layout.Inset{Top: v, Right: v.Scale(2.0), Bottom: v, Left: v.Scale(2.0)}
+	t.IconInset = layout.Inset{Top: v, Right: v, Bottom: v, Left: v}
 	t.TooltipInset = layout.UniformInset(unit.Dp(10))
 	t.TooltipCornerRadius = unit.Dp(0)
-	if approxLuminance(t.OnBackground)<128 {
+	t.TooltipWidth = t.TextSize.Scale(20)
+	if approxLuminance(t.OnBackground) < 128 {
 		t.HintColor = MulAlpha(t.Palette.OnBackground, 0xc0)
 	} else {
 		t.HintColor = MulAlpha(t.Palette.OnBackground, 0x20)
