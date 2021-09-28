@@ -273,7 +273,7 @@ func layIcon(b *ButtonDef) layout.Widget {
 }
 
 func (b *ButtonDef) Layout(gtx layout.Context) layout.Dimensions {
-	return b.tipArea.Layout(gtx, b.Tooltip, func(gtx C) D {
+	return b.Tooltip.Layout(gtx, b.Tooltip, func(gtx C) D {
 		b.disabled = false
 		if b.disabler != nil && *b.disabler || GlobalDisable {
 			gtx = gtx.Disabled()

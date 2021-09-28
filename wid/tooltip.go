@@ -25,6 +25,24 @@ type Tooltip struct {
 	Text LabelDef
 	// Bg defines the color of the RRect background.
 	Bg color.NRGBA
+	VisibilityAnimation
+	position  f32.Point
+	Hover     InvalidateDeadline
+	Press     InvalidateDeadline
+	LongPress InvalidateDeadline
+	init      bool
+	// HoverDelay is the delay between the cursor entering the tip area
+	// and the tooltip appearing.
+	HoverDelay time.Duration
+	// LongPressDelay is the required duration of a press in the area for
+	// it to count as a long press.
+	LongPressDelay time.Duration
+	// LongPressDuration is the amount of time the tooltip should be displayed
+	// after being triggered by a long press.
+	LongPressDuration time.Duration
+	// FadeDuration is the amount of time it takes the tooltip to fade in
+	// and out.
+	FadeDuration time.Duration
 }
 
 // MobileTooltip constructs a tooltip suitable for use on mobile devices.
@@ -50,27 +68,6 @@ func DesktopTooltip(th *Theme, tips string,) Tooltip {
 	}
 }
 
-// Layout renders the tooltip.
-func (t Tooltip) Layout(gtx C) D {
-	return layout.Stack{}.Layout(gtx,
-		layout.Expanded(func(gtx C) D {
-			radius := float32(gtx.Px(t.th.TooltipCornerRadius))
-			paint.FillShape(gtx.Ops, t.Bg, clip.RRect{
-				Rect: f32.Rectangle{
-					Max: layout.FPt(gtx.Constraints.Min),
-				},
-				NW: radius,
-				NE: radius,
-				SW: radius,
-				SE: radius,
-			}.Op(gtx.Ops))
-			return D{}
-		}),
-		layout.Stacked(func(gtx C) D {
-			return t.th.TooltipInset.Layout(gtx, t.Text.Layout)
-		}),
-	)
-}
 
 // InvalidateDeadline helps to ensure that a frame is generated at a specific
 // point in time in the future. It does this by always requesting a future
@@ -151,7 +148,7 @@ const (
 
 // Layout renders the provided widget with the provided tooltip. The tooltip
 // will be summoned if the widget is hovered or long-pressed.
-func (t *TipArea) Layout(gtx C, tip Tooltip, w layout.Widget) D {
+func (t *Tooltip) Layout(gtx C, tip Tooltip, w layout.Widget) D {
 	if tip.Text.Text == "" {
 		return w(gtx)
 	}
@@ -207,6 +204,7 @@ func (t *TipArea) Layout(gtx C, tip Tooltip, w layout.Widget) D {
 	if t.LongPress.Process(gtx) {
 		t.VisibilityAnimation.Disappear(gtx.Now)
 	}
+
 	return layout.Stack{}.Layout(gtx,
 		layout.Stacked(w),
 		layout.Expanded(func(gtx C) D {
@@ -225,7 +223,29 @@ func (t *TipArea) Layout(gtx C, tip Tooltip, w layout.Widget) D {
 				tip.Bg = Interpolate(WithAlpha(tip.Bg, 0), tip.Bg, v)
 				tip.Text.Color = Interpolate(WithAlpha(tip.Text.Color, 0), tip.Text.Color, v)
 				gtx.Constraints.Max.X = gtx.Metric.Px(tip.MaxWidth)
-				dims := tip.Layout(gtx)
+				//dims := tip.Layout(gtx)
+				// Layout renders the tooltip.
+				dims := layout.Stack{}.Layout(
+					gtx,
+					layout.Expanded(func(gtx C) D {
+						radius := float32(gtx.Px(t.th.TooltipCornerRadius))
+						paint.FillShape(gtx.Ops, t.Bg, clip.RRect{
+							Rect: f32.Rectangle{
+								Max: layout.FPt(gtx.Constraints.Min),
+							},
+							NW: radius,
+							NE: radius,
+							SW: radius,
+							SE: radius,
+						}.Op(gtx.Ops))
+						return D{}
+					}),
+					layout.Stacked(func(gtx C) D {
+						return t.th.TooltipInset.Layout(gtx, t.Text.Layout)
+					}),
+				)
+
+
 				if int(t.position.X)+dims.Size.X > gtx.Constraints.Max.X {
 					t.position.X = float32(gtx.Constraints.Max.X - dims.Size.X)
 				}
