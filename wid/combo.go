@@ -3,7 +3,6 @@ package wid
 import (
 	"gio-v/f32color"
 	"gioui.org/f32"
-	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -96,23 +95,6 @@ func Combo(th *Theme, index int, items []string) func(gtx C) D {
 			paint.Fill(gtx.Ops, b.th.Palette.Background)
 			// Draw a border around all options
 			paintBorder(gtx, r, b.th.Palette.OnBackground, b.th.BorderThickness, unit.Value{})
-			for _, ev := range gtx.Events(&b.eventKey) {
-				switch ke := ev.(type) {
-				case key.FocusEvent:
-					b.focused = ke.Focus
-				case key.Event:
-					if !b.focused || ke.State != key.Press {
-						break
-					}
-					if ke.Name == key.NameUpArrow {
-						b.index--
-					}
-					if ke.Name == key.NameDownArrow {
-						b.index++
-					}
-				}
-			}
-			key.InputOp{Tag: &b.eventKey, Hint: key.HintAny}.Add(gtx.Ops)
 			call.Add(gtx.Ops)
 			call = macro.Stop()
 			op.Defer(gtx.Ops, call)

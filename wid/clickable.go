@@ -236,7 +236,8 @@ func (c *Clickable) update(gtx layout.Context) {
 			if !c.focused || ke.State != key.Press {
 				break
 			}
-			if ke.Name == key.NameEnter || ke.Name == key.NameReturn || ke.Name == key.NameSpace {
+			switch ke.Name {
+			case key.NameEnter, key.NameReturn, key.NameSpace, key.NameEscape:
 				c.clicks = append(c.clicks, Click{
 					Modifiers: 0,
 					NumClicks: 1,
@@ -244,14 +245,11 @@ func (c *Clickable) update(gtx layout.Context) {
 				if l := len(c.history); l > 0 {
 					c.history[l-1].End = gtx.Now
 				}
-			}
-			if ke.Name == key.NameUpArrow {
+			case key.NameUpArrow:
 				c.index--
-			}
-			if ke.Name == key.NameDownArrow {
+			case key.NameDownArrow:
 				c.index++
-			}
-			if ke.Name == key.NameTab {
+			case key.NameTab:
 				if !ke.Modifiers.Contain(key.ModShift) {
 					if c.Next() != nil {
 						c.Next().Focus()
