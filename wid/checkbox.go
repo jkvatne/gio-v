@@ -89,6 +89,9 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	pointer.Rect(image.Rectangle{Max: dims.Size}).Add(gtx.Ops)
 	gtx.Constraints.Min = dims.Size
 	c.LayoutClickable(gtx)
+	c.LayoutClickable(gtx)
+	c.HandleClicks(gtx)
+	c.HandleKeys(gtx)
 	stack.Load()
 	return dims
 }

@@ -114,6 +114,8 @@ func (s *SwitchDef) Layout(gtx C) D {
 
 	gtx.Constraints.Min = image.Pt(trackWidth, trackHeight)
 	s.LayoutClickable(gtx)
+	s.HandleClicks(gtx)
+	s.HandleKeys(gtx)
 	dims := image.Point{X: trackWidth, Y: thumbSize}
 	return layout.Dimensions{Size: dims}
 }

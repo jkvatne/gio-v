@@ -131,6 +131,9 @@ func (b *ComboDef) Layout(gtx layout.Context) layout.Dimensions {
 				)
 			}),
 		layout.Expanded(b.LayoutClickable),
+		layout.Expanded(b.HandleClicks),
+		layout.Expanded(b.HandleKeys),
+
 	)
 }
 

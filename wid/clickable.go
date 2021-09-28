@@ -175,7 +175,7 @@ func (c *Clickable) HasClicks() bool {
 
 // Hovered returns whether pointer is over the element.
 func (c *Clickable) Hovered() bool {
-	return c.click.Hovered()
+	return c.hovered // click.Hovered()
 }
 
 // SetHovered returns whether pointer is over the element.
@@ -204,7 +204,11 @@ func (c *Clickable) History() []Press {
 
 // Layout and update the button state
 func (c *Clickable) LayoutClickable(gtx C) D {
-	c.update(gtx)
+	// Flush clicks from before the last update.
+	n := copy(c.clicks, c.clicks[c.prevClicks:])
+	c.clicks = c.clicks[:n]
+	c.prevClicks = n
+
 	pointer.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Add(gtx.Ops)
 	c.click.Add(gtx.Ops)
 	if c.HasClicks() {
@@ -222,12 +226,7 @@ func (c *Clickable) LayoutClickable(gtx C) D {
 }
 
 // update the button state by processing events.
-func (c *Clickable) update(gtx layout.Context) {
-	// Flush clicks from before the last update.
-	n := copy(c.clicks, c.clicks[c.prevClicks:])
-	c.clicks = c.clicks[:n]
-	c.prevClicks = n
-
+func (c *Clickable) HandleKeys(gtx C) D {
 	for _, ev := range gtx.Events(&c.eventKey) {
 		switch ke := ev.(type) {
 		case key.FocusEvent:
@@ -262,12 +261,17 @@ func (c *Clickable) update(gtx layout.Context) {
 			}
 		}
 	}
+	pointer.PassOp{Pass: true}.Add(gtx.Ops)
 	key.InputOp{Tag: &c.eventKey, Hint: 0}.Add(gtx.Ops)
 	if c.requestFocus {
 		key.FocusOp{Tag: &c.eventKey}.Add(gtx.Ops)
 		key.SoftKeyboardOp{Show: false}.Add(gtx.Ops)
 	}
 	c.requestFocus = false
+	return D{}
+}
+
+func (c *Clickable) HandleClicks(gtx C) D {
 	for _, e := range c.click.Events(gtx) {
 		switch e.Type {
 		case gesture.TypeClick:
@@ -292,4 +296,5 @@ func (c *Clickable) update(gtx layout.Context) {
 			})
 		}
 	}
+	return D{}
 }

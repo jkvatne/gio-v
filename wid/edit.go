@@ -73,29 +73,6 @@ func (e *EditDef) LayoutEdit() func(gtx C) D {
 	}
 }
 
-func HandleMouseHover(gtx C, in *EditDef) {
-	for _, event := range gtx.Events(in) {
-		if event, ok := event.(pointer.Event); ok {
-			switch event.Type {
-			case pointer.Enter:
-				in.SetHovered(true)
-			case pointer.Leave, pointer.Cancel:
-				in.SetHovered(false)
-			}
-		}
-	}
-}
-
-func HandleMouseClick(gtx C, in *EditDef) {
-	// Set pass-through mode so the underlying editor will recieve clicks
-	stack := op.Save(gtx.Ops)
-	pointer.PassOp{Pass: true}.Add(gtx.Ops)
-	pointer.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Add(gtx.Ops)
-	// Handle clickable event handler
-	in.Clickable.LayoutClickable(gtx)
-	stack.Load()
-}
-
 func DeclareInputHandler(gtx C, in *EditDef) {
 	stack := op.Save(gtx.Ops)
 	pointer.PassOp{Pass: true}.Add(gtx.Ops)
@@ -144,10 +121,8 @@ func (e *EditDef) Layout(gtx C) D {
 					})
 				}),
 				layout.Expanded(func(gtx C) D {
-					HandleMouseClick(gtx, e)
-					HandleMouseHover(gtx, e)
 					DeclareInputHandler(gtx, e)
-					return D{Size: gtx.Constraints.Min}
+					return D{}
 				}),
 			)
 		}),
