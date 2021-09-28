@@ -21,10 +21,6 @@ type ComboDef struct {
 	shadow       ShadowStyle
 	disabler     *bool
 	Font         text.Font
-	TextSize     unit.Value
-	CornerRadius unit.Value
-	LabelInset   layout.Inset
-	BorderWidth  unit.Value
 	shaper       text.Shaper
 	Width        unit.Value
 	items        []string
@@ -68,14 +64,11 @@ func (b *ComboDef) option(th *Theme, i int) func(gtx C) D {
 func Combo(th *Theme, index int, items []string) func(gtx C) D {
 	b := ComboDef{}
 	b.icon, _ = NewIcon(icons.NavigationArrowDropDown)
-	b.Width = unit.Dp(200)
+	b.Width = unit.Dp(0)
 	b.SetupTabs()
 	b.th = th
-	b.TextSize = th.TextSize
 	b.Font = text.Font{Weight: text.Medium}
 	b.shadow = Shadow(th.CornerRadius, th.Elevation)
-	b.CornerRadius = th.CornerRadius
-	b.BorderWidth = th.TextSize.Scale(0.2)
 	b.shaper = th.Shaper
 	b.index = index
 	b.items = items
@@ -102,7 +95,7 @@ func Combo(th *Theme, index int, items []string) func(gtx C) D {
 			clip.UniformRRect(r, 0).Add(gtx.Ops)
 			paint.Fill(gtx.Ops, b.th.Palette.Background)
 			// Draw a border around all options
-			paintBorder(gtx, r, b.th.Palette.OnBackground, b.BorderWidth.V, 0)
+			paintBorder(gtx, r, b.th.Palette.OnBackground, b.th.BorderThickness, unit.Value{})
 			for _, ev := range gtx.Events(&b.eventKey) {
 				switch ke := ev.(type) {
 				case key.FocusEvent:
@@ -165,7 +158,7 @@ func (b *ComboDef) LayoutBackground() func(gtx C) D {
 		if b.Focused() || b.Hovered() {
 			b.shadow.Layout(gtx)
 		}
-		rr := float32(gtx.Px(b.CornerRadius))
+		rr := gtx.Pxr(b.th.CornerRadius)
 		if rr > float32(gtx.Constraints.Min.Y)/2.0 {
 			rr = float32(gtx.Constraints.Min.Y) / 2.0
 		}
@@ -174,32 +167,26 @@ func (b *ComboDef) LayoutBackground() func(gtx C) D {
 			Y: float32(gtx.Constraints.Min.Y),
 		}}
 		clip.UniformRRect(outline, rr).Add(gtx.Ops)
-		paintBorder(gtx, outline, b.th.Palette.Primary, b.BorderWidth.V, b.CornerRadius.V)
+		paintBorder(gtx, outline, b.th.Palette.Primary, b.th.BorderThickness, b.th.CornerRadius)
 		return layout.Dimensions{Size: gtx.Constraints.Min}
 	}
 }
 
 func (b *ComboDef) LayoutLabel() layout.Widget {
 	return func(gtx C) D {
-		return b.LabelInset.Layout(gtx, func(gtx C) D {
+		return b.th.LabelInset.Layout(gtx, func(gtx C) D {
 			paint.ColorOp{Color: b.th.Palette.Primary}.Add(gtx.Ops)
 			if b.index<0 {b.index=0}
 			if b.index>=len(b.items) {b.index=len(b.items)-1}
-			return aLabel{Alignment: text.Start}.Layout(gtx, b.shaper, b.Font, b.TextSize, b.items[b.index])
+			return aLabel{Alignment: text.Start}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.items[b.index])
 		})
 	}
 }
 
 func (b *ComboDef) LayoutIcon() layout.Widget {
-	if b.icon != nil {
-		return func(gtx C) D {
-			inset := b.th.IconInset
-			return inset.Layout(gtx, func(gtx C) D {
-				size := gtx.Px(b.th.TextSize.Scale(1.5))
-				gtx.Constraints = layout.Exact(image.Pt(size, size))
-				return b.icon.Layout(gtx, b.th.Palette.OnBackground)
-			})
-		}
+	return func(gtx C) D {
+		size := gtx.Px(b.th.TextSize.Scale(1.5))
+		gtx.Constraints = layout.Exact(image.Pt(size, size))
+		return b.icon.Layout(gtx, b.th.Palette.OnBackground)
 	}
-	return func(gtx C) D { return D{} }
 }

@@ -177,12 +177,12 @@ func drawInk(gtx layout.Context, c Press) {
 	paint.PaintOp{}.Add(gtx.Ops)
 }
 
-func paintBorder(gtx layout.Context, outline f32.Rectangle, col color.NRGBA, width float32, rr float32) {
+func paintBorder(gtx layout.Context, outline f32.Rectangle, col color.NRGBA, width unit.Value, rr unit.Value) {
 	paint.FillShape(gtx.Ops,
 		col,
 		clip.Stroke{
-			Path:  clip.UniformRRect(outline, rr).Path(gtx.Ops),
-			Style: clip.StrokeStyle{Width: width},
+			Path:  clip.UniformRRect(outline, gtx.Pxr(rr)).Path(gtx.Ops),
+			Style: clip.StrokeStyle{Width: gtx.Pxr(width)},
 		}.Op(),
 	)
 }
@@ -204,9 +204,9 @@ func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 
 		switch {
 		case b.Style == Outlined && gtx.Queue == nil:
-			paintBorder(gtx, outline, f32color.Disabled(b.th.Palette.Primary), gtx.Pxr(b.th.BorderThickness), rr)
+			paintBorder(gtx, outline, f32color.Disabled(b.th.Palette.Primary), b.th.BorderThickness, b.th.CornerRadius)
 		case b.Style == Outlined:
-			paintBorder(gtx, outline, b.th.Palette.Primary, gtx.Pxr(b.th.BorderThickness), rr)
+			paintBorder(gtx, outline, b.th.Palette.Primary, b.th.BorderThickness, b.th.CornerRadius)
 		case gtx.Queue == nil && (b.Style == Contained || b.Style == Round):
 			paint.Fill(gtx.Ops, f32color.Disabled(b.th.Palette.Primary))
 		case gtx.Queue == nil:
@@ -224,24 +224,22 @@ func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 }
 
 func layLabel(b *ButtonDef) layout.Widget {
-	if b.Text != "" {
-		return func(gtx C) D {
-			return b.th.LabelInset.Layout(gtx, func(gtx C) D {
-				switch {
-				case (b.Style == Text || b.Style == Outlined) && gtx.Queue == nil:
-					paint.ColorOp{Color: f32color.Disabled(b.th.Palette.Primary)}.Add(gtx.Ops)
-				case b.Style == Outlined && b.Hovered():
-					paint.ColorOp{Color: f32color.Hovered(b.th.Palette.Primary)}.Add(gtx.Ops)
-				case b.Style == Contained:
-					paint.ColorOp{Color: b.th.Palette.OnPrimary}.Add(gtx.Ops)
-				case b.Style == Outlined || b.Style == Text:
-					paint.ColorOp{Color: b.th.Palette.Primary}.Add(gtx.Ops)
-				}
-				return aLabel{Alignment: text.Middle}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.Text)
-			})
-		}
+	if b.Text == "" { return func(gtx C) D { return D{} } }
+	return func(gtx C) D {
+		return b.th.LabelInset.Layout(gtx, func(gtx C) D {
+			switch {
+			case (b.Style == Text || b.Style == Outlined) && gtx.Queue == nil:
+				paint.ColorOp{Color: f32color.Disabled(b.th.Palette.Primary)}.Add(gtx.Ops)
+			case b.Style == Outlined && b.Hovered():
+				paint.ColorOp{Color: f32color.Hovered(b.th.Palette.Primary)}.Add(gtx.Ops)
+			case b.Style == Contained:
+				paint.ColorOp{Color: b.th.Palette.OnPrimary}.Add(gtx.Ops)
+			case b.Style == Outlined || b.Style == Text:
+				paint.ColorOp{Color: b.th.Palette.Primary}.Add(gtx.Ops)
+			}
+			return aLabel{Alignment: text.Middle}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.Text)
+		})
 	}
-	return func(gtx C) D { return D{} }
 }
 
 func layIcon(b *ButtonDef) layout.Widget {
