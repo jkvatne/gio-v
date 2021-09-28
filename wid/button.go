@@ -31,7 +31,6 @@ const (
 type ButtonDef struct {
 	Clickable
 	Tooltip
-	tipArea      *TipArea
 	th           *Theme
 	shadow       ShadowStyle
 	disabler     *bool
@@ -89,7 +88,6 @@ func Button(style ButtonStyle, th *Theme, label string, options ...BtnOption) fu
 	b := ButtonDef{}
 	b.SetupTabs()
 	b.th = th
-	b.tipArea = &TipArea{}
 	b.Text = label
 	b.Font = text.Font{Weight: text.Medium}
 	b.shaper = th.Shaper

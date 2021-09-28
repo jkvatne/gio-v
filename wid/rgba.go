@@ -143,6 +143,16 @@ func MulAlpha(c color.NRGBA, alpha uint8) color.NRGBA {
 	return c
 }
 
+// DeEmphasis will change a color to a less prominent color
+// In light mode, colors will be lighter, in dark mode, colors will be darker
+// The amount of darkening is greater than the amount of lightening
+func DeEmphasis(c color.NRGBA, amount uint8) color.NRGBA {
+	if approxLuminance(c) < 128 {
+		return MulAlpha(c, 0xc0)
+	}
+	return MulAlpha(c, 0x20)
+}
+
 // Pxr maps the value to pixels.
 func Pxr(c layout.Context, v unit.Value) float32 {
 	return float32(c.Metric.Px(v))
@@ -183,4 +193,13 @@ func approxLuminance(c color.NRGBA) byte {
 		t = r + g + b
 	)
 	return byte((r*int(c.R) + g*int(c.G) + b*int(c.B)) / t)
+}
+
+func Interpolate(a, b color.NRGBA, progress float32) color.NRGBA {
+	var out color.NRGBA
+	out.R = uint8(int16(a.R) - int16(float32(int16(a.R)-int16(b.R))*progress))
+	out.G = uint8(int16(a.G) - int16(float32(int16(a.G)-int16(b.G))*progress))
+	out.B = uint8(int16(a.B) - int16(float32(int16(a.B)-int16(b.B))*progress))
+	out.A = uint8(int16(a.A) - int16(float32(int16(a.A)-int16(b.A))*progress))
+	return out
 }

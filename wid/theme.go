@@ -64,6 +64,7 @@ type Theme struct {
 	TooltipInset          layout.Inset
 	TooltipCornerRadius   unit.Value
 	TooltipWidth		  unit.Value
+	TooltipBackground     color.NRGBA
 	TextTopInset          unit.Value
 	LabelInset            layout.Inset
 	IconInset             layout.Inset
@@ -132,36 +133,34 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, p Palette) *Them
 	t.Palette = p
 	t.TextSize = unit.Sp(fontSize)
 	v := t.TextSize.Scale(0.2)
+	// Icons
 	t.Icon.CheckBoxChecked = mustIcon(NewIcon(icons.ToggleCheckBox))
 	t.Icon.CheckBoxUnchecked = mustIcon(NewIcon(icons.ToggleCheckBoxOutlineBlank))
 	t.Icon.RadioChecked = mustIcon(NewIcon(icons.ToggleRadioButtonChecked))
 	t.Icon.RadioUnchecked = mustIcon(NewIcon(icons.ToggleRadioButtonUnchecked))
+	t.IconInset = layout.Inset{Top: v, Right: v, Bottom: v, Left: v}
 	t.FingerSize = unit.Dp(38)
+	// Borders
 	t.BorderThickness = t.TextSize.Scale(0.1)
 	t.BorderThicknessActive = t.TextSize.Scale(0.12)
 	t.BorderColor = WithAlpha(t.Palette.OnBackground, 128)
 	t.BorderColorHovered = WithAlpha(t.Palette.OnBackground, 231)
 	t.BorderColorActive = t.Palette.Primary
 	t.CornerRadius = v
+	// Shadow
 	t.Elevation = t.TextSize.Scale(0.5)
+	// Text
 	t.LabelInset = layout.Inset{Top: v, Right: v.Scale(2.0), Bottom: v, Left: v.Scale(2.0)}
-	t.IconInset = layout.Inset{Top: v, Right: v, Bottom: v, Left: v}
+	t.HintColor = DeEmphasis(t.Palette.OnBackground, 15)
+	t.SelectionColor = MulAlpha(t.Palette.Primary, 0x60)
+	// Tooltip
 	t.TooltipInset = layout.UniformInset(unit.Dp(10))
 	t.TooltipCornerRadius = unit.Dp(0)
 	t.TooltipWidth = t.TextSize.Scale(20)
-	if approxLuminance(t.OnBackground) < 128 {
-		t.HintColor = MulAlpha(t.Palette.OnBackground, 0xc0)
-	} else {
-		t.HintColor = MulAlpha(t.Palette.OnBackground, 0x20)
-	}
-	t.SelectionColor = MulAlpha(t.Palette.Primary, 0x60)
+	t.TooltipBackground = color.NRGBA{255,255,160, 233}
 	return t
 }
 
-func (t Theme) Corner(r float32) Theme {
-	t.CornerRadius.V = r
-	return t
-}
 
 func (t Theme) WithPalette(p Palette) Theme {
 	t.Palette = p
