@@ -136,18 +136,11 @@ func sRGBToLinear(c float32) float32 {
 	}
 }
 
-// MulAlpha applies the alpha to the color.
-func MulAlpha(c color.NRGBA, alpha uint8) color.NRGBA {
-	//c.A = uint8(uint32(c.A) * uint32(alpha) / 0xFF)
-	c.A = alpha
-	return c
-}
-
 // DeEmphasis will change a color to a less prominent color
 // In light mode, colors will be lighter, in dark mode, colors will be darker
 // The amount of darkening is greater than the amount of lightening
 func DeEmphasis(c color.NRGBA, amount uint8) color.NRGBA {
-	if approxLuminance(c) < 128 {
+	if Luminance(c) < 128 {
 		return MulAlpha(c, 0xc0)
 	}
 	return MulAlpha(c, 0x20)
@@ -164,7 +157,7 @@ func Pxr(c layout.Context, v unit.Value) float32 {
 // Multiplying alpha blends the color together more with the background.
 func Disabled(c color.NRGBA) (d color.NRGBA) {
 	const r = 80 // blend ratio
-	lum := approxLuminance(c)
+	lum := Luminance(c)
 	return color.NRGBA{
 		R: byte((int(c.R)*r + int(lum)*(256-r)) / 256),
 		G: byte((int(c.G)*r + int(lum)*(256-r)) / 256),
@@ -184,16 +177,6 @@ func Hovered(c color.NRGBA) (d color.NRGBA) {
 	}
 }
 
-// approxLuminance is a fast approximate version of RGBA.Luminance.
-func approxLuminance(c color.NRGBA) byte {
-	const (
-		r = 13933 // 0.2126 * 256 * 256
-		g = 46871 // 0.7152 * 256 * 256
-		b = 4732  // 0.0722 * 256 * 256
-		t = r + g + b
-	)
-	return byte((r*int(c.R) + g*int(c.G) + b*int(c.B)) / t)
-}
 
 func Interpolate(a, b color.NRGBA, progress float32) color.NRGBA {
 	var out color.NRGBA
@@ -205,7 +188,7 @@ func Interpolate(a, b color.NRGBA, progress float32) color.NRGBA {
 }
 
 func Gray(c color.NRGBA) color.NRGBA {
-	l := approxLuminance(c)
+	l := Luminance(c)
 	return color.NRGBA{l,l,l,c.A}
 }
 
@@ -215,4 +198,27 @@ func RGB(c uint32) color.NRGBA {
 
 func ARGB(c uint32) color.NRGBA {
 	return color.NRGBA{A: uint8(c >> 24), R: uint8(c >> 16), G: uint8(c >> 8), B: uint8(c)}
+}
+
+// WithAlpha returns the input color with the new alpha value.
+func WithAlpha(c color.NRGBA, alpha uint8) color.NRGBA {
+	c.A = alpha
+	return c
+}
+
+// MulAlpha applies the alpha to the color.
+func MulAlpha(c color.NRGBA, alpha uint8) color.NRGBA {
+	c.A = uint8(uint32(c.A) * uint32(alpha) / 0xFF)
+	return c
+}
+
+// Luminance is a fast approximate version of RGBA.Luminance.
+func Luminance(c color.NRGBA) byte {
+	const (
+		r = 13933 // 0.2126 * 256 * 256
+		g = 46871 // 0.7152 * 256 * 256
+		b = 4732  // 0.0722 * 256 * 256
+		t = r + g + b
+	)
+	return byte((r*int(c.R) + g*int(c.G) + b*int(c.B)) / t)
 }

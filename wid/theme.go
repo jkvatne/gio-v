@@ -58,19 +58,6 @@ type (
 	D = layout.Dimensions
 )
 
-// WithAlpha returns the input color with the new alpha value.
-func WithAlpha(c color.NRGBA, a uint8) color.NRGBA {
-	return color.NRGBA{
-		R: c.R,
-		G: c.G,
-		B: c.B,
-		A: a,
-	}
-}
-
-func brightness(c uint32) uint32 {
-	return (c&0xFF + (c>>8)&0xFF + (c>>16)&0xFF) / 3
-}
 
 // MaterialDesign is the baseline palette for material design.
 // https://material.io/design/color/the-color-system.html#color-theme-creation
@@ -113,7 +100,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme 
 	t.BorderColor = WithAlpha(t.OnBackground, 128)
 	t.BorderColorHovered = WithAlpha(t.OnBackground, 231)
 	t.BorderColorActive = t.Primary
-	t.CornerRadius = v
+	t.CornerRadius = t.TextSize.Scale(0.2)
 	// Shadow
 	t.Elevation = t.TextSize.Scale(0.5)
 	// Text

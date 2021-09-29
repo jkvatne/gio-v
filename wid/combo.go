@@ -46,7 +46,7 @@ func (b *ComboDef) option(th *Theme, i int) func(gtx C) D {
 		}
 		if b.hovered[i] {
 			c := MulAlpha(b.th.OnBackground, 48)
-			if approxLuminance(b.th.OnBackground)>28 {
+			if Luminance(b.th.OnBackground)>28 {
 				c = MulAlpha(b.th.OnBackground, 16)
 			}
 			paint.ColorOp{Color: c}.Add(gtx.Ops)
