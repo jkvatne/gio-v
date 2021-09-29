@@ -31,26 +31,29 @@ const (
 type ButtonDef struct {
 	Clickable
 	Tooltip
+	Widget
 	th           *Theme
 	shadow       ShadowStyle
 	disabler     *bool
 	Text         string
-	helptext     string
 	ToolTipWidth unit.Value
 	Font         text.Font
 	shaper       text.Shaper
 	Icon         *Icon
-	Width        unit.Value
 	Style        ButtonStyle
-	padding      layout.Inset
 }
 
 type BtnOption func(*ButtonDef)
 
-func Width(w float32) BtnOption {
-	return func(b *ButtonDef) {
-		b.Width = unit.Dp(w)
+func (cfg *ButtonDef) ApplyOptions(options []Option) {
+	for _, option := range options {
+		option.Do(cfg)
 	}
+}
+
+func (b BtnOption) Do(cfg interface{}) {
+	btn := cfg.(*ButtonDef)
+	b(btn)
 }
 
 // BtnIcon sets button icon
@@ -73,19 +76,7 @@ func Disable(v *bool) BtnOption {
 	}
 }
 
-func Hint(s string) BtnOption {
-	return func(b *ButtonDef) {
-		b.helptext = s
-	}
-}
-
-func (b *ButtonDef) apply(options []BtnOption) {
-	for _, option := range options {
-		option(b)
-	}
-}
-
-func Button(style ButtonStyle, th *Theme, label string, options ...BtnOption) func(gtx C) D {
+func Button(style ButtonStyle, th *Theme, label string, options ...Option) func(gtx C) D {
 	b := ButtonDef{}
 	b.SetupTabs()
 	b.th = th
@@ -93,9 +84,9 @@ func Button(style ButtonStyle, th *Theme, label string, options ...BtnOption) fu
 	b.Font = text.Font{Weight: text.Medium}
 	b.shaper = th.Shaper
 	b.Style = style
-	b.apply(options)
-	if b.helptext != "" {
-		b.Tooltip = PlatformTooltip(th, b.helptext)
+	b.ApplyOptions(options)
+	if b.hint != "" {
+		b.Tooltip = PlatformTooltip(th, b.hint)
 	}
 	b.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
 	return func(gtx C) D {
@@ -281,10 +272,10 @@ func (b *ButtonDef) Layout(gtx layout.Context) layout.Dimensions {
 				b.disabled = true
 			}
 			min := gtx.Constraints.Min
-			if b.Width.V <= 1.0 {
-				min.X = gtx.Px(b.Width.Scale(float32(gtx.Constraints.Max.X)))
-			} else if min.X < gtx.Px(b.Width) {
-				min.X = gtx.Px(b.Width)
+			if b.width.V <= 1.0 {
+				min.X = gtx.Px(b.width.Scale(float32(gtx.Constraints.Max.X)))
+			} else if min.X < gtx.Px(b.width) {
+				min.X = gtx.Px(b.width)
 			}
 			if min.X > gtx.Constraints.Max.X {
 				min.X = gtx.Constraints.Max.X

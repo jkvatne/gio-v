@@ -17,8 +17,8 @@ import (
 const (
 	tipAreaHoverDelay        = time.Millisecond * 1500
 	tipAreaLongPressDuration = time.Millisecond * 1500
-	tipAreaFadeDuration = time.Millisecond * 750
-	longPressDelay      = time.Millisecond * 750
+	tipAreaFadeDuration = time.Millisecond * 450
+	longPressDelay      = time.Millisecond * 450
 )
 
 

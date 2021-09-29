@@ -13,6 +13,7 @@ import (
 
 type EditDef struct {
 	Editor
+	Widget
 	th        *Theme
 	shaper    text.Shaper
 	alignment layout.Alignment
@@ -20,11 +21,20 @@ type EditDef struct {
 	font      text.Font
 	hint      string
 	padding   layout.Inset
+	width     unit.Value
+}
+
+type EditOption func(*EditDef)
+
+func (b *EditDef) ApplyOptions(options []Option) {
+	//for _, option := range options {
+		//option.Do(b)
+	//}
 }
 
 var prev Focuser
 
-func Edit(th *Theme, hint string) func(gtx C) D {
+func Edit(th *Theme, hint string, options ...Option) func(gtx C) D {
 	e := new(EditDef)
 	e.th = th
 	e.shaper = th.Shaper
@@ -32,7 +42,7 @@ func Edit(th *Theme, hint string) func(gtx C) D {
 	e.SingleLine = true
 	e.SetupTabs()
 	e.padding = layout.Inset{Top: unit.Dp(2), Bottom: unit.Dp(2), Left: unit.Dp(5), Right: unit.Dp(1)}
-
+	e.ApplyOptions(options)
 	return func(gtx C) D {
 		return e.Layout(gtx)
 	}

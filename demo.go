@@ -136,7 +136,8 @@ func setupForm(th *wid.Theme) *app.Window {
 	root = wid.MakeList(
 		th, layout.Vertical,
 		wid.Label(th, "Demo page", text.Middle, 2.0),
-		wid.Button(wid.Contained, th, "WIDE BUTTON", wid.Width(1900),
+		wid.Button(wid.Contained, th, "WIDE BUTTON",
+			wid.W(950),
 			wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 		wid.MakeFlex(
 			wid.Label(th, "Dark mode", text.Start, 1.0),
@@ -161,7 +162,7 @@ func setupForm(th *wid.Theme) *app.Window {
 			wid.Combo(th, unit.Value{300, 0}, 1, []string{"Option 1", "Option 2", "Option 3"}),
 			wid.Combo(th, unit.Value{}, 0, []string{"Option A", "Option B", "Option C"}),
 		),
-		wid.Edit(th, "Value 1"),
+		wid.Edit(th, "Value 1", wid.W(950)),
 		wid.Edit(th, "Value 2"),
 		wid.Edit(th, "Value 3"),
 		wid.Edit(th, "Value 4"),
