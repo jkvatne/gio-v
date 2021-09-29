@@ -77,13 +77,13 @@ func Button(style ButtonStyle, th *Theme, label string, options ...Option) func(
 	b.Font = text.Font{Weight: text.Medium}
 	b.shaper = th.Shaper
 	b.Style = style
+	b.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
 	for _, option := range options {
 		option.apply(&b)
 	}
 	if b.hint != "" {
 		b.Tooltip = PlatformTooltip(th, b.hint)
 	}
-	b.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
 	return func(gtx C) D {
 		dims := b.Layout(gtx)
 		b.HandleClick()

@@ -138,6 +138,7 @@ func setupForm(th *wid.Theme) *app.Window {
 		wid.Label(th, "Demo page", text.Middle, 2.0),
 		wid.Button(wid.Contained, th, "WIDE BUTTON",
 			wid.W(950),
+			wid.Pad(30,5,5,5),
 			wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 		wid.MakeFlex(
 			wid.Label(th, "Dark mode", text.Start, 1.0),
