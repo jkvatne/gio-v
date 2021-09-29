@@ -53,8 +53,8 @@ func (ic *Icon) Layout(gtx layout.Context, color color.NRGBA) layout.Dimensions 
 	}
 }
 
-func (ic *Icon) image(sz int, color color.NRGBA) paint.ImageOp {
-	if sz == ic.imgSize && color == ic.imgColor {
+func (ic *Icon) image(sz int, c color.NRGBA) paint.ImageOp {
+	if sz == ic.imgSize && c == ic.imgColor {
 		return ic.op
 	}
 	m, _ := iconvg.DecodeMetadata(ic.src)
@@ -62,12 +62,16 @@ func (ic *Icon) image(sz int, color color.NRGBA) paint.ImageOp {
 	img := image.NewRGBA(image.Rectangle{Max: image.Point{X: sz, Y: int(float32(sz) * dy / dx)}})
 	var ico iconvg.Rasterizer
 	ico.SetDstImage(img, img.Bounds(), draw.Src)
-	m.Palette[0] = NRGBAToLinearRGBA(color)
-	iconvg.Decode(&ico, ic.src, &iconvg.DecodeOptions{
+
+	// palette uses pre-multiplied RGBA colors. Do pre-multiplication here.
+	r, g, b, a := c.RGBA()
+	m.Palette[0] = color.RGBA{R: uint8(r>>8), G: uint8(g>>8), B: uint8(b>>8), A: uint8(a>>8)}
+
+	_ = iconvg.Decode(&ico, ic.src, &iconvg.DecodeOptions{
 		Palette: &m.Palette,
 	})
 	ic.op = paint.NewImageOp(img)
 	ic.imgSize = sz
-	ic.imgColor = color
+	ic.imgColor = c
 	return ic.op
 }
