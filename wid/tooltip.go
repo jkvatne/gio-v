@@ -63,7 +63,7 @@ func MobileTooltip(th *Theme, tips string) Tooltip {
 // DesktopTooltip constructs a tooltip suitable for use on desktop devices.
 func DesktopTooltip(th *Theme, tips string,) Tooltip {
 	txt := CreateLabelDef(th, tips, text.Start, 0.9)
-	txt.Color = th.OnSecondary
+	txt.Color = th.OnPrimary
 	return Tooltip{
 		th:       th,
 		Text:     txt,

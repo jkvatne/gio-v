@@ -29,7 +29,7 @@ type LabelDef struct {
 func CreateLabelDef(th *Theme, text string, align text.Alignment, relSize float32) LabelDef {
 	return LabelDef{
 		Text:     text,
-		Color:    th.Palette.OnBackground,
+		Color:    th.OnBackground,
 		TextSize: th.TextSize.Scale(relSize),
 		shaper:   th.Shaper,
 		Alignment: align,
@@ -43,7 +43,7 @@ func Label(th *Theme, text string, align text.Alignment, relSize float32) func(g
 	return func(gtx C) D {
 		return LabelDef{
 			Text:     text,
-			Color:    th.Palette.OnBackground,
+			Color:    th.OnBackground,
 			TextSize: th.TextSize.Scale(relSize),
 			shaper:   th.Shaper,
 			Alignment: align,

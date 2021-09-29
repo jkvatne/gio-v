@@ -25,9 +25,9 @@ func Switch(th *Theme, initialState bool, handler func(b bool)) func(gtx C) D {
 	s := &SwitchDef{}
 	s.th = th
 	s.SetupTabs()
-	//s.Color.Enabled = th.Palette.Primary
-	//s.Color.Disabled = th.Palette.Background
-	//s.Color.Track = MulAlpha(th.Palette.Primary, 0x88)
+	//s.Color.Enabled = th.Primary
+	//s.Color.Disabled = th.Background
+	//s.Color.Track = MulAlpha(th.Primary, 0x88)
 	s.size = th.TextSize
 	s.Value = initialState
 	s.handler = handler
@@ -56,8 +56,8 @@ func (s *SwitchDef) Layout(gtx C) D {
 		X: float32(trackWidth),
 		Y: float32(trackHeight),
 	}}
-	trackColor :=  MulAlpha(s.th.Palette.Primary, 0x80)
-	dotColor := s.th.Palette.Primary
+	trackColor :=  MulAlpha(s.th.Primary, 0x80)
+	dotColor := s.th.Primary
 	if !s.Value {
 		trackColor = Gray(trackColor)
 		dotColor = s.th.Background

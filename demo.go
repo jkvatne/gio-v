@@ -36,9 +36,8 @@ var windowSize image.Point
 func main() {
 	flag.IntVar(&alt, "alt", 0, "Select windows placement/mode")
 	flag.Parse()
-
-	currentTheme = wid.NewTheme(gofont.Collection(), 24.0, wid.MaterialDesignDark)
 	go func() {
+		onSwitchMode(false)
 		w := setupForm(currentTheme)
 		for {
 			select {
@@ -70,7 +69,7 @@ func handleFrameEvents(th *wid.Theme, e system.FrameEvent) {
 	var ops op.Ops
 	gtx := layout.NewContext(&ops, e)
 	// Set background color
-	paint.Fill(gtx.Ops, th.Palette.Background)
+	paint.Fill(gtx.Ops, th.Background)
 	// Traverse the widget tree and generate drawing operations
 	root(gtx)
 	// Do the actual screen drawing
@@ -90,10 +89,14 @@ var darkMode = true
 
 func onSwitchMode(v bool) {
 	darkMode = v
+	s:=float32(24.0)
+	if currentTheme!=nil {
+		s=currentTheme.TextSize.V
+	}
 	if !darkMode {
-		currentTheme = wid.NewTheme(gofont.Collection(), currentTheme.TextSize.V, wid.MaterialDesignLight)
+		currentTheme = wid.NewTheme(gofont.Collection(), s, wid.MaterialDesignLight)
 	} else {
-		currentTheme = wid.NewTheme(gofont.Collection(), currentTheme.TextSize.V, wid.MaterialDesignDark)
+		currentTheme = wid.NewTheme(gofont.Collection(), s, wid.MaterialDesignDark)
 	}
 	setupForm(currentTheme)
 }

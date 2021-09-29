@@ -101,13 +101,13 @@ func Checkbox(th *Theme, label string, initialState bool, handler func(b bool)) 
 	s := &CheckBoxDef{
 		Label:              label,
 		Value:              initialState,
-		TextColor:          th.Palette.OnBackground,
-		IconColor:          th.Palette.OnBackground,
+		TextColor:          th.OnBackground,
+		IconColor:          th.OnBackground,
 		TextSize:           th.TextSize.Scale(1.0),
 		Size:               th.TextSize.Scale(1.5),
 		shaper:             th.Shaper,
-		checkedStateIcon:   th.Icon.CheckBoxChecked,
-		uncheckedStateIcon: th.Icon.CheckBoxUnchecked,
+		checkedStateIcon:   th.CheckBoxChecked,
+		uncheckedStateIcon: th.CheckBoxUnchecked,
 	}
 	s.handler = handler
 	s.SetupTabs()

@@ -95,9 +95,9 @@ func Combo(th *Theme, width unit.Value, index int, items []string) func(gtx C) D
 			macro = op.Record(gtx.Ops)
 			op.Offset(f32.Pt(0, float32(dims.Size.Y))).Add(gtx.Ops)
 			clip.UniformRRect(r, 0).Add(gtx.Ops)
-			paint.Fill(gtx.Ops, b.th.Palette.Background)
+			paint.Fill(gtx.Ops, b.th.Background)
 			// Draw a border around all options
-			PaintBorder(gtx, r, b.th.Palette.OnBackground, b.th.BorderThickness, unit.Value{})
+			PaintBorder(gtx, r, b.th.OnBackground, b.th.BorderThickness, unit.Value{})
 			call.Add(gtx.Ops)
 			call = macro.Stop()
 			op.Defer(gtx.Ops, call)
@@ -150,9 +150,9 @@ func (b *ComboDef) LayoutBackground() func(gtx C) D {
 			X: float32(gtx.Constraints.Min.X),
 			Y: float32(gtx.Constraints.Min.Y),
 		}}
-		paint.FillShape(gtx.Ops, b.th.Palette.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+		paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		clip.UniformRRect(outline, rr).Add(gtx.Ops)
-		PaintBorder(gtx, outline, b.th.Palette.Primary, b.th.BorderThickness, b.th.CornerRadius)
+		PaintBorder(gtx, outline, b.th.Primary, b.th.BorderThickness, b.th.CornerRadius)
 		return layout.Dimensions{Size: gtx.Constraints.Min}
 	}
 }
@@ -163,7 +163,7 @@ func (b *ComboDef) LayoutLabel() layout.Widget {
 			gtx.Constraints.Min.X = gtx.Px(b.Width)
 		}
 		return b.th.LabelInset.Layout(gtx, func(gtx C) D {
-			paint.ColorOp{Color: b.th.Palette.Primary}.Add(gtx.Ops)
+			paint.ColorOp{Color: b.th.Primary}.Add(gtx.Ops)
 			if b.index<0 {b.index=0}
 			if b.index>=len(b.items) {b.index=len(b.items)-1}
 			return aLabel{Alignment: text.Start}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.items[b.index])
@@ -175,6 +175,6 @@ func (b *ComboDef) LayoutIcon() layout.Widget {
 	return func(gtx C) D {
 		size := gtx.Px(b.th.TextSize.Scale(1.5))
 		gtx.Constraints = layout.Exact(image.Pt(size, size))
-		return b.icon.Layout(gtx, b.th.Palette.OnBackground)
+		return b.icon.Layout(gtx, b.th.OnBackground)
 	}
 }

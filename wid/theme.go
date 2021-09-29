@@ -12,47 +12,22 @@ import (
 	"gioui.org/unit"
 )
 
-// Palette contains the minimal set of colors that a widget may need to
-// draw itself.
-type Palette struct {
-	// Primary color displayed most frequently across screens and components.
-	Primary        color.NRGBA
-	PrimaryVariant color.NRGBA
-
-	// Secondary color used sparingly to accent ui elements.
-	Secondary        color.NRGBA
-	SecondaryVariant color.NRGBA
-
-	// Surface affects surfaces of components such as cards, sheets and menus.
-	Surface color.NRGBA
-
-	// Background appears behind scrollable content.
-	Background color.NRGBA
-
-	// Error indicates errors in components.
-	Error color.NRGBA
-
-	// On colors appear "on top" of the base color.
-	// Choose contrasting colors.
-	OnPrimary    color.NRGBA
-	OnSecondary  color.NRGBA
-	OnBackground color.NRGBA
-	OnSurface    color.NRGBA
-	OnError      color.NRGBA
-}
-
 type Theme struct {
-	Shaper text.Shaper
-	Palette
-	TextSize unit.Value
-	Icon     struct {
-		CheckBoxChecked   *Icon
-		CheckBoxUnchecked *Icon
-		RadioChecked      *Icon
-		RadioUnchecked    *Icon
-	}
-	// FingerSize is the minimum touch target size.
-	FingerSize            unit.Value
+	Shaper                text.Shaper
+	TextSize              unit.Value
+	CheckBoxChecked       *Icon
+	CheckBoxUnchecked     *Icon
+	RadioChecked          *Icon
+	RadioUnchecked        *Icon
+	Primary               color.NRGBA
+	OnPrimary             color.NRGBA
+	OnBackground          color.NRGBA
+	Background            color.NRGBA
+	Surface               color.NRGBA
+	OnSurface             color.NRGBA
+	Error                 color.NRGBA
+	OnError               color.NRGBA
+	FingerSize            unit.Value // FingerSize is the minimum touch target size.
 	HintColor             color.NRGBA
 	SelectionColor        color.NRGBA
 	BorderThicknessActive unit.Value
@@ -63,12 +38,12 @@ type Theme struct {
 	CornerRadius          unit.Value
 	TooltipInset          layout.Inset
 	TooltipCornerRadius   unit.Value
-	TooltipWidth		  unit.Value
+	TooltipWidth          unit.Value
 	TooltipBackground     color.NRGBA
 	TextTopInset          unit.Value
 	LabelInset            layout.Inset
 	IconInset             layout.Inset
-	ListInset			  layout.Inset
+	ListInset             layout.Inset
 	// Elevation is the shadow width
 	Elevation unit.Value
 	// UmbraColor is the darkest shadow color
@@ -99,66 +74,57 @@ func brightness(c uint32) uint32 {
 
 // MaterialDesign is the baseline palette for material design.
 // https://material.io/design/color/the-color-system.html#color-theme-creation
-var MaterialDesignLight = Palette{
+var MaterialDesignLight = Theme{
 	Primary:          RGB(0x6200EE),
-	PrimaryVariant:   RGB(0x3700B3),
-	Secondary:        RGB(0x03DAC6),
-	SecondaryVariant: RGB(0x018786),
 	Background:       RGB(0xFFFFFF),
 	Surface:          RGB(0xFFFFFF),
 	Error:            RGB(0xB00020),
 	OnPrimary:        RGB(0xFFFFFF),
-	OnSecondary:      RGB(0x000000),
 	OnBackground:     RGB(0x000000),
 	OnSurface:        RGB(0x000000),
 	OnError:          RGB(0xFFFFFF),
 }
 
-var MaterialDesignDark = Palette{
+var MaterialDesignDark = Theme {
 	Primary:          RGB(0xbb86fc),
-	PrimaryVariant:   RGB(0x3700b3),
-	Secondary:        RGB(0x03DAC6),
-	SecondaryVariant: RGB(0x018786),
 	Background:       RGB(0x303030),
 	Surface:          RGB(0x303030),
 	Error:            RGB(0xcf6679),
 	OnPrimary:        RGB(0x000000),
-	OnSecondary:      RGB(0x000000),
 	OnBackground:     RGB(0xffffff),
 	OnSurface:        RGB(0xffffff),
 	OnError:          RGB(0x000000),
 }
 
-func NewTheme(fontCollection []text.FontFace, fontSize float32, p Palette) *Theme {
-	t := &Theme{Shaper: text.NewCache(fontCollection)}
-	t.Palette = p
+func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme {
+	t.Shaper = text.NewCache(fontCollection)
 	t.TextSize = unit.Sp(fontSize)
 	v := t.TextSize.Scale(0.2)
 	// Icons
-	t.Icon.CheckBoxChecked = mustIcon(NewIcon(icons.ToggleCheckBox))
-	t.Icon.CheckBoxUnchecked = mustIcon(NewIcon(icons.ToggleCheckBoxOutlineBlank))
-	t.Icon.RadioChecked = mustIcon(NewIcon(icons.ToggleRadioButtonChecked))
-	t.Icon.RadioUnchecked = mustIcon(NewIcon(icons.ToggleRadioButtonUnchecked))
+	t.CheckBoxChecked = mustIcon(NewIcon(icons.ToggleCheckBox))
+	t.CheckBoxUnchecked = mustIcon(NewIcon(icons.ToggleCheckBoxOutlineBlank))
+	t.RadioChecked = mustIcon(NewIcon(icons.ToggleRadioButtonChecked))
+	t.RadioUnchecked = mustIcon(NewIcon(icons.ToggleRadioButtonUnchecked))
 	t.IconInset = layout.Inset{Top: v, Right: v, Bottom: v, Left: v}
 	t.FingerSize = unit.Dp(38)
 	// Borders
 	t.BorderThickness = t.TextSize.Scale(0.1)
 	t.BorderThicknessActive = t.TextSize.Scale(0.12)
-	t.BorderColor = WithAlpha(t.Palette.OnBackground, 128)
-	t.BorderColorHovered = WithAlpha(t.Palette.OnBackground, 231)
-	t.BorderColorActive = t.Palette.Primary
+	t.BorderColor = WithAlpha(t.OnBackground, 128)
+	t.BorderColorHovered = WithAlpha(t.OnBackground, 231)
+	t.BorderColorActive = t.Primary
 	t.CornerRadius = v
 	// Shadow
 	t.Elevation = t.TextSize.Scale(0.5)
 	// Text
 	t.LabelInset = layout.Inset{Top: v, Right: v.Scale(2.0), Bottom: v, Left: v.Scale(2.0)}
-	t.HintColor = DeEmphasis(t.Palette.OnBackground, 15)
-	t.SelectionColor = MulAlpha(t.Palette.Primary, 0x60)
+	t.HintColor = DeEmphasis(t.OnBackground, 15)
+	t.SelectionColor = MulAlpha(t.Primary, 0x60)
 	// Tooltip
 	t.TooltipInset = layout.UniformInset(unit.Dp(10))
 	t.TooltipCornerRadius = unit.Dp(0)
 	t.TooltipWidth = t.TextSize.Scale(20)
-	t.TooltipBackground = color.NRGBA{255,255,160, 233}
+	t.TooltipBackground = color.NRGBA{255, 255, 160, 233}
 	// List
 	t.ListInset = layout.Inset{
 		Top:    t.TextSize.Scale(0.2),
@@ -166,13 +132,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, p Palette) *Them
 		Bottom: t.TextSize.Scale(0.2),
 		Left:   t.TextSize.Scale(0.3),
 	}
-	return t
-}
-
-
-func (t Theme) WithPalette(p Palette) Theme {
-	t.Palette = p
-	return t
+	return &t
 }
 
 func mustIcon(ic *Icon, err error) *Icon {
@@ -180,12 +140,4 @@ func mustIcon(ic *Icon, err error) *Icon {
 		panic(err)
 	}
 	return ic
-}
-
-func RGB(c uint32) color.NRGBA {
-	return ARGB(0xff000000 | c)
-}
-
-func ARGB(c uint32) color.NRGBA {
-	return color.NRGBA{A: uint8(c >> 24), R: uint8(c >> 16), G: uint8(c >> 8), B: uint8(c)}
 }

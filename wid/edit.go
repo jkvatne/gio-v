@@ -57,13 +57,13 @@ func (e *EditDef) LayoutEdit() func(gtx C) D {
 		if e.Editor.Len() > 0 {
 			paint.ColorOp{Color: e.th.SelectionColor}.Add(gtx.Ops)
 			e.Editor.PaintSelection(gtx)
-			paint.ColorOp{Color: e.th.Palette.OnBackground}.Add(gtx.Ops)
+			paint.ColorOp{Color: e.th.OnBackground}.Add(gtx.Ops)
 			e.Editor.PaintText(gtx)
 		} else {
 			call.Add(gtx.Ops)
 		}
 		if !disabled {
-			paint.ColorOp{Color: e.th.Palette.OnBackground}.Add(gtx.Ops)
+			paint.ColorOp{Color: e.th.OnBackground}.Add(gtx.Ops)
 			e.Editor.PaintCaret(gtx)
 		}
 		return dims
@@ -77,11 +77,11 @@ func (e *EditDef) LayoutBorder() func(gtx C) D {
 			Y: float32(gtx.Constraints.Min.Y),
 		}}
 		if e.Focused() {
-			PaintBorder(gtx, outline, MulAlpha(e.th.Palette.Primary, 255), e.th.BorderThicknessActive, e.th.CornerRadius)
+			PaintBorder(gtx, outline, MulAlpha(e.th.Primary, 255), e.th.BorderThicknessActive, e.th.CornerRadius)
 		} else if e.Hovered() {
-			PaintBorder(gtx, outline, MulAlpha(e.th.Palette.Primary, 100), e.th.BorderThickness, e.th.CornerRadius)
+			PaintBorder(gtx, outline, MulAlpha(e.th.Primary, 100), e.th.BorderThickness, e.th.CornerRadius)
 		} else {
-			PaintBorder(gtx, outline, MulAlpha(e.th.Palette.Primary, 50), e.th.BorderThickness, e.th.CornerRadius)
+			PaintBorder(gtx, outline, MulAlpha(e.th.Primary, 50), e.th.BorderThickness, e.th.CornerRadius)
 		}
 		return D{}
 	}
