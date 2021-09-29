@@ -72,7 +72,7 @@ func handleFrameEvents(th *wid.Theme, e system.FrameEvent) {
 	paint.Fill(gtx.Ops, th.Background)
 	// Traverse the widget tree and generate drawing operations
 	root(gtx)
-	// Do the actual screen drawing
+	// Apply the actual screen drawing
 	e.Frame(gtx.Ops)
 }
 

@@ -45,15 +45,8 @@ type ButtonDef struct {
 
 type BtnOption func(*ButtonDef)
 
-func (cfg *ButtonDef) ApplyOptions(options []Option) {
-	for _, option := range options {
-		option.Do(cfg)
-	}
-}
-
-func (b BtnOption) Do(cfg interface{}) {
-	btn := cfg.(*ButtonDef)
-	b(btn)
+func (b BtnOption) apply(cfg interface{}) {
+	b(cfg.(*ButtonDef))
 }
 
 // BtnIcon sets button icon
@@ -84,7 +77,9 @@ func Button(style ButtonStyle, th *Theme, label string, options ...Option) func(
 	b.Font = text.Font{Weight: text.Medium}
 	b.shaper = th.Shaper
 	b.Style = style
-	b.ApplyOptions(options)
+	for _, option := range options {
+		option.apply(&b)
+	}
 	if b.hint != "" {
 		b.Tooltip = PlatformTooltip(th, b.hint)
 	}

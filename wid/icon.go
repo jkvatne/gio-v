@@ -63,7 +63,7 @@ func (ic *Icon) image(sz int, c color.NRGBA) paint.ImageOp {
 	var ico iconvg.Rasterizer
 	ico.SetDstImage(img, img.Bounds(), draw.Src)
 
-	// palette uses pre-multiplied RGBA colors. Do pre-multiplication here.
+	// palette uses pre-multiplied RGBA colors. Apply pre-multiplication here.
 	r, g, b, a := c.RGBA()
 	m.Palette[0] = color.RGBA{R: uint8(r>>8), G: uint8(g>>8), B: uint8(b>>8), A: uint8(a>>8)}
 
