@@ -42,6 +42,7 @@ type ButtonDef struct {
 	Icon         *Icon
 	Width        unit.Value
 	Style        ButtonStyle
+	padding      layout.Inset
 }
 
 type BtnOption func(*ButtonDef)
@@ -96,6 +97,7 @@ func Button(style ButtonStyle, th *Theme, label string, options ...BtnOption) fu
 	if b.helptext != "" {
 		b.Tooltip = PlatformTooltip(th, b.helptext)
 	}
+	b.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
 	return func(gtx C) D {
 		dims := b.Layout(gtx)
 		b.HandleClick()
@@ -286,20 +288,22 @@ func (b *ButtonDef) Layout(gtx layout.Context) layout.Dimensions {
 		if min.X > gtx.Constraints.Max.X {
 			min.X = gtx.Constraints.Max.X
 		}
-		return layout.Stack{Alignment: layout.Center}.Layout(gtx,
-			layout.Expanded(b.LayoutBackground()),
-			layout.Stacked(
-				func(gtx C) D {
-					gtx.Constraints.Min = min
-					return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceSides}.Layout(
-						gtx,
-						layout.Rigid(layIcon(b)),
-						layout.Rigid(layLabel(b)),
-					)
-				}),
-			layout.Expanded(b.LayoutClickable),
-			layout.Expanded(b.HandleClicks),
-			layout.Expanded(b.HandleKeys),
-		)
+		return b.padding.Layout(gtx, func(gtx C) D {
+			return layout.Stack{Alignment: layout.Center}.Layout(gtx,
+				layout.Expanded(b.LayoutBackground()),
+				layout.Stacked(
+					func(gtx C) D {
+						gtx.Constraints.Min = min
+						return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceSides}.Layout(
+							gtx,
+							layout.Rigid(layIcon(b)),
+							layout.Rigid(layLabel(b)),
+						)
+					}),
+				layout.Expanded(b.LayoutClickable),
+				layout.Expanded(b.HandleClicks),
+				layout.Expanded(b.HandleKeys),
+			)
+		})
 	})
 }

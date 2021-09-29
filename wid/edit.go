@@ -8,6 +8,7 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/paint"
 	"gioui.org/text"
+	"gioui.org/unit"
 )
 
 type EditDef struct {
@@ -18,6 +19,7 @@ type EditDef struct {
 	CharLimit uint
 	font      text.Font
 	hint      string
+	padding   layout.Inset
 }
 
 var prev Focuser
@@ -29,6 +31,8 @@ func Edit(th *Theme, hint string) func(gtx C) D {
 	e.hint = hint
 	e.SingleLine = true
 	e.SetupTabs()
+	e.padding = layout.Inset{Top: unit.Dp(2), Bottom: unit.Dp(2), Left: unit.Dp(5), Right: unit.Dp(1)}
+
 	return func(gtx C) D {
 		return e.Layout(gtx)
 	}
@@ -90,14 +94,16 @@ func (e *EditDef) LayoutBorder() func(gtx C) D {
 func (e *EditDef) Layout(gtx C) D {
 	defer op.Save(gtx.Ops).Load()
 	min := gtx.Constraints.Min
-	return layout.Stack{}.Layout(
-		gtx,
-		layout.Expanded(func(gtx C) D {
-			gtx.Constraints.Min = min
-			return e.th.LabelInset.Layout(gtx, func(gtx C) D {
-				return e.LayoutEdit()(gtx)
-			})
-		}),
-		layout.Expanded(e.LayoutBorder()),
-	)
+	return e.padding.Layout(gtx, func(gtx C) D {
+		return layout.Stack{}.Layout(
+			gtx,
+			layout.Expanded(func(gtx C) D {
+				gtx.Constraints.Min = min
+				return e.th.LabelInset.Layout(gtx, func(gtx C) D {
+					return e.LayoutEdit()(gtx)
+				})
+			}),
+			layout.Expanded(e.LayoutBorder()),
+		)
+	})
 }

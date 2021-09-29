@@ -53,7 +53,7 @@ type Tooltip struct {
 // MobileTooltip constructs a tooltip suitable for use on mobile devices.
 func MobileTooltip(th *Theme, tips string) Tooltip {
 	txt := CreateLabelDef(th, tips, text.Start, 0.8)
-	txt.Color = th.Background
+	txt.Color = th.TooltipText
 	return Tooltip{
 		th:   th,
 		Text: txt,
@@ -63,7 +63,7 @@ func MobileTooltip(th *Theme, tips string) Tooltip {
 // DesktopTooltip constructs a tooltip suitable for use on desktop devices.
 func DesktopTooltip(th *Theme, tips string,) Tooltip {
 	txt := CreateLabelDef(th, tips, text.Start, 0.9)
-	txt.Color = th.OnPrimary
+	txt.Color = th.TooltipText
 	return Tooltip{
 		th:       th,
 		Text:     txt,
