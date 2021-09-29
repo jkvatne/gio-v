@@ -19,20 +19,20 @@ type SwitchDef struct {
 	size    unit.Value
 	Value   bool
 	changed bool
+	padding layout.Inset
 }
 
 func Switch(th *Theme, initialState bool, handler func(b bool)) func(gtx C) D {
 	s := &SwitchDef{}
 	s.th = th
 	s.SetupTabs()
-	//s.Color.Enabled = th.Primary
-	//s.Color.Disabled = th.Background
-	//s.Color.Track = MulAlpha(th.Primary, 0x88)
 	s.size = th.TextSize
 	s.Value = initialState
 	s.handler = handler
+	s.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
 	return func(gtx C) D {
-		dims := s.Layout(gtx)
+		//dims := s.Layout(gtx)
+		dims := s.padding.Layout(gtx, func(gtx C) D {return s.Layout(gtx)})
 		if handler != nil {
 			s.HandleToggle(&s.Value, &s.changed)
 		} else {

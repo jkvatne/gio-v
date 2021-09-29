@@ -22,7 +22,7 @@ type LabelDef struct {
 	MaxLines int
 	Text     string
 	TextSize unit.Value
-
+	padding layout.Inset
 	shaper text.Shaper
 }
 
@@ -40,14 +40,17 @@ func Label(th *Theme, text string, align text.Alignment, relSize float32) func(g
 	if relSize == 0.0 {
 		relSize = 1.0
 	}
+	lbl := LabelDef{
+		Text:      text,
+		Color:     th.OnBackground,
+		TextSize:  th.TextSize.Scale(relSize),
+		shaper:    th.Shaper,
+		Alignment: align,
+	}
+	lbl.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(7), Right: unit.Dp(5)}
+
 	return func(gtx C) D {
-		return LabelDef{
-			Text:     text,
-			Color:    th.OnBackground,
-			TextSize: th.TextSize.Scale(relSize),
-			shaper:   th.Shaper,
-			Alignment: align,
-		}.Layout(gtx)
+		return lbl.padding.Layout(gtx, func(gtx C) D {return lbl.Layout(gtx)})
 	}
 }
 

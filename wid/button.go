@@ -273,22 +273,22 @@ func layIcon(b *ButtonDef) layout.Widget {
 }
 
 func (b *ButtonDef) Layout(gtx layout.Context) layout.Dimensions {
-	return b.Tooltip.Layout(gtx, b.Tooltip, func(gtx C) D {
-		b.disabled = false
-		if b.disabler != nil && *b.disabler || GlobalDisable {
-			gtx = gtx.Disabled()
-			b.disabled = true
-		}
-		min := gtx.Constraints.Min
-		if b.Width.V <= 1.0 {
-			min.X = gtx.Px(b.Width.Scale(float32(gtx.Constraints.Max.X)))
-		} else if min.X < gtx.Px(b.Width) {
-			min.X = gtx.Px(b.Width)
-		}
-		if min.X > gtx.Constraints.Max.X {
-			min.X = gtx.Constraints.Max.X
-		}
-		return b.padding.Layout(gtx, func(gtx C) D {
+	return b.padding.Layout(gtx, func(gtx C) D {
+		return b.Tooltip.Layout(gtx, b.Tooltip, func(gtx C) D {
+			b.disabled = false
+			if b.disabler != nil && *b.disabler || GlobalDisable {
+				gtx = gtx.Disabled()
+				b.disabled = true
+			}
+			min := gtx.Constraints.Min
+			if b.Width.V <= 1.0 {
+				min.X = gtx.Px(b.Width.Scale(float32(gtx.Constraints.Max.X)))
+			} else if min.X < gtx.Px(b.Width) {
+				min.X = gtx.Px(b.Width)
+			}
+			if min.X > gtx.Constraints.Max.X {
+				min.X = gtx.Constraints.Max.X
+			}
 			return layout.Stack{Alignment: layout.Center}.Layout(gtx,
 				layout.Expanded(b.LayoutBackground()),
 				layout.Stacked(
