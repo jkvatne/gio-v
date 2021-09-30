@@ -17,26 +17,26 @@ type SwitchDef struct {
 	Clickable
 	th      *Theme
 	size    unit.Value
-	Value   bool
+	Value   *bool
 	changed bool
 	padding layout.Inset
 }
 
-func Switch(th *Theme, initialState bool, handler func(b bool)) func(gtx C) D {
+func Switch(th *Theme, State *bool, handler func(b bool)) func(gtx C) D {
 	s := &SwitchDef{}
 	s.th = th
 	s.SetupTabs()
 	s.size = th.TextSize
-	s.Value = initialState
+	s.Value = State
 	s.handler = handler
 	s.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
 	return func(gtx C) D {
 		//dims := s.Layout(gtx)
 		dims := s.padding.Layout(gtx, func(gtx C) D { return s.Layout(gtx) })
 		if handler != nil {
-			s.HandleToggle(&s.Value, &s.changed)
+			s.HandleToggle(s.Value, &s.changed)
 		} else {
-			s.HandleToggle(&s.Value, &s.changed)
+			s.HandleToggle(s.Value, &s.changed)
 		}
 		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
 		return dims
@@ -58,7 +58,7 @@ func (s *SwitchDef) Layout(gtx C) D {
 	}}
 	trackColor := MulAlpha(s.th.Primary, 0x80)
 	dotColor := s.th.Primary
-	if !s.Value {
+	if !*s.Value {
 		trackColor = Gray(trackColor)
 		dotColor = s.th.Background
 	}
@@ -76,7 +76,7 @@ func (s *SwitchDef) Layout(gtx C) D {
 
 	// Compute thumb offset and color.
 	stack = op.Save(gtx.Ops)
-	if s.Value {
+	if *s.Value {
 		off := trackWidth - thumbSize
 		op.Offset(f32.Point{X: float32(off)}).Add(gtx.Ops)
 	}

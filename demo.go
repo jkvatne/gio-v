@@ -132,10 +132,11 @@ func setupForm(th *wid.Theme) *app.Window {
 	// Test with gray as primary color
 	// th.Primary = wid.RGB(0x555555)
 
-	group := &wid.Enum{}
+	selected := ""
 
 	root = wid.MakeList(
 		th, layout.Vertical,
+
 		wid.Label(th, "Demo page", text.Middle, 2.0),
 		wid.Button(th, "WIDE BUTTON",
 			wid.W(0.4),
@@ -143,9 +144,9 @@ func setupForm(th *wid.Theme) *app.Window {
 			wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 		wid.MakeFlex(
 			wid.Label(th, "Dark mode", text.Start, 1.0),
-			wid.Switch(th, darkMode, onSwitchMode),
+			wid.Switch(th, &darkMode, onSwitchMode),
 		),
-		wid.Checkbox(th, "Checkbox", darkMode, nil),
+		wid.Checkbox(th, "Checkbox", &darkMode, onSwitchMode),
 		wid.MakeFlex(
 			wid.RoundButton(th, icons.ContentAdd,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
@@ -155,7 +156,7 @@ func setupForm(th *wid.Theme) *app.Window {
 			wid.TextButton(th, "Text button"),
 			wid.OutlineButton(th, "Outline button"),
 			wid.Label(th, "Disabled", text.End, 1.0),
-			wid.Switch(th, false, doDisable),
+			wid.Switch(th, &wid.GlobalDisable, nil),
 		),
 		wid.MakeFlex(
 			wid.Combo(th, unit.Value{}, 0, []string{"Option A", "Option B", "Option C"}),
@@ -175,15 +176,17 @@ func setupForm(th *wid.Theme) *app.Window {
 			wid.Edit(th, wid.Hint("Value 7"), wid.W(0.2)),
 		),
 		wid.MakeFlex(
-			wid.RadioButton(th, group, "Option1", "Option1"),
-			wid.RadioButton(th, group, "Option2", "Option2"),
-			wid.RadioButton(th, group, "Option3", "Option3"),
+			wid.RadioButton(th, &selected, "Option1", "Option1"),
+			wid.RadioButton(th, &selected, "Option2", "Option2"),
+			wid.RadioButton(th, &selected, "Option3", "Option3"),
 		),
+		/*
 		wid.Edit(th, wid.Hint("Value 8")),
 		wid.Edit(th, wid.Hint("Value 9")),
 		wid.Edit(th, wid.Hint("Value 10")),
 		wid.Edit(th, wid.Hint("Value 11")),
 		wid.Edit(th, wid.Hint("Value 12")),
+		 */
 	)
 
 	return w

@@ -8,6 +8,8 @@ import (
 	"image/color"
 )
 
+var zv = unit.Value{}
+
 // DeEmphasis will change a color to a less prominent color
 // In light mode, colors will be lighter, in dark mode, colors will be darker
 // The amount of darkening is greater than the amount of lightening
@@ -35,6 +37,13 @@ func Disabled(c color.NRGBA) (d color.NRGBA) {
 		B: byte((int(c.B)*r + int(lum)*(256-r)) / 256),
 		A: byte(int(c.A) * (128 + 32) / 256),
 	}
+}
+
+func ColDisabled(c color.NRGBA, disabled bool) color.NRGBA {
+	if disabled {
+		return Disabled(c)
+	}
+	return c
 }
 
 // Hovered blends color towards a brighter color.

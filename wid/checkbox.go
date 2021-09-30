@@ -4,7 +4,6 @@ package wid
 
 import (
 	"gioui.org/f32"
-	"gioui.org/gesture"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -33,10 +32,10 @@ type CheckBoxDef struct {
 }
 
 // Checkbox returns a widget that can be checked, with label, initial state and handler function
-func Checkbox(th *Theme, label string, initialState bool, handler func(b bool)) func(gtx C) D {
+func Checkbox(th *Theme, label string, State *bool, handler func(b bool)) func(gtx C) D {
 	c := &CheckBoxDef{
 		Label:              label,
-		Value:              initialState,
+		Value:              *State,
 		TextColor:          th.OnBackground,
 		IconColor:          th.OnBackground,
 		TextSize:           th.TextSize.Scale(1.0),
@@ -114,74 +113,8 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	pointer.Rect(image.Rectangle{Max: dims.Size}).Add(gtx.Ops)
 	gtx.Constraints.Min = dims.Size
 	c.LayoutClickable(gtx)
-	c.LayoutClickable(gtx)
 	c.HandleClicks(gtx)
 	c.HandleKeys(gtx)
 	stack.Load()
 	return dims
-}
-
-type Enum struct {
-	Value    string
-	hovered  string
-	hovering bool
-	changed bool
-	clicks []gesture.Click
-	values []string
-}
-
-func index(vs []string, t string) int {
-	for i, v := range vs {
-		if v == t {
-			return i
-		}
-	}
-	return -1
-}
-
-// Changed reports whether Value has changed by user interaction since the last
-// call to Changed.
-func (e *Enum) Changed() bool {
-	changed := e.changed
-	e.changed = false
-	return changed
-}
-
-// Hovered returns the key that is highlighted, or false if none are.
-func (e *Enum) Hovered() (string, bool) {
-	return e.hovered, e.hovering
-}
-
-// Layout adds the event handler for key.
-func (e *Enum) Layout(gtx layout.Context, key string) layout.Dimensions {
-	defer op.Save(gtx.Ops).Load()
-	pointer.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Add(gtx.Ops)
-
-	if index(e.values, key) == -1 {
-		e.values = append(e.values, key)
-		e.clicks = append(e.clicks, gesture.Click{})
-		e.clicks[len(e.clicks)-1].Add(gtx.Ops)
-	} else {
-		idx := index(e.values, key)
-		clk := &e.clicks[idx]
-		for _, ev := range clk.Events(gtx) {
-			switch ev.Type {
-			case gesture.TypeClick:
-				if new := e.values[idx]; new != e.Value {
-					e.Value = new
-					e.changed = true
-				}
-			}
-		}
-		if e.hovering && e.hovered == key {
-			e.hovering = false
-		}
-		if clk.Hovered() {
-			e.hovered = key
-			e.hovering = true
-		}
-		clk.Add(gtx.Ops)
-	}
-
-	return layout.Dimensions{Size: gtx.Constraints.Min}
 }
