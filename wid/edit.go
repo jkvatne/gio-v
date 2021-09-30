@@ -12,25 +12,17 @@ import (
 )
 
 type EditDef struct {
-	Editor
 	Widget
+	Editor
 	th        *Theme
 	shaper    text.Shaper
 	alignment layout.Alignment
 	CharLimit uint
 	font      text.Font
 	hint      string
-	padding   layout.Inset
-	width     unit.Value
 }
 
 type EditOption func(*EditDef)
-
-func (b *EditDef) ApplyOptions(options []Option) {
-	//for _, option := range options {
-	//option.Apply(b)
-	//}
-}
 
 var prev Focuser
 
@@ -41,8 +33,11 @@ func Edit(th *Theme, hint string, options ...Option) func(gtx C) D {
 	e.hint = hint
 	e.SingleLine = true
 	e.SetupTabs()
+	e.width = unit.Dp(5000)  // Default to max width that is possible
 	e.padding = layout.Inset{Top: unit.Dp(2), Bottom: unit.Dp(2), Left: unit.Dp(5), Right: unit.Dp(1)}
-	e.ApplyOptions(options)
+	for _, option := range options {
+		option.apply(e)
+	}
 	return func(gtx C) D {
 		return e.Layout(gtx)
 	}
@@ -103,7 +98,8 @@ func (e *EditDef) LayoutBorder() func(gtx C) D {
 
 func (e *EditDef) Layout(gtx C) D {
 	defer op.Save(gtx.Ops).Load()
-	min := gtx.Constraints.Min
+	gtx.Constraints.Min.X = 0
+	min := CalcMin(gtx, e.width)
 	return e.padding.Layout(gtx, func(gtx C) D {
 		return layout.Stack{}.Layout(
 			gtx,

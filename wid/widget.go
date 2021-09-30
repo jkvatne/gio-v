@@ -3,6 +3,7 @@ package wid
 import (
 	"gioui.org/layout"
 	"gioui.org/unit"
+	"image"
 )
 
 type Widget struct {
@@ -68,4 +69,17 @@ func Pad(pads ...float32) WidgetOption {
 			w.setPadding(layout.Inset{Top: unit.Dp(pads[1]), Bottom: unit.Dp(pads[3]), Left: unit.Dp(pads[0]), Right: unit.Dp(pads[02])})
 		}
 	}
+}
+
+func CalcMin(gtx C, width unit.Value) image.Point {
+	min := gtx.Constraints.Min
+	if width.V <= 1.0 {
+		min.X = gtx.Px(width.Scale(float32(gtx.Constraints.Max.X)))
+	} else if min.X < gtx.Px(width) {
+		min.X = gtx.Px(width)
+	}
+	if min.X > gtx.Constraints.Max.X {
+		min.X = gtx.Constraints.Max.X
+	}
+	return min
 }

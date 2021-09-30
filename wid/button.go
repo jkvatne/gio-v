@@ -81,9 +81,7 @@ func Button(style ButtonStyle, th *Theme, label string, options ...Option) func(
 	for _, option := range options {
 		option.apply(&b)
 	}
-	//if b.hint != "" {
 	b.Tooltip = PlatformTooltip(th, b.hint)
-	//}
 	return func(gtx C) D {
 		dims := b.Layout(gtx)
 		b.HandleClick()
@@ -266,15 +264,7 @@ func (b *ButtonDef) Layout(gtx layout.Context) layout.Dimensions {
 				gtx = gtx.Disabled()
 				b.disabled = true
 			}
-			min := gtx.Constraints.Min
-			if b.width.V <= 1.0 {
-				min.X = gtx.Px(b.width.Scale(float32(gtx.Constraints.Max.X)))
-			} else if min.X < gtx.Px(b.width) {
-				min.X = gtx.Px(b.width)
-			}
-			if min.X > gtx.Constraints.Max.X {
-				min.X = gtx.Constraints.Max.X
-			}
+			min := CalcMin(gtx, b.width)
 			return layout.Stack{Alignment: layout.Center}.Layout(gtx,
 				layout.Expanded(b.LayoutBackground()),
 				layout.Stacked(
