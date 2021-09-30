@@ -14,6 +14,7 @@ import (
 	"image/color"
 )
 
+// RadioButtonStyle defines a radio button.
 type RadioButtonStyle struct {
 	Widget
 	Clickable
@@ -90,7 +91,7 @@ func (r *RadioButtonStyle) layout(gtx layout.Context, checked, hovered bool) lay
 		}),
 
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			return layout.Inset{zv, r.th.TextSize, zv, zv}.Layout(gtx, func(gtx C) D {
+			return layout.Inset{Zv, r.th.TextSize, Zv, Zv}.Layout(gtx, func(gtx C) D {
 				paint.ColorOp{Color: r.IconColor}.Add(gtx.Ops)
 				return Label(r.th, r.Label, text.Start, 1.0)(gtx)
 			})

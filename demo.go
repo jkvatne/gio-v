@@ -107,6 +107,7 @@ func doDisable(v bool) {
 
 var thb wid.Theme
 var alt int
+var progress = 0.5
 
 func setupForm(th *wid.Theme) *app.Window {
 	thb = *th
@@ -180,6 +181,7 @@ func setupForm(th *wid.Theme) *app.Window {
 			wid.RadioButton(th, &selected, "Option2", "Option2"),
 			wid.RadioButton(th, &selected, "Option3", "Option3"),
 		),
+		wid.ProgressBar(th, &progress),
 		/*
 		wid.Edit(th, wid.Hint("Value 8")),
 		wid.Edit(th, wid.Hint("Value 9")),

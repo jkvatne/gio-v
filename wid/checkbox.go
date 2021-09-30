@@ -15,6 +15,7 @@ import (
 	"image/color"
 )
 
+// CheckBoxDef defines a checkbox widget
 type CheckBoxDef struct {
 	Widget
 	Clickable
@@ -25,8 +26,8 @@ type CheckBoxDef struct {
 	IconColor          color.NRGBA
 	Size               unit.Value
 	shaper             text.Shaper
-	checkedStateIcon   *Icon
-	uncheckedStateIcon *Icon
+	CheckedStateIcon   *Icon
+	UncheckedStateIcon *Icon
 	Value              bool
 	changed            bool
 }
@@ -41,25 +42,23 @@ func Checkbox(th *Theme, label string, State *bool, handler func(b bool)) func(g
 		TextSize:           th.TextSize.Scale(1.0),
 		Size:               th.TextSize.Scale(1.5),
 		shaper:             th.Shaper,
-		checkedStateIcon:   th.CheckBoxChecked,
-		uncheckedStateIcon: th.CheckBoxUnchecked,
+		CheckedStateIcon:   th.CheckBoxChecked,
+		UncheckedStateIcon: th.CheckBoxUnchecked,
 	}
 	c.handler = handler
 	c.SetupTabs()
 	return func(gtx C) D {
-		dims :=c.Layout(gtx)
+		dims :=c.layout(gtx)
 		c.HandleToggle(&c.Value, &c.changed)
 		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
 		return dims
 	}
 }
 
-func (c *CheckBoxDef) Layout(gtx C) D {
-	var icon *Icon
+func (c *CheckBoxDef) layout(gtx C) D {
+	icon := c.UncheckedStateIcon
 	if c.Value {
-		icon = c.checkedStateIcon
-	} else {
-		icon = c.uncheckedStateIcon
+		icon = c.CheckedStateIcon
 	}
 	dims := layout.Flex{Alignment: layout.Middle}.Layout(gtx,
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {

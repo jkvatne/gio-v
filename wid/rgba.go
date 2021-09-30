@@ -8,7 +8,8 @@ import (
 	"image/color"
 )
 
-var zv = unit.Value{}
+// Zv is a zero unit.Value. Just saving a few keystrokes
+var Zv = unit.Value{}
 
 // DeEmphasis will change a color to a less prominent color
 // In light mode, colors will be lighter, in dark mode, colors will be darker
@@ -20,7 +21,7 @@ func DeEmphasis(c color.NRGBA, amount uint8) color.NRGBA {
 	return MulAlpha(c, 0x20)
 }
 
-// Pxr maps the value to pixels.
+// Pxr maps the value v to pixels, returning a float32
 func Pxr(c layout.Context, v unit.Value) float32 {
 	return float32(c.Metric.Px(v))
 }
@@ -39,6 +40,7 @@ func Disabled(c color.NRGBA) (d color.NRGBA) {
 	}
 }
 
+// ColDisabled returns the disabled color of c, depending on the disabled flag.
 func ColDisabled(c color.NRGBA, disabled bool) color.NRGBA {
 	if disabled {
 		return Disabled(c)
@@ -57,6 +59,7 @@ func Hovered(c color.NRGBA) (d color.NRGBA) {
 	}
 }
 
+// Interpolate returns a color in between given colors a and b, depending on progress
 func Interpolate(a, b color.NRGBA, progress float32) color.NRGBA {
 	var out color.NRGBA
 	out.R = uint8(int16(a.R) - int16(float32(int16(a.R)-int16(b.R))*progress))
@@ -66,15 +69,18 @@ func Interpolate(a, b color.NRGBA, progress float32) color.NRGBA {
 	return out
 }
 
+// Gray returns a NRGBA color with the same luminance as the parameter
 func Gray(c color.NRGBA) color.NRGBA {
 	l := Luminance(c)
 	return color.NRGBA{l, l, l, c.A}
 }
 
+// RGB creates a NRGBA color from its hex code, with alpha=255
 func RGB(c uint32) color.NRGBA {
 	return ARGB(0xff000000 | c)
 }
 
+// ARGB creates a NRGBA color from its hex code
 func ARGB(c uint32) color.NRGBA {
 	return color.NRGBA{A: uint8(c >> 24), R: uint8(c >> 16), G: uint8(c >> 8), B: uint8(c)}
 }
