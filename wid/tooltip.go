@@ -2,6 +2,7 @@ package wid
 
 import (
 	"image"
+	"image/color"
 	"time"
 
 	"gioui.org/f32"
@@ -15,26 +16,28 @@ import (
 )
 
 const (
-	tipAreaHoverDelay        = time.Millisecond * 1500
-	tipAreaLongPressDuration = time.Millisecond * 1500
-	tipAreaFadeDuration = time.Millisecond * 450
-	longPressDelay      = time.Millisecond * 450
+	tipAreaHoverDelay        = time.Millisecond * 1200
+	tipAreaLongPressDuration = time.Millisecond * 1200
+	tipAreaFadeDuration = time.Millisecond * 250
+	longPressDelay      = time.Millisecond * 1200
 )
 
 
 // Tooltip implements a material design tool tip as defined at:
 // https://material.io/components/tooltips#specs
 type Tooltip struct {
-	Widget
 	VisibilityAnimation
 	// MaxWidth is the maximum width of the tool-tip box. Should be less than form width.
 	MaxWidth unit.Value
-	// Label defines the content of the tooltip.
-	Label    LabelDef
+	// Text defines the content of the tooltip.
+	Text     LabelDef
 	position f32.Point
 	Hover     InvalidateDeadline
 	Press     InvalidateDeadline
 	LongPress InvalidateDeadline
+	Fg        color.NRGBA
+	Bg        color.NRGBA
+	CornerRadius unit.Value
 	init      bool
 	// HoverDelay is the delay between the cursor entering the tip area
 	// and the tooltip appearing.
@@ -52,20 +55,25 @@ type Tooltip struct {
 
 // MobileTooltip constructs a tooltip suitable for use on mobile devices.
 func MobileTooltip(th *Theme, tips string) Tooltip {
-	txt := CreateLabelDef(th, tips, text.Start, 0.8)
-	txt.Color = th.TooltipText
+	txt := CreateLabelDef(th, tips, text.Start, 0.9)
+	txt.Color = th.TooltipOnBackground
 	return Tooltip{
-		Label: txt,
+		Fg: th.TooltipOnBackground,
+		Bg: th.TooltipBackground,
+		Text: txt,
 	}
 }
 
 // DesktopTooltip constructs a tooltip suitable for use on desktop devices.
-func DesktopTooltip(th *Theme, tips string,) Tooltip {
+func DesktopTooltip(th *Theme, tips string) Tooltip {
 	txt := CreateLabelDef(th, tips, text.Start, 0.9)
-	txt.Color = th.TooltipText
+	txt.Color = th.TooltipOnBackground
 	return Tooltip{
-		Label:    txt,
+		Text:     txt,
+		Fg: th.TooltipOnBackground,
+		Bg: th.TooltipBackground,
 		MaxWidth: th.TooltipWidth,
+		CornerRadius: th.TooltipCornerRadius,
 	}
 }
 
@@ -113,8 +121,8 @@ func (i *InvalidateDeadline) ClearTarget() {
 
 // Layout renders the provided widget with the provided tooltip. The tooltip
 // will be summoned if the widget is hovered or long-pressed.
-func (t *Tooltip) Layout(gtx C, w layout.Widget) D {
-	if t.hint == "" {
+func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
+	if hint == "" {
 		return w(gtx)
 	}
 	if !t.init {
@@ -157,11 +165,10 @@ func (t *Tooltip) Layout(gtx C, w layout.Widget) D {
 	if t.LongPress.Process(gtx) {
 		t.VisibilityAnimation.Disappear(gtx.Now)
 	}
-
 	return layout.Stack{}.Layout(gtx,
 		layout.Stacked(w),
 		layout.Expanded(func(gtx C) D {
-			defer op.Save(gtx.Ops).Load()
+			ops := op.Save(gtx.Ops)
 			pointer.PassOp{Pass: true}.Add(gtx.Ops)
 			pointer.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Add(gtx.Ops)
 			pointer.InputOp{
@@ -174,28 +181,28 @@ func (t *Tooltip) Layout(gtx C, w layout.Widget) D {
 			if t.Visible() {
 				macro := op.Record(gtx.Ops)
 				v := t.VisibilityAnimation.Revealed(gtx)
-				bg := Interpolate(WithAlpha(t.th.TooltipBackground, 0), t.th.TooltipBackground, v)
-				t.Label.Color = Interpolate(WithAlpha(t.Label.Color, 0), t.Label.Color, v)
+				bg := WithAlpha(t.Bg, uint8(v*255))
+				t.Text.Color = WithAlpha(t.Fg, uint8(v*255))
 				gtx.Constraints.Max.X = gtx.Metric.Px(t.MaxWidth)
-				//dims := tip.Layout(gtx)
-				// Layout renders the tooltip.
+				p := t.Text.TextSize.Scale(0.5)
+				inset := layout.Inset{p,p,p,p}
 				dims := layout.Stack{}.Layout(
 					gtx,
 					layout.Expanded(func(gtx C) D {
-						radius := float32(gtx.Px(t.th.TooltipCornerRadius))
+						rr := Pxr(gtx, t.CornerRadius)
+						outline := f32.Rectangle{Max: layout.FPt(gtx.Constraints.Min)}
 						paint.FillShape(gtx.Ops, bg, clip.RRect{
-							Rect: f32.Rectangle{
-								Max: layout.FPt(gtx.Constraints.Min),
-							},
-							NW: radius,
-							NE: radius,
-							SW: radius,
-							SE: radius,
+							Rect: outline,
+							NW: rr,
+							NE: rr,
+							SW: rr,
+							SE: rr,
 						}.Op(gtx.Ops))
+						PaintBorder(gtx, outline, t.Text.Color, unit.Dp(1.0), unit.Dp(rr))
 						return D{}
 					}),
 					layout.Stacked(func(gtx C) D {
-						return t.th.TooltipInset.Layout(gtx, t.Label.Layout)
+						return inset.Layout(gtx, t.Text.Layout)  //t.th.TooltipInset.Layout(gtx, t.Text.Layout)
 					}),
 				)
 				if int(t.position.X)+dims.Size.X > maxx {
@@ -211,6 +218,7 @@ func (t *Tooltip) Layout(gtx C, w layout.Widget) D {
 				call = macro.Stop()
 				op.Defer(gtx.Ops, call)
 			}
+			ops.Load()
 			return D{}
 		}),
 	)

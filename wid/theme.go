@@ -40,7 +40,7 @@ type Theme struct {
 	TooltipCornerRadius   unit.Value
 	TooltipWidth          unit.Value
 	TooltipBackground     color.NRGBA
-	TooltipText           color.NRGBA
+	TooltipOnBackground   color.NRGBA
 	TextTopInset          unit.Value
 	LabelInset            layout.Inset
 	IconInset             layout.Inset
@@ -110,10 +110,10 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme 
 	t.SelectionColor = MulAlpha(t.Primary, 0x60)
 	// Tooltip
 	t.TooltipInset = layout.UniformInset(unit.Dp(10))
-	t.TooltipCornerRadius = unit.Dp(0)
+	t.TooltipCornerRadius = unit.Dp(6.0)
 	t.TooltipWidth = t.TextSize.Scale(20)
 	t.TooltipBackground = color.NRGBA{255, 255, 160, 233}
-	t.TooltipText = color.NRGBA{A:255}
+	t.TooltipOnBackground = color.NRGBA{A:255}
 	// List
 	t.ListInset = layout.Inset{
 		Top:    t.TextSize.Scale(0.2),
