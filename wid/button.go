@@ -3,12 +3,12 @@
 package wid
 
 import (
+	"gioui.org/io/pointer"
 	"image"
 	"image/color"
 	"math"
 
 	"gioui.org/f32"
-	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -44,6 +44,45 @@ type ButtonDef struct {
 
 type BtnOption func(*ButtonDef)
 
+func RoundButton(th *Theme, d []byte, options ...Option) func(gtx C) D {
+	options = append(options, BtnIcon(d))
+	return aButton(Round, th, "",  options...)
+}
+
+func TextButton(th *Theme, label string, options ...Option) func(gtx C) D {
+	return aButton(Text, th, label,  options...)
+}
+
+func OutlineButton(th *Theme, label string, options ...Option) func(gtx C) D {
+	return aButton(Outlined, th, label,  options...)
+}
+
+func Button(th *Theme, label string, options ...Option) func(gtx C) D {
+	return aButton(Contained, th, label,  options...)
+}
+
+
+func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func(gtx C) D {
+	b := ButtonDef{}
+	b.SetupTabs()
+	// Setup default values
+	b.th = th
+	b.Text = label
+	b.Font = text.Font{Weight: text.Medium}
+	b.shaper = th.Shaper
+	b.Style = style
+	b.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
+	for _, option := range options {
+		option.apply(&b)
+	}
+	b.Tooltip = PlatformTooltip(th, b.hint)
+	return func(gtx C) D {
+		dims := b.Layout(gtx)
+		b.HandleClick()
+		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
+		return dims
+	}
+}
 func (b BtnOption) apply(cfg interface{}) {
 	b(cfg.(*ButtonDef))
 }
@@ -66,27 +105,6 @@ func Handler(f func()) BtnOption {
 func Disable(v *bool) BtnOption {
 	return func(b *ButtonDef) {
 		b.disabler = v
-	}
-}
-
-func Button(style ButtonStyle, th *Theme, label string, options ...Option) func(gtx C) D {
-	b := ButtonDef{}
-	b.SetupTabs()
-	b.th = th
-	b.Text = label
-	b.Font = text.Font{Weight: text.Medium}
-	b.shaper = th.Shaper
-	b.Style = style
-	b.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
-	for _, option := range options {
-		option.apply(&b)
-	}
-	b.Tooltip = PlatformTooltip(th, b.hint)
-	return func(gtx C) D {
-		dims := b.Layout(gtx)
-		b.HandleClick()
-		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
-		return dims
 	}
 }
 

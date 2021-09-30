@@ -35,10 +35,8 @@ import (
 type Editor struct {
 	Clickable
 	Alignment text.Alignment
-	// SingleLine force the text to stay on a single line.
-	// SingleLine also sets the scrolling direction to
-	// horizontal.
-	SingleLine bool
+	// MaxLines<=1 force the text to stay on a single line.
+	MaxLines int
 	// Submit enabled translation of carriage return keys to SubmitEvents.
 	// If not enabled, carriage returns are inserted as newlines in the text.
 	Submit bool
@@ -230,7 +228,7 @@ func (e *Editor) processPointer(gtx layout.Context) {
 	sbounds := e.scrollBounds()
 	var smin, smax int
 	var axis gesture.Axis
-	if e.SingleLine {
+	if e.MaxLines <= 1 {
 		axis = gesture.Horizontal
 		smin, smax = sbounds.Min.X, sbounds.Max.X
 	} else {
@@ -239,7 +237,7 @@ func (e *Editor) processPointer(gtx layout.Context) {
 	}
 	sdist := e.scroller.Scroll(gtx.Metric, gtx, gtx.Now, axis)
 	var soff int
-	if e.SingleLine {
+	if e.MaxLines <= 1 {
 		e.scrollRel(sdist, 0)
 		soff = e.scrollOff.X
 	} else {
@@ -471,7 +469,7 @@ func (e *Editor) Layout(gtx layout.Context, sh text.Shaper, font text.Font, size
 		e.textSize = textSize
 	}
 	maxWidth := gtx.Constraints.Max.X
-	if e.SingleLine {
+	if e.MaxLines <= 1 {
 		maxWidth = inf
 	}
 	if maxWidth != e.maxWidth {
@@ -551,7 +549,7 @@ func (e *Editor) layout(gtx layout.Context) layout.Dimensions {
 	pointer.CursorNameOp{Name: pointer.CursorText}.Add(gtx.Ops)
 
 	var scrollRange image.Rectangle
-	if e.SingleLine {
+	if e.MaxLines <= 1 {
 		scrollRange.Min.X = -e.scrollOff.X
 		scrollRange.Max.X = max(0, e.dims.Size.X-(e.scrollOff.X+e.viewSize.X))
 	} else {
@@ -670,7 +668,7 @@ func (e *Editor) SetText(s string) {
 
 func (e *Editor) scrollBounds() image.Rectangle {
 	var b image.Rectangle
-	if e.SingleLine {
+	if e.MaxLines <= 1 {
 		if len(e.lines) > 0 {
 			b.Min.X = align(e.Alignment, e.lines[0].Width, e.viewSize.X).Floor()
 			if b.Min.X > 0 {
@@ -868,7 +866,7 @@ func (e *Editor) append(s string) {
 // a selection, prepend overwrites it.
 // xxx|yyy + prepend zzz => xxx|zzzyyy
 func (e *Editor) prepend(s string) {
-	if e.SingleLine {
+	if e.MaxLines <= 1 {
 		s = strings.ReplaceAll(s, "\n", " ")
 	}
 	e.caret.start.ofs = e.rr.deleteRunes(e.caret.start.ofs, e.caret.end.ofs-e.caret.start.ofs) // Delete any selection first.
@@ -1155,7 +1153,7 @@ func (e *Editor) deleteWord(distance int) {
 func (e *Editor) scrollToCaret() {
 	e.makeValid()
 	l := e.lines[e.caret.start.lineCol.Y]
-	if e.SingleLine {
+	if e.MaxLines <= 1 {
 		var dist int
 		if d := e.caret.start.x.Floor() - e.scrollOff.X; d < 0 {
 			dist = d

@@ -27,11 +27,12 @@ var green = false
 
 // currentTheme is the theme selected
 var currentTheme *wid.Theme
+
 // root is the root widget (usualy a list), and is the root of the widget tree
 var root layout.Widget
+
 // formSize is the current window size
 var windowSize image.Point
-
 
 func main() {
 	flag.IntVar(&alt, "alt", 0, "Select windows placement/mode")
@@ -55,7 +56,6 @@ func main() {
 	app.Main()
 }
 
-
 func updateWindowSize(th *wid.Theme, e system.FrameEvent) {
 	if windowSize.X != e.Size.X || windowSize.Y != e.Size.Y {
 		th.TextSize = unit.Dp(float32(e.Size.X) / 100)
@@ -77,7 +77,7 @@ func handleFrameEvents(th *wid.Theme, e system.FrameEvent) {
 }
 
 func onClick() {
-  	green = !green
+	green = !green
 	if green {
 		thb.Primary = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
 	} else {
@@ -89,9 +89,9 @@ var darkMode = true
 
 func onSwitchMode(v bool) {
 	darkMode = v
-	s:=float32(24.0)
-	if currentTheme!=nil {
-		s=currentTheme.TextSize.V
+	s := float32(24.0)
+	if currentTheme != nil {
+		s = currentTheme.TextSize.V
 	}
 	if !darkMode {
 		currentTheme = wid.NewTheme(gofont.Collection(), s, wid.MaterialDesignLight)
@@ -102,7 +102,7 @@ func onSwitchMode(v bool) {
 }
 
 func doDisable(v bool) {
-	wid.GlobalDisable = ! wid.GlobalDisable
+	wid.GlobalDisable = !wid.GlobalDisable
 }
 
 var thb wid.Theme
@@ -112,7 +112,7 @@ func setupForm(th *wid.Theme) *app.Window {
 	thb = *th
 	var w *app.Window
 	switch {
-	case alt==2:
+	case alt == 2:
 		// A full-screen window
 		w = app.NewWindow(app.Title("Gio-v demo"), app.Fullscreen.Option())
 	// The out-commented options requires an updated Gio package that is not yet implemented
@@ -126,16 +126,19 @@ func setupForm(th *wid.Theme) *app.Window {
 	// Place at center of monitor
 	//    w = app.NewWindow(app.Title("Gio-v demo"),app.Size(unit.Px(960), unit.Px(540))), app.Center())
 	default:
-		w = app.NewWindow(app.Title("Gio-v demo"),app.Size(unit.Px(1900), unit.Px(1000)))
+		w = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Px(1900), unit.Px(1000)))
 
 	}
+
+	// Test with gray as primary color
+	th.Primary = wid.RGB(0x555555)
 
 	root = wid.MakeList(
 		th, layout.Vertical,
 		wid.Label(th, "Demo page", text.Middle, 2.0),
-		wid.Button(wid.Contained, th, "WIDE BUTTON",
+		wid.Button(th, "WIDE BUTTON",
 			wid.W(950),
-			wid.Pad(30,5,5,5),
+			wid.Pad(30, 15, 15, 0),
 			wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 		wid.MakeFlex(
 			wid.Label(th, "Dark mode", text.Start, 1.0),
@@ -143,14 +146,13 @@ func setupForm(th *wid.Theme) *app.Window {
 		),
 		wid.Checkbox(th, "Checkbox", darkMode, nil),
 		wid.MakeFlex(
-			wid.Button(wid.Round, th, "", wid.BtnIcon(icons.ContentAdd),
+			wid.RoundButton(th, icons.ContentAdd,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-
-		wid.Button(wid.Contained, th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode)),
-			wid.Button(wid.Contained, th, "Check", wid.BtnIcon(icons.ActionCheckCircle)),
-			wid.Button(wid.Contained, &thb, "Change color", wid.Handler(onClick)),
-			wid.Button(wid.Text, th, "Text button"),
-			wid.Button(wid.Outlined, th, "Outline button"),
+			wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode)),
+			wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle)),
+			wid.Button(&thb, "Change color", wid.Handler(onClick)),
+			wid.TextButton(th, "Text button"),
+			wid.OutlineButton(th, "Outline button"),
 			wid.Label(th, "Disabled", text.End, 1.0),
 			wid.Switch(th, false, doDisable),
 		),
@@ -160,18 +162,18 @@ func setupForm(th *wid.Theme) *app.Window {
 			wid.Combo(th, unit.Value{300, 0}, 1, []string{"Option 1", "Option 2", "Option 3"}),
 			wid.Combo(th, unit.Value{}, 0, []string{"Option A", "Option B", "Option C"}),
 		),
-		wid.Edit(th, "Value 1", wid.W(950)),
-		wid.Edit(th, "Value 2"),
-		wid.Edit(th, "Value 3"),
-		wid.Edit(th, "Value 4"),
-		wid.Edit(th, "Value 5"),
-		wid.Edit(th, "Value 6"),
-		wid.Edit(th, "Value 7"),
-		wid.Edit(th, "Value 8"),
-		wid.Edit(th, "Value 9"),
-		wid.Edit(th, "Value 10"),
-		wid.Edit(th, "Value 11"),
-		wid.Edit(th, "Value 12"),
+		wid.Edit(th, wid.Hint("Value 1"), wid.W(950)),
+		wid.Edit(th, wid.Hint("Value 2")),
+		wid.Edit(th, wid.Hint("Value 3")),
+		wid.Edit(th, wid.Hint("Value 4")),
+		wid.Edit(th, wid.Hint("Value 5")),
+		wid.Edit(th, wid.Hint("Value 6")),
+		wid.Edit(th, wid.Hint("Value 7")),
+		wid.Edit(th, wid.Hint("Value 8")),
+		wid.Edit(th, wid.Hint("Value 9")),
+		wid.Edit(th, wid.Hint("Value 10")),
+		wid.Edit(th, wid.Hint("Value 11")),
+		wid.Edit(th, wid.Hint("Value 12")),
 	)
 
 	return w

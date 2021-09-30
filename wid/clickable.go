@@ -63,6 +63,10 @@ type Press struct {
 	Cancelled bool
 }
 
+// Global value used to save the previous widget that was tab-able
+var prev Focuser
+
+
 func (c *Clickable) Disabled() bool {
 	return c.disabled
 }
