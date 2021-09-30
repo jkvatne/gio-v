@@ -22,6 +22,9 @@ import (
 	"time"
 )
 
+
+var selected string
+
 // green is the state variable for the button color
 var green = false
 
@@ -145,10 +148,15 @@ func setupForm(th *wid.Theme) *app.Window {
 	// Test with gray as primary color
 	// th.Primary = wid.RGB(0x555555)
 
-	selected := ""
-
 	root = wid.MakeList(
 		th, layout.Vertical,
+		wid.MakeFlex(
+			wid.Edit(th, wid.Hint("Value 3")),
+			wid.Edit(th, wid.Hint("Value 4")),
+			wid.Edit(th, wid.Hint("Value 5")),
+			wid.Edit(th, wid.Hint("Value 6")),
+			wid.Edit(th, wid.Hint("Value 7")),
+		),
 
 		wid.Label(th, "Demo page", text.Middle, 2.0),
 		wid.Button(th, "WIDE BUTTON",
@@ -182,13 +190,6 @@ func setupForm(th *wid.Theme) *app.Window {
 		// Relative size
 		wid.Edit(th, wid.Hint("Value 2"), wid.W(0.5)),
 		wid.MakeFlex(
-			wid.Edit(th, wid.Hint("Value 3"), wid.W(0.2)),
-			wid.Edit(th, wid.Hint("Value 4"), wid.W(0.2)),
-			wid.Edit(th, wid.Hint("Value 5"), wid.W(0.2)),
-			wid.Edit(th, wid.Hint("Value 6"), wid.W(0.2)),
-			wid.Edit(th, wid.Hint("Value 7"), wid.W(0.2)),
-		),
-		wid.MakeFlex(
 			wid.RadioButton(th, &selected, "Option1", "Option1"),
 			wid.RadioButton(th, &selected, "Option2", "Option2"),
 			wid.RadioButton(th, &selected, "Option3", "Option3"),
@@ -199,7 +200,7 @@ func setupForm(th *wid.Theme) *app.Window {
 		wid.Edit(th, wid.Hint("Value 11")),
 		wid.Edit(th, wid.Hint("Value 12")),
 		wid.ProgressBar(th, &progress),
-	)
 
+	)
 	return w
 }
