@@ -2,7 +2,9 @@
 
 package main
 
-// A Gio program that demonstrates Gio widgets. See https://gioui.org for more information.
+// A Gio program that demonstrates gio-v widgets.
+// See https://gioui.org for information on the gio modules
+// gio-v is maintained by Jan Kåre Vatne (jkvatne@online.no)
 
 import (
 	"flag"
@@ -21,7 +23,6 @@ import (
 	"log"
 	"time"
 )
-
 
 var selected string
 
@@ -150,14 +151,6 @@ func setupForm(th *wid.Theme) *app.Window {
 
 	root = wid.MakeList(
 		th, layout.Vertical,
-		wid.MakeFlex(
-			wid.Edit(th, wid.Hint("Value 3")),
-			wid.Edit(th, wid.Hint("Value 4")),
-			wid.Edit(th, wid.Hint("Value 5")),
-			wid.Edit(th, wid.Hint("Value 6")),
-			wid.Edit(th, wid.Hint("Value 7")),
-		),
-
 		wid.Label(th, "Demo page", text.Middle, 2.0),
 		wid.Button(th, "WIDE BUTTON",
 			wid.W(0.4),
@@ -180,11 +173,13 @@ func setupForm(th *wid.Theme) *app.Window {
 			wid.Switch(th, &wid.GlobalDisable, nil),
 		),
 		wid.MakeFlex(
-			wid.Combo(th, unit.Value{}, 0, []string{"Option A", "Option B", "Option C"}),
-			wid.Combo(th, unit.Value{200, 0}, 1, []string{"Option 1", "Option 2", "Option 3"}),
-			wid.Combo(th, unit.Value{300, 0}, 1, []string{"Option 1", "Option 2", "Option 3"}),
-			wid.Combo(th, unit.Value{}, 0, []string{"Option A", "Option B", "Option C"}),
+			wid.Combo(th, 0, []string{"Option A", "Option B", "Option C"}),
+			wid.Combo(th, 1, []string{"Option 1", "Option 2", "Option 3"}),
+			wid.Combo(th, 2, []string{"Option 1", "Option 2", "Option 3"}),
+			wid.Combo(th, 0, []string{"Option A", "Option B", "Option C"}),
+			wid.Combo(th, 0, []string{"Option A", "Option B", "Option C"}),
 		),
+		wid.Combo(th, 0, []string{"Option A", "Option B", "Option C"}),
 		// Fixed size in Dp
 		wid.Edit(th, wid.Hint("Value 1"), wid.W(300)),
 		// Relative size
@@ -193,6 +188,13 @@ func setupForm(th *wid.Theme) *app.Window {
 			wid.RadioButton(th, &selected, "Option1", "Option1"),
 			wid.RadioButton(th, &selected, "Option2", "Option2"),
 			wid.RadioButton(th, &selected, "Option3", "Option3"),
+		),
+		wid.MakeFlex(
+			wid.Edit(th, wid.Hint("Value 3")),
+			wid.Edit(th, wid.Hint("Value 4")),
+			wid.Edit(th, wid.Hint("Value 5")),
+			wid.Edit(th, wid.Hint("Value 6")),
+			wid.Edit(th, wid.Hint("Value 7")),
 		),
 		wid.Edit(th, wid.Hint("Value 8")),
 		wid.Edit(th, wid.Hint("Value 9")),

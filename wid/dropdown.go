@@ -31,10 +31,9 @@ type ComboDef struct {
 	padding    layout.Inset
 }
 
-func Combo(th *Theme, width unit.Value, index int, items []string) func(gtx C) D {
+func Combo(th *Theme, index int, items []string) func(gtx C) D {
 	b := ComboDef{}
 	b.icon, _ = NewIcon(icons.NavigationArrowDropDown)
-	b.Width = width
 	b.SetupTabs()
 	b.th = th
 	b.Font = text.Font{Weight: text.Medium}
@@ -156,9 +155,9 @@ func (b *ComboDef) Layout(gtx layout.Context) layout.Dimensions {
 			layout.Expanded(b.LayoutBackground()),
 			layout.Stacked(
 				func(gtx C) D {
-					return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start, Spacing: layout.SpaceEnd}.Layout(
+					return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start}.Layout(
 						gtx,
-						layout.Rigid(b.LayoutLabel()),
+						layout.Flexed(1.0, b.LayoutLabel()),
 						layout.Rigid(b.LayoutIcon()),
 					)
 				}),

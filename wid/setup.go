@@ -47,7 +47,7 @@ func MakeFlex(widgets... layout.Widget) layout.Widget {
 		var ch []layout.FlexChild
 		for i := 0; i < len(node.children); i++ {
 			w := *node.children[i].w
-			ch = append(ch, layout.Rigid(func(gtx C) D {
+			ch = append(ch, layout.Flexed(0.2, func(gtx C) D {
 				return w(gtx)
 			}))
 		}
