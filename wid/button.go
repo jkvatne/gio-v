@@ -49,7 +49,8 @@ func (b BtnOption) apply(cfg interface{}) {
 }
 
 // BtnIcon sets button icon
-func BtnIcon(i *Icon) BtnOption {
+func BtnIcon(d []byte) BtnOption {
+	i, _ := NewIcon(d)
 	return func(b *ButtonDef) {
 		b.Icon = i
 	}

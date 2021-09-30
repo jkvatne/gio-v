@@ -13,7 +13,9 @@ import (
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/paint"
+	"gioui.org/text"
 	"gioui.org/unit"
+	"golang.org/x/exp/shiny/materialdesign/icons"
 	"image"
 	"image/color"
 	"log"
@@ -127,29 +129,25 @@ func setupForm(th *wid.Theme) *app.Window {
 		w = app.NewWindow(app.Title("Gio-v demo"),app.Size(unit.Px(1900), unit.Px(1000)))
 
 	}
-	//icon1, _ := wid.NewIcon(icons.ContentAdd)
-	//icon2, _ := wid.NewIcon(icons.ActionHome)
-	//icon3, _ := wid.NewIcon(icons.ActionCheckCircle)
 
 	root = wid.MakeList(
 		th, layout.Vertical,
-		//wid.Label(th, "Demo page", text.Middle, 2.0),
+		wid.Label(th, "Demo page", text.Middle, 2.0),
 		wid.Button(wid.Contained, th, "WIDE BUTTON",
 			wid.W(950),
 			wid.Pad(30,5,5,5),
 			wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-		/*
 		wid.MakeFlex(
 			wid.Label(th, "Dark mode", text.Start, 1.0),
 			wid.Switch(th, darkMode, onSwitchMode),
 		),
 		wid.Checkbox(th, "Checkbox", darkMode, nil),
 		wid.MakeFlex(
-			wid.Button(wid.Round, th, "", wid.BtnIcon(icon1),
+			wid.Button(wid.Round, th, "", wid.BtnIcon(icons.ContentAdd),
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 
-		wid.Button(wid.Contained, th, "Home", wid.BtnIcon(icon2), wid.Disable(&darkMode)),
-			wid.Button(wid.Contained, th, "Check", wid.BtnIcon(icon3)),
+		wid.Button(wid.Contained, th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode)),
+			wid.Button(wid.Contained, th, "Check", wid.BtnIcon(icons.ActionCheckCircle)),
 			wid.Button(wid.Contained, &thb, "Change color", wid.Handler(onClick)),
 			wid.Button(wid.Text, th, "Text button"),
 			wid.Button(wid.Outlined, th, "Outline button"),
@@ -173,7 +171,7 @@ func setupForm(th *wid.Theme) *app.Window {
 		wid.Edit(th, "Value 9"),
 		wid.Edit(th, "Value 10"),
 		wid.Edit(th, "Value 11"),
-		wid.Edit(th, "Value 12"),*/
+		wid.Edit(th, "Value 12"),
 	)
 
 	return w
