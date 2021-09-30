@@ -9,5 +9,6 @@ require (
 )
 
 replace (
-	gioui.org => c:\doc\gio
+	//gioui.org v0.0.0 => github.com/jkvatne/gio v0.0.0
+	gioui.org => c:/doc/gio
 )
