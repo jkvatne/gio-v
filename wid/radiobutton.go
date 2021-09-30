@@ -68,7 +68,7 @@ func (r *RadioButtonStyle) layout(gtx layout.Context, checked, hovered bool) lay
 				layout.Stacked(func(gtx layout.Context) layout.Dimensions {
 					size := gtx.Px(r.Size) * 5 / 4
 					dims := layout.Dimensions{Size: image.Point{X: size, Y: size}}
-					if r.Hovered() {
+					if r.Hovered() || r.Focused() {
 						radius := float32(size) / 2
 						paint.FillShape(gtx.Ops,
 							MulAlpha(r.IconColor, 70),
