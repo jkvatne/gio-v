@@ -47,7 +47,7 @@ func Label(th *Theme, text string, align text.Alignment, relSize float32) func(g
 		shaper:    th.Shaper,
 		Alignment: align,
 	}
-	lbl.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(7), Right: unit.Dp(5)}
+	lbl.padding = layout.Inset{}
 
 	return func(gtx C) D {
 		return lbl.padding.Layout(gtx, func(gtx C) D { return lbl.Layout(gtx) })

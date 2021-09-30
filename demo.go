@@ -132,11 +132,13 @@ func setupForm(th *wid.Theme) *app.Window {
 	// Test with gray as primary color
 	// th.Primary = wid.RGB(0x555555)
 
+	group := &wid.Enum{}
+
 	root = wid.MakeList(
 		th, layout.Vertical,
 		wid.Label(th, "Demo page", text.Middle, 2.0),
 		wid.Button(th, "WIDE BUTTON",
-			wid.W(950),
+			wid.W(0.4),
 			wid.Pad(30, 15, 15, 0),
 			wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 		wid.MakeFlex(
@@ -161,13 +163,22 @@ func setupForm(th *wid.Theme) *app.Window {
 			wid.Combo(th, unit.Value{300, 0}, 1, []string{"Option 1", "Option 2", "Option 3"}),
 			wid.Combo(th, unit.Value{}, 0, []string{"Option A", "Option B", "Option C"}),
 		),
-		wid.Edit(th, wid.Hint("Value 1"), wid.W(950)),
-		wid.Edit(th, wid.Hint("Value 2")),
-		wid.Edit(th, wid.Hint("Value 3")),
-		wid.Edit(th, wid.Hint("Value 4")),
-		wid.Edit(th, wid.Hint("Value 5")),
-		wid.Edit(th, wid.Hint("Value 6")),
-		wid.Edit(th, wid.Hint("Value 7")),
+		// Fixed size in Dp
+		wid.Edit(th, wid.Hint("Value 1"), wid.W(300)),
+		// Relative size
+		wid.Edit(th, wid.Hint("Value 2"), wid.W(0.5)),
+		wid.MakeFlex(
+			wid.Edit(th, wid.Hint("Value 3"), wid.W(0.2)),
+			wid.Edit(th, wid.Hint("Value 4"), wid.W(0.2)),
+			wid.Edit(th, wid.Hint("Value 5"), wid.W(0.2)),
+			wid.Edit(th, wid.Hint("Value 6"), wid.W(0.2)),
+			wid.Edit(th, wid.Hint("Value 7"), wid.W(0.2)),
+		),
+		wid.MakeFlex(
+			wid.RadioButton(th, group, "Option1", "Option1"),
+			wid.RadioButton(th, group, "Option2", "Option2"),
+			wid.RadioButton(th, group, "Option3", "Option3"),
+		),
 		wid.Edit(th, wid.Hint("Value 8")),
 		wid.Edit(th, wid.Hint("Value 9")),
 		wid.Edit(th, wid.Hint("Value 10")),
