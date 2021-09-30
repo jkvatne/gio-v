@@ -77,4 +77,4 @@ width and hints. Othewise default fallbacks are used.
 Dual MIT/Unlicense; same as Gio
 
 # Demo
-![Demo.go](http://github.com/jkvatne/gio-v/demo.png)
+![Demo.go](https://github.com/jkvatne/gio-v/blob/main/demo.png)
