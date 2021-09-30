@@ -11,6 +11,10 @@ The code is copied extensively from the following sources:
 
 # Features
 
+## Material design
+Quite a lot of effort has gone into making it look like google's examples of material design forms. 
+The shadows are noe almost identical, and hover/focus are at least similar. 
+
 ## Keyboard only operation
 All (TODO) widgets handle keyboard only operation. Focus is moved py TAB/SHIF-TAB keys. 
 The tab sequence is given by the declaration sequence automaticaly. No mouse is needed.
