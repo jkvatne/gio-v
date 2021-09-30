@@ -19,7 +19,7 @@ import (
 	"image"
 	"image/color"
 	"log"
-	"os"
+	"time"
 )
 
 // green is the state variable for the button color
@@ -37,6 +37,13 @@ var windowSize image.Point
 func main() {
 	flag.IntVar(&alt, "alt", 0, "Select windows placement/mode")
 	flag.Parse()
+	progressIncrementer := make(chan float32)
+	go func() {
+		for {
+			time.Sleep(time.Millisecond*5)
+			progressIncrementer <- 0.001
+		}
+	}()
 	go func() {
 		onSwitchMode(false)
 		w := setupForm(currentTheme)
@@ -46,10 +53,15 @@ func main() {
 				switch e := e.(type) {
 				case system.DestroyEvent:
 					log.Fatal(e.Err)
-					os.Exit(1)
 				case system.FrameEvent:
 					handleFrameEvents(currentTheme, e)
 				}
+			case pg := <-progressIncrementer:
+				progress += pg
+				if progress > 1 {
+					progress = 0
+				}
+				w.Invalidate()
 			}
 		}
 	}()
@@ -107,7 +119,7 @@ func doDisable(v bool) {
 
 var thb wid.Theme
 var alt int
-var progress = 0.5
+var progress float32
 
 func setupForm(th *wid.Theme) *app.Window {
 	thb = *th
@@ -181,14 +193,12 @@ func setupForm(th *wid.Theme) *app.Window {
 			wid.RadioButton(th, &selected, "Option2", "Option2"),
 			wid.RadioButton(th, &selected, "Option3", "Option3"),
 		),
-		wid.ProgressBar(th, &progress),
-		/*
 		wid.Edit(th, wid.Hint("Value 8")),
 		wid.Edit(th, wid.Hint("Value 9")),
 		wid.Edit(th, wid.Hint("Value 10")),
 		wid.Edit(th, wid.Hint("Value 11")),
 		wid.Edit(th, wid.Hint("Value 12")),
-		 */
+		wid.ProgressBar(th, &progress),
 	)
 
 	return w

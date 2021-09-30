@@ -16,12 +16,12 @@ import (
 type ProgressBarStyle struct {
 	Color      color.NRGBA
 	TrackColor color.NRGBA
-	Progress   *float64
+	Progress   *float32
 	Width      unit.Value
 	CornerRadius unit.Value
 }
 
-func ProgressBar(th *Theme, progress *float64) func(gtx C) D {
+func ProgressBar(th *Theme, progress *float32) func(gtx C) D {
 	p := &ProgressBarStyle{
 		Progress:   progress,
 		Width:      unit.Dp(10),
@@ -64,7 +64,7 @@ func (p ProgressBarStyle) layout(gtx layout.Context) layout.Dimensions {
 }
 
 // clamp1 limits v to range [0..1].
-func clamp1(v float64) float32 {
+func clamp1(v float32) float32 {
 	if v >= 1 {
 		return 1
 	} else if v <= 0 {
