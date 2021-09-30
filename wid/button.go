@@ -31,8 +31,6 @@ const (
 type ButtonDef struct {
 	Clickable
 	Tooltip
-	Widget
-	th           *Theme
 	shadow       ShadowStyle
 	disabler     *bool
 	Text         string
@@ -71,6 +69,9 @@ func Disable(v *bool) BtnOption {
 
 func Button(style ButtonStyle, th *Theme, label string, options ...Option) func(gtx C) D {
 	b := ButtonDef{}
+	if b.hint != "" {
+		b.Tooltip = PlatformTooltip(th, b.hint)
+	}
 	b.SetupTabs()
 	b.th = th
 	b.Text = label
@@ -80,9 +81,6 @@ func Button(style ButtonStyle, th *Theme, label string, options ...Option) func(
 	b.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
 	for _, option := range options {
 		option.apply(&b)
-	}
-	if b.hint != "" {
-		b.Tooltip = PlatformTooltip(th, b.hint)
 	}
 	return func(gtx C) D {
 		dims := b.Layout(gtx)
@@ -260,7 +258,7 @@ func layIcon(b *ButtonDef) layout.Widget {
 
 func (b *ButtonDef) Layout(gtx layout.Context) layout.Dimensions {
 	return b.padding.Layout(gtx, func(gtx C) D {
-		return b.Tooltip.Layout(gtx, b.Tooltip, func(gtx C) D {
+		return b.Tooltip.Layout(gtx,func(gtx C) D {
 			b.disabled = false
 			if b.disabler != nil && *b.disabler || GlobalDisable {
 				gtx = gtx.Disabled()

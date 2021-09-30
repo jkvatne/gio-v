@@ -25,13 +25,13 @@ const (
 // Tooltip implements a material design tool tip as defined at:
 // https://material.io/components/tooltips#specs
 type Tooltip struct {
+	Widget
 	VisibilityAnimation
-	th *Theme
 	// MaxWidth is the maximum width of the tool-tip box. Should be less than form width.
 	MaxWidth unit.Value
-	// Text defines the content of the tooltip.
-	Text LabelDef
-	position  f32.Point
+	// Label defines the content of the tooltip.
+	Label    LabelDef
+	position f32.Point
 	Hover     InvalidateDeadline
 	Press     InvalidateDeadline
 	LongPress InvalidateDeadline
@@ -55,8 +55,7 @@ func MobileTooltip(th *Theme, tips string) Tooltip {
 	txt := CreateLabelDef(th, tips, text.Start, 0.8)
 	txt.Color = th.TooltipText
 	return Tooltip{
-		th:   th,
-		Text: txt,
+		Label: txt,
 	}
 }
 
@@ -65,8 +64,7 @@ func DesktopTooltip(th *Theme, tips string,) Tooltip {
 	txt := CreateLabelDef(th, tips, text.Start, 0.9)
 	txt.Color = th.TooltipText
 	return Tooltip{
-		th:       th,
-		Text:     txt,
+		Label:    txt,
 		MaxWidth: th.TooltipWidth,
 	}
 }
@@ -115,8 +113,8 @@ func (i *InvalidateDeadline) ClearTarget() {
 
 // Layout renders the provided widget with the provided tooltip. The tooltip
 // will be summoned if the widget is hovered or long-pressed.
-func (t *Tooltip) Layout(gtx C, tip Tooltip, w layout.Widget) D {
-	if tip.Text.Text == "" {
+func (t *Tooltip) Layout(gtx C, w layout.Widget) D {
+	if t.hint == "" {
 		return w(gtx)
 	}
 	if !t.init {
@@ -177,8 +175,8 @@ func (t *Tooltip) Layout(gtx C, tip Tooltip, w layout.Widget) D {
 				macro := op.Record(gtx.Ops)
 				v := t.VisibilityAnimation.Revealed(gtx)
 				bg := Interpolate(WithAlpha(t.th.TooltipBackground, 0), t.th.TooltipBackground, v)
-				tip.Text.Color = Interpolate(WithAlpha(tip.Text.Color, 0), tip.Text.Color, v)
-				gtx.Constraints.Max.X = gtx.Metric.Px(tip.MaxWidth)
+				t.Label.Color = Interpolate(WithAlpha(t.Label.Color, 0), t.Label.Color, v)
+				gtx.Constraints.Max.X = gtx.Metric.Px(t.MaxWidth)
 				//dims := tip.Layout(gtx)
 				// Layout renders the tooltip.
 				dims := layout.Stack{}.Layout(
@@ -197,7 +195,7 @@ func (t *Tooltip) Layout(gtx C, tip Tooltip, w layout.Widget) D {
 						return D{}
 					}),
 					layout.Stacked(func(gtx C) D {
-						return t.th.TooltipInset.Layout(gtx, t.Text.Layout)
+						return t.th.TooltipInset.Layout(gtx, t.Label.Layout)
 					}),
 				)
 				if int(t.position.X)+dims.Size.X > maxx {
