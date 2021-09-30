@@ -65,7 +65,7 @@ func (ic *Icon) image(sz int, c color.NRGBA) paint.ImageOp {
 
 	// palette uses pre-multiplied RGBA colors. Apply pre-multiplication here.
 	r, g, b, a := c.RGBA()
-	m.Palette[0] = color.RGBA{R: uint8(r>>8), G: uint8(g>>8), B: uint8(b>>8), A: uint8(a>>8)}
+	m.Palette[0] = color.RGBA{R: uint8(r >> 8), G: uint8(g >> 8), B: uint8(b >> 8), A: uint8(a >> 8)}
 
 	_ = iconvg.Decode(&ico, ic.src, &iconvg.DecodeOptions{
 		Palette: &m.Palette,

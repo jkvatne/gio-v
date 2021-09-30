@@ -15,7 +15,7 @@ import (
 
 type SwitchDef struct {
 	Clickable
-	th *Theme
+	th      *Theme
 	size    unit.Value
 	Value   bool
 	changed bool
@@ -32,7 +32,7 @@ func Switch(th *Theme, initialState bool, handler func(b bool)) func(gtx C) D {
 	s.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
 	return func(gtx C) D {
 		//dims := s.Layout(gtx)
-		dims := s.padding.Layout(gtx, func(gtx C) D {return s.Layout(gtx)})
+		dims := s.padding.Layout(gtx, func(gtx C) D { return s.Layout(gtx) })
 		if handler != nil {
 			s.HandleToggle(&s.Value, &s.changed)
 		} else {
@@ -56,7 +56,7 @@ func (s *SwitchDef) Layout(gtx C) D {
 		X: float32(trackWidth),
 		Y: float32(trackHeight),
 	}}
-	trackColor :=  MulAlpha(s.th.Primary, 0x80)
+	trackColor := MulAlpha(s.th.Primary, 0x80)
 	dotColor := s.th.Primary
 	if !s.Value {
 		trackColor = Gray(trackColor)
@@ -74,7 +74,6 @@ func (s *SwitchDef) Layout(gtx C) D {
 		trackColor = Disabled(trackColor)
 	}
 
-
 	// Compute thumb offset and color.
 	stack = op.Save(gtx.Ops)
 	if s.Value {
@@ -87,7 +86,7 @@ func (s *SwitchDef) Layout(gtx C) D {
 	// Draw hover.
 	if s.Hovered() || s.Focused() {
 		r := 1.4 * thumbRadius
-		paint.FillShape(gtx.Ops,  MulAlpha(s.th.Primary, 88),
+		paint.FillShape(gtx.Ops, MulAlpha(s.th.Primary, 88),
 			clip.Circle{
 				Center: f32.Point{X: thumbRadius, Y: thumbRadius},
 				Radius: r,
@@ -106,7 +105,7 @@ func (s *SwitchDef) Layout(gtx C) D {
 	paint.FillShape(gtx.Ops, dotColor,
 		clip.Circle{
 			Center: f32.Point{X: thumbRadius, Y: thumbRadius},
-			Radius: thumbRadius-1,
+			Radius: thumbRadius - 1,
 		}.Op(gtx.Ops))
 	stack.Load()
 

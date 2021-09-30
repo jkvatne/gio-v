@@ -26,8 +26,8 @@ import (
 // TODO(whereswaldon): make this support RRects that do not have
 // uniform corner radii.
 type ShadowStyle struct {
-	CornerRadius unit.Value
-	Elevation unit.Value
+	CornerRadius                            unit.Value
+	Elevation                               unit.Value
 	AmbientColor, PenumbraColor, UmbraColor color.NRGBA
 }
 
@@ -49,9 +49,9 @@ var alpha = [7]byte{0, 82, 62, 42, 32, 14, 13}
 
 func (s ShadowStyle) Layout(gtx layout.Context) layout.Dimensions {
 	sz := gtx.Constraints.Min
-	for i:=6; i>0; i-- {
-		ofs := Pxr(gtx, s.Elevation)*float32(i)/10
-		rr := Pxr(gtx, s.CornerRadius)+ofs/2
+	for i := 6; i > 0; i-- {
+		ofs := Pxr(gtx, s.Elevation) * float32(i) / 10
+		rr := Pxr(gtx, s.CornerRadius) + ofs/2
 		a := alpha[i]
 		paint.FillShape(gtx.Ops, color.NRGBA{A: a}, clip.RRect{
 			Rect: f32.Rect(-ofs/2, -ofs/4, float32(sz.X)+ofs/2, float32(sz.Y)+ofs),

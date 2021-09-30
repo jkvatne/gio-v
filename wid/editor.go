@@ -49,20 +49,20 @@ type Editor struct {
 	// InputHint specifies the type of on-screen keyboard to be displayed.
 	InputHint key.InputHint
 
-	eventKey     int
-	font         text.Font
-	shaper       text.Shaper
-	textSize     fixed.Int26_6
-	blinkStart   time.Time
-	rr           editBuffer
-	maskReader   maskReader
-	lastMask     rune
-	maxWidth     int
-	viewSize     image.Point
-	valid        bool
-	lines        []text.Line
-	shapes       []line
-	dims         layout.Dimensions
+	eventKey   int
+	font       text.Font
+	shaper     text.Shaper
+	textSize   fixed.Int26_6
+	blinkStart time.Time
+	rr         editBuffer
+	maskReader maskReader
+	lastMask   rune
+	maxWidth   int
+	viewSize   image.Point
+	valid      bool
+	lines      []text.Line
+	shapes     []line
+	dims       layout.Dimensions
 
 	caret struct {
 		on     bool
@@ -87,7 +87,6 @@ type Editor struct {
 	events []EditorEvent
 	// prevEvents is the number of events from the previous frame.
 	prevEvents int
-
 }
 
 type maskReader struct {
@@ -334,7 +333,7 @@ func (e *Editor) processKey(gtx layout.Context) {
 			if !e.Clickable.focused || ke.State != key.Press {
 				break
 			}
-			if ke.Name==key.NameTab {
+			if ke.Name == key.NameTab {
 				if !ke.Modifiers.Contain(key.ModShift) {
 					if e.Next() != nil {
 						e.Next().Focus()

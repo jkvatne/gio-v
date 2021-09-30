@@ -15,20 +15,20 @@ import (
 
 type ComboDef struct {
 	Clickable
-	th           *Theme
-	shadow       ShadowStyle
-	disabler     *bool
-	Font         text.Font
-	shaper       text.Shaper
-	Width        unit.Value
-	items        []string
-	hovered      []bool
-	Visible      bool
-	wasVisible   int
-	list         layout.Widget
-	options      []layout.Widget
-	icon         *Icon
-	padding      layout.Inset
+	th         *Theme
+	shadow     ShadowStyle
+	disabler   *bool
+	Font       text.Font
+	shaper     text.Shaper
+	Width      unit.Value
+	items      []string
+	hovered    []bool
+	Visible    bool
+	wasVisible int
+	list       layout.Widget
+	options    []layout.Widget
+	icon       *Icon
+	padding    layout.Inset
 }
 
 func Combo(th *Theme, width unit.Value, index int, items []string) func(gtx C) D {
@@ -55,7 +55,7 @@ func Combo(th *Theme, width unit.Value, index int, items []string) func(gtx C) D
 			b.Visible = !b.Visible
 		}
 
-		if b.wasVisible>0 {
+		if b.wasVisible > 0 {
 			gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
 			gtx.Constraints.Max = image.Pt(dims.Size.X, 9999)
 			macro := op.Record(gtx.Ops)
@@ -74,7 +74,7 @@ func Combo(th *Theme, width unit.Value, index int, items []string) func(gtx C) D
 
 		}
 		ok := b.Visible
-		if b.wasVisible>0 {
+		if b.wasVisible > 0 {
 			ok = b.Hovered()
 			for _, x := range b.hovered {
 				if x {
@@ -82,15 +82,15 @@ func Combo(th *Theme, width unit.Value, index int, items []string) func(gtx C) D
 				}
 			}
 		}
-		if ok && b.wasVisible<10 {
+		if ok && b.wasVisible < 10 {
 			b.wasVisible++
 			op.InvalidateOp{}.Add(gtx.Ops)
 		}
-		if !ok && b.wasVisible>0 {
+		if !ok && b.wasVisible > 0 {
 			b.wasVisible--
 			op.InvalidateOp{}.Add(gtx.Ops)
 		}
-		if b.wasVisible==0 {
+		if b.wasVisible == 0 {
 			b.Visible = false
 		}
 		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
@@ -107,11 +107,11 @@ func (b *ComboDef) option(th *Theme, i int) func(gtx C) D {
 					b.index = i
 					b.Visible = false
 					b.wasVisible = 0
-					b.hovered[i]=false
+					b.hovered[i] = false
 				case pointer.Enter:
-					b.hovered[i]=true
+					b.hovered[i] = true
 				case pointer.Leave:
-					b.hovered[i]=false
+					b.hovered[i] = false
 				case pointer.Cancel:
 					//b.hovered[i]=false
 				}
@@ -119,16 +119,18 @@ func (b *ComboDef) option(th *Theme, i int) func(gtx C) D {
 		}
 		if b.hovered[i] {
 			c := MulAlpha(b.th.OnBackground, 48)
-			if Luminance(b.th.OnBackground)>28 {
+			if Luminance(b.th.OnBackground) > 28 {
 				c = MulAlpha(b.th.OnBackground, 16)
 			}
 			paint.ColorOp{Color: c}.Add(gtx.Ops)
 			paint.PaintOp{}.Add(gtx.Ops)
 		}
 		paint.ColorOp{Color: th.OnBackground}.Add(gtx.Ops)
-		lblWidget := func (gtx C) D {return aLabel{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, text.Font{}, th.TextSize, b.items[i])}
-		dims := layout.Inset{Top: unit.Dp(2), Left: th.TextSize.Scale(0.4), Right:unit.Dp(2) }.Layout(gtx, lblWidget)
-		pointer.Rect(image.Rect(0,0, dims.Size.X, dims.Size.Y)).Add(gtx.Ops)
+		lblWidget := func(gtx C) D {
+			return aLabel{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, text.Font{}, th.TextSize, b.items[i])
+		}
+		dims := layout.Inset{Top: unit.Dp(2), Left: th.TextSize.Scale(0.4), Right: unit.Dp(2)}.Layout(gtx, lblWidget)
+		pointer.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Add(gtx.Ops)
 		pointer.InputOp{
 			Tag:   &b.items[i],
 			Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave,
@@ -151,19 +153,20 @@ func (b *ComboDef) Layout(gtx layout.Context) layout.Dimensions {
 	}
 	return b.padding.Layout(gtx, func(gtx C) D {
 		return layout.Stack{Alignment: layout.Center}.Layout(gtx,
-		layout.Expanded(b.LayoutBackground()),
-		layout.Stacked(
-			func(gtx C) D {
-				return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start, Spacing: layout.SpaceEnd}.Layout(
-					gtx,
-					layout.Rigid(b.LayoutLabel()),
-					layout.Rigid(b.LayoutIcon()),
-				)
-			}),
-		layout.Expanded(b.LayoutClickable),
-		layout.Expanded(b.HandleClicks),
-		layout.Expanded(b.HandleKeys),
-	)})
+			layout.Expanded(b.LayoutBackground()),
+			layout.Stacked(
+				func(gtx C) D {
+					return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start, Spacing: layout.SpaceEnd}.Layout(
+						gtx,
+						layout.Rigid(b.LayoutLabel()),
+						layout.Rigid(b.LayoutIcon()),
+					)
+				}),
+			layout.Expanded(b.LayoutClickable),
+			layout.Expanded(b.HandleClicks),
+			layout.Expanded(b.HandleKeys),
+		)
+	})
 }
 
 func (b *ComboDef) LayoutBackground() func(gtx C) D {
@@ -188,13 +191,17 @@ func (b *ComboDef) LayoutBackground() func(gtx C) D {
 
 func (b *ComboDef) LayoutLabel() layout.Widget {
 	return func(gtx C) D {
-		if gtx.Px(b.Width)>gtx.Constraints.Min.X {
+		if gtx.Px(b.Width) > gtx.Constraints.Min.X {
 			gtx.Constraints.Min.X = gtx.Px(b.Width)
 		}
 		return b.th.LabelInset.Layout(gtx, func(gtx C) D {
 			paint.ColorOp{Color: b.th.Primary}.Add(gtx.Ops)
-			if b.index<0 {b.index=0}
-			if b.index>=len(b.items) {b.index=len(b.items)-1}
+			if b.index < 0 {
+				b.index = 0
+			}
+			if b.index >= len(b.items) {
+				b.index = len(b.items) - 1
+			}
 			return aLabel{Alignment: text.Start}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.items[b.index])
 		})
 	}

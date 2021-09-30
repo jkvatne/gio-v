@@ -28,7 +28,7 @@ type EditOption func(*EditDef)
 
 func (b *EditDef) ApplyOptions(options []Option) {
 	//for _, option := range options {
-		//option.Apply(b)
+	//option.Apply(b)
 	//}
 }
 

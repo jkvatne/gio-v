@@ -18,10 +18,9 @@ import (
 const (
 	tipAreaHoverDelay        = time.Millisecond * 1200
 	tipAreaLongPressDuration = time.Millisecond * 1200
-	tipAreaFadeDuration = time.Millisecond * 250
-	longPressDelay      = time.Millisecond * 1200
+	tipAreaFadeDuration      = time.Millisecond * 250
+	longPressDelay           = time.Millisecond * 1200
 )
-
 
 // Tooltip implements a material design tool tip as defined at:
 // https://material.io/components/tooltips#specs
@@ -30,15 +29,15 @@ type Tooltip struct {
 	// MaxWidth is the maximum width of the tool-tip box. Should be less than form width.
 	MaxWidth unit.Value
 	// Text defines the content of the tooltip.
-	Text     LabelDef
-	position f32.Point
-	Hover     InvalidateDeadline
-	Press     InvalidateDeadline
-	LongPress InvalidateDeadline
-	Fg        color.NRGBA
-	Bg        color.NRGBA
+	Text         LabelDef
+	position     f32.Point
+	Hover        InvalidateDeadline
+	Press        InvalidateDeadline
+	LongPress    InvalidateDeadline
+	Fg           color.NRGBA
+	Bg           color.NRGBA
 	CornerRadius unit.Value
-	init      bool
+	init         bool
 	// HoverDelay is the delay between the cursor entering the tip area
 	// and the tooltip appearing.
 	HoverDelay time.Duration
@@ -58,8 +57,8 @@ func MobileTooltip(th *Theme, tips string) Tooltip {
 	txt := CreateLabelDef(th, tips, text.Start, 0.9)
 	txt.Color = th.TooltipOnBackground
 	return Tooltip{
-		Fg: th.TooltipOnBackground,
-		Bg: th.TooltipBackground,
+		Fg:   th.TooltipOnBackground,
+		Bg:   th.TooltipBackground,
 		Text: txt,
 	}
 }
@@ -69,14 +68,13 @@ func DesktopTooltip(th *Theme, tips string) Tooltip {
 	txt := CreateLabelDef(th, tips, text.Start, 0.9)
 	txt.Color = th.TooltipOnBackground
 	return Tooltip{
-		Text:     txt,
-		Fg: th.TooltipOnBackground,
-		Bg: th.TooltipBackground,
-		MaxWidth: th.TooltipWidth,
+		Text:         txt,
+		Fg:           th.TooltipOnBackground,
+		Bg:           th.TooltipBackground,
+		MaxWidth:     th.TooltipWidth,
 		CornerRadius: th.TooltipCornerRadius,
 	}
 }
-
 
 // InvalidateDeadline helps to ensure that a frame is generated at a specific
 // point in time in the future. It does this by always requesting a future
@@ -88,8 +86,6 @@ type InvalidateDeadline struct {
 	// Whether the deadline is active.
 	Active bool
 }
-
-
 
 // SetTarget configures a specific time in the future at which a frame should
 // be rendered.
@@ -117,7 +113,6 @@ func (i *InvalidateDeadline) Process(gtx C) bool {
 func (i *InvalidateDeadline) ClearTarget() {
 	i.Active = false
 }
-
 
 // Layout renders the provided widget with the provided tooltip. The tooltip
 // will be summoned if the widget is hovered or long-pressed.
@@ -185,7 +180,7 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 				t.Text.Color = WithAlpha(t.Fg, uint8(v*255))
 				gtx.Constraints.Max.X = gtx.Metric.Px(t.MaxWidth)
 				p := t.Text.TextSize.Scale(0.5)
-				inset := layout.Inset{p,p,p,p}
+				inset := layout.Inset{p, p, p, p}
 				dims := layout.Stack{}.Layout(
 					gtx,
 					layout.Expanded(func(gtx C) D {
@@ -193,16 +188,16 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 						outline := f32.Rectangle{Max: layout.FPt(gtx.Constraints.Min)}
 						paint.FillShape(gtx.Ops, bg, clip.RRect{
 							Rect: outline,
-							NW: rr,
-							NE: rr,
-							SW: rr,
-							SE: rr,
+							NW:   rr,
+							NE:   rr,
+							SW:   rr,
+							SE:   rr,
 						}.Op(gtx.Ops))
 						PaintBorder(gtx, outline, t.Text.Color, unit.Dp(1.0), unit.Dp(rr))
 						return D{}
 					}),
 					layout.Stacked(func(gtx C) D {
-						return inset.Layout(gtx, t.Text.Layout)  //t.th.TooltipInset.Layout(gtx, t.Text.Layout)
+						return inset.Layout(gtx, t.Text.Layout) //t.th.TooltipInset.Layout(gtx, t.Text.Layout)
 					}),
 				)
 				if int(t.position.X)+dims.Size.X > maxx {

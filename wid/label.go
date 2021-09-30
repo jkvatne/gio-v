@@ -22,16 +22,16 @@ type LabelDef struct {
 	MaxLines int
 	Text     string
 	TextSize unit.Value
-	padding layout.Inset
-	shaper text.Shaper
+	padding  layout.Inset
+	shaper   text.Shaper
 }
 
 func CreateLabelDef(th *Theme, text string, align text.Alignment, relSize float32) LabelDef {
 	return LabelDef{
-		Text:     text,
-		Color:    th.OnBackground,
-		TextSize: th.TextSize.Scale(relSize),
-		shaper:   th.Shaper,
+		Text:      text,
+		Color:     th.OnBackground,
+		TextSize:  th.TextSize.Scale(relSize),
+		shaper:    th.Shaper,
 		Alignment: align,
 	}
 }
@@ -50,12 +50,12 @@ func Label(th *Theme, text string, align text.Alignment, relSize float32) func(g
 	lbl.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(7), Right: unit.Dp(5)}
 
 	return func(gtx C) D {
-		return lbl.padding.Layout(gtx, func(gtx C) D {return lbl.Layout(gtx)})
+		return lbl.padding.Layout(gtx, func(gtx C) D { return lbl.Layout(gtx) })
 	}
 }
 
 func (l LabelDef) Layout(gtx layout.Context) layout.Dimensions {
 	paint.ColorOp{Color: l.Color}.Add(gtx.Ops)
-		tl := aLabel{Alignment: l.Alignment, MaxLines: l.MaxLines}
+	tl := aLabel{Alignment: l.Alignment, MaxLines: l.MaxLines}
 	return tl.Layout(gtx, l.shaper, l.Font, l.TextSize, l.Text)
 }

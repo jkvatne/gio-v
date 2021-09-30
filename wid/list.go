@@ -85,8 +85,8 @@ func MakeScrollbarStyle(th *Theme) ScrollbarStyle {
 	lightFg.A = 150
 	darkFg := lightFg
 	darkFg.A = 200
-	a := th.TextSize.V/1.25
-	b := th.TextSize.V/2
+	a := th.TextSize.V / 1.25
+	b := th.TextSize.V / 2
 	return ScrollbarStyle{
 		Scrollbar: &Scrollbar{},
 		Track: ScrollTrackStyle{

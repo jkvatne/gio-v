@@ -3,14 +3,13 @@ package wid
 import (
 	"gioui.org/layout"
 	"gioui.org/unit"
-
 )
 
 type Widget struct {
-	th        *Theme
-	hint      string
-	padding   layout.Inset
-	width     unit.Value
+	th      *Theme
+	hint    string
+	padding layout.Inset
+	width   unit.Value
 }
 
 type WidgetIf interface {
@@ -19,7 +18,7 @@ type WidgetIf interface {
 	setPadding(padding layout.Inset)
 }
 
-type Option interface  {
+type Option interface {
 	apply(cfg interface{})
 }
 

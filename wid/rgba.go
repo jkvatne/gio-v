@@ -23,7 +23,6 @@ func Pxr(c layout.Context, v unit.Value) float32 {
 	return float32(c.Metric.Px(v))
 }
 
-
 // Disabled blends color towards the luminance and multiplies alpha.
 // Blending towards luminance will desaturate the color.
 // Multiplying alpha blends the color together more with the background.
@@ -49,7 +48,6 @@ func Hovered(c color.NRGBA) (d color.NRGBA) {
 	}
 }
 
-
 func Interpolate(a, b color.NRGBA, progress float32) color.NRGBA {
 	var out color.NRGBA
 	out.R = uint8(int16(a.R) - int16(float32(int16(a.R)-int16(b.R))*progress))
@@ -61,7 +59,7 @@ func Interpolate(a, b color.NRGBA, progress float32) color.NRGBA {
 
 func Gray(c color.NRGBA) color.NRGBA {
 	l := Luminance(c)
-	return color.NRGBA{l,l,l,c.A}
+	return color.NRGBA{l, l, l, c.A}
 }
 
 func RGB(c uint32) color.NRGBA {

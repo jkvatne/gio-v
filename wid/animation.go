@@ -81,7 +81,7 @@ func (v *VisibilityAnimation) Appear(now time.Time) {
 // It is a no-op if the animation is already invisible.
 func (v *VisibilityAnimation) Disappear(now time.Time) {
 	if v.Visible() {
-		if  v.Animating() {
+		if v.Animating() {
 			v.Duration = now.Sub(v.Started)
 		}
 		v.State = Disappearing
