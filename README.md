@@ -9,6 +9,8 @@ The code is copied extensively from the following sources:
 * https://github.com/gioui/gio-x.git
 * https://github.com/gioui/gio-example.git
 
+THIS IS WORK IN PROGRESS - ANYTHING CAN CHANGE AT ANY TIME
+
 # Features
 
 ## Material design

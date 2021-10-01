@@ -44,12 +44,13 @@ func main() {
 	progressIncrementer := make(chan float32)
 	go func() {
 		for {
-			time.Sleep(time.Millisecond*5)
-			progressIncrementer <- 0.001
+			time.Sleep(time.Millisecond * 50)
+			progressIncrementer <- 0.01
 		}
 	}()
 	go func() {
-		onSwitchMode(false)
+		//onSwitchMode(false)
+		currentTheme = wid.NewTheme(gofont.Collection(), 14, wid.MaterialDesignLight)
 		w := setupForm(currentTheme)
 		for {
 			select {
@@ -101,7 +102,7 @@ func onClick() {
 	}
 }
 
-var darkMode = true
+var darkMode = false
 
 func onSwitchMode(v bool) {
 	darkMode = v
@@ -132,15 +133,15 @@ func setupForm(th *wid.Theme) *app.Window {
 	case alt == 2:
 		// A full-screen window
 		w = app.NewWindow(app.Title("Gio-v demo"), app.Fullscreen.Option())
-	case alt==3:
-    	//Place at a given location.
-		w = app.NewWindow(app.Title("Gio-v demo"),app.Size(unit.Px(960), unit.Px(540)), app.Pos(unit.Px(960),unit.Px(540)))
-	case alt==4:
+	case alt == 3:
+		//Place at a given location.
+		w = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Px(960), unit.Px(540)), app.Pos(unit.Px(960), unit.Px(540)))
+	case alt == 4:
 		//   A maximized window
-		w = app.NewWindow(app.Title("Gio-v demo"),app.Size(unit.Px(1800), unit.Px(990)), app.Maximized.Option())
-	case alt==5:
+		w = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Px(1800), unit.Px(990)), app.Maximized.Option())
+	case alt == 5:
 		// Place at center of monitor
-		w = app.NewWindow(app.Title("Gio-v demo"),app.Size(unit.Px(960), unit.Px(540)), app.Center())
+		w = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Px(960), unit.Px(540)), app.Center())
 	default:
 		w = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Px(1900), unit.Px(1000)))
 
@@ -151,28 +152,33 @@ func setupForm(th *wid.Theme) *app.Window {
 
 	root = wid.MakeList(
 		th, layout.Vertical,
+
 		wid.Label(th, "Demo page", text.Middle, 2.0),
-		wid.Button(th, "WIDE BUTTON",
-			wid.W(0.4),
-			wid.Pad(30, 15, 15, 0),
-			wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-		wid.MakeFlex(
+		wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
+			wid.Button(th, "WIDE CENTERED BUTTON",
+				wid.W(0.4),
+				//wid.Pad(30, 15, 15, 0),
+				wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
+		),
+		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.Label(th, "Dark mode", text.Start, 1.0),
 			wid.Switch(th, &darkMode, onSwitchMode),
 		),
 		wid.Checkbox(th, "Checkbox", &darkMode, onSwitchMode),
-		wid.MakeFlex(
+
+		wid.MakeFlex(layout.Horizontal, layout.SpaceEvenly,
 			wid.RoundButton(th, icons.ContentAdd,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 			wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode)),
-			wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle)),
-			wid.Button(&thb, "Change color", wid.Handler(onClick)),
+			wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.W(300)),
+			wid.Button(&thb, "Change color", wid.Handler(onClick), wid.W(300)),
 			wid.TextButton(th, "Text button"),
 			wid.OutlineButton(th, "Outline button"),
 			wid.Label(th, "Disabled", text.End, 1.0),
 			wid.Switch(th, &wid.GlobalDisable, nil),
 		),
-		wid.MakeFlex(
+
+		wid.MakeFlex(layout.Horizontal, layout.SpaceAround,
 			wid.Combo(th, 0, []string{"Option A", "Option B", "Option C"}),
 			wid.Combo(th, 1, []string{"Option 1", "Option 2", "Option 3"}),
 			wid.Combo(th, 2, []string{"Option 1", "Option 2", "Option 3"}),
@@ -184,23 +190,34 @@ func setupForm(th *wid.Theme) *app.Window {
 		wid.Edit(th, wid.Hint("Value 1"), wid.W(300)),
 		// Relative size
 		wid.Edit(th, wid.Hint("Value 2"), wid.W(0.5)),
-		wid.MakeFlex(
+		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.RadioButton(th, &selected, "Option1", "Option1"),
 			wid.RadioButton(th, &selected, "Option2", "Option2"),
 			wid.RadioButton(th, &selected, "Option3", "Option3"),
 		),
-		wid.MakeFlex(
+		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.Edit(th, wid.Hint("Value 3")),
 			wid.Edit(th, wid.Hint("Value 4")),
 			wid.Edit(th, wid.Hint("Value 5")),
 			wid.Edit(th, wid.Hint("Value 6")),
 			wid.Edit(th, wid.Hint("Value 7")),
 		),
-		wid.Edit(th, wid.Hint("Value 8")),
-		wid.Edit(th, wid.Hint("Value 9")),
-		wid.Edit(th, wid.Hint("Value 10")),
-		wid.Edit(th, wid.Hint("Value 11")),
-		wid.Edit(th, wid.Hint("Value 12")),
+		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
+			wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
+				wid.Edit(th, wid.Hint("Value 8")),
+				wid.Edit(th, wid.Hint("Value 9")),
+				wid.Edit(th, wid.Hint("Value 10")),
+				wid.Edit(th, wid.Hint("Value 11")),
+				wid.Edit(th, wid.Hint("Value 12")),
+			),
+			wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
+				wid.Edit(th, wid.Hint("Value 13")),
+				wid.Edit(th, wid.Hint("Value 14")),
+				wid.Edit(th, wid.Hint("Value 15")),
+				wid.Edit(th, wid.Hint("Value 16")),
+				wid.Edit(th, wid.Hint("Value 17")),
+			),
+		),
 		wid.ProgressBar(th, &progress),
 
 	)

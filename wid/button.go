@@ -45,7 +45,7 @@ type ButtonDef struct {
 type BtnOption func(*ButtonDef)
 
 func RoundButton(th *Theme, d []byte, options ...Option) func(gtx C) D {
-	options = append(options, BtnIcon(d))
+	options = append(options, BtnIcon(d), W(0))
 	return aButton(Round, th, "",  options...)
 }
 
@@ -65,6 +65,7 @@ func Button(th *Theme, label string, options ...Option) func(gtx C) D {
 func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func(gtx C) D {
 	b := ButtonDef{}
 	b.SetupTabs()
+	b.width = th.TextSize.Scale(0)
 	// Setup default values
 	b.th = th
 	b.Text = label
@@ -182,7 +183,6 @@ func PaintBorder(gtx layout.Context, outline f32.Rectangle, col color.NRGBA, wid
 
 func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
-
 		rr := Pxr(gtx, b.th.CornerRadius)
 		if b.Style == Round {
 			rr = float32(gtx.Constraints.Min.Y) / 2.0
