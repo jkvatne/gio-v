@@ -72,10 +72,12 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func
 	b.Font = text.Font{Weight: text.Medium}
 	b.shaper = th.Shaper
 	b.Style = style
-	b.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
+	// Apply default padding. Can be overridden by option function
+	b.padding = layout.Inset{Top: unit.Dp(2), Bottom: unit.Dp(2), Left: unit.Dp(5), Right: unit.Dp(2)}
 	for _, option := range options {
 		option.apply(&b)
 	}
+	//b.width = th.TextSize.Scale(999)
 	b.Tooltip = PlatformTooltip(th, b.hint)
 	return func(gtx C) D {
 		dims := b.Layout(gtx)

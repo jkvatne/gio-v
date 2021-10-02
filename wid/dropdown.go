@@ -13,14 +13,13 @@ import (
 	"image"
 )
 
-type ComboDef struct {
+type DropDownDef struct {
 	Clickable
-	th         *Theme
+	Widget
 	shadow     ShadowStyle
 	disabler   *bool
 	Font       text.Font
 	shaper     text.Shaper
-	Width      unit.Value
 	items      []string
 	hovered    []bool
 	Visible    bool
@@ -28,11 +27,10 @@ type ComboDef struct {
 	list       layout.Widget
 	options    []layout.Widget
 	icon       *Icon
-	padding    layout.Inset
 }
 
-func Combo(th *Theme, index int, items []string) func(gtx C) D {
-	b := ComboDef{}
+func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx C) D {
+	b := DropDownDef{}
 	b.icon, _ = NewIcon(icons.NavigationArrowDropDown)
 	b.SetupTabs()
 	b.th = th
@@ -47,7 +45,9 @@ func Combo(th *Theme, index int, items []string) func(gtx C) D {
 	}
 	b.list = MakeList(th, layout.Vertical, b.options...)
 	b.padding = layout.Inset{Top: unit.Dp(2), Bottom: unit.Dp(2), Left: unit.Dp(5), Right: unit.Dp(1)}
-
+	for _, option := range options {
+		option.apply(&b)
+	}
 	return func(gtx C) D {
 		dims := b.Layout(gtx)
 		for b.Clicked() {
@@ -97,7 +97,7 @@ func Combo(th *Theme, index int, items []string) func(gtx C) D {
 	}
 }
 
-func (b *ComboDef) option(th *Theme, i int) func(gtx C) D {
+func (b *DropDownDef) option(th *Theme, i int) func(gtx C) D {
 	return func(gtx C) D {
 		for _, e := range gtx.Events(&b.items[i]) {
 			if e, ok := e.(pointer.Event); ok {
@@ -138,23 +138,22 @@ func (b *ComboDef) option(th *Theme, i int) func(gtx C) D {
 	}
 }
 
-func (b *ComboDef) Layout(gtx layout.Context) layout.Dimensions {
+func (b *DropDownDef) Layout(gtx layout.Context) layout.Dimensions {
 	b.disabled = false
 	if b.disabler != nil && *b.disabler || GlobalDisable {
 		gtx = gtx.Disabled()
 		b.disabled = true
 	}
-	min := gtx.Constraints.Min
-	if b.Width.V <= 1.0 {
-		min.X = gtx.Px(b.Width.Scale(float32(gtx.Constraints.Max.X)))
-	} else if min.X < gtx.Px(b.Width) {
-		min.X = gtx.Px(b.Width)
-	}
+	min := CalcMin(gtx, b.width)
 	return b.padding.Layout(gtx, func(gtx C) D {
 		return layout.Stack{Alignment: layout.Center}.Layout(gtx,
 			layout.Expanded(b.LayoutBackground()),
 			layout.Stacked(
 				func(gtx C) D {
+					if min.X!=0 {
+						gtx.Constraints.Min = min
+						gtx.Constraints.Max.X = min.X
+					}
 					return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start}.Layout(
 						gtx,
 						layout.Flexed(1.0, b.LayoutLabel()),
@@ -168,7 +167,7 @@ func (b *ComboDef) Layout(gtx layout.Context) layout.Dimensions {
 	})
 }
 
-func (b *ComboDef) LayoutBackground() func(gtx C) D {
+func (b *DropDownDef) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
 		if b.Focused() || b.Hovered() {
 			Shadow(b.th.CornerRadius, b.th.Elevation).Layout(gtx)
@@ -188,10 +187,10 @@ func (b *ComboDef) LayoutBackground() func(gtx C) D {
 	}
 }
 
-func (b *ComboDef) LayoutLabel() layout.Widget {
+func (b *DropDownDef) LayoutLabel() layout.Widget {
 	return func(gtx C) D {
-		if gtx.Px(b.Width) > gtx.Constraints.Min.X {
-			gtx.Constraints.Min.X = gtx.Px(b.Width)
+		if gtx.Px(b.width) > gtx.Constraints.Min.X {
+			gtx.Constraints.Min.X = gtx.Px(b.width)
 		}
 		return b.th.LabelInset.Layout(gtx, func(gtx C) D {
 			paint.ColorOp{Color: b.th.Primary}.Add(gtx.Ops)
@@ -206,7 +205,7 @@ func (b *ComboDef) LayoutLabel() layout.Widget {
 	}
 }
 
-func (b *ComboDef) LayoutIcon() layout.Widget {
+func (b *DropDownDef) LayoutIcon() layout.Widget {
 	return func(gtx C) D {
 		size := gtx.Px(b.th.TextSize.Scale(1.5))
 		gtx.Constraints = layout.Exact(image.Pt(size, size))

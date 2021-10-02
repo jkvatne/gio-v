@@ -48,6 +48,18 @@ func W(width float32) WidgetOption {
 	}
 }
 
+func Max() WidgetOption {
+	return func(w WidgetIf) {
+		w.setWidth(10000)
+	}
+}
+
+func Min() WidgetOption {
+	return func(w WidgetIf) {
+		w.setWidth(0)
+	}
+}
+
 func Hint(hint string) WidgetOption {
 	return func(w WidgetIf) {
 		w.setHint(hint)
