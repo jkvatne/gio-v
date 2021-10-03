@@ -14,7 +14,6 @@ reproduced here under the same terms.
 
 import (
 	"gioui.org/f32"
-	"gioui.org/layout"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
@@ -47,7 +46,7 @@ func Shadow(radius, elevation unit.Value) ShadowStyle {
 // that the rectangle casting the shadow is of size gtx.Constraints.Min.
 var alpha = [7]byte{0, 82, 62, 42, 32, 14, 13}
 
-func (s ShadowStyle) Layout(gtx layout.Context) layout.Dimensions {
+func (s ShadowStyle) Layout(gtx C) D {
 	sz := gtx.Constraints.Min
 	for i := 6; i > 0; i-- {
 		ofs := Pxr(gtx, s.Elevation) * float32(i) / 10
@@ -58,5 +57,5 @@ func (s ShadowStyle) Layout(gtx layout.Context) layout.Dimensions {
 			SE:   rr, SW: rr, NW: rr, NE: rr,
 		}.Op(gtx.Ops))
 	}
-	return layout.Dimensions{Size: sz}
+	return D{Size: sz}
 }

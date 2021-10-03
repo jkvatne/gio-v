@@ -36,7 +36,7 @@ type Scrollbar struct {
 // as a value in the range [0,1]. For example, if viewportStart is 0.25
 // and viewportEnd is .5, the viewport described by the scrollbar is
 // currently showing the second quarter of the underlying content.
-func (s *Scrollbar) Layout(gtx layout.Context, axis layout.Axis, viewportStart, viewportEnd float32) layout.Dimensions {
+func (s *Scrollbar) Layout(gtx C, axis layout.Axis, viewportStart, viewportEnd float32) D {
 	// Calculate the length of the major axis of the scrollbar. This is
 	// the length of the track within which pointer events occur, and is
 	// used to scale those interactions.
@@ -72,7 +72,7 @@ func (s *Scrollbar) Layout(gtx layout.Context, axis layout.Axis, viewportStart, 
 	// detected properly.
 	_ = s.indicator.Events(gtx)
 
-	return layout.Dimensions{}
+	return D{}
 }
 
 // AddTrack configures the track click listener for the scrollbar to use

@@ -65,7 +65,6 @@ func Button(th *Theme, label string, options ...Option) func(gtx C) D {
 func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func(gtx C) D {
 	b := ButtonDef{}
 	b.SetupTabs()
-	b.width = th.TextSize.Scale(0)
 	// Setup default values
 	b.th = th
 	b.Text = label
@@ -73,11 +72,10 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func
 	b.shaper = th.Shaper
 	b.Style = style
 	// Apply default padding. Can be overridden by option function
-	b.padding = layout.Inset{Top: unit.Dp(2), Bottom: unit.Dp(2), Left: unit.Dp(5), Right: unit.Dp(2)}
+	b.Pad(5,2,2,2)
 	for _, option := range options {
 		option.apply(&b)
 	}
-	//b.width = th.TextSize.Scale(999)
 	b.Tooltip = PlatformTooltip(th, b.hint)
 	return func(gtx C) D {
 		dims := b.Layout(gtx)
@@ -111,7 +109,7 @@ func Disable(v *bool) BtnOption {
 	}
 }
 
-func drawInk(gtx layout.Context, c Press) {
+func drawInk(gtx C, c Press) {
 	now := gtx.Now
 	t := float64(now.Sub(c.Start).Seconds())
 	end := c.End
@@ -173,7 +171,7 @@ func drawInk(gtx layout.Context, c Press) {
 	paint.PaintOp{}.Add(gtx.Ops)
 }
 
-func PaintBorder(gtx layout.Context, outline f32.Rectangle, col color.NRGBA, width unit.Value, rr unit.Value) {
+func PaintBorder(gtx C, outline f32.Rectangle, col color.NRGBA, width unit.Value, rr unit.Value) {
 	paint.FillShape(gtx.Ops,
 		col,
 		clip.Stroke{
@@ -233,7 +231,7 @@ func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 		for _, c := range b.History() {
 			drawInk(gtx, c)
 		}
-		return layout.Dimensions{Size: gtx.Constraints.Min}
+		return D{Size: gtx.Constraints.Min}
 	}
 }
 
@@ -276,7 +274,7 @@ func layIcon(b *ButtonDef) layout.Widget {
 	return func(gtx C) D { return D{} }
 }
 
-func (b *ButtonDef) Layout(gtx layout.Context) layout.Dimensions {
+func (b *ButtonDef) Layout(gtx C) D {
 	return b.padding.Layout(gtx, func(gtx C) D {
 		return b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
 			b.disabled = false

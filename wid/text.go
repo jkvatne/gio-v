@@ -154,7 +154,7 @@ func (p1 screenPos) Less(p2 screenPos) bool {
 	return p1.Y < p2.Y || (p1.Y == p2.Y && p1.X < p2.X)
 }
 
-func (l aLabel) Layout(gtx layout.Context, s text.Shaper, font text.Font, size unit.Value, txt string) layout.Dimensions {
+func (l aLabel) Layout(gtx C, s text.Shaper, font text.Font, size unit.Value, txt string) D {
 	cs := gtx.Constraints
 	textSize := fixed.I(gtx.Px(size))
 	lines := s.LayoutString(font, textSize, cs.Max.X, txt)
@@ -207,7 +207,7 @@ func textPadding(lines []text.Line) (padding image.Rectangle) {
 	return
 }
 
-func linesDimens(lines []text.Line) layout.Dimensions {
+func linesDimens(lines []text.Line) D {
 	var width fixed.Int26_6
 	var h int
 	var baseline int
@@ -224,7 +224,7 @@ func linesDimens(lines []text.Line) layout.Dimensions {
 		h += lines[len(lines)-1].Descent.Ceil()
 	}
 	w := width.Ceil()
-	return layout.Dimensions{
+	return D{
 		Size: image.Point{
 			X: w,
 			Y: h,

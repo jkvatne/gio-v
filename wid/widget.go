@@ -42,6 +42,10 @@ func (wid *Widget) setPadding(padding layout.Inset) {
 	wid.padding = padding
 }
 
+func (wid *Widget) Pad(l,t,r,b float32) {
+	wid.padding = layout.Inset{Top: unit.Dp(t), Bottom: unit.Dp(b), Left: unit.Dp(l), Right: unit.Dp(r)}
+}
+
 func W(width float32) WidgetOption {
 	return func(w WidgetIf) {
 		w.setWidth(width)

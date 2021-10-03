@@ -57,18 +57,18 @@ func RadioButton(th *Theme, output *string, key string, label string) func(gtx C
 	}
 }
 
-func (r *RadioButtonStyle) layout(gtx layout.Context, checked, hovered bool) layout.Dimensions {
+func (r *RadioButtonStyle) layout(gtx C, checked, hovered bool) D {
 	icon := r.CheckedStateIcon
 	if !checked {
 		icon = r.UncheckedStateIcon
 	}
 
 	dims := layout.Flex{Alignment: layout.Middle}.Layout(gtx,
-		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+		layout.Rigid(func(gtx C) D {
 			return layout.Stack{Alignment: layout.Center}.Layout(gtx,
-				layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+				layout.Stacked(func(gtx C) D {
 					size := gtx.Px(r.Size) * 5 / 4
-					dims := layout.Dimensions{Size: image.Point{X: size, Y: size}}
+					dims := D{Size: image.Point{X: size, Y: size}}
 					if r.Hovered() || r.Focused() {
 						radius := float32(size) / 2
 						paint.FillShape(gtx.Ops,
@@ -82,7 +82,7 @@ func (r *RadioButtonStyle) layout(gtx layout.Context, checked, hovered bool) lay
 					return layout.UniformInset(unit.Dp(1)).Layout(gtx, func(gtx C) D {
 						gtx.Constraints.Min = image.Point{X: gtx.Px(r.Size)}
 						icon.Layout(gtx, ColDisabled(r.IconColor, gtx.Queue==nil))
-						return layout.Dimensions{
+						return D{
 							Size: image.Point{X: gtx.Px(r.Size), Y: gtx.Px(r.Size)},
 						}
 					})
@@ -90,7 +90,7 @@ func (r *RadioButtonStyle) layout(gtx layout.Context, checked, hovered bool) lay
 			)
 		}),
 
-		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+		layout.Rigid(func(gtx C) D {
 			return layout.Inset{Zv, r.th.TextSize, Zv, Zv}.Layout(gtx, func(gtx C) D {
 				paint.ColorOp{Color: r.IconColor}.Add(gtx.Ops)
 				return Label(r.th, r.Label, text.Start, 1.0)(gtx)

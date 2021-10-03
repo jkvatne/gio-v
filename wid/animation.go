@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"gioui.org/layout"
 	"gioui.org/op"
 )
 
@@ -28,7 +27,7 @@ type VisibilityAnimation struct {
 // If the animation is in the process of animating, calling Revealed will automatically add
 // an InvalidateOp to the provided layout.Context to ensure that the next frame will be generated
 // promptly.
-func (v *VisibilityAnimation) Revealed(gtx layout.Context) float32 {
+func (v *VisibilityAnimation) Revealed(gtx C) float32 {
 	if v.Animating() {
 		op.InvalidateOp{}.Add(gtx.Ops)
 	}
@@ -99,7 +98,7 @@ func (v *VisibilityAnimation) ToggleVisibility(now time.Time) {
 	}
 }
 
-func (v *VisibilityAnimation) String(gtx layout.Context) string {
+func (v *VisibilityAnimation) String(gtx C) string {
 	return fmt.Sprintf(
 		"State: %v, Revealed: %f, Duration: %v, Started: %v",
 		v.State,

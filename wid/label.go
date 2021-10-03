@@ -54,7 +54,7 @@ func Label(th *Theme, text string, align text.Alignment, relSize float32) func(g
 	}
 }
 
-func (l LabelDef) Layout(gtx layout.Context) layout.Dimensions {
+func (l LabelDef) Layout(gtx C) D {
 	paint.ColorOp{Color: l.Color}.Add(gtx.Ops)
 	tl := aLabel{Alignment: l.Alignment, MaxLines: l.MaxLines}
 	return tl.Layout(gtx, l.shaper, l.Font, l.TextSize, l.Text)

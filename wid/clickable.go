@@ -10,7 +10,6 @@ import (
 	"gioui.org/gesture"
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
-	"gioui.org/layout"
 )
 
 // Focuser implements the set/move focus
@@ -220,7 +219,7 @@ func (c *Clickable) LayoutClickable(gtx C) D {
 		n := copy(c.history, c.history[1:])
 		c.history = c.history[:n]
 	}
-	return layout.Dimensions{Size: gtx.Constraints.Min}
+	return D{Size: gtx.Constraints.Min}
 }
 
 // update the button state by processing events.

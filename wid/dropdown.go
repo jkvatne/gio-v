@@ -24,9 +24,9 @@ type DropDownDef struct {
 	hovered    []bool
 	Visible    bool
 	wasVisible int
-	list       layout.Widget
-	options    []layout.Widget
-	icon       *Icon
+	list  layout.Widget
+	Items []layout.Widget
+	icon  *Icon
 }
 
 func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx C) D {
@@ -40,11 +40,11 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 	b.index = index
 	b.items = items
 	for i := range items {
-		b.options = append(b.options, b.option(th, i))
+		b.Items = append(b.Items, b.option(th, i))
 		b.hovered = append(b.hovered, false)
 	}
-	b.list = MakeList(th, layout.Vertical, b.options...)
-	b.padding = layout.Inset{Top: unit.Dp(2), Bottom: unit.Dp(2), Left: unit.Dp(5), Right: unit.Dp(1)}
+	b.list = MakeList(th, layout.Vertical, b.Items...)
+	b.Pad(5,2,1,2)
 	for _, option := range options {
 		option.apply(&b)
 	}
@@ -138,7 +138,7 @@ func (b *DropDownDef) option(th *Theme, i int) func(gtx C) D {
 	}
 }
 
-func (b *DropDownDef) Layout(gtx layout.Context) layout.Dimensions {
+func (b *DropDownDef) Layout(gtx C) D {
 	b.disabled = false
 	if b.disabler != nil && *b.disabler || GlobalDisable {
 		gtx = gtx.Disabled()
@@ -183,7 +183,7 @@ func (b *DropDownDef) LayoutBackground() func(gtx C) D {
 		paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		clip.UniformRRect(outline, rr).Add(gtx.Ops)
 		PaintBorder(gtx, outline, b.th.Primary, b.th.BorderThickness, b.th.CornerRadius)
-		return layout.Dimensions{Size: gtx.Constraints.Min}
+		return D{Size: gtx.Constraints.Min}
 	}
 }
 

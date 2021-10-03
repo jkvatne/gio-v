@@ -110,9 +110,9 @@ func (s ScrollbarStyle) Width(metric unit.Metric) unit.Value {
 }
 
 // Layout the scrollbar.
-func (s ScrollbarStyle) Layout(gtx layout.Context, axis layout.Axis, viewportStart, viewportEnd float32) layout.Dimensions {
+func (s ScrollbarStyle) Layout(gtx C, axis layout.Axis, viewportStart, viewportEnd float32) D {
 	if !rangeIsScrollable(viewportStart, viewportEnd) {
-		return layout.Dimensions{}
+		return D{}
 	}
 
 	// Set minimum constraints in an axis-independent way, then convert to
@@ -135,7 +135,7 @@ func (s ScrollbarStyle) Layout(gtx layout.Context, axis layout.Axis, viewportSta
 }
 
 // layout the scroll track and indicator.
-func (s ScrollbarStyle) layout(gtx layout.Context, axis layout.Axis, viewportStart, viewportEnd float32) layout.Dimensions {
+func (s ScrollbarStyle) layout(gtx C, axis layout.Axis, viewportStart, viewportEnd float32) D {
 	inset := layout.Inset{
 		Top:    s.Track.MajorPadding,
 		Bottom: s.Track.MajorPadding,
@@ -150,7 +150,7 @@ func (s ScrollbarStyle) layout(gtx layout.Context, axis layout.Axis, viewportSta
 	outerConstraints := gtx.Constraints
 
 	return layout.Stack{}.Layout(gtx,
-		layout.Expanded(func(gtx layout.Context) layout.Dimensions {
+		layout.Expanded(func(gtx C) D {
 			// Lay out the draggable track underneath the scroll indicator.
 			area := image.Rectangle{
 				Max: gtx.Constraints.Min,
@@ -168,11 +168,11 @@ func (s ScrollbarStyle) layout(gtx layout.Context, axis layout.Axis, viewportSta
 			saved.Load()
 
 			paint.FillShape(gtx.Ops, s.Track.Color, clip.Rect(area).Op())
-			return layout.Dimensions{}
+			return D{}
 		}),
-		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+		layout.Stacked(func(gtx C) D {
 			gtx.Constraints = outerConstraints
-			return inset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+			return inset.Layout(gtx, func(gtx C) D {
 				// Use axis-independent constraints.
 				gtx.Constraints.Min = axis.Convert(gtx.Constraints.Min)
 				gtx.Constraints.Max = axis.Convert(gtx.Constraints.Max)
@@ -209,7 +209,7 @@ func (s ScrollbarStyle) layout(gtx layout.Context, axis layout.Axis, viewportSta
 				pointer.Rect(image.Rectangle{Max: indicatorDims}).Add(gtx.Ops)
 				s.Scrollbar.AddIndicator(gtx.Ops)
 
-				return layout.Dimensions{Size: axis.Convert(gtx.Constraints.Min)}
+				return D{Size: axis.Convert(gtx.Constraints.Min)}
 			})
 		}),
 	)
@@ -236,7 +236,7 @@ type ListStyle struct {
 }
 
 // Layout the list and its scrollbar.
-func (l ListStyle) Layout(gtx layout.Context, length int, w layout.ListElement) layout.Dimensions {
+func (l ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	originalConstraints := gtx.Constraints
 
 	// Determine how much space the scrollbar occupies.
@@ -263,7 +263,7 @@ func (l ListStyle) Layout(gtx layout.Context, length int, w layout.ListElement) 
 	}
 	majorAxisSize := l.list.Axis.Convert(listDims.Size).X
 	start, end := fromListPosition(l.list.Position, length, majorAxisSize)
-	anchoring.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+	anchoring.Layout(gtx, func(gtx C) D {
 		// layout.Dimension respects the minimum, so ensure that the
 		// scrollbar will be drawn on the correct edge even if the provided
 		// layout.Context had a zero minimum constraint.

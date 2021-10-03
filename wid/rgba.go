@@ -3,7 +3,6 @@
 package wid
 
 import (
-	"gioui.org/layout"
 	"gioui.org/unit"
 	"image/color"
 )
@@ -22,7 +21,7 @@ func DeEmphasis(c color.NRGBA, amount uint8) color.NRGBA {
 }
 
 // Pxr maps the value v to pixels, returning a float32
-func Pxr(c layout.Context, v unit.Value) float32 {
+func Pxr(c C, v unit.Value) float32 {
 	return float32(c.Metric.Px(v))
 }
 

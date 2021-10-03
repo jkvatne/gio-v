@@ -19,7 +19,7 @@ type BorderDef struct {
 	Width        unit.Value
 }
 
-func (b BorderDef) Layout(gtx layout.Context, w layout.Widget) layout.Dimensions {
+func (b BorderDef) Layout(gtx C, w layout.Widget) D {
 	dims := w(gtx)
 	sz := layout.FPt(dims.Size)
 	rr := float32(gtx.Px(b.CornerRadius))

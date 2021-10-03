@@ -61,11 +61,11 @@ func (c *CheckBoxDef) layout(gtx C) D {
 		icon = c.CheckedStateIcon
 	}
 	dims := layout.Flex{Alignment: layout.Middle}.Layout(gtx,
-		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+		layout.Rigid(func(gtx C) D {
 			return layout.Stack{Alignment: layout.Center}.Layout(gtx,
-				layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+				layout.Stacked(func(gtx C) D {
 					size := gtx.Px(c.Size) * 4 / 3
-					dims := layout.Dimensions{
+					dims := D{
 						Size: image.Point{X: size, Y: size},
 					}
 					if !c.Hovered() && !c.Focused() {
@@ -83,8 +83,8 @@ func (c *CheckBoxDef) layout(gtx C) D {
 
 					return dims
 				}),
-				layout.Stacked(func(gtx layout.Context) layout.Dimensions {
-					return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				layout.Stacked(func(gtx C) D {
+					return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
 						size := gtx.Px(c.Size)
 						col := c.IconColor
 						if gtx.Queue == nil {
@@ -92,7 +92,7 @@ func (c *CheckBoxDef) layout(gtx C) D {
 						}
 						gtx.Constraints.Min = image.Point{X: size}
 						icon.Layout(gtx, col)
-						return layout.Dimensions{
+						return D{
 							Size: image.Point{X: size, Y: size},
 						}
 					})
@@ -100,8 +100,8 @@ func (c *CheckBoxDef) layout(gtx C) D {
 			)
 		}),
 
-		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		layout.Rigid(func(gtx C) D {
+			return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
 				paint.ColorOp{Color: c.TextColor}.Add(gtx.Ops)
 				tl := aLabel{Alignment: text.Middle, MaxLines: 1}
 				return tl.Layout(gtx, c.shaper, c.Font, c.TextSize, c.Label)

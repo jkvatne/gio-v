@@ -31,7 +31,6 @@ func Switch(th *Theme, State *bool, handler func(b bool)) func(gtx C) D {
 	s.handler = handler
 	s.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
 	return func(gtx C) D {
-		//dims := s.Layout(gtx)
 		dims := s.padding.Layout(gtx, func(gtx C) D { return s.Layout(gtx) })
 		if handler != nil {
 			s.HandleToggle(s.Value, &s.changed)
@@ -114,5 +113,5 @@ func (s *SwitchDef) Layout(gtx C) D {
 	s.HandleClicks(gtx)
 	s.HandleKeys(gtx)
 	dims := image.Point{X: trackWidth, Y: thumbSize}
-	return layout.Dimensions{Size: dims}
+	return D{Size: dims}
 }

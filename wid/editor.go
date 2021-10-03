@@ -60,7 +60,7 @@ type Editor struct {
 	valid      bool
 	lines      []text.Line
 	shapes     []line
-	dims       layout.Dimensions
+	dims       D
 
 	caret struct {
 		on     bool
@@ -196,7 +196,7 @@ func (e *Editor) Events() []EditorEvent {
 	return events
 }
 
-func (e *Editor) processEvents(gtx layout.Context) {
+func (e *Editor) processEvents(gtx C) {
 	// Flush events from before the previous Layout.
 	n := copy(e.events, e.events[e.prevEvents:])
 	e.events = e.events[:n]
@@ -224,7 +224,7 @@ func (e *Editor) makeValid(positions ...*combinedPos) {
 	e.valid = true
 }
 
-func (e *Editor) processPointer(gtx layout.Context) {
+func (e *Editor) processPointer(gtx C) {
 	sbounds := e.scrollBounds()
 	var smin, smax int
 	var axis gesture.Axis
@@ -307,7 +307,7 @@ func (e *Editor) processPointer(gtx layout.Context) {
 	}
 }
 
-func (e *Editor) clickDragEvents(gtx layout.Context) []event.Event {
+func (e *Editor) clickDragEvents(gtx C) []event.Event {
 	var combinedEvents []event.Event
 	for _, evt := range e.click.Events(gtx) {
 		combinedEvents = append(combinedEvents, evt)
@@ -318,7 +318,7 @@ func (e *Editor) clickDragEvents(gtx layout.Context) []event.Event {
 	return combinedEvents
 }
 
-func (e *Editor) processKey(gtx layout.Context) {
+func (e *Editor) processKey(gtx C) {
 	if e.rr.Changed() {
 		e.events = append(e.events, ChangeEvent{})
 	}
@@ -375,7 +375,7 @@ func (e *Editor) moveLines(distance int, selAct selectionAction) {
 	e.updateSelection(selAct)
 }
 
-func (e *Editor) command(gtx layout.Context, k key.Event) bool {
+func (e *Editor) command(gtx C, k key.Event) bool {
 	modSkip := key.ModCtrl
 	if runtime.GOOS == "darwin" {
 		modSkip = key.ModAlt
@@ -461,7 +461,7 @@ func (e *Editor) command(gtx layout.Context, k key.Event) bool {
 }
 
 // Layout lays out the editor.
-func (e *Editor) Layout(gtx layout.Context, sh text.Shaper, font text.Font, size unit.Value) layout.Dimensions {
+func (e *Editor) Layout(gtx C, sh text.Shaper, font text.Font, size unit.Value) D {
 	textSize := fixed.I(gtx.Px(size))
 	if e.font != font || e.textSize != textSize {
 		e.invalidate()
@@ -498,7 +498,7 @@ func (e *Editor) Layout(gtx layout.Context, sh text.Shaper, font text.Font, size
 	return e.layout(gtx)
 }
 
-func (e *Editor) layout(gtx layout.Context) layout.Dimensions {
+func (e *Editor) layout(gtx C) D {
 	// Adjust scrolling for new viewport and layout.
 	e.scrollRel(0, 0)
 
@@ -574,11 +574,11 @@ func (e *Editor) layout(gtx layout.Context) layout.Dimensions {
 		e.caret.on = e.Clickable.focused && (!blinking || dt%timePerBlink < timePerBlink/2)
 	}
 
-	return layout.Dimensions{Size: e.viewSize, Baseline: e.dims.Baseline}
+	return D{Size: e.viewSize, Baseline: e.dims.Baseline}
 }
 
 // PaintSelection paints the contrasting background for selected text.
-func (e *Editor) PaintSelection(gtx layout.Context) {
+func (e *Editor) PaintSelection(gtx C) {
 	cl := textPadding(e.lines)
 	cl.Max = cl.Max.Add(e.viewSize)
 	clip.Rect(cl).Add(gtx.Ops)
@@ -596,7 +596,7 @@ func (e *Editor) PaintSelection(gtx layout.Context) {
 	}
 }
 
-func (e *Editor) PaintText(gtx layout.Context) {
+func (e *Editor) PaintText(gtx C) {
 	cl := textPadding(e.lines)
 	cl.Max = cl.Max.Add(e.viewSize)
 	clip.Rect(cl).Add(gtx.Ops)
@@ -609,7 +609,7 @@ func (e *Editor) PaintText(gtx layout.Context) {
 	}
 }
 
-func (e *Editor) PaintCaret(gtx layout.Context) {
+func (e *Editor) PaintCaret(gtx C) {
 	if !e.caret.on {
 		return
 	}
@@ -723,7 +723,7 @@ func (e *Editor) moveCoord(pos image.Point) {
 	e.caret.start.xoff = 0
 }
 
-func (e *Editor) layoutText(s text.Shaper) ([]text.Line, layout.Dimensions) {
+func (e *Editor) layoutText(s text.Shaper) ([]text.Line, D) {
 	e.rr.Reset()
 	var r io.Reader = &e.rr
 	if e.Mask != 0 {

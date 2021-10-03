@@ -7,7 +7,6 @@ import (
 	"image/color"
 	"image/draw"
 
-	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
@@ -36,7 +35,7 @@ func NewIcon(data []byte) (*Icon, error) {
 }
 
 // Layout displays the icon with its size set to the X minimum constraint.
-func (ic *Icon) Layout(gtx layout.Context, color color.NRGBA) layout.Dimensions {
+func (ic *Icon) Layout(gtx C, color color.NRGBA) D {
 	sz := gtx.Constraints.Min.X
 	if sz == 0 {
 		sz = gtx.Metric.Px(defaultIconSize)
@@ -48,9 +47,7 @@ func (ic *Icon) Layout(gtx layout.Context, color color.NRGBA) layout.Dimensions 
 	ico := ic.image(size.X, color)
 	ico.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
-	return layout.Dimensions{
-		Size: ico.Size(),
-	}
+	return D{Size: ico.Size()}
 }
 
 func (ic *Icon) image(sz int, c color.NRGBA) paint.ImageOp {
