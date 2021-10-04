@@ -218,11 +218,11 @@ func setupForm(th *wid.Theme) *app.Window {
 
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.Label(th, "Name", text.End, 1.0),
-			wid.Edit(th, wid.Hint("Enter name here")),
+			wid.Edit(th, wid.Hint("")),
 		),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.Label(th, "Address", text.End, 1.0),
-			wid.Edit(th, wid.Hint("Enter address here")),
+			wid.Edit(th, wid.Hint("")),
 		),
 
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,

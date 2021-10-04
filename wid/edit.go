@@ -18,9 +18,9 @@ type EditDef struct {
 	alignment layout.Alignment
 	CharLimit uint
 	font      text.Font
+	LeadSize  unit.Value
 }
 
-type EditOption func(*EditDef)
 
 func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e := new(EditDef)
@@ -28,6 +28,7 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	// Set up default values
 	e.th = th
 	e.shaper = th.Shaper
+	e.LeadSize = unit.Dp(150)
 	e.MaxLines = 1
 	e.width = unit.Dp(5000) // Default to max width that is possible
 	e.padding = layout.Inset{Top: unit.Dp(2), Bottom: unit.Dp(2), Left: unit.Dp(5), Right: unit.Dp(1)}
@@ -38,18 +39,39 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	return func(gtx C) D {
 			defer op.Save(gtx.Ops).Load()
 			gtx.Constraints.Min.X = 0
-			min := CalcMin(gtx, e.width)
-			return e.padding.Layout(gtx, func (gtx C) D{
+			return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start, Spacing: layout.SpaceStart}.Layout(
+				gtx,
+				layout.Rigid(layLbl(e)),
+				layout.Rigid(layEdit(e)),
+			)
+	}
+}
+
+func layEdit(e *EditDef) layout.Widget{
+	return func(gtx C) D {
+		return e.padding.Layout(gtx, func (gtx C) D {
 			return layout.Stack{}.Layout(
 				gtx,
-				layout.Expanded(func (gtx C) D{
-					gtx.Constraints.Min = min
-					return e.th.LabelInset.Layout(gtx, func (gtx C) D{
+				layout.Expanded(func(gtx C) D {
+					gtx.Constraints.Min.X = 5000
+					return e.th.LabelInset.Layout(gtx, func(gtx C) D {
 						return e.LayoutEdit()(gtx)
 					})
 				}),
 				layout.Expanded(e.LayoutBorder()),
-			)
+			)})
+	}
+}
+
+func layLbl(b *EditDef) layout.Widget {
+	return func(gtx C) D {
+		return b.th.LabelInset.Layout(gtx, func(gtx C) D {
+			if b.hint=="" {
+				return D{}
+			}
+			gtx.Constraints.Min.X = gtx.Metric.Px(b.LeadSize)
+			paint.ColorOp{Color: b.th.OnBackground}.Add(gtx.Ops)
+			return aLabel{Alignment: text.End}.Layout(gtx, b.shaper, b.font, b.th.TextSize, b.hint)
 		})
 	}
 }
