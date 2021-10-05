@@ -41,7 +41,6 @@ type Theme struct {
 	TooltipWidth          unit.Value
 	TooltipBackground     color.NRGBA
 	TooltipOnBackground   color.NRGBA
-	TextTopInset          unit.Value
 	LabelInset            layout.Inset
 	IconInset             layout.Inset
 	ListInset             layout.Inset

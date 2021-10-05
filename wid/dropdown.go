@@ -182,7 +182,7 @@ func (b *DropDownDef) LayoutBackground() func(gtx C) D {
 		}}
 		paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		clip.UniformRRect(outline, rr).Add(gtx.Ops)
-		PaintBorder(gtx, outline, b.th.Primary, b.th.BorderThickness, b.th.CornerRadius)
+		PaintBorder(gtx, outline, b.th.OnBackground, b.th.BorderThickness, b.th.CornerRadius)
 		return D{Size: gtx.Constraints.Min}
 	}
 }
@@ -193,7 +193,7 @@ func (b *DropDownDef) LayoutLabel() layout.Widget {
 			gtx.Constraints.Min.X = gtx.Px(b.width)
 		}
 		return b.th.LabelInset.Layout(gtx, func(gtx C) D {
-			paint.ColorOp{Color: b.th.Primary}.Add(gtx.Ops)
+			paint.ColorOp{Color: b.th.OnBackground}.Add(gtx.Ops)
 			if b.index < 0 {
 				b.index = 0
 			}

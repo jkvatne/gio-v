@@ -18,7 +18,7 @@ type EditDef struct {
 	alignment layout.Alignment
 	CharLimit uint
 	font      text.Font
-	LeadSize  unit.Value
+	LabelSize unit.Value
 }
 
 
@@ -28,10 +28,10 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	// Set up default values
 	e.th = th
 	e.shaper = th.Shaper
-	e.LeadSize = unit.Dp(150)
+	e.LabelSize = unit.Dp(150)
 	e.MaxLines = 1
 	e.width = unit.Dp(5000) // Default to max width that is possible
-	e.padding = layout.Inset{Top: unit.Dp(2), Bottom: unit.Dp(2), Left: unit.Dp(5), Right: unit.Dp(1)}
+	e.padding = layout.Inset{Top: unit.Dp(10), Bottom: unit.Dp(2), Left: unit.Dp(5), Right: unit.Dp(1)}
 	// Read in options to change from default values to something else.
 	for _, option := range options {
 		option.apply(e)
@@ -41,13 +41,13 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 			gtx.Constraints.Min.X = 0
 			return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start, Spacing: layout.SpaceStart}.Layout(
 				gtx,
-				layout.Rigid(layLbl(e)),
-				layout.Rigid(layEdit(e)),
+				layout.Rigid(e.layLabel()),
+				layout.Rigid(e.layEdit()),
 			)
 	}
 }
 
-func layEdit(e *EditDef) layout.Widget{
+func (e *EditDef)layEdit() layout.Widget{
 	return func(gtx C) D {
 		return e.padding.Layout(gtx, func (gtx C) D {
 			return layout.Stack{}.Layout(
@@ -63,15 +63,17 @@ func layEdit(e *EditDef) layout.Widget{
 	}
 }
 
-func layLbl(b *EditDef) layout.Widget {
+func (e *EditDef)layLabel() layout.Widget {
 	return func(gtx C) D {
-		return b.th.LabelInset.Layout(gtx, func(gtx C) D {
-			if b.hint=="" {
+		p := e.padding
+		p.Top = unit.Dp(p.Top.V + e.th.LabelInset.Top.V)
+		return p.Layout(gtx, func(gtx C) D {
+			if e.hint=="" {
 				return D{}
 			}
-			gtx.Constraints.Min.X = gtx.Metric.Px(b.LeadSize)
-			paint.ColorOp{Color: b.th.OnBackground}.Add(gtx.Ops)
-			return aLabel{Alignment: text.End}.Layout(gtx, b.shaper, b.font, b.th.TextSize, b.hint)
+			gtx.Constraints.Min.X = gtx.Metric.Px(e.LabelSize)
+			paint.ColorOp{Color: e.th.OnBackground}.Add(gtx.Ops)
+			return aLabel{Alignment: text.End}.Layout(gtx, e.shaper, e.font, e.th.TextSize, e.hint)
 		})
 	}
 }
