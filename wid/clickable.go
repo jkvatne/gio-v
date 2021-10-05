@@ -272,6 +272,7 @@ func (c *Clickable) HandleClicks(gtx C) D {
 	for _, e := range c.click.Events(gtx) {
 		switch e.Type {
 		case gesture.TypeClick:
+			c.requestFocus = true
 			c.clicks = append(c.clicks, Click{
 				Modifiers: e.Modifiers,
 				NumClicks: e.NumClicks,
