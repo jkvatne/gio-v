@@ -58,7 +58,7 @@ func (e *EditDef)layEdit() layout.Widget{
 						return e.LayoutEdit()(gtx)
 					})
 				}),
-				layout.Expanded(e.LayoutBorder()),
+				layout.Expanded(LayoutBorder(&e.Clickable, e.th)),
 			)})
 	}
 }
@@ -114,18 +114,18 @@ func (e *EditDef) LayoutEdit() func(gtx C) D {
 	}
 }
 
-func (e *EditDef) LayoutBorder() func(gtx C) D {
+func  LayoutBorder(e *Clickable, th *Theme) func(gtx C) D {
 	return func(gtx C) D {
 		outline := f32.Rectangle{Max: f32.Point{
 			X: float32(gtx.Constraints.Min.X),
 			Y: float32(gtx.Constraints.Min.Y),
 		}}
 		if e.Focused() {
-			PaintBorder(gtx, outline, MulAlpha(e.th.Primary, 255), e.th.BorderThicknessActive, e.th.CornerRadius)
+			PaintBorder(gtx, outline, MulAlpha(th.Primary, 255), th.BorderThicknessActive, th.CornerRadius)
 		} else if e.Hovered() {
-			PaintBorder(gtx, outline, MulAlpha(e.th.Primary, 100), e.th.BorderThickness, e.th.CornerRadius)
+			PaintBorder(gtx, outline, MulAlpha(th.Primary, 140), th.BorderThickness, th.CornerRadius)
 		} else {
-			PaintBorder(gtx, outline, MulAlpha(e.th.Primary, 50), e.th.BorderThickness, e.th.CornerRadius)
+			PaintBorder(gtx, outline, MulAlpha(th.Primary, 50), th.BorderThickness, th.CornerRadius)
 		}
 		return D{}
 	}

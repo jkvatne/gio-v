@@ -182,7 +182,7 @@ func (b *DropDownDef) LayoutBackground() func(gtx C) D {
 		}}
 		paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		clip.UniformRRect(outline, rr).Add(gtx.Ops)
-		PaintBorder(gtx, outline, b.th.OnBackground, b.th.BorderThickness, b.th.CornerRadius)
+		LayoutBorder(&b.Clickable, b.th)(gtx)
 		return D{Size: gtx.Constraints.Min}
 	}
 }
