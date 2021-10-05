@@ -243,7 +243,6 @@ func (l ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	barWidth := gtx.Px(l.Width(gtx.Metric))
 
 	if l.AnchorStrategy == Occupy {
-
 		// Reserve space for the scrollbar using the gtx constraints.
 		max := l.list.Axis.Convert(gtx.Constraints.Max)
 		min := l.list.Axis.Convert(gtx.Constraints.Min)

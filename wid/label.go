@@ -37,9 +37,6 @@ func CreateLabelDef(th *Theme, text string, align text.Alignment, relSize float3
 }
 
 func Label(th *Theme, text string, align text.Alignment, relSize float32) func(gtx C) D {
-	if relSize == 0.0 {
-		relSize = 1.0
-	}
 	lbl := LabelDef{
 		Text:      text,
 		Color:     th.OnBackground,
@@ -47,10 +44,11 @@ func Label(th *Theme, text string, align text.Alignment, relSize float32) func(g
 		shaper:    th.Shaper,
 		Alignment: align,
 	}
-	lbl.padding = layout.Inset{}
-
+	lbl.padding = th.LabelPadding
 	return func(gtx C) D {
-		return lbl.padding.Layout(gtx, func(gtx C) D { return lbl.Layout(gtx) })
+		return lbl.padding.Layout(gtx, func(gtx C) D {
+			return lbl.Layout(gtx)
+		})
 	}
 }
 

@@ -54,7 +54,7 @@ func (e *EditDef)layEdit() layout.Widget{
 				gtx,
 				layout.Expanded(func(gtx C) D {
 					gtx.Constraints.Min.X = 5000
-					return e.th.LabelInset.Layout(gtx, func(gtx C) D {
+					return e.th.LabelPadding.Layout(gtx, func(gtx C) D {
 						return e.LayoutEdit()(gtx)
 					})
 				}),
@@ -66,7 +66,7 @@ func (e *EditDef)layEdit() layout.Widget{
 func (e *EditDef)layLabel() layout.Widget {
 	return func(gtx C) D {
 		p := e.padding
-		p.Top = unit.Dp(p.Top.V + e.th.LabelInset.Top.V)
+		p.Top = unit.Dp(p.Top.V + e.th.LabelPadding.Top.V)
 		return p.Layout(gtx, func(gtx C) D {
 			if e.hint=="" {
 				return D{}

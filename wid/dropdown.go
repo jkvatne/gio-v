@@ -192,7 +192,7 @@ func (b *DropDownDef) LayoutLabel() layout.Widget {
 		if gtx.Px(b.width) > gtx.Constraints.Min.X {
 			gtx.Constraints.Min.X = gtx.Px(b.width)
 		}
-		return b.th.LabelInset.Layout(gtx, func(gtx C) D {
+		return b.th.LabelPadding.Layout(gtx, func(gtx C) D {
 			paint.ColorOp{Color: b.th.OnBackground}.Add(gtx.Ops)
 			if b.index < 0 {
 				b.index = 0

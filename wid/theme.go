@@ -41,7 +41,7 @@ type Theme struct {
 	TooltipWidth          unit.Value
 	TooltipBackground     color.NRGBA
 	TooltipOnBackground   color.NRGBA
-	LabelInset            layout.Inset
+	LabelPadding          layout.Inset
 	IconInset             layout.Inset
 	ListInset             layout.Inset
 	// Elevation is the shadow width
@@ -103,7 +103,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme 
 	// Shadow
 	t.Elevation = t.TextSize.Scale(0.5)
 	// Text
-	t.LabelInset = layout.Inset{Top: v, Right: v.Scale(2.0), Bottom: v, Left: v.Scale(2.0)}
+	t.LabelPadding = layout.Inset{Top: v, Right: v.Scale(2.0), Bottom: v, Left: v.Scale(2.0)}
 	t.HintColor = DeEmphasis(t.OnBackground, 15)
 	t.SelectionColor = MulAlpha(t.Primary, 0x60)
 	// Tooltip

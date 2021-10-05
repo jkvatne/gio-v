@@ -16,11 +16,16 @@ func (n *node) addChild(w layout.Widget) {
 	n.children = append(n.children, &node{w: &w})
 }
 
-func MakeList(th *Theme, dir layout.Axis, widgets ...layout.Widget) layout.Widget {
+func makeNode(widgets []layout.Widget) node {
 	node := node{}
 	for _, w := range widgets {
 		node.addChild(w)
 	}
+	return node
+}
+
+func MakeList(th *Theme, dir layout.Axis, widgets ...layout.Widget) layout.Widget {
+	node := makeNode(widgets)
 	listStyle := ListStyle{
 		list:           &layout.List{Axis: dir},
 		ScrollbarStyle: MakeScrollbarStyle(th),
@@ -45,16 +50,13 @@ func Row(spacing layout.Spacing, widgets ...layout.Widget) layout.Widget {
 }
 
 func MakeFlex(axis layout.Axis, spacing layout.Spacing, widgets ...layout.Widget) layout.Widget {
-	node := node{}
 	var ops op.Ops
 	var dims []image.Point
+	node := makeNode(widgets)
 	gtx := layout.Context{Ops: &ops, Constraints: layout.Constraints{image.Point{0, 0}, image.Point{3000,600}}}
 	for _, w := range widgets {
 		d := w(gtx).Size
 		dims = append(dims, d)
-	}
-	for _, w := range widgets {
-		node.addChild(w)
 	}
 	return func(gtx C) D {
 		var children []layout.FlexChild

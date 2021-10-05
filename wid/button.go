@@ -240,7 +240,7 @@ func layLabel(b *ButtonDef) layout.Widget {
 		return func(gtx C) D { return D{} }
 	}
 	return func(gtx C) D {
-		return b.th.LabelInset.Layout(gtx, func(gtx C) D {
+		return b.th.LabelPadding.Layout(gtx, func(gtx C) D {
 			switch {
 			case (b.Style == Text || b.Style == Outlined) && gtx.Queue == nil:
 				paint.ColorOp{Color: Disabled(b.th.Primary)}.Add(gtx.Ops)
