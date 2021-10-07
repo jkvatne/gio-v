@@ -59,7 +59,44 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	gtx.Constraints.Min = axis.Convert(image.Pt(sizeMain-2*thumbRadius, sizeCross))
 
 
-	s.LayoutFloat(gtx, thumbRadius, s.Min, s.Max)
+//	s.LayoutFloat(gtx, thumbRadius, s.Min, s.Max)
+	size = gtx.Constraints.Min
+	s.float.length = float32(s.float.Axis.Convert(size).X)
+
+	var de *pointer.Event
+	for _, e := range s.float.drag.Events(gtx.Metric, gtx, gesture.Axis(s.float.Axis)) {
+		if e.Type == pointer.Press || e.Type == pointer.Drag {
+			de = &e
+		}
+	}
+
+	value := s.float.Value
+	if de != nil {
+		xy := de.Position.X
+		if s.float.Axis == layout.Vertical {
+			xy = de.Position.Y
+		}
+		s.float.pos = xy / s.float.length
+		value = s.Min + (s.Max-s.Min)*s.float.pos
+	} else if s.Min != s.Max {
+		s.float.pos = (value - s.Min) / (s.Max - s.Min)
+	}
+	// Unconditionally call setValue in case min, max, or value changed.
+	s.float.setValue(value, s.Min, s.Max)
+
+	if s.float.pos < 0 {
+		s.float.pos = 0
+	} else if s.float.pos > 1 {
+		s.float.pos = 1
+	}
+
+	margin := s.float.Axis.Convert(image.Pt(thumbRadius, 0))
+	rect := image.Rectangle{
+		Min: margin.Mul(-1),
+		Max: size.Add(margin),
+	}
+	pointer.Rect(rect).Add(gtx.Ops)
+	s.float.drag.Add(gtx.Ops)
 
 
 	gtx.Constraints.Min = gtx.Constraints.Min.Add(axis.Convert(image.Pt(0, sizeCross)))
@@ -124,43 +161,6 @@ func (f *Float) Dragging() bool { return f.drag.Dragging() }
 //
 // The range of f is set by the minimum constraints main axis value.
 func (s *SliderStyle) LayoutFloat(gtx layout.Context, thumbRadius int, min, max float32)  {
-	size := gtx.Constraints.Min
-	s.float.length = float32(s.float.Axis.Convert(size).X)
-
-	var de *pointer.Event
-	for _, e := range s.float.drag.Events(gtx.Metric, gtx, gesture.Axis(s.float.Axis)) {
-		if e.Type == pointer.Press || e.Type == pointer.Drag {
-			de = &e
-		}
-	}
-
-	value := s.float.Value
-	if de != nil {
-		xy := de.Position.X
-		if s.float.Axis == layout.Vertical {
-			xy = de.Position.Y
-		}
-		s.float.pos = xy / s.float.length
-		value = min + (max-min)*s.float.pos
-	} else if min != max {
-		s.float.pos = (value - min) / (max - min)
-	}
-	// Unconditionally call setValue in case min, max, or value changed.
-	s.float.setValue(value, min, max)
-
-	if s.float.pos < 0 {
-		s.float.pos = 0
-	} else if s.float.pos > 1 {
-		s.float.pos = 1
-	}
-
-	margin := s.float.Axis.Convert(image.Pt(thumbRadius, 0))
-	rect := image.Rectangle{
-		Min: margin.Mul(-1),
-		Max: size.Add(margin),
-	}
-	pointer.Rect(rect).Add(gtx.Ops)
-	s.float.drag.Add(gtx.Ops)
 }
 
 func (f *Float) setValue(value, min, max float32) {
