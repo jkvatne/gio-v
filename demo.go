@@ -21,10 +21,14 @@ import (
 	"image"
 	"image/color"
 	"log"
+	"strings"
 	"time"
 )
 
-var selected string
+var Mode = "maximized"
+var Fontsize = "medium"
+var oldmode string
+var oldfontsize string
 
 // green is the state variable for the button color
 var green = false
@@ -38,8 +42,11 @@ var root layout.Widget
 // formSize is the current window size
 var windowSize image.Point
 
+var win *app.Window
+
 func main() {
-	flag.IntVar(&alt, "alt", 0, "Select windows placement/mode")
+	flag.StringVar(&Mode, "mode", "maximized", "Select windows fullscreen, maximized, centered")
+	flag.StringVar(&Fontsize, "fontsize", "medium", "Select font size medium,small,large")
 	flag.Parse()
 	progressIncrementer := make(chan float32)
 	go func() {
@@ -49,12 +56,12 @@ func main() {
 		}
 	}()
 	go func() {
-		//onSwitchMode(false)
 		currentTheme = wid.NewTheme(gofont.Collection(), 14, wid.MaterialDesignLight)
-		w := setupForm(currentTheme)
+		win = app.NewWindow()
+		setupForm(currentTheme)
 		for {
 			select {
-			case e := <-w.Events():
+			case e := <-win.Events():
 				switch e := e.(type) {
 				case system.DestroyEvent:
 					log.Fatal(e.Err)
@@ -66,7 +73,7 @@ func main() {
 				if progress > 1 {
 					progress = 0
 				}
-				w.Invalidate()
+				win.Invalidate()
 			}
 		}
 	}()
@@ -74,10 +81,33 @@ func main() {
 }
 
 func updateWindowSize(th *wid.Theme, e system.FrameEvent) {
-	if windowSize.X != e.Size.X || windowSize.Y != e.Size.Y {
-		th.TextSize = unit.Dp(float32(e.Size.X) / 100)
+	if Mode != oldmode {
+		if strings.EqualFold(Mode,"fullscreen") {
+			win.Option(app.Fullscreen.Option())
+		} else if strings.EqualFold(Mode,"maximized") {
+			win.Option(app.Maximized.Option())
+		} else if strings.EqualFold(Mode,"centered") {
+			win.Option(app.Size(unit.Px(500), unit.Px(800)), app.Center())
+		}
+		//windowSize = e.Size
+	}
+	if oldfontsize!=Fontsize || windowSize.X != e.Size.X || windowSize.Y != e.Size.Y {
+		switch Fontsize {
+		case "medium", "Medium":
+			th.TextSize = unit.Dp(float32(e.Size.Y) / 60)
+		case "large", "Large":
+			th.TextSize = unit.Dp(float32(e.Size.Y) / 45)
+		case "small", "Small":
+			th.TextSize = unit.Dp(float32(e.Size.Y) / 80)
+		}
+		//windowSize = e.Size
+	}
+	if windowSize.X != e.Size.X || windowSize.Y != e.Size.Y || oldmode!=Mode  || oldfontsize!=Fontsize {
+		th.TextSize = unit.Dp(float32(e.Size.Y) / 50)
 		setupForm(th)
 		windowSize = e.Size
+		oldmode = Mode
+		oldfontsize = Fontsize
 	}
 }
 
@@ -126,34 +156,25 @@ var thb wid.Theme
 var alt int
 var progress float32
 
-func setupForm(th *wid.Theme) *app.Window {
+func setupForm(th *wid.Theme) {
 	thb = *th
-	var w *app.Window
-	switch {
-	case alt == 2:
-		// A full-screen window
-		w = app.NewWindow(app.Title("Gio-v demo"), app.Fullscreen.Option())
-	case alt == 3:
-		//Place at a given location.
-		w = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Px(960), unit.Px(540)), app.Pos(unit.Px(960), unit.Px(540)))
-	case alt == 4:
-		//   A maximized window
-		w = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Px(1800), unit.Px(990)), app.Maximized.Option())
-	case alt == 5:
-		// Place at center of monitor
-		w = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Px(960), unit.Px(540)), app.Center())
-	default:
-		w = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Px(1900), unit.Px(1000)))
-
-	}
-
 	// Test with gray as primary color
 	// th.Primary = wid.RGB(0x555555)
-
 	root = wid.MakeList(
 		th, layout.Vertical,
 
 		wid.Label(th, "Demo page", text.Middle, 2.0),
+		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
+			wid.RadioButton(th, &Mode, "fullscreen", ""),
+			wid.RadioButton(th, &Mode, "maximized", ""),
+			wid.RadioButton(th, &Mode, "centered", ""),
+		),
+		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
+			wid.RadioButton(th, &Fontsize, "small", ""),
+			wid.RadioButton(th, &Fontsize, "medium", ""),
+			wid.RadioButton(th, &Fontsize, "large", ""),
+		),
+		wid.Label(th, "", text.Start, 1.0),
 		wid.Label(th, "A fixed width button at the middle of the screen:", text.Start, 1.0),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
 			wid.Button(th, "WIDE CENTERED BUTTON",
@@ -183,7 +204,7 @@ func setupForm(th *wid.Theme) *app.Window {
 		),
 		// Row with all buttons at minimum size, spread evenly
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEvenly,
-			wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode),wid.Min()),
+			wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode), wid.Min()),
 			wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.Min()),
 			wid.Button(&thb, "Change color", wid.Handler(onClick), wid.Min()),
 			wid.TextButton(th, "Text button", wid.Min()),
@@ -202,11 +223,7 @@ func setupForm(th *wid.Theme) *app.Window {
 		wid.Edit(th, wid.Hint("Value 1"), wid.W(300)),
 		// Relative size
 		wid.Edit(th, wid.Hint("Value 2"), wid.W(0.5)),
-		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
-			wid.RadioButton(th, &selected, "RadioOption1", "Option1"),
-			wid.RadioButton(th, &selected, "RadioOption2", "Option2"),
-			wid.RadioButton(th, &selected, "RadioOption3", "Option3"),
-		),
+
 		// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
 		wid.Row(layout.SpaceStart,
 			wid.Edit(th, wid.Hint("Value 3")),
@@ -244,5 +261,4 @@ func setupForm(th *wid.Theme) *app.Window {
 
 		//wid.ProgressBar(th, &progress),
 	)
-	return w
 }
