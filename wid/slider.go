@@ -53,13 +53,10 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	sizeCross := max(2*thumbRadius, touchSizePx)
 	size := axis.Convert(image.Pt(sizeMain, sizeCross))
 
-	//st := op.Save(gtx.Ops)
 	o := axis.Convert(image.Pt(thumbRadius, 0))
 	op.Offset(layout.FPt(o)).Add(gtx.Ops)
 	gtx.Constraints.Min = axis.Convert(image.Pt(sizeMain-2*thumbRadius, sizeCross))
 
-
-//	s.LayoutFloat(gtx, thumbRadius, s.Min, s.Max)
 	size = gtx.Constraints.Min
 	s.float.length = float32(s.float.Axis.Convert(size).X)
 
@@ -101,7 +98,6 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 
 	gtx.Constraints.Min = gtx.Constraints.Min.Add(axis.Convert(image.Pt(0, sizeCross)))
 	thumbPos := thumbRadius + int(s.float.Pos())
-	//st.Load()
 
 	color := s.Color
 	if gtx.Queue == nil {
@@ -130,15 +126,18 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 
 	// Draw thumb.
 	pt := axis.Convert(image.Pt(thumbPos, sizeCross/2))
+	if s.Hovered() {
+		color = Hovered(color)
+	}
 	paint.FillShape(gtx.Ops, color,
 		clip.Circle{
 			Center: f32.Point{X: float32(pt.X), Y: float32(pt.Y)},
 			Radius: float32(thumbRadius),
 		}.Op(gtx.Ops))
 
-	//s.LayoutClickable(gtx)
-	//s.HandleClicks(gtx)
-	//s.HandleKeys(gtx)
+	s.LayoutClickable(gtx)
+	s.HandleKeys(gtx)
+	s.HandleClicks(gtx)
 
 	return layout.Dimensions{Size: size}
 }
