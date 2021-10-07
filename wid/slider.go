@@ -18,7 +18,7 @@ import (
 type SliderStyle struct {
 	Widget
 	Clickable
-	float *Float
+	Float    *Float
 	Min, Max float32
 	Color    color.NRGBA
 	FingerSize unit.Value
@@ -29,7 +29,7 @@ func Slider(th *Theme, min, max float32) layout.Widget {
 	s := SliderStyle{
 		Min:        min,
 		Max:        max,
-		float:      &Float{},
+		Float:      &Float{},
 		Color:      th.OnBackground,
 		FingerSize: th.FingerSize,
 	}
@@ -43,7 +43,7 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	thumbRadius := gtx.Px(unit.Dp(18))
 	trackWidth := gtx.Px(unit.Dp(14))
 
-	axis := s.float.Axis
+	axis := s.Float.Axis
 	// Keep a minimum length so that the track is always visible.
 	minLength := thumbRadius + 3*thumbRadius + thumbRadius
 	// Try to expand to finger size, but only if the constraints
@@ -58,46 +58,46 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	gtx.Constraints.Min = axis.Convert(image.Pt(sizeMain-2*thumbRadius, sizeCross))
 
 	size = gtx.Constraints.Min
-	s.float.length = float32(s.float.Axis.Convert(size).X)
+	s.Float.length = float32(s.Float.Axis.Convert(size).X)
 
 	var de *pointer.Event
-	for _, e := range s.float.drag.Events(gtx.Metric, gtx, gesture.Axis(s.float.Axis)) {
+	for _, e := range s.Float.drag.Events(gtx.Metric, gtx, gesture.Axis(s.Float.Axis)) {
 		if e.Type == pointer.Press || e.Type == pointer.Drag {
 			de = &e
 		}
 	}
 
-	value := s.float.Value
+	value := s.Float.Value
 	if de != nil {
 		xy := de.Position.X
-		if s.float.Axis == layout.Vertical {
+		if s.Float.Axis == layout.Vertical {
 			xy = de.Position.Y
 		}
-		s.float.pos = xy / s.float.length
-		value = s.Min + (s.Max-s.Min)*s.float.pos
+		s.Float.pos = xy / s.Float.length
+		value = s.Min + (s.Max-s.Min)*s.Float.pos
 	} else if s.Min != s.Max {
-		s.float.pos = (value - s.Min) / (s.Max - s.Min)
+		s.Float.pos = (value - s.Min) / (s.Max - s.Min)
 	}
 	// Unconditionally call setValue in case min, max, or value changed.
-	s.float.setValue(value, s.Min, s.Max)
+	s.setValue(value, s.Min, s.Max)
 
-	if s.float.pos < 0 {
-		s.float.pos = 0
-	} else if s.float.pos > 1 {
-		s.float.pos = 1
+	if s.Float.pos < 0 {
+		s.Float.pos = 0
+	} else if s.Float.pos > 1 {
+		s.Float.pos = 1
 	}
 
-	margin := s.float.Axis.Convert(image.Pt(thumbRadius, 0))
+	margin := s.Float.Axis.Convert(image.Pt(thumbRadius, 0))
 	rect := image.Rectangle{
 		Min: margin.Mul(-1),
 		Max: size.Add(margin),
 	}
 	pointer.Rect(rect).Add(gtx.Ops)
-	s.float.drag.Add(gtx.Ops)
+	s.Float.drag.Add(gtx.Ops)
 
 
 	gtx.Constraints.Min = gtx.Constraints.Min.Add(axis.Convert(image.Pt(0, sizeCross)))
-	thumbPos := thumbRadius + int(s.float.Pos())
+	thumbPos := thumbRadius + int(s.Pos())
 
 	color := s.Color
 	if gtx.Queue == nil {
@@ -154,15 +154,10 @@ type Float struct {
 }
 
 // Dragging returns whether the value is being interacted with.
-func (f *Float) Dragging() bool { return f.drag.Dragging() }
+func (s *SliderStyle) Dragging() bool { return s.Float.drag.Dragging() }
 
-// Layout updates the value according to drag events along the f's main axis.
-//
-// The range of f is set by the minimum constraints main axis value.
-func (s *SliderStyle) LayoutFloat(gtx layout.Context, thumbRadius int, min, max float32)  {
-}
 
-func (f *Float) setValue(value, min, max float32) {
+func (s *SliderStyle) setValue(value, min, max float32) {
 	if min > max {
 		min, max = max, min
 	}
@@ -171,21 +166,21 @@ func (f *Float) setValue(value, min, max float32) {
 	} else if value > max {
 		value = max
 	}
-	if f.Value != value {
-		f.Value = value
-		f.changed = true
+	if s.Float.Value != value {
+		s.Float.Value = value
+		s.Float.changed = true
 	}
 }
 
 // Pos reports the selected position.
-func (f *Float) Pos() float32 {
-	return f.pos * f.length
+func (s *SliderStyle) Pos() float32 {
+	return s.Float.pos * s.Float.length
 }
 
 // Changed reports whether the value has changed since
 // the last call to Changed.
-func (f *Float) Changed() bool {
-	changed := f.changed
-	f.changed = false
+func (s *SliderStyle) Changed() bool {
+	changed := s.Float.changed
+	s.Float.changed = false
 	return changed
 }
