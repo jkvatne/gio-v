@@ -21,14 +21,19 @@ type SliderStyle struct {
 }
 
 // Slider is for selecting a value in a range.
-func Slider(th *Theme, min, max float32) layout.Widget {
+func Slider(th *Theme, minV, maxV float32, options ...Option) layout.Widget {
 	s := SliderStyle{
-		Min:        min,
-		Max:        max,
+		Min: minV,
+		Max: maxV,
 	}
 	s.th = th
 	s.SetupTabs()
+	for _, option := range options {
+		option.apply(&s)
+	}
+
 	return func(gtx C) D {
+		gtx.Constraints.Min = CalcMin(gtx, s.width)
 		return s.Layout(gtx)
 	}
 }
@@ -62,7 +67,7 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	}
 	value := s.Float.Value
 	if s.HandleKeys(gtx) {
-		s.Float.pos = float32(s.index)/100.0
+		s.Float.pos = float32(s.index) / 100.0
 		value = s.Min + (s.Max-s.Min)*s.Float.pos
 	}
 	if de != nil {
@@ -75,7 +80,7 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	} else if s.Min != s.Max {
 		s.Float.pos = (value - s.Min) / (s.Max - s.Min)
 	}
-	s.index = int(s.Float.pos*100+0.5)
+	s.index = int(s.Float.pos*100 + 0.5)
 	// Unconditionally call setValue in case min, max, or value changed.
 	s.setValue(value, s.Min, s.Max)
 
@@ -92,7 +97,6 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	}
 	pointer.Rect(rect).Add(gtx.Ops)
 	s.Float.drag.Add(gtx.Ops)
-
 
 	gtx.Constraints.Min = gtx.Constraints.Min.Add(axis.Convert(image.Pt(0, sizeCross)))
 	thumbPos := thumbRadius + int(s.Pos())
@@ -135,17 +139,15 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 
 	s.LayoutClickable(gtx)
 
-
 	s.HandleClicks(gtx)
 
 	return layout.Dimensions{Size: size}
 }
 
-
 // Float is for selecting a value in a range.
 type Float struct {
-	Value float32
-	Axis  layout.Axis
+	Value   float32
+	Axis    layout.Axis
 	drag    gesture.Drag
 	pos     float32 // position normalized to [0, 1]
 	length  float32
@@ -154,7 +156,6 @@ type Float struct {
 
 // Dragging returns whether the value is being interacted with.
 func (s *SliderStyle) Dragging() bool { return s.Float.drag.Dragging() }
-
 
 func (s *SliderStyle) setValue(value, min, max float32) {
 	if min > max {

@@ -165,7 +165,10 @@ func setupForm(th *wid.Theme) {
 		),
 		wid.Checkbox(th, "Checkbox to select dark mode", &darkMode, onSwitchMode),
 		wid.Label(th, "", text.Start, 1.0),
-		wid.Slider(th, 0, 100),
+		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
+			wid.Label(th, "A slider that can be key operated:", text.Start, 1.0),
+			wid.Slider(th, 0, 100,  wid.W(0.5)),
+		),
 		wid.Label(th, "A fixed width button at the middle of the screen:", text.Start, 1.0),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
 			wid.Button(th, "WIDE CENTERED BUTTON",
@@ -208,7 +211,7 @@ func setupForm(th *wid.Theme) {
 		// Fixed size in Dp
 		wid.Edit(th, wid.Hint("Value 1"), wid.W(300)),
 		// Relative size
-		wid.Edit(th, wid.Hint("Value 2"), wid.W(0.5)),
+		wid.Edit(th, wid.Hint("Valuexx 2"), wid.W(0.5)),
 
 		// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
 		wid.Row(layout.SpaceStart,
