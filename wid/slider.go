@@ -19,13 +19,15 @@ type SliderStyle struct {
 	Clickable
 	Float
 	Min, Max float32
+	Value *float32
 }
 
 // Slider is for selecting a value in a range.
-func Slider(th *Theme, minV, maxV float32, options ...Option) layout.Widget {
+func Slider(th *Theme, value *float32, minV, maxV float32, options ...Option) layout.Widget {
 	s := SliderStyle{
 		Min: minV,
 		Max: maxV,
+		Value: value,
 	}
 	s.th = th
 	s.SetupTabs()
@@ -177,6 +179,9 @@ func (s *SliderStyle) setValue(value, min, max float32) {
 	if s.Float.Value != value {
 		s.Float.Value = value
 		s.Float.changed = true
+	}
+	if s.Value!=nil {
+		*s.Value = value
 	}
 }
 
