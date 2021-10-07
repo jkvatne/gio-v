@@ -16,8 +16,8 @@ import (
 )
 
 type SliderStyle struct {
-//	Widget
-//	Clickable
+	Widget
+	Clickable
 	float *Float
 	Min, Max float32
 	Color    color.NRGBA
@@ -33,7 +33,7 @@ func Slider(th *Theme, min, max float32) layout.Widget {
 		Color:      th.OnBackground,
 		FingerSize: th.FingerSize,
 	}
-	//s.SetupTabs()
+	s.SetupTabs()
 	return func(gtx C) D {
 		return s.Layout(gtx)
 	}
