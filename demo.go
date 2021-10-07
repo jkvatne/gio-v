@@ -172,18 +172,18 @@ func setupForm(th *wid.Theme) {
 				wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 		),
 		wid.Label(th, "Two widgets at the right side of the screen:", text.Start, 1.0),
-		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
+		wid.MakeFlex(layout.Horizontal, layout.SpaceStart,
 			wid.RoundButton(th, icons.ContentAdd,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 			wid.Label(th, "Disabled", text.End, 1.0),
 			wid.Switch(th, &wid.GlobalDisable, nil),
 		),
 
-		// Note that buttons default to their minimum size, unless set differently, here aligned to right side
-		wid.MakeFlex(layout.Horizontal, layout.SpaceStart,
+		// Note that buttons default to their minimum size, unless set differently, here aligned to the middle
+		wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
 			wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode)),
-			wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.W(300)),
-			wid.Button(&thb, "Change color", wid.Handler(onClick), wid.W(300)),
+			wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.W(150)),
+			wid.Button(&thb, "Change color", wid.Handler(onClick), wid.W(150)),
 			wid.TextButton(th, "Text button"),
 			wid.OutlineButton(th, "Outline button"),
 		),
