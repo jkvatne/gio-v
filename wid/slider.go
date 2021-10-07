@@ -10,6 +10,7 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
+	"gioui.org/unit"
 	"image"
 )
 
@@ -28,6 +29,7 @@ func Slider(th *Theme, minV, maxV float32, options ...Option) layout.Widget {
 	}
 	s.th = th
 	s.SetupTabs()
+	s.width = unit.Dp(99999)
 	for _, option := range options {
 		option.apply(&s)
 	}

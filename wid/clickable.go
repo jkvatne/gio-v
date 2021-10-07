@@ -250,6 +250,12 @@ func (c *Clickable) HandleKeys(gtx C) bool {
 					c.index-=10
 				}
 				newKey = true
+			case key.NameHome:
+				c.index = 0
+				newKey = true
+			case key.NameEnd:
+				c.index = 100
+				newKey = true
 			case key.NameDownArrow, key.NameRightArrow:
 				if !ke.Modifiers.Contain(key.ModCtrl) {
 					c.index++

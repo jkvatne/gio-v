@@ -167,7 +167,7 @@ func setupForm(th *wid.Theme) {
 		wid.Label(th, "", text.Start, 1.0),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.Label(th, "A slider that can be key operated:", text.Start, 1.0),
-			wid.Slider(th, 0, 100,  wid.W(0.5)),
+			wid.Slider(th, 0, 100),
 		),
 		wid.Label(th, "A fixed width button at the middle of the screen:", text.Start, 1.0),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
