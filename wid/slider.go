@@ -75,7 +75,7 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 		if s.Float.Axis == layout.Vertical {
 			xy = de.Position.Y
 		}
-		s.Float.pos = xy / s.Float.length
+		s.Float.pos = (xy -float32(thumbRadius))/ s.Float.length
 		value = s.Min + (s.Max-s.Min)*s.Float.pos
 	} else if s.Min != s.Max {
 		s.Float.pos = (value - s.Min) / (s.Max - s.Min)
