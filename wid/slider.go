@@ -39,7 +39,7 @@ func Slider(th *Theme, minV, maxV float32, options ...Option) layout.Widget {
 }
 
 func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
-	thumbRadius := gtx.Px(s.th.TextSize.Scale(0.6))
+	thumbRadius := gtx.Px(s.th.TextSize.Scale(0.5))
 	trackWidth := gtx.Px(s.th.TextSize.Scale(0.5))
 
 	axis := s.Float.Axis
@@ -101,7 +101,7 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	gtx.Constraints.Min = gtx.Constraints.Min.Add(axis.Convert(image.Pt(0, sizeCross)))
 	thumbPos := thumbRadius + int(s.Pos())
 
-	color := s.th.Primary
+	color := WithAlpha(s.th.OnBackground, 175)
 	if gtx.Queue == nil {
 		color = Disabled(color)
 	}
@@ -123,15 +123,21 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 		Max: axis.Convert(image.Pt(sizeMain-thumbRadius, axis.Convert(track.Max).Y)),
 	}
 	clip.Rect(track).Add(gtx.Ops)
-	paint.Fill(gtx.Ops, MulAlpha(color, 96))
+	paint.Fill(gtx.Ops, WithAlpha(color, 80))
 	st.Load()
 
 	// Draw thumb.
 	pt := axis.Convert(image.Pt(thumbPos, sizeCross/2))
 	if s.Hovered() || s.Focused() {
-		color = Hovered(color)
+		paint.FillShape(gtx.Ops, MulAlpha(s.th.OnBackground, 88),
+			clip.Circle{
+				Center: f32.Point{X: float32(pt.X), Y: float32(pt.Y)},
+				Radius:  1.4 * float32(thumbRadius),
+			}.Op(gtx.Ops))
+	} else {
+		color = s.th.OnBackground
 	}
-	paint.FillShape(gtx.Ops, color,
+	paint.FillShape(gtx.Ops, s.th.OnBackground,
 		clip.Circle{
 			Center: f32.Point{X: float32(pt.X), Y: float32(pt.Y)},
 			Radius: float32(thumbRadius),
