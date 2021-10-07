@@ -3,7 +3,7 @@
 package main
 
 // A Gio program that demonstrates gio-v widgets.
-// See https://gioui.org for information on the gio modules
+// See https://gioui.org for information on the gio
 // gio-v is maintained by Jan Kåre Vatne (jkvatne@online.no)
 
 import (
@@ -28,20 +28,14 @@ var mode = "maximized"
 var fontSize = "medium"
 var oldMode string
 var oldfontsize string
-
-// green is the state variable for the button color
-var green = false
-
-// currentTheme is the theme selected
-var currentTheme *wid.Theme
-
-// root is the root widget (usualy a list), and is the root of the widget tree
-var root layout.Widget
-
-// formSize is the current window size
-var windowSize image.Point
-
-var win *app.Window
+var green = false           // the state variable for the button color
+var currentTheme *wid.Theme // the theme selected
+var root layout.Widget      // root is the root widget (usually a list), and is the root of the widget tree
+var darkMode = false
+var oldWindowSize image.Point // the current window size, used to detect changes
+var win *app.Window           // The main window
+var thb wid.Theme             // Secondary theme used for the color-shifting button
+var progress float32
 
 func main() {
 	flag.StringVar(&mode, "mode", "maximized", "Select windows fullscreen, maximized, centered")
@@ -50,13 +44,14 @@ func main() {
 	progressIncrementer := make(chan float32)
 	go func() {
 		for {
-			time.Sleep(time.Millisecond * 50)
-			progressIncrementer <- 0.01
+			time.Sleep(time.Millisecond * 100)
+			progressIncrementer <- 0.1
 		}
 	}()
 	go func() {
 		currentTheme = wid.NewTheme(gofont.Collection(), 14, wid.MaterialDesignLight)
-		win = app.NewWindow()
+		win = app.NewWindow(app.Title("Gio-v demo"))
+		updateMode()
 		setupForm(currentTheme)
 		for {
 			select {
@@ -79,11 +74,8 @@ func main() {
 	app.Main()
 }
 
-func updateWindowSize(th *wid.Theme, e system.FrameEvent) {
-}
-
 func handleFrameEvents(th *wid.Theme, e system.FrameEvent) {
-	if windowSize.X != e.Size.X || windowSize.Y != e.Size.Y || mode!= oldMode || fontSize !=oldfontsize {
+	if oldWindowSize.X != e.Size.X || oldWindowSize.Y != e.Size.Y || mode != oldMode || fontSize != oldfontsize {
 		switch fontSize {
 		case "medium", "Medium":
 			th.TextSize = unit.Dp(float32(e.Size.Y) / 60)
@@ -93,7 +85,8 @@ func handleFrameEvents(th *wid.Theme, e system.FrameEvent) {
 			th.TextSize = unit.Dp(float32(e.Size.Y) / 80)
 		}
 		oldfontsize = fontSize
-		windowSize = e.Size
+		oldWindowSize = e.Size
+		updateMode()
 		setupForm(th)
 	}
 	var ops op.Ops
@@ -115,8 +108,6 @@ func onClick() {
 	}
 }
 
-var darkMode = false
-
 func onSwitchMode(v bool) {
 	darkMode = v
 	s := float32(24.0)
@@ -128,23 +119,11 @@ func onSwitchMode(v bool) {
 	} else {
 		currentTheme = wid.NewTheme(gofont.Collection(), s, wid.MaterialDesignDark)
 	}
-
 	setupForm(currentTheme)
 }
 
-func doDisable(v bool) {
-	wid.GlobalDisable = !wid.GlobalDisable
-}
-
-var thb wid.Theme
-var progress float32
-
-func setupForm(th *wid.Theme) {
-	thb = *th
-	if win==nil {
-		win = app.NewWindow(app.Title("Gio-v demo"))
-	}
-	if mode!= oldMode {
+func updateMode() {
+	if mode != oldMode {
 		switch {
 		case mode == "fullscreen":
 			// A full-screen window
@@ -162,6 +141,10 @@ func setupForm(th *wid.Theme) {
 		}
 		oldMode = mode
 	}
+}
+
+func setupForm(th *wid.Theme) {
+	thb = *th
 	root = wid.MakeList(
 		th, layout.Vertical,
 
@@ -176,6 +159,11 @@ func setupForm(th *wid.Theme) {
 			wid.RadioButton(th, &fontSize, "medium", "medium"),
 			wid.RadioButton(th, &fontSize, "large", "large"),
 		),
+		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
+			wid.Label(th, "Switch to select dark mode", text.Start, 1.0),
+			wid.Switch(th, &darkMode, onSwitchMode),
+		),
+		wid.Checkbox(th, "Checkbox to select dark mode", &darkMode, onSwitchMode),
 		wid.Label(th, "", text.Start, 1.0),
 		wid.Label(th, "A fixed width button at the middle of the screen:", text.Start, 1.0),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
@@ -184,11 +172,6 @@ func setupForm(th *wid.Theme) {
 				wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 		),
 		wid.Label(th, "Two widgets at the right side of the screen:", text.Start, 1.0),
-		wid.MakeFlex(layout.Horizontal, layout.SpaceStart,
-			wid.Label(th, "Switch to select dark mode", text.Start, 1.0),
-			wid.Switch(th, &darkMode, onSwitchMode),
-		),
-		wid.Checkbox(th, "Checkbox to select dark mode", &darkMode, onSwitchMode),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.RoundButton(th, icons.ContentAdd,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
@@ -206,7 +189,7 @@ func setupForm(th *wid.Theme) {
 		),
 		// Row with all buttons at minimum size, spread evenly
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEvenly,
-			wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode),wid.Min()),
+			wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode), wid.Min()),
 			wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.Min()),
 			wid.Button(&thb, "Change color", wid.Handler(onClick), wid.Min()),
 			wid.TextButton(th, "Text button", wid.Min()),
