@@ -183,6 +183,11 @@ func PaintBorder(gtx C, outline f32.Rectangle, col color.NRGBA, width unit.Value
 
 func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
+
+		b.LayoutClickable(gtx)
+		b.HandleClicks(gtx)
+		b.HandleKeys(gtx)
+
 		rr := Pxr(gtx, b.th.CornerRadius)
 		if b.Style == Round {
 			rr = float32(gtx.Constraints.Min.Y) / 2.0
@@ -294,9 +299,6 @@ func (b *ButtonDef) Layout(gtx C) D {
 							layout.Rigid(layLabel(b)),
 						)
 					}),
-				layout.Expanded(b.LayoutClickable),
-				layout.Expanded(b.HandleClicks),
-				layout.Expanded(b.HandleKeys),
 			)
 		})
 	})

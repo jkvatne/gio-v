@@ -143,9 +143,6 @@ func (b *DropDownDef) Layout(gtx C) D {
 						layout.Rigid(b.LayoutIcon()),
 					)
 				}),
-			layout.Expanded(b.LayoutClickable),
-			layout.Expanded(b.HandleClicks),
-			layout.Expanded(b.HandleKeys),
 		)
 	})
 }
@@ -166,6 +163,9 @@ func (b *DropDownDef) LayoutBackground() func(gtx C) D {
 		paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		clip.UniformRRect(outline, rr).Add(gtx.Ops)
 		LayoutBorder(&b.Clickable, b.th)(gtx)
+		b.LayoutClickable(gtx)
+		b.HandleClicks(gtx)
+		b.HandleKeys(gtx)
 		return D{Size: gtx.Constraints.Min}
 	}
 }

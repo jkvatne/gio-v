@@ -10,18 +10,14 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"gioui.org/unit"
 	"image"
-	"image/color"
 )
 
 type SliderStyle struct {
 	Widget
 	Clickable
-	Float    *Float
+	Float
 	Min, Max float32
-	Color    color.NRGBA
-	FingerSize unit.Value
 }
 
 // Slider is for selecting a value in a range.
@@ -29,10 +25,8 @@ func Slider(th *Theme, min, max float32) layout.Widget {
 	s := SliderStyle{
 		Min:        min,
 		Max:        max,
-		Float:      &Float{},
-		Color:      th.OnBackground,
-		FingerSize: th.FingerSize,
 	}
+	s.th = th
 	s.SetupTabs()
 	return func(gtx C) D {
 		return s.Layout(gtx)
@@ -40,15 +34,15 @@ func Slider(th *Theme, min, max float32) layout.Widget {
 }
 
 func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
-	thumbRadius := gtx.Px(unit.Dp(18))
-	trackWidth := gtx.Px(unit.Dp(14))
+	thumbRadius := gtx.Px(s.th.TextSize.Scale(0.6))
+	trackWidth := gtx.Px(s.th.TextSize.Scale(0.5))
 
 	axis := s.Float.Axis
 	// Keep a minimum length so that the track is always visible.
 	minLength := thumbRadius + 3*thumbRadius + thumbRadius
 	// Try to expand to finger size, but only if the constraints
 	// allow for it.
-	touchSizePx := min(gtx.Px(s.FingerSize), axis.Convert(gtx.Constraints.Max).Y)
+	touchSizePx := min(gtx.Px(s.th.FingerSize), axis.Convert(gtx.Constraints.Max).Y)
 	sizeMain := max(axis.Convert(gtx.Constraints.Min).X, minLength)
 	sizeCross := max(2*thumbRadius, touchSizePx)
 	size := axis.Convert(image.Pt(sizeMain, sizeCross))
@@ -66,8 +60,11 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 			de = &e
 		}
 	}
-
 	value := s.Float.Value
+	if s.HandleKeys(gtx) {
+		s.Float.pos = float32(s.index)/100.0
+		value = s.Min + (s.Max-s.Min)*s.Float.pos
+	}
 	if de != nil {
 		xy := de.Position.X
 		if s.Float.Axis == layout.Vertical {
@@ -78,6 +75,7 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	} else if s.Min != s.Max {
 		s.Float.pos = (value - s.Min) / (s.Max - s.Min)
 	}
+	s.index = int(s.Float.pos*100+0.5)
 	// Unconditionally call setValue in case min, max, or value changed.
 	s.setValue(value, s.Min, s.Max)
 
@@ -99,7 +97,7 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	gtx.Constraints.Min = gtx.Constraints.Min.Add(axis.Convert(image.Pt(0, sizeCross)))
 	thumbPos := thumbRadius + int(s.Pos())
 
-	color := s.Color
+	color := s.th.Primary
 	if gtx.Queue == nil {
 		color = Disabled(color)
 	}
@@ -126,7 +124,7 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 
 	// Draw thumb.
 	pt := axis.Convert(image.Pt(thumbPos, sizeCross/2))
-	if s.Hovered() {
+	if s.Hovered() || s.Focused() {
 		color = Hovered(color)
 	}
 	paint.FillShape(gtx.Ops, color,
@@ -136,7 +134,8 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 		}.Op(gtx.Ops))
 
 	s.LayoutClickable(gtx)
-	s.HandleKeys(gtx)
+
+
 	s.HandleClicks(gtx)
 
 	return layout.Dimensions{Size: size}

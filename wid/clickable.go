@@ -223,7 +223,8 @@ func (c *Clickable) LayoutClickable(gtx C) D {
 }
 
 // update the button state by processing events.
-func (c *Clickable) HandleKeys(gtx C) D {
+func (c *Clickable) HandleKeys(gtx C) bool {
+	var newKey bool
 	for _, ev := range gtx.Events(&c.eventKey) {
 		switch ke := ev.(type) {
 		case key.FocusEvent:
@@ -241,10 +242,21 @@ func (c *Clickable) HandleKeys(gtx C) D {
 				if l := len(c.history); l > 0 {
 					c.history[l-1].End = gtx.Now
 				}
-			case key.NameUpArrow:
-				c.index--
-			case key.NameDownArrow:
-				c.index++
+				newKey = true
+			case key.NameUpArrow, key.NameLeftArrow:
+				if !ke.Modifiers.Contain(key.ModCtrl) {
+					c.index--
+				} else {
+					c.index-=10
+				}
+				newKey = true
+			case key.NameDownArrow, key.NameRightArrow:
+				if !ke.Modifiers.Contain(key.ModCtrl) {
+					c.index++
+				} else {
+					c.index+=10
+				}
+				newKey = true
 			case key.NameTab:
 				if !ke.Modifiers.Contain(key.ModShift) {
 					if c.Next() != nil {
@@ -265,7 +277,7 @@ func (c *Clickable) HandleKeys(gtx C) D {
 		key.SoftKeyboardOp{Show: false}.Add(gtx.Ops)
 	}
 	c.requestFocus = false
-	return D{}
+	return newKey
 }
 
 func (c *Clickable) HandleClicks(gtx C) D {

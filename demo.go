@@ -15,7 +15,9 @@ import (
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/paint"
+	"gioui.org/text"
 	"gioui.org/unit"
+	"golang.org/x/exp/shiny/materialdesign/icons"
 	"image"
 	"image/color"
 	"os"
@@ -146,7 +148,7 @@ func setupForm(th *wid.Theme) {
 	root = wid.MakeList(
 		th, layout.Vertical,
 
-/*		wid.Label(th, "Demo page", text.Middle, 2.0),
+		wid.Label(th, "Demo page", text.Middle, 2.0),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.RadioButton(th, &mode, "fullscreen", "fullscreen"),
 			wid.RadioButton(th, &mode, "maximized", "maximized"),
@@ -162,9 +164,9 @@ func setupForm(th *wid.Theme) {
 			wid.Switch(th, &darkMode, onSwitchMode),
 		),
 		wid.Checkbox(th, "Checkbox to select dark mode", &darkMode, onSwitchMode),
-		wid.Label(th, "", text.Start, 1.0),*/
+		wid.Label(th, "", text.Start, 1.0),
 		wid.Slider(th, 0, 100),
-/*		wid.Label(th, "A fixed width button at the middle of the screen:", text.Start, 1.0),
+		wid.Label(th, "A fixed width button at the middle of the screen:", text.Start, 1.0),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
 			wid.Button(th, "WIDE CENTERED BUTTON",
 				wid.W(500),
@@ -242,7 +244,7 @@ func setupForm(th *wid.Theme) {
 				wid.Edit(th, wid.Hint("Value 17")),
 			),
 		),
-*/
+
 		//wid.ProgressBar(th, &progress),
 	)
 
