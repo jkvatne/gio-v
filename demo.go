@@ -165,6 +165,7 @@ func setupForm(th *wid.Theme) {
 		),
 		wid.Checkbox(th, "Checkbox to select dark mode", &darkMode, onSwitchMode),
 		wid.Label(th, "", text.Start, 1.0),
+		wid.Slider(th, 0, 100),
 		wid.Label(th, "A fixed width button at the middle of the screen:", text.Start, 1.0),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
 			wid.Button(th, "WIDE CENTERED BUTTON",
