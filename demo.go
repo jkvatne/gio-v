@@ -20,7 +20,7 @@ import (
 	"golang.org/x/exp/shiny/materialdesign/icons"
 	"image"
 	"image/color"
-	"log"
+	"os"
 	"time"
 )
 
@@ -64,7 +64,7 @@ func main() {
 			case e := <-win.Events():
 				switch e := e.(type) {
 				case system.DestroyEvent:
-					log.Fatal(e.Err)
+					os.Exit(0)
 				case system.FrameEvent:
 					handleFrameEvents(currentTheme, e)
 				}
@@ -84,13 +84,10 @@ func updateWindowSize(th *wid.Theme, e system.FrameEvent) {
 }
 
 func handleFrameEvents(th *wid.Theme, e system.FrameEvent) {
-	if mode!=oldmode {
-		setupForm(th)
-	}
-	if windowSize.X != e.Size.X || windowSize.Y != e.Size.Y {
+	if windowSize.X != e.Size.X || windowSize.Y != e.Size.Y || mode!=oldmode {
 		th.TextSize = unit.Dp(float32(e.Size.Y) / 60)
-		setupForm(th)
 		windowSize = e.Size
+		setupForm(th)
 	}
 	var ops op.Ops
 	gtx := layout.NewContext(&ops, e)
@@ -140,27 +137,24 @@ func setupForm(th *wid.Theme) {
 	if win==nil {
 		win = app.NewWindow(app.Title("Gio-v demo"))
 	}
-
-	switch {
-	case mode == "fullscreen":
-		// A full-screen window
-		win.Option(app.Fullscreen.Option())
-	case mode == "windowed":
-		//Place at a given location.
-		win.Option(app.Size(unit.Px(500), unit.Px(800)), app.Center())
-	case mode == "maximized":
-		//   A maximized window
-		win.Option(app.Maximized.Option())
-	case mode == "centered":
-		// Place at center of monitor
-		win.Option(app.Size(unit.Px(500), unit.Px(800)), app.Center())
-	default:
+	if mode!=oldmode {
+		switch {
+		case mode == "fullscreen":
+			// A full-screen window
+			win.Option(app.Fullscreen.Option())
+		case mode == "windowed":
+			//Place at a given location.
+			win.Option(app.Size(unit.Px(500), unit.Px(800)), app.Center())
+		case mode == "maximized":
+			//   A maximized window
+			win.Option(app.Maximized.Option())
+		case mode == "centered":
+			// Place at center of monitor
+			win.Option(app.Size(unit.Px(500), unit.Px(800)), app.Center())
+		default:
+		}
+		oldmode = mode
 	}
-	oldmode = mode
-
-	// Test with gray as primary color
-	// th.Primary = wid.RGB(0x555555)
-
 	root = wid.MakeList(
 		th, layout.Vertical,
 
