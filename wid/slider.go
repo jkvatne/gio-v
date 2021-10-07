@@ -39,7 +39,7 @@ func Slider(th *Theme, min, max float32) layout.Widget {
 	}
 }
 
-func (s SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
+func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	thumbRadius := gtx.Px(unit.Dp(18))
 	trackWidth := gtx.Px(unit.Dp(14))
 
@@ -123,44 +123,44 @@ func (f *Float) Dragging() bool { return f.drag.Dragging() }
 // Layout updates the value according to drag events along the f's main axis.
 //
 // The range of f is set by the minimum constraints main axis value.
-func (f *SliderStyle) LayoutFloat(gtx layout.Context, thumbRadius int, min, max float32)  {
+func (s *SliderStyle) LayoutFloat(gtx layout.Context, thumbRadius int, min, max float32)  {
 	size := gtx.Constraints.Min
-	f.float.length = float32(f.float.Axis.Convert(size).X)
+	s.float.length = float32(s.float.Axis.Convert(size).X)
 
 	var de *pointer.Event
-	for _, e := range f.float.drag.Events(gtx.Metric, gtx, gesture.Axis(f.float.Axis)) {
+	for _, e := range s.float.drag.Events(gtx.Metric, gtx, gesture.Axis(s.float.Axis)) {
 		if e.Type == pointer.Press || e.Type == pointer.Drag {
 			de = &e
 		}
 	}
 
-	value := f.float.Value
+	value := s.float.Value
 	if de != nil {
 		xy := de.Position.X
-		if f.float.Axis == layout.Vertical {
+		if s.float.Axis == layout.Vertical {
 			xy = de.Position.Y
 		}
-		f.float.pos = xy / f.float.length
-		value = min + (max-min)*f.float.pos
+		s.float.pos = xy / s.float.length
+		value = min + (max-min)*s.float.pos
 	} else if min != max {
-		f.float.pos = (value - min) / (max - min)
+		s.float.pos = (value - min) / (max - min)
 	}
 	// Unconditionally call setValue in case min, max, or value changed.
-	f.float.setValue(value, min, max)
+	s.float.setValue(value, min, max)
 
-	if f.float.pos < 0 {
-		f.float.pos = 0
-	} else if f.float.pos > 1 {
-		f.float.pos = 1
+	if s.float.pos < 0 {
+		s.float.pos = 0
+	} else if s.float.pos > 1 {
+		s.float.pos = 1
 	}
 
-	margin := f.float.Axis.Convert(image.Pt(thumbRadius, 0))
+	margin := s.float.Axis.Convert(image.Pt(thumbRadius, 0))
 	rect := image.Rectangle{
 		Min: margin.Mul(-1),
 		Max: size.Add(margin),
 	}
 	pointer.Rect(rect).Add(gtx.Ops)
-	f.float.drag.Add(gtx.Ops)
+	s.float.drag.Add(gtx.Ops)
 }
 
 func (f *Float) setValue(value, min, max float32) {
