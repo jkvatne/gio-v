@@ -25,10 +25,9 @@ import (
 )
 
 var mode = "maximized"
-var Fontsize = "medium"
-var oldmode string
+var fontSize = "medium"
+var oldMode string
 var oldfontsize string
-var selected string
 
 // green is the state variable for the button color
 var green = false
@@ -46,7 +45,7 @@ var win *app.Window
 
 func main() {
 	flag.StringVar(&mode, "mode", "maximized", "Select windows fullscreen, maximized, centered")
-	flag.StringVar(&Fontsize, "fontsize", "large", "Select font size medium,small,large")
+	flag.StringVar(&fontSize, "fontsize", "large", "Select font size medium,small,large")
 	flag.Parse()
 	progressIncrementer := make(chan float32)
 	go func() {
@@ -84,8 +83,16 @@ func updateWindowSize(th *wid.Theme, e system.FrameEvent) {
 }
 
 func handleFrameEvents(th *wid.Theme, e system.FrameEvent) {
-	if windowSize.X != e.Size.X || windowSize.Y != e.Size.Y || mode!=oldmode {
-		th.TextSize = unit.Dp(float32(e.Size.Y) / 60)
+	if windowSize.X != e.Size.X || windowSize.Y != e.Size.Y || mode!= oldMode || fontSize !=oldfontsize {
+		switch fontSize {
+		case "medium", "Medium":
+			th.TextSize = unit.Dp(float32(e.Size.Y) / 60)
+		case "large", "Large":
+			th.TextSize = unit.Dp(float32(e.Size.Y) / 45)
+		case "small", "Small":
+			th.TextSize = unit.Dp(float32(e.Size.Y) / 80)
+		}
+		oldfontsize = fontSize
 		windowSize = e.Size
 		setupForm(th)
 	}
@@ -137,7 +144,7 @@ func setupForm(th *wid.Theme) {
 	if win==nil {
 		win = app.NewWindow(app.Title("Gio-v demo"))
 	}
-	if mode!=oldmode {
+	if mode!= oldMode {
 		switch {
 		case mode == "fullscreen":
 			// A full-screen window
@@ -153,7 +160,7 @@ func setupForm(th *wid.Theme) {
 			win.Option(app.Size(unit.Px(500), unit.Px(800)), app.Center())
 		default:
 		}
-		oldmode = mode
+		oldMode = mode
 	}
 	root = wid.MakeList(
 		th, layout.Vertical,
@@ -165,9 +172,9 @@ func setupForm(th *wid.Theme) {
 			wid.RadioButton(th, &mode, "centered", "centered"),
 		),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
-			wid.RadioButton(th, &Fontsize, "small", "small"),
-			wid.RadioButton(th, &Fontsize, "medium", "medium"),
-			wid.RadioButton(th, &Fontsize, "large", "large"),
+			wid.RadioButton(th, &fontSize, "small", "small"),
+			wid.RadioButton(th, &fontSize, "medium", "medium"),
+			wid.RadioButton(th, &fontSize, "large", "large"),
 		),
 		wid.Label(th, "", text.Start, 1.0),
 		wid.Label(th, "A fixed width button at the middle of the screen:", text.Start, 1.0),
