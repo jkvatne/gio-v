@@ -93,7 +93,11 @@ func (r *RadioButtonStyle) layout(gtx C, checked, hovered bool) D {
 		layout.Rigid(func(gtx C) D {
 			return layout.Inset{Zv, r.th.TextSize, Zv, Zv}.Layout(gtx, func(gtx C) D {
 				paint.ColorOp{Color: r.IconColor}.Add(gtx.Ops)
-				return Label(r.th, r.Label, text.Start, 1.0)(gtx)
+				lbl := r.Label
+				if lbl=="" {
+					lbl=r.Key
+				}
+				return Label(r.th, lbl, text.Start, 1.0)(gtx)
 			})
 		}),
 	)
