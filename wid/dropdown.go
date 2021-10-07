@@ -50,11 +50,14 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 	}
 	return func(gtx C) D {
 		dims := b.Layout(gtx)
+		if !b.Focused() {
+			b.Visible = false
+		}
 		for b.Clicked() {
 			b.Visible = !b.Visible
 		}
 
-		if b.wasVisible > 0 {
+		if b.Visible  {
 			gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
 			gtx.Constraints.Max = image.Pt(dims.Size.X, 9999)
 			macro := op.Record(gtx.Ops)
@@ -71,26 +74,6 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 			call = macro.Stop()
 			op.Defer(gtx.Ops, call)
 
-		}
-		ok := b.Visible
-		if b.wasVisible > 0 {
-			ok = b.Hovered()
-			for _, x := range b.hovered {
-				if x {
-					ok = true
-				}
-			}
-		}
-		if ok && b.wasVisible < 10 {
-			b.wasVisible++
-			op.InvalidateOp{}.Add(gtx.Ops)
-		}
-		if !ok && b.wasVisible > 0 {
-			b.wasVisible--
-			op.InvalidateOp{}.Add(gtx.Ops)
-		}
-		if b.wasVisible == 0 {
-			b.Visible = false
 		}
 		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
 		return dims
@@ -116,7 +99,7 @@ func (b *DropDownDef) option(th *Theme, i int) func(gtx C) D {
 				}
 			}
 		}
-		if b.hovered[i] {
+		if b.hovered[i] || i == b.index {
 			c := MulAlpha(b.th.OnBackground, 48)
 			if Luminance(b.th.OnBackground) > 28 {
 				c = MulAlpha(b.th.OnBackground, 16)
