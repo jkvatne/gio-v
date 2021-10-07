@@ -29,7 +29,7 @@ func Slider(th *Theme, min, max float32) layout.Widget {
 	s := SliderStyle{
 		Min:        min,
 		Max:        max,
-		float: &Float{},
+		float:      &Float{},
 		Color:      th.OnBackground,
 		FingerSize: th.FingerSize,
 	}
@@ -53,14 +53,20 @@ func (s SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	sizeCross := max(2*thumbRadius, touchSizePx)
 	size := axis.Convert(image.Pt(sizeMain, sizeCross))
 
-	st := op.Save(gtx.Ops)
+	//st := op.Save(gtx.Ops)
 	o := axis.Convert(image.Pt(thumbRadius, 0))
 	op.Offset(layout.FPt(o)).Add(gtx.Ops)
 	gtx.Constraints.Min = axis.Convert(image.Pt(sizeMain-2*thumbRadius, sizeCross))
-	s.float.Layout(gtx, thumbRadius, s.Min, s.Max)
+
+
+
+	s.float.LayoutFloat(gtx, thumbRadius, s.Min, s.Max)
+
+
+
 	gtx.Constraints.Min = gtx.Constraints.Min.Add(axis.Convert(image.Pt(0, sizeCross)))
 	thumbPos := thumbRadius + int(s.float.Pos())
-	st.Load()
+	//st.Load()
 
 	color := s.Color
 	if gtx.Queue == nil {
@@ -68,7 +74,7 @@ func (s SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	}
 
 	// Draw track before thumb.
-	st = op.Save(gtx.Ops)
+	st := op.Save(gtx.Ops)
 	track := image.Rectangle{
 		Min: axis.Convert(image.Pt(thumbRadius, sizeCross/2-trackWidth/2)),
 		Max: axis.Convert(image.Pt(thumbPos, sizeCross/2+trackWidth/2)),
@@ -119,17 +125,9 @@ func (f *Float) Dragging() bool { return f.drag.Dragging() }
 // Layout updates the value according to drag events along the f's main axis.
 //
 // The range of f is set by the minimum constraints main axis value.
-func (f *Float) Layout(gtx layout.Context, pointerMargin int, min, max float32) layout.Dimensions {
+func (f *Float) LayoutFloat(gtx layout.Context, pointerMargin int, min, max float32) layout.Dimensions {
 	size := gtx.Constraints.Min
 	f.length = float32(f.Axis.Convert(size).X)
-
-	margin := f.Axis.Convert(image.Pt(pointerMargin, 0))
-	rect := image.Rectangle{
-		Min: margin.Mul(-1),
-		Max: size.Add(margin),
-	}
-	pointer.Rect(rect).Add(gtx.Ops)
-	f.drag.Add(gtx.Ops)
 
 	var de *pointer.Event
 	for _, e := range f.drag.Events(gtx.Metric, gtx, gesture.Axis(f.Axis)) {
@@ -158,14 +156,13 @@ func (f *Float) Layout(gtx layout.Context, pointerMargin int, min, max float32) 
 		f.pos = 1
 	}
 
-	//defer op.Save(gtx.Ops).Load()
-	//margin := f.Axis.Convert(image.Pt(pointerMargin, 0))
-	//rect := image.Rectangle{
-	//	Min: margin.Mul(-1),
-	//	Max: size.Add(margin),
-	//}
-//	pointer.Rect(rect).Add(gtx.Ops)
-//	f.drag.Add(gtx.Ops)
+	margin := f.Axis.Convert(image.Pt(pointerMargin, 0))
+	rect := image.Rectangle{
+		Min: margin.Mul(-1),
+		Max: size.Add(margin),
+	}
+	pointer.Rect(rect).Add(gtx.Ops)
+	f.drag.Add(gtx.Ops)
 
 	return layout.Dimensions{Size: size}
 }
