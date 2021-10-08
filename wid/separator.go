@@ -12,24 +12,24 @@ import (
 // SeparatorStyle defines material rendering parameters for separator
 type SeparatorStyle struct {
 	Widget
-	thickness float32
-	paddingAbove float32
-	paddingBelow float32
+	thickness    unit.Value
+	paddingAbove unit.Value
+	paddingBelow unit.Value
 }
 
 // Separator creates a material separator widget
-func Separator(th *Theme, thickness float32, paddingAbove float32, paddingBelow float32) layout.Widget {
+func Separator(th *Theme, thickness unit.Value, paddingAbove unit.Value, paddingBelow unit.Value) layout.Widget {
 	s := SeparatorStyle{
-		thickness: thickness,
+		thickness:    thickness,
 		paddingAbove: paddingAbove,
 		paddingBelow: paddingBelow,
 	}
 	return func(gtx C) D {
 		dim := gtx.Constraints.Max
-		dim.Y = gtx.Px(unit.Px(s.thickness+s.paddingAbove+s.paddingBelow))
-		op.Offset(f32.Pt(0, paddingAbove)).Add(gtx.Ops)
+		dim.Y = gtx.Px(s.thickness) + gtx.Px(s.paddingAbove) + gtx.Px(s.paddingBelow)
+		op.Offset(f32.Pt(0, float32(gtx.Px(paddingAbove)))).Add(gtx.Ops)
 		size := dim
-		size.Y = gtx.Px(unit.Px(s.thickness))
+		size.Y = gtx.Px(s.thickness)
 		clip.Rect{Max: size}.Add(gtx.Ops)
 		paint.ColorOp{Color: th.OnBackground}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
