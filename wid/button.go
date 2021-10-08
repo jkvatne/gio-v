@@ -61,7 +61,6 @@ func Button(th *Theme, label string, options ...Option) func(gtx C) D {
 	return aButton(Contained, th, label,  options...)
 }
 
-
 func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func(gtx C) D {
 	b := ButtonDef{}
 	b.SetupTabs()

@@ -166,9 +166,10 @@ func setupForm(th *wid.Theme) {
 		),
 		wid.Checkbox(th, "Checkbox to select dark mode", &darkMode, onSwitchMode),
 		// Three separators to test layout algorithm. Should give three thin lines
-		wid.Separator(th, unit.Px(1), unit.Px(0),unit.Px(1)),
-		wid.Separator(th, unit.Px(1), unit.Px(0),unit.Px(1)),
-		wid.Separator(th, unit.Px(1), unit.Px(0),unit.Px(0)),
+		wid.Separator(th, unit.Px(1)),
+		wid.Separator(th, unit.Px(1), wid.Pad(1)),
+		wid.Separator(th, unit.Px(1)),
+		wid.Separator(th, unit.Px(4), wid.Pad(5,20,5,20)),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.Label(th, "A slider that can be key operated:", text.Start, 1.0),
 			wid.Slider(th, &sliderValue,0, 100),

@@ -1,6 +1,9 @@
 package wid
 
 import (
+	"image"
+	"image/color"
+
 	"gioui.org/f32"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -12,24 +15,21 @@ import (
 // SeparatorStyle defines material rendering parameters for separator
 type SeparatorStyle struct {
 	Widget
-	thickness    unit.Value
-	paddingAbove unit.Value
-	paddingBelow unit.Value
+	thickness unit.Value
+	color     color.NRGBA
 }
 
 // Separator creates a material separator widget
-func Separator(th *Theme, thickness unit.Value, paddingAbove unit.Value, paddingBelow unit.Value) layout.Widget {
-	s := SeparatorStyle{
-		thickness:    thickness,
-		paddingAbove: paddingAbove,
-		paddingBelow: paddingBelow,
-	}
+func Separator(th *Theme, thickness unit.Value, options ...Option) layout.Widget {
+	s := SeparatorStyle{}
+	s.thickness = thickness
+	s.Apply(options)
+
 	return func(gtx C) D {
 		dim := gtx.Constraints.Max
-		dim.Y = gtx.Px(s.thickness) + gtx.Px(s.paddingAbove) + gtx.Px(s.paddingBelow)
-		op.Offset(f32.Pt(0, float32(gtx.Px(paddingAbove)))).Add(gtx.Ops)
-		size := dim
-		size.Y = gtx.Px(s.thickness)
+		dim.Y = gtx.Px(s.thickness) + gtx.Px(s.padding.Top) + gtx.Px(s.padding.Bottom)
+		op.Offset(f32.Pt(float32(gtx.Px(s.padding.Left)), float32(gtx.Px(s.padding.Top)))).Add(gtx.Ops)
+		size := image.Pt(dim.X-gtx.Px(s.padding.Left)-gtx.Px(s.padding.Right), gtx.Px(s.thickness))
 		clip.Rect{Max: size}.Add(gtx.Ops)
 		paint.ColorOp{Color: th.OnBackground}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)

@@ -32,9 +32,7 @@ func Slider(th *Theme, value *float32, minV, maxV float32, options ...Option) la
 	s.th = th
 	s.SetupTabs()
 	s.width = unit.Dp(99999)
-	for _, option := range options {
-		option.apply(&s)
-	}
+	s.Apply(options)
 
 	return func(gtx C) D {
 		gtx.Constraints.Min = CalcMin(gtx, s.width)
