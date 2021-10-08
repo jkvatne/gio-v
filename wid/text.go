@@ -94,25 +94,25 @@ func (l *segmentIterator) Next() (text.Layout, image.Point, bool, int, image.Poi
 
 		selected := l.inSelection()
 		endx := l.off.X
-		rune := 0
+		myRune := 0
 		nextLine := true
 		retLayout := l.layout
 		for n := range l.layout.Text {
 			selChanged := selected != l.inSelection()
 			beyondClipEdge := (endx + l.line.Bounds.Min.X).Floor() > l.Clip.Max.X
 			if selChanged || beyondClipEdge {
-				retLayout.Advances = l.layout.Advances[:rune]
+				retLayout.Advances = l.layout.Advances[:myRune]
 				retLayout.Text = l.layout.Text[:n]
 				if selChanged {
 					// Save the rest of the line
-					l.layout.Advances = l.layout.Advances[rune:]
+					l.layout.Advances = l.layout.Advances[myRune:]
 					l.layout.Text = l.layout.Text[n:]
 					nextLine = false
 				}
 				break
 			}
-			endx += l.layout.Advances[rune]
-			rune++
+			endx += l.layout.Advances[myRune]
+			myRune++
 			l.pos.X++
 		}
 		offFloor := image.Point{X: l.off.X.Floor(), Y: l.off.Y.Floor()}

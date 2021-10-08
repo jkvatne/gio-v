@@ -1,9 +1,11 @@
 package wid
 
 import (
+	"image"
+	"image/color"
+
 	"gioui.org/layout"
 	"gioui.org/unit"
-	"image"
 )
 
 // Widget is tha base structure for widgets. It contains variables that (almost) all widgets share
@@ -12,6 +14,7 @@ type Widget struct {
 	hint    string
 	padding layout.Inset
 	width   unit.Value
+	color   color.NRGBA
 }
 
 // WidgetIf is the interface functions for widgets, used by options to set parameters
@@ -19,6 +22,7 @@ type WidgetIf interface {
 	setWidth(width float32)
 	setHint(hint string)
 	setPadding(padding layout.Inset)
+	setColor(c color.NRGBA)
 }
 
 // WidgetOption is a type for optional parameters when creating widgets
@@ -30,9 +34,9 @@ type Option interface {
 }
 
 // Apply will apply all optional parameters. This can only be used when the widget has no own options.
-func (w *Widget) Apply(options []Option) {
+func (wid *Widget) Apply(options []Option) {
 	for _, option := range options {
-		option.apply(w)
+		option.apply(wid)
 	}
 }
 
@@ -51,6 +55,10 @@ func (wid *Widget) setHint(hint string) {
 
 func (wid *Widget) setPadding(padding layout.Inset) {
 	wid.padding = padding
+}
+
+func (wid *Widget) setColor(c color.NRGBA) {
+	wid.color = c
 }
 
 // Pad is used to set default widget paddings
@@ -86,6 +94,13 @@ func Hint(hint string) WidgetOption {
 	}
 }
 
+// Color is an option parameter to set widget color
+func Color(c color.NRGBA) WidgetOption {
+	return func(w WidgetIf) {
+		w.setColor(c)
+	}
+}
+
 // Pad is an option parameter to set customized padding. Noe that 1,2,3 or 4 paddings can be specified.
 // If 1 is supplide, it is used for left,right,top,bottom, all with the same padding
 // If 2 is supplied, the first is used for top/bottom, and the second for left and riht padding
@@ -108,6 +123,7 @@ func Pad(pads ...float32) WidgetOption {
 	}
 }
 
+// CalcMin will calculate the minimum size of widget
 func CalcMin(gtx C, width unit.Value) image.Point {
 	min := gtx.Constraints.Min
 	if width.V <= 1.0 {

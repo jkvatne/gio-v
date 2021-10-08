@@ -180,7 +180,7 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 				t.Text.Color = WithAlpha(t.Fg, uint8(v*255))
 				gtx.Constraints.Max.X = gtx.Metric.Px(t.MaxWidth)
 				p := t.Text.TextSize.Scale(0.5)
-				inset := layout.Inset{p, p, p, p}
+				inset := layout.Inset{Top: p, Right: p, Bottom: p, Left: p}
 				dims := layout.Stack{}.Layout(
 					gtx,
 					layout.Expanded(func(gtx C) D {
@@ -193,7 +193,7 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 							SW:   rr,
 							SE:   rr,
 						}.Op(gtx.Ops))
-						PaintBorder(gtx, outline, t.Text.Color, unit.Dp(1.0), unit.Dp(rr))
+						paintBorder(gtx, outline, t.Text.Color, unit.Dp(1.0), unit.Dp(rr))
 						return D{}
 					}),
 					layout.Stacked(func(gtx C) D {

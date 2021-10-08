@@ -3,6 +3,9 @@
 package wid
 
 import (
+	"image"
+	"image/color"
+
 	"gioui.org/f32"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
@@ -10,8 +13,6 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
-	"image"
-	"image/color"
 )
 
 // RadioButtonStyle defines a radio button.
@@ -46,7 +47,7 @@ func RadioButton(th *Theme, output *string, key string, label string) func(gtx C
 	r.SetupTabs()
 	return func(gtx C) D {
 		isSelected := *r.Output == r.Key
-		dims := r.layout(gtx, isSelected, r.Hovered())
+		dims := r.layout(gtx, isSelected)
 		gtx.Constraints.Min = dims.Size
 		for r.Clicked() {
 			if r.Output != nil {
@@ -57,7 +58,7 @@ func RadioButton(th *Theme, output *string, key string, label string) func(gtx C
 	}
 }
 
-func (r *RadioButtonStyle) layout(gtx C, checked, hovered bool) D {
+func (r *RadioButtonStyle) layout(gtx C, checked bool) D {
 	icon := r.CheckedStateIcon
 	if !checked {
 		icon = r.UncheckedStateIcon
@@ -73,15 +74,14 @@ func (r *RadioButtonStyle) layout(gtx C, checked, hovered bool) D {
 						radius := float32(size) / 2
 						paint.FillShape(gtx.Ops,
 							MulAlpha(r.IconColor, 70),
-							clip.Circle{Center: f32.Point{X: radius, Y: radius},Radius: radius,
-						}.Op(gtx.Ops))
+							clip.Circle{Center: f32.Point{X: radius, Y: radius}, Radius: radius}.Op(gtx.Ops))
 					}
 					return dims
 				}),
 				layout.Stacked(func(gtx C) D {
 					return layout.UniformInset(unit.Dp(1)).Layout(gtx, func(gtx C) D {
 						gtx.Constraints.Min = image.Point{X: gtx.Px(r.Size)}
-						icon.Layout(gtx, ColDisabled(r.IconColor, gtx.Queue==nil))
+						icon.Layout(gtx, ColDisabled(r.IconColor, gtx.Queue == nil))
 						return D{
 							Size: image.Point{X: gtx.Px(r.Size), Y: gtx.Px(r.Size)},
 						}
@@ -91,11 +91,11 @@ func (r *RadioButtonStyle) layout(gtx C, checked, hovered bool) D {
 		}),
 
 		layout.Rigid(func(gtx C) D {
-			return layout.Inset{Zv, r.th.TextSize, Zv, Zv}.Layout(gtx, func(gtx C) D {
+			return layout.Inset{Top: Zv, Right: r.th.TextSize, Bottom: Zv, Left: Zv}.Layout(gtx, func(gtx C) D {
 				paint.ColorOp{Color: r.IconColor}.Add(gtx.Ops)
 				lbl := r.Label
-				if lbl=="" {
-					lbl=r.Key
+				if lbl == "" {
+					lbl = r.Key
 				}
 				return Label(r.th, lbl, text.Start, 1.0)(gtx)
 			})

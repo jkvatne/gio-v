@@ -1,6 +1,8 @@
 package wid
 
 import (
+	"image"
+
 	"gioui.org/f32"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
@@ -10,7 +12,6 @@ import (
 	"gioui.org/text"
 	"gioui.org/unit"
 	"golang.org/x/exp/shiny/materialdesign/icons"
-	"image"
 )
 
 type DropDownDef struct {
@@ -24,9 +25,9 @@ type DropDownDef struct {
 	hovered    []bool
 	Visible    bool
 	wasVisible int
-	list  layout.Widget
-	Items []layout.Widget
-	icon  *Icon
+	list       layout.Widget
+	Items      []layout.Widget
+	icon       *Icon
 }
 
 func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx C) D {
@@ -44,7 +45,7 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 		b.hovered = append(b.hovered, false)
 	}
 	b.list = MakeList(th, layout.Vertical, b.Items...)
-	b.Pad(5,2,1,2)
+	b.Pad(5, 2, 1, 2)
 	for _, option := range options {
 		option.apply(&b)
 	}
@@ -57,7 +58,7 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 			b.Visible = !b.Visible
 		}
 
-		if b.Visible  {
+		if b.Visible {
 			gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
 			gtx.Constraints.Max = image.Pt(dims.Size.X, 9999)
 			macro := op.Record(gtx.Ops)
@@ -69,7 +70,7 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 			clip.UniformRRect(r, 0).Add(gtx.Ops)
 			paint.Fill(gtx.Ops, b.th.Background)
 			// Draw a border around all options
-			PaintBorder(gtx, r, b.th.OnBackground, b.th.BorderThickness, unit.Value{})
+			paintBorder(gtx, r, b.th.OnBackground, b.th.BorderThickness, unit.Value{})
 			call.Add(gtx.Ops)
 			call = macro.Stop()
 			op.Defer(gtx.Ops, call)
@@ -123,7 +124,7 @@ func (b *DropDownDef) option(th *Theme, i int) func(gtx C) D {
 
 func (b *DropDownDef) Layout(gtx C) D {
 	b.disabled = false
-	if b.disabler != nil && *b.disabler || GlobalDisable {
+	if b.disabler != nil && *b.disabler {
 		gtx = gtx.Disabled()
 		b.disabled = true
 	}
@@ -133,7 +134,7 @@ func (b *DropDownDef) Layout(gtx C) D {
 			layout.Expanded(b.LayoutBackground()),
 			layout.Stacked(
 				func(gtx C) D {
-					if min.X!=0 {
+					if min.X != 0 {
 						gtx.Constraints.Min = min
 						gtx.Constraints.Max.X = min.X
 					}

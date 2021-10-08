@@ -1,9 +1,10 @@
 package wid
 
 import (
+	"image"
+
 	"gioui.org/layout"
 	"gioui.org/op"
-	"image"
 )
 
 // node defines the widget tree of the form.
@@ -53,7 +54,7 @@ func MakeFlex(axis layout.Axis, spacing layout.Spacing, widgets ...layout.Widget
 	var ops op.Ops
 	var dims []image.Point
 	node := makeNode(widgets)
-	gtx := layout.Context{Ops: &ops, Constraints: layout.Constraints{image.Point{0, 0}, image.Point{3000,600}}}
+	gtx := layout.Context{Ops: &ops, Constraints: layout.Constraints{image.Point{X: 0, Y: 0}, image.Point{X: 3000, Y: 600}}}
 	for _, w := range widgets {
 		d := w(gtx).Size
 		dims = append(dims, d)
@@ -62,7 +63,7 @@ func MakeFlex(axis layout.Axis, spacing layout.Spacing, widgets ...layout.Widget
 		var children []layout.FlexChild
 		for i := 0; i < len(node.children); i++ {
 			w := *node.children[i].w
-			if dims[i].X >= 3000 && axis==layout.Horizontal {
+			if dims[i].X >= 3000 && axis == layout.Horizontal {
 				children = append(children, layout.Flexed(1.0, func(gtx C) D { return w(gtx) }))
 			} else {
 				children = append(children, layout.Rigid(func(gtx C) D { return w(gtx) }))

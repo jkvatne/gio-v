@@ -3,8 +3,9 @@
 package wid
 
 import (
-	"gioui.org/layout"
 	"image/color"
+
+	"gioui.org/layout"
 
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
@@ -110,7 +111,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme 
 	t.TooltipInset = layout.UniformInset(unit.Dp(10))
 	t.TooltipCornerRadius = unit.Dp(6.0)
 	t.TooltipWidth = t.TextSize.Scale(20)
-	t.TooltipBackground = color.NRGBA{255, 255, 160, 233}
+	t.TooltipBackground = color.NRGBA{R: 255, G: 255, B: 160, A: 233}
 	t.TooltipOnBackground = color.NRGBA{A: 255}
 	// List
 	t.ListInset = layout.Inset{

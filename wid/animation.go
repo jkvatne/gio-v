@@ -55,13 +55,13 @@ func (v *VisibilityAnimation) Revealed(gtx C) float32 {
 	return progress
 }
 
-// Visible() returns whether any part of the animated entity should be visible during the
+// Visible returns whether any part of the animated entity should be visible during the
 // current animation frame.
 func (v VisibilityAnimation) Visible() bool {
 	return v.State != Invisible
 }
 
-// Animating() returns whether the animation is either in the process of appearsing or
+// Animating returns whether the animation is either in the process of appearing or
 // disappearing.
 func (v VisibilityAnimation) Animating() bool {
 	return v.State == Appearing || v.State == Disappearing
@@ -137,7 +137,7 @@ func (v VisibilityAnimationState) String() string {
 // Progress is an animation primitive that tracks progress of time over a fixed
 // duration as a float between [0, 1].
 //
-// Progress is reversable.
+// Progress is reversible.
 //
 // Widgets map async UI events to state changes: stop, forward, reverse.
 // Widgets then interpolate visual data based on progress value.
@@ -190,6 +190,7 @@ func (p Progress) Started() bool {
 	return p.active
 }
 
+// Finished is trou when animation is done
 func (p Progress) Finished() bool {
 	switch p.direction {
 	case Forward:
@@ -216,6 +217,7 @@ func (p *Progress) Stop() {
 	p.active = false
 }
 
+// Update will do update now
 func (p *Progress) Update(now time.Time) {
 	if !p.Started() || p.Finished() {
 		p.Stop()

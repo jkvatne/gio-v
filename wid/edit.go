@@ -3,7 +3,6 @@
 package wid
 
 import (
-	"gioui.org/f32"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/paint"
@@ -11,6 +10,7 @@ import (
 	"gioui.org/unit"
 )
 
+// EditDef is the parameters for the text editor
 type EditDef struct {
 	Widget
 	Editor
@@ -21,7 +21,7 @@ type EditDef struct {
 	LabelSize unit.Value
 }
 
-
+// Edit will return a widget (layout function) for a text editor
 func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e := new(EditDef)
 	e.SetupTabs()
@@ -37,38 +37,39 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 		option.apply(e)
 	}
 	return func(gtx C) D {
-			defer op.Save(gtx.Ops).Load()
-			gtx.Constraints.Min.X = 0
-			return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start, Spacing: layout.SpaceStart}.Layout(
-				gtx,
-				layout.Rigid(e.layLabel()),
-				layout.Rigid(e.layEdit()),
-			)
+		defer op.Save(gtx.Ops).Load()
+		gtx.Constraints.Min.X = 0
+		return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start, Spacing: layout.SpaceStart}.Layout(
+			gtx,
+			layout.Rigid(e.layLabel()),
+			layout.Rigid(e.layEdit()),
+		)
 	}
 }
 
-func (e *EditDef)layEdit() layout.Widget{
+func (e *EditDef) layEdit() layout.Widget {
 	return func(gtx C) D {
-		return e.padding.Layout(gtx, func (gtx C) D {
+		return e.padding.Layout(gtx, func(gtx C) D {
 			return layout.Stack{}.Layout(
 				gtx,
 				layout.Expanded(func(gtx C) D {
 					gtx.Constraints.Min.X = 5000
 					return e.th.LabelPadding.Layout(gtx, func(gtx C) D {
-						return e.LayoutEdit()(gtx)
+						return e.layoutEdit()(gtx)
 					})
 				}),
 				layout.Expanded(LayoutBorder(&e.Clickable, e.th)),
-			)})
+			)
+		})
 	}
 }
 
-func (e *EditDef)layLabel() layout.Widget {
+func (e *EditDef) layLabel() layout.Widget {
 	return func(gtx C) D {
 		p := e.padding
 		p.Top = unit.Dp(p.Top.V + e.th.LabelPadding.Top.V)
 		return p.Layout(gtx, func(gtx C) D {
-			if e.hint=="" {
+			if e.hint == "" {
 				return D{}
 			}
 			gtx.Constraints.Min.X = gtx.Metric.Px(e.LabelSize)
@@ -78,7 +79,7 @@ func (e *EditDef)layLabel() layout.Widget {
 	}
 }
 
-func (e *EditDef) LayoutEdit() func(gtx C) D {
+func (e *EditDef) layoutEdit() func(gtx C) D {
 	return func(gtx C) D {
 		defer op.Save(gtx.Ops).Load()
 		macro := op.Record(gtx.Ops)
@@ -97,7 +98,7 @@ func (e *EditDef) LayoutEdit() func(gtx C) D {
 			gtx.Constraints.Min.Y = h
 		}
 		dims = e.Editor.Layout(gtx, e.shaper, e.font, e.th.TextSize)
-		disabled := gtx.Queue == nil || GlobalDisable
+		disabled := gtx.Queue == nil
 		if e.Editor.Len() > 0 {
 			paint.ColorOp{Color: e.th.SelectionColor}.Add(gtx.Ops)
 			e.Editor.PaintSelection(gtx)
@@ -111,22 +112,5 @@ func (e *EditDef) LayoutEdit() func(gtx C) D {
 			e.Editor.PaintCaret(gtx)
 		}
 		return dims
-	}
-}
-
-func  LayoutBorder(e *Clickable, th *Theme) func(gtx C) D {
-	return func(gtx C) D {
-		outline := f32.Rectangle{Max: f32.Point{
-			X: float32(gtx.Constraints.Min.X),
-			Y: float32(gtx.Constraints.Min.Y),
-		}}
-		if e.Focused() {
-			PaintBorder(gtx, outline, MulAlpha(th.Primary, 255), th.BorderThicknessActive, th.CornerRadius)
-		} else if e.Hovered() {
-			PaintBorder(gtx, outline, MulAlpha(th.Primary, 140), th.BorderThickness, th.CornerRadius)
-		} else {
-			PaintBorder(gtx, outline, MulAlpha(th.Primary, 50), th.BorderThickness, th.CornerRadius)
-		}
-		return D{}
 	}
 }

@@ -65,11 +65,12 @@ type Press struct {
 // Global value used to save the previous widget that was tab-able
 var prev Focuser
 
-
+// Disabled returns true if the widget is dirabled
 func (c *Clickable) Disabled() bool {
 	return c.disabled
 }
 
+// SetupTabs is used to set next/previous widget for tabbing between widgets
 func (c *Clickable) SetupTabs() {
 	if prev != nil {
 		c.SetPrev(prev)
@@ -78,16 +79,7 @@ func (c *Clickable) SetupTabs() {
 	prev = c
 }
 
-func makeClickable() *Clickable {
-	c := new(Clickable)
-	if prev != nil {
-		c.SetPrev(prev)
-		prev.SetNext(c)
-	}
-	prev = c
-	return c
-}
-
+// HandleClick will call the callback function
 func (c *Clickable) HandleClick() {
 	for c.Clicked() {
 		if c.handler != nil {
@@ -96,6 +88,7 @@ func (c *Clickable) HandleClick() {
 	}
 }
 
+// HandleToggle will support toggeling widgets
 func (c *Clickable) HandleToggle(value *bool, changed *bool) {
 	for c.Clicked() {
 		if value != nil {
@@ -110,14 +103,17 @@ func (c *Clickable) HandleToggle(value *bool, changed *bool) {
 	}
 }
 
+// SetNext set pointer for next widget
 func (c *Clickable) SetNext(f Focuser) {
 	c.next = &f
 }
 
+// SetPrev set pointer for previous widget
 func (c *Clickable) SetPrev(f Focuser) {
 	c.prev = &f
 }
 
+// Next returns pointer to next widget
 func (c *Clickable) Next() Focuser {
 	if &c == nil || c == nil || c.next == nil {
 		return nil
@@ -129,6 +125,7 @@ func (c *Clickable) Next() Focuser {
 	return b
 }
 
+// Prev returns pointer to previous widget
 func (c *Clickable) Prev() Focuser {
 	if &c == nil || c == nil || c.prev == nil {
 		return nil
@@ -140,6 +137,7 @@ func (c *Clickable) Prev() Focuser {
 	return b
 }
 
+// Focus will request focus for this widget
 func (c *Clickable) Focus() {
 	c.requestFocus = true
 }
@@ -171,6 +169,7 @@ func (c *Clickable) Clicked() bool {
 	return true
 }
 
+// HasClicks is trure if there are more clicks available
 func (c *Clickable) HasClicks() bool {
 	return len(c.clicks) > 0
 }
@@ -199,7 +198,7 @@ func (c *Clickable) History() []Press {
 	return c.history
 }
 
-// Layout and update the button state
+// LayoutClickable and update the button state
 func (c *Clickable) LayoutClickable(gtx C) D {
 	// Flush clicks from before the last update.
 	n := copy(c.clicks, c.clicks[c.prevClicks:])
@@ -222,7 +221,7 @@ func (c *Clickable) LayoutClickable(gtx C) D {
 	return D{Size: gtx.Constraints.Min}
 }
 
-// update the button state by processing events.
+// HandleKeys updates the button state by processing events.
 func (c *Clickable) HandleKeys(gtx C) bool {
 	var newKey bool
 	for _, ev := range gtx.Events(&c.eventKey) {
@@ -247,7 +246,7 @@ func (c *Clickable) HandleKeys(gtx C) bool {
 				if !ke.Modifiers.Contain(key.ModCtrl) {
 					c.index--
 				} else {
-					c.index-=10
+					c.index -= 10
 				}
 				newKey = true
 			case key.NameHome:
@@ -260,7 +259,7 @@ func (c *Clickable) HandleKeys(gtx C) bool {
 				if !ke.Modifiers.Contain(key.ModCtrl) {
 					c.index++
 				} else {
-					c.index+=10
+					c.index += 10
 				}
 				newKey = true
 			case key.NameTab:
@@ -286,6 +285,7 @@ func (c *Clickable) HandleKeys(gtx C) bool {
 	return newKey
 }
 
+// HandleClicks will handle gestures
 func (c *Clickable) HandleClicks(gtx C) D {
 	for _, e := range c.click.Events(gtx) {
 		switch e.Type {
@@ -313,4 +313,22 @@ func (c *Clickable) HandleClicks(gtx C) D {
 		}
 	}
 	return D{}
+}
+
+// LayoutBorder will draw a border around the widghet
+func LayoutBorder(e *Clickable, th *Theme) func(gtx C) D {
+	return func(gtx C) D {
+		outline := f32.Rectangle{Max: f32.Point{
+			X: float32(gtx.Constraints.Min.X),
+			Y: float32(gtx.Constraints.Min.Y),
+		}}
+		if e.Focused() {
+			paintBorder(gtx, outline, MulAlpha(th.Primary, 255), th.BorderThicknessActive, th.CornerRadius)
+		} else if e.Hovered() {
+			paintBorder(gtx, outline, MulAlpha(th.Primary, 140), th.BorderThickness, th.CornerRadius)
+		} else {
+			paintBorder(gtx, outline, MulAlpha(th.Primary, 50), th.BorderThickness, th.CornerRadius)
+		}
+		return D{}
+	}
 }

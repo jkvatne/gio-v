@@ -3,8 +3,9 @@
 package wid
 
 import (
-	"gioui.org/unit"
 	"image/color"
+
+	"gioui.org/unit"
 )
 
 // Zv is a zero unit.Value. Just saving a few keystrokes
@@ -15,9 +16,9 @@ var Zv = unit.Value{}
 // The amount of darkening is greater than the amount of lightening
 func DeEmphasis(c color.NRGBA, amount uint8) color.NRGBA {
 	if Luminance(c) < 128 {
-		return MulAlpha(c, 0xc0)
+		return MulAlpha(c, 255-amount)
 	}
-	return MulAlpha(c, 0x20)
+	return MulAlpha(c, amount)
 }
 
 // Pxr maps the value v to pixels, returning a float32
@@ -71,7 +72,7 @@ func Interpolate(a, b color.NRGBA, progress float32) color.NRGBA {
 // Gray returns a NRGBA color with the same luminance as the parameter
 func Gray(c color.NRGBA) color.NRGBA {
 	l := Luminance(c)
-	return color.NRGBA{l, l, l, c.A}
+	return color.NRGBA{R: l, G: l, B: l, A: c.A}
 }
 
 // RGB creates a NRGBA color from its hex code, with alpha=255

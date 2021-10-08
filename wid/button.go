@@ -3,10 +3,11 @@
 package wid
 
 import (
-	"gioui.org/io/pointer"
 	"image"
 	"image/color"
 	"math"
+
+	"gioui.org/io/pointer"
 
 	"gioui.org/f32"
 	"gioui.org/layout"
@@ -17,17 +18,21 @@ import (
 	"gioui.org/unit"
 )
 
-var GlobalDisable = false
-
+// ButtonStyle indicates a Contained, Text, Outline or round button
 type ButtonStyle int
 
 const (
+	// Contained is a solid, colored button
 	Contained ButtonStyle = iota
+	// Text is a button without outline or color. Just text
 	Text
+	// Outlined is a text button with outline
 	Outlined
+	// Round is a round button, usually with icon only
 	Round
 )
 
+// ButtonDef is the struct for buttons
 type ButtonDef struct {
 	Widget
 	Clickable
@@ -42,23 +47,28 @@ type ButtonDef struct {
 	Style        ButtonStyle
 }
 
+// BtnOption is the options for buttons only
 type BtnOption func(*ButtonDef)
 
+// RoundButton is a shortcut to a round button
 func RoundButton(th *Theme, d []byte, options ...Option) func(gtx C) D {
 	options = append(options, BtnIcon(d), W(0))
-	return aButton(Round, th, "",  options...)
+	return aButton(Round, th, "", options...)
 }
 
+// TextButton is a shortcut to a text only button
 func TextButton(th *Theme, label string, options ...Option) func(gtx C) D {
-	return aButton(Text, th, label,  options...)
+	return aButton(Text, th, label, options...)
 }
 
+// OutlineButton is a shortcut to an outlined button
 func OutlineButton(th *Theme, label string, options ...Option) func(gtx C) D {
-	return aButton(Outlined, th, label,  options...)
+	return aButton(Outlined, th, label, options...)
 }
 
+// Button is the generic button selector
 func Button(th *Theme, label string, options ...Option) func(gtx C) D {
-	return aButton(Contained, th, label,  options...)
+	return aButton(Contained, th, label, options...)
 }
 
 func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func(gtx C) D {
@@ -71,13 +81,13 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func
 	b.shaper = th.Shaper
 	b.Style = style
 	// Apply default padding. Can be overridden by option function
-	b.Pad(5,2,2,2)
+	b.Pad(5, 2, 2, 2)
 	for _, option := range options {
 		option.apply(&b)
 	}
 	b.Tooltip = PlatformTooltip(th, b.hint)
 	return func(gtx C) D {
-		dims := b.Layout(gtx)
+		dims := b.layout(gtx)
 		b.HandleClick()
 		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
 		return dims
@@ -95,6 +105,7 @@ func BtnIcon(d []byte) BtnOption {
 	}
 }
 
+// Handler is an optional parameter to set a callback when the button is clicked
 func Handler(f func()) BtnOption {
 	foo := func(b bool) { f() }
 	return func(b *ButtonDef) {
@@ -102,6 +113,7 @@ func Handler(f func()) BtnOption {
 	}
 }
 
+// Disable is an optional parameter to set a bool variable to disable the button
 func Disable(v *bool) BtnOption {
 	return func(b *ButtonDef) {
 		b.disabler = v
@@ -170,7 +182,7 @@ func drawInk(gtx C, c Press) {
 	paint.PaintOp{}.Add(gtx.Ops)
 }
 
-func PaintBorder(gtx C, outline f32.Rectangle, col color.NRGBA, width unit.Value, rr unit.Value) {
+func paintBorder(gtx C, outline f32.Rectangle, col color.NRGBA, width unit.Value, rr unit.Value) {
 	paint.FillShape(gtx.Ops,
 		col,
 		clip.Stroke{
@@ -180,7 +192,7 @@ func PaintBorder(gtx C, outline f32.Rectangle, col color.NRGBA, width unit.Value
 	)
 }
 
-func (b *ButtonDef) LayoutBackground() func(gtx C) D {
+func (b *ButtonDef) layoutBackground() func(gtx C) D {
 	return func(gtx C) D {
 
 		b.LayoutClickable(gtx)
@@ -213,15 +225,15 @@ func (b *ButtonDef) LayoutBackground() func(gtx C) D {
 		case b.Style == Outlined && gtx.Queue == nil:
 			// Disabled Outlined button. Text and outline is grey when disabled
 			paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			PaintBorder(gtx, outline, Disabled(b.th.Primary), b.th.BorderThickness, b.th.CornerRadius)
+			paintBorder(gtx, outline, Disabled(b.th.Primary), b.th.BorderThickness, b.th.CornerRadius)
 		case b.Style == Outlined && (b.Hovered() || b.Focused()):
 			// Outline button, hovered/focused
 			paint.FillShape(gtx.Ops, Hovered(b.th.Background), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			PaintBorder(gtx, outline, b.th.Primary, b.th.BorderThickness, b.th.CornerRadius)
+			paintBorder(gtx, outline, b.th.Primary, b.th.BorderThickness, b.th.CornerRadius)
 		case b.Style == Outlined:
 			// Outline button, not disabled
 			paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			PaintBorder(gtx, outline, b.th.Primary, b.th.BorderThickness, b.th.CornerRadius)
+			paintBorder(gtx, outline, b.th.Primary, b.th.BorderThickness, b.th.CornerRadius)
 		case (b.Style == Contained || b.Style == Round) && gtx.Queue == nil:
 			// Disabled contained/round button.
 			paint.FillShape(gtx.Ops, Disabled(b.th.Primary), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
@@ -278,17 +290,17 @@ func layIcon(b *ButtonDef) layout.Widget {
 	return func(gtx C) D { return D{} }
 }
 
-func (b *ButtonDef) Layout(gtx C) D {
+func (b *ButtonDef) layout(gtx C) D {
 	return b.padding.Layout(gtx, func(gtx C) D {
 		return b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
 			b.disabled = false
-			if b.disabler != nil && *b.disabler || GlobalDisable {
+			if b.disabler != nil && *b.disabler {
 				gtx = gtx.Disabled()
 				b.disabled = true
 			}
 			min := CalcMin(gtx, b.width)
 			return layout.Stack{Alignment: layout.Center}.Layout(gtx,
-				layout.Expanded(b.LayoutBackground()),
+				layout.Expanded(b.layoutBackground()),
 				layout.Stacked(
 					func(gtx C) D {
 						gtx.Constraints.Min = min

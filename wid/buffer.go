@@ -90,7 +90,7 @@ func (e *editBuffer) gapLen() int {
 }
 
 func (e *editBuffer) Reset() {
-	e.Seek(0, io.SeekStart)
+	_, _ = e.Seek(0, io.SeekStart)
 }
 
 // Seek implements io.Seeker

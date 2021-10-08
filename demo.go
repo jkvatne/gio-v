@@ -9,6 +9,11 @@ package main
 import (
 	"flag"
 	"gio-v/wid"
+	"image"
+	"image/color"
+	"os"
+	"time"
+
 	"gioui.org/app"
 	"gioui.org/font/gofont"
 	"gioui.org/io/system"
@@ -18,16 +23,12 @@ import (
 	"gioui.org/text"
 	"gioui.org/unit"
 	"golang.org/x/exp/shiny/materialdesign/icons"
-	"image"
-	"image/color"
-	"os"
-	"time"
 )
 
 var mode = "maximized"
 var fontSize = "medium"
 var oldMode string
-var oldfontsize string
+var oldFontSize string
 var green = false           // the state variable for the button color
 var currentTheme *wid.Theme // the theme selected
 var root layout.Widget      // root is the root widget (usually a list), and is the root of the widget tree
@@ -76,7 +77,7 @@ func main() {
 }
 
 func handleFrameEvents(th *wid.Theme, e system.FrameEvent) {
-	if oldWindowSize.X != e.Size.X || oldWindowSize.Y != e.Size.Y || mode != oldMode || fontSize != oldfontsize {
+	if oldWindowSize.X != e.Size.X || oldWindowSize.Y != e.Size.Y || mode != oldMode || fontSize != oldFontSize {
 		switch fontSize {
 		case "medium", "Medium":
 			th.TextSize = unit.Dp(float32(e.Size.Y) / 60)
@@ -85,7 +86,7 @@ func handleFrameEvents(th *wid.Theme, e system.FrameEvent) {
 		case "small", "Small":
 			th.TextSize = unit.Dp(float32(e.Size.Y) / 80)
 		}
-		oldfontsize = fontSize
+		oldFontSize = fontSize
 		oldWindowSize = e.Size
 		updateMode()
 		setupForm(th)
@@ -169,10 +170,10 @@ func setupForm(th *wid.Theme) {
 		wid.Separator(th, unit.Px(1)),
 		wid.Separator(th, unit.Px(1), wid.Pad(1)),
 		wid.Separator(th, unit.Px(1)),
-		wid.Separator(th, unit.Px(4), wid.Pad(5,20,5,20)),
+		wid.Separator(th, unit.Px(4), wid.Pad(5, 20, 5, 20)),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.Label(th, "A slider that can be key operated:", text.Start, 1.0),
-			wid.Slider(th, &sliderValue,0, 100),
+			wid.Slider(th, &sliderValue, 0, 100),
 		),
 		wid.Label(th, "A fixed width button at the middle of the screen:", text.Start, 1.0),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
@@ -184,8 +185,6 @@ func setupForm(th *wid.Theme) {
 		wid.MakeFlex(layout.Horizontal, layout.SpaceStart,
 			wid.RoundButton(th, icons.ContentAdd,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-			wid.Label(th, "Disabled", text.End, 1.0),
-			wid.Switch(th, &wid.GlobalDisable, nil),
 		),
 
 		// Note that buttons default to their minimum size, unless set differently, here aligned to the middle

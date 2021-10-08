@@ -154,6 +154,7 @@ func (m *maskReader) Read(b []byte) (n int, err error) {
 	return n, err
 }
 
+// EditorEvent is event type for the editor
 type EditorEvent interface {
 	isEditorEvent()
 }
@@ -442,8 +443,8 @@ func (e *Editor) command(gtx C, k key.Event) bool {
 		if k.Modifiers != key.ModShortcut {
 			return false
 		}
-		if text := e.SelectedText(); text != "" {
-			clipboard.WriteOp{Text: text}.Add(gtx.Ops)
+		if txt := e.SelectedText(); txt != "" {
+			clipboard.WriteOp{Text: txt}.Add(gtx.Ops)
 			if k.Name == "X" {
 				e.Delete(1)
 			}
@@ -511,25 +512,25 @@ func (e *Editor) layout(gtx C) D {
 		X: -e.scrollOff.X,
 		Y: -e.scrollOff.Y,
 	}
-	clip := textPadding(e.lines)
-	clip.Max = clip.Max.Add(e.viewSize)
+	clp := textPadding(e.lines)
+	clp.Max = clp.Max.Add(e.viewSize)
 	startSel, endSel := sortPoints(e.caret.start.lineCol, e.caret.end.lineCol)
 	it := segmentIterator{
 		startSel:  startSel,
 		endSel:    endSel,
 		Lines:     e.lines,
-		Clip:      clip,
+		Clip:      clp,
 		Alignment: e.Alignment,
 		Width:     e.viewSize.X,
 		Offset:    off,
 	}
 	e.shapes = e.shapes[:0]
 	for {
-		layout, off, selected, yOffs, size, ok := it.Next()
+		theLayout, off, selected, yOffs, size, ok := it.Next()
 		if !ok {
 			break
 		}
-		path := e.shaper.Shape(e.font, e.textSize, layout)
+		path := e.shaper.Shape(e.font, e.textSize, theLayout)
 		e.shapes = append(e.shapes, line{off, path, selected, yOffs, size})
 	}
 
@@ -596,6 +597,7 @@ func (e *Editor) PaintSelection(gtx C) {
 	}
 }
 
+// PaintText draws the text
 func (e *Editor) PaintText(gtx C) {
 	cl := textPadding(e.lines)
 	cl.Max = cl.Max.Add(e.viewSize)
@@ -609,6 +611,7 @@ func (e *Editor) PaintText(gtx C) {
 	}
 }
 
+// PaintCaret draws the caret
 func (e *Editor) PaintCaret(gtx C) {
 	if !e.caret.on {
 		return
@@ -740,8 +743,8 @@ func (e *Editor) layoutText(s text.Shaper) ([]text.Line, D) {
 	for i := 0; i < len(lines)-1; i++ {
 		// To avoid layout flickering while editing, assume a soft newline takes
 		// up all available space.
-		if layout := lines[i].Layout; len(layout.Text) > 0 {
-			r := layout.Text[len(layout.Text)-1]
+		if theLayout := lines[i].Layout; len(theLayout.Text) > 0 {
+			r := theLayout.Text[len(theLayout.Text)-1]
 			if r != '\n' {
 				dims.Size.X = e.maxWidth
 				break
@@ -1016,11 +1019,11 @@ func (e *Editor) moveStart(selAct selectionAction) {
 
 func (e *Editor) movePosToStart(pos combinedPos) combinedPos {
 	e.makeValid(&pos)
-	layout := e.lines[pos.lineCol.Y].Layout
+	theLayout := e.lines[pos.lineCol.Y].Layout
 	for i := pos.lineCol.X - 1; i >= 0; i-- {
 		_, s := e.rr.runeBefore(pos.ofs)
 		pos.ofs -= s
-		pos.x -= layout.Advances[i]
+		pos.x -= theLayout.Advances[i]
 	}
 	pos.lineCol.X = 0
 	pos.xoff = -pos.x
@@ -1040,9 +1043,9 @@ func (e *Editor) movePosToEnd(pos combinedPos) combinedPos {
 	if pos.lineCol.Y < len(e.lines)-1 {
 		end = 1
 	}
-	layout := l.Layout
-	for i := pos.lineCol.X; i < len(layout.Advances)-end; i++ {
-		adv := layout.Advances[i]
+	theLayout := l.Layout
+	for i := pos.lineCol.X; i < len(theLayout.Advances)-end; i++ {
+		adv := theLayout.Advances[i]
 		_, s := e.rr.runeAt(pos.ofs)
 		pos.ofs += s
 		pos.x += adv
@@ -1139,11 +1142,11 @@ func (e *Editor) deleteWord(distance int) {
 	for ii := 0; ii < words; ii++ {
 		if r := next(runes); unicode.IsSpace(r) {
 			for r := next(runes); unicode.IsSpace(r) && !atEnd(runes); r = next(runes) {
-				runes += 1
+				runes++
 			}
 		} else {
 			for r := next(runes); !unicode.IsSpace(r) && !atEnd(runes); r = next(runes) {
-				runes += 1
+				runes++
 			}
 		}
 	}
@@ -1228,7 +1231,7 @@ func (e *Editor) SelectedText() string {
 		return ""
 	}
 	buf := make([]byte, l)
-	e.rr.Seek(int64(min(e.caret.start.ofs, e.caret.end.ofs)), io.SeekStart)
+	_, _ = e.rr.Seek(int64(min(e.caret.start.ofs, e.caret.end.ofs)), io.SeekStart)
 	_, err := e.rr.Read(buf)
 	if err != nil {
 		// The only error that rr.Read can return is EOF, which just means no
