@@ -19,20 +19,20 @@ type SliderStyle struct {
 	Clickable
 	Float
 	Min, Max float32
-	Value *float32
+	Value    *float32
 }
 
 // Slider is for selecting a value in a range.
 func Slider(th *Theme, value *float32, minV, maxV float32, options ...Option) layout.Widget {
 	s := SliderStyle{
-		Min: minV,
-		Max: maxV,
+		Min:   minV,
+		Max:   maxV,
 		Value: value,
 	}
 	s.th = th
 	s.SetupTabs()
 	s.width = unit.Dp(99999)
-	s.Apply(options)
+	s.Apply(options...)
 
 	return func(gtx C) D {
 		gtx.Constraints.Min = CalcMin(gtx, s.width)
@@ -77,7 +77,7 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 		if s.Float.Axis == layout.Vertical {
 			xy = de.Position.Y
 		}
-		s.Float.pos = (xy -float32(thumbRadius))/ s.Float.length
+		s.Float.pos = (xy - float32(thumbRadius)) / s.Float.length
 		value = s.Min + (s.Max-s.Min)*s.Float.pos
 	} else if s.Min != s.Max {
 		s.Float.pos = (value - s.Min) / (s.Max - s.Min)
@@ -134,7 +134,7 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 		paint.FillShape(gtx.Ops, MulAlpha(s.th.OnBackground, 88),
 			clip.Circle{
 				Center: f32.Point{X: float32(pt.X), Y: float32(pt.Y)},
-				Radius:  1.4 * float32(thumbRadius),
+				Radius: 1.4 * float32(thumbRadius),
 			}.Op(gtx.Ops))
 	} else {
 		color = s.th.OnBackground
@@ -178,7 +178,7 @@ func (s *SliderStyle) setValue(value, min, max float32) {
 		s.Float.Value = value
 		s.Float.changed = true
 	}
-	if s.Value!=nil {
+	if s.Value != nil {
 		*s.Value = value
 	}
 }

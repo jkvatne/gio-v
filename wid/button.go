@@ -45,6 +45,8 @@ type ButtonDef struct {
 	shaper       text.Shaper
 	Icon         *Icon
 	Style        ButtonStyle
+	fg           color.NRGBA
+	bg           color.NRGBA
 }
 
 // BtnOption is the options for buttons only
@@ -87,6 +89,16 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func
 	}
 	b.Tooltip = PlatformTooltip(th, b.hint)
 	return func(gtx C) D {
+		b.fg = th.OnPrimary
+		b.bg = th.Primary
+		if b.Widget.color.A != 0 {
+			b.bg = b.Widget.color
+			if Luminance(b.Widget.color) > 127 {
+				b.fg = RGB(0x000000)
+			} else {
+				b.fg = RGB(0xFFFFFF)
+			}
+		}
 		dims := b.layout(gtx)
 		b.HandleClick()
 		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
@@ -225,24 +237,24 @@ func (b *ButtonDef) layoutBackground() func(gtx C) D {
 		case b.Style == Outlined && gtx.Queue == nil:
 			// Disabled Outlined button. Text and outline is grey when disabled
 			paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			paintBorder(gtx, outline, Disabled(b.th.Primary), b.th.BorderThickness, b.th.CornerRadius)
+			paintBorder(gtx, outline, Disabled(b.fg), b.th.BorderThickness, b.th.CornerRadius)
 		case b.Style == Outlined && (b.Hovered() || b.Focused()):
 			// Outline button, hovered/focused
 			paint.FillShape(gtx.Ops, Hovered(b.th.Background), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			paintBorder(gtx, outline, b.th.Primary, b.th.BorderThickness, b.th.CornerRadius)
+			paintBorder(gtx, outline, b.bg, b.th.BorderThickness, b.th.CornerRadius)
 		case b.Style == Outlined:
 			// Outline button, not disabled
 			paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			paintBorder(gtx, outline, b.th.Primary, b.th.BorderThickness, b.th.CornerRadius)
+			paintBorder(gtx, outline, b.bg, b.th.BorderThickness, b.th.CornerRadius)
 		case (b.Style == Contained || b.Style == Round) && gtx.Queue == nil:
 			// Disabled contained/round button.
-			paint.FillShape(gtx.Ops, Disabled(b.th.Primary), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			paint.FillShape(gtx.Ops, Disabled(b.bg), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		case (b.Style == Contained || b.Style == Round) && (b.Hovered() || b.Focused()):
 			// Hovered or focused contained/round button.
-			paint.FillShape(gtx.Ops, Hovered(b.th.Primary), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			paint.FillShape(gtx.Ops, Hovered(b.bg), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		case b.Style == Contained || b.Style == Round:
 			// Contained/round button, not disabled
-			paint.FillShape(gtx.Ops, b.th.Primary, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			paint.FillShape(gtx.Ops, b.bg, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		}
 		for _, c := range b.History() {
 			drawInk(gtx, c)
@@ -259,13 +271,13 @@ func layLabel(b *ButtonDef) layout.Widget {
 		return b.th.LabelPadding.Layout(gtx, func(gtx C) D {
 			switch {
 			case (b.Style == Text || b.Style == Outlined) && gtx.Queue == nil:
-				paint.ColorOp{Color: Disabled(b.th.Primary)}.Add(gtx.Ops)
+				paint.ColorOp{Color: Disabled(b.bg)}.Add(gtx.Ops)
 			case b.Style == Outlined && b.Hovered():
-				paint.ColorOp{Color: Hovered(b.th.Primary)}.Add(gtx.Ops)
+				paint.ColorOp{Color: Hovered(b.bg)}.Add(gtx.Ops)
 			case b.Style == Contained:
-				paint.ColorOp{Color: b.th.OnPrimary}.Add(gtx.Ops)
+				paint.ColorOp{Color: b.fg}.Add(gtx.Ops)
 			case b.Style == Outlined || b.Style == Text:
-				paint.ColorOp{Color: b.th.Primary}.Add(gtx.Ops)
+				paint.ColorOp{Color: b.bg}.Add(gtx.Ops)
 			}
 			return aLabel{Alignment: text.Middle}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.Text)
 		})
@@ -283,7 +295,7 @@ func layIcon(b *ButtonDef) layout.Widget {
 			return inset.Layout(gtx, func(gtx C) D {
 				size := gtx.Px(b.th.TextSize.Scale(1.2))
 				gtx.Constraints = layout.Exact(image.Pt(size, size))
-				return b.Icon.Layout(gtx, b.th.OnPrimary)
+				return b.Icon.Layout(gtx, b.fg)
 			})
 		}
 	}

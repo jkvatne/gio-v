@@ -46,7 +46,7 @@ func main() {
 	progressIncrementer := make(chan float32)
 	go func() {
 		for {
-			time.Sleep(time.Millisecond * 100)
+			time.Sleep(time.Millisecond * 500)
 			progressIncrementer <- 0.1
 		}
 	}()
@@ -167,10 +167,10 @@ func setupForm(th *wid.Theme) {
 		),
 		wid.Checkbox(th, "Checkbox to select dark mode", &darkMode, onSwitchMode),
 		// Three separators to test layout algorithm. Should give three thin lines
+		wid.Separator(th, unit.Px(5), wid.Color(wid.RGB(0xFF6666)), wid.Pad(5, 20, 5, 20)),
 		wid.Separator(th, unit.Px(1)),
 		wid.Separator(th, unit.Px(1), wid.Pad(1)),
 		wid.Separator(th, unit.Px(1)),
-		wid.Separator(th, unit.Px(4), wid.Pad(5, 20, 5, 20)),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.Label(th, "A slider that can be key operated:", text.Start, 1.0),
 			wid.Slider(th, &sliderValue, 0, 100),
@@ -189,8 +189,8 @@ func setupForm(th *wid.Theme) {
 
 		// Note that buttons default to their minimum size, unless set differently, here aligned to the middle
 		wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
-			wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode)),
-			wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.W(150)),
+			wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode), wid.Color(wid.RGB(0x228822))),
+			wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.W(150), wid.Color(wid.RGB(0xffff00))),
 			wid.Button(&thb, "Change color", wid.Handler(onClick), wid.W(150)),
 			wid.TextButton(th, "Text button"),
 			wid.OutlineButton(th, "Outline button"),

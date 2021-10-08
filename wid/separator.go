@@ -22,7 +22,7 @@ func Separator(th *Theme, thickness unit.Value, options ...Option) layout.Widget
 	s := SeparatorStyle{}
 	s.thickness = thickness
 	s.color = th.OnBackground
-	s.Apply(options)
+	s.Apply(options...)
 
 	return func(gtx C) D {
 		dim := gtx.Constraints.Max

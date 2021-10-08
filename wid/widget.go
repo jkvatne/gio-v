@@ -34,7 +34,7 @@ type Option interface {
 }
 
 // Apply will apply all optional parameters. This can only be used when the widget has no own options.
-func (wid *Widget) Apply(options []Option) {
+func (wid *Widget) Apply(options ...Option) {
 	for _, option := range options {
 		option.apply(wid)
 	}
