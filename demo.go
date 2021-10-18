@@ -147,6 +147,7 @@ func updateMode() {
 
 func setupForm(th *wid.Theme) {
 	thb = *th
+	wid.First = nil
 	root = wid.MakeList(
 		th, layout.Vertical,
 
@@ -252,7 +253,7 @@ func setupForm(th *wid.Theme) {
 			),
 		),
 
-		//wid.ProgressBar(th, &progress),
+		wid.ProgressBar(th, &progress),
 	)
-
+	wid.First.Focus()
 }

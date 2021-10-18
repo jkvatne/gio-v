@@ -3,8 +3,10 @@
 package wid
 
 import (
+	"gioui.org/f32"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
@@ -47,6 +49,22 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	}
 }
 
+func (e *EditDef) layoutEditBackground() func(gtx C) D {
+	return func(gtx C) D {
+		outline := f32.Rectangle{Max: f32.Point{
+			X: float32(gtx.Constraints.Min.X),
+			Y: float32(gtx.Constraints.Min.Y),
+		}}
+		rr := Pxr(gtx, e.th.CornerRadius)
+		color := e.th.Surface
+		if e.Focused() {
+			color = e.th.Background
+		}
+		paint.FillShape(gtx.Ops, color, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+		return D{}
+	}
+}
+
 func (e *EditDef) layEdit() layout.Widget {
 	return func(gtx C) D {
 		return e.padding.Layout(gtx, func(gtx C) D {
@@ -58,6 +76,7 @@ func (e *EditDef) layEdit() layout.Widget {
 						return e.layoutEdit()(gtx)
 					})
 				}),
+				layout.Expanded(e.layoutEditBackground()),
 				layout.Expanded(LayoutBorder(&e.Clickable, e.th)),
 			)
 		})

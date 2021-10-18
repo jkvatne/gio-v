@@ -63,8 +63,8 @@ type (
 // https://material.io/design/color/the-color-system.html#color-theme-creation
 var MaterialDesignLight = Theme{
 	Primary:      RGB(0x6200EE),
-	Background:   RGB(0xFFFFFF),
-	Surface:      RGB(0xFFFFFF),
+	Background:   RGB(0xdddddd),
+	Surface:      RGB(0xcccccc),
 	Error:        RGB(0xB00020),
 	OnPrimary:    RGB(0xFFFFFF),
 	OnBackground: RGB(0x000000),
@@ -75,7 +75,7 @@ var MaterialDesignLight = Theme{
 var MaterialDesignDark = Theme{
 	Primary:      RGB(0xbb86fc),
 	Background:   RGB(0x303030),
-	Surface:      RGB(0x303030),
+	Surface:      RGB(0x000000),
 	Error:        RGB(0xcf6679),
 	OnPrimary:    RGB(0x000000),
 	OnBackground: RGB(0xffffff),

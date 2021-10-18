@@ -65,6 +65,9 @@ type Press struct {
 // Global value used to save the previous widget that was tab-able
 var prev Focuser
 
+// First will store the initial focused widget
+var First Focuser
+
 // Disabled returns true if the widget is dirabled
 func (c *Clickable) Disabled() bool {
 	return c.disabled
@@ -72,6 +75,9 @@ func (c *Clickable) Disabled() bool {
 
 // SetupTabs is used to set next/previous widget for tabbing between widgets
 func (c *Clickable) SetupTabs() {
+	if First == nil {
+		First = c
+	}
 	if prev != nil {
 		c.SetPrev(prev)
 		prev.SetNext(c)
