@@ -13,21 +13,23 @@ import (
 	"gioui.org/unit"
 )
 
+// ProgressBarStyle defines the progress bar
 type ProgressBarStyle struct {
-	Color      color.NRGBA
-	TrackColor color.NRGBA
-	Progress   *float32
-	Width      unit.Value
+	Color        color.NRGBA
+	TrackColor   color.NRGBA
+	Progress     *float32
+	Width        unit.Value
 	CornerRadius unit.Value
 }
 
+// ProgressBar returns a widget for a progress bar
 func ProgressBar(th *Theme, progress *float32) func(gtx C) D {
 	p := &ProgressBarStyle{
-		Progress:   progress,
-		Width:      unit.Dp(10),
+		Progress:     progress,
+		Width:        unit.Dp(10),
 		CornerRadius: unit.Dp(5),
-		Color:      th.Primary,
-		TrackColor: MulAlpha(th.OnBackground, 0x88),
+		Color:        th.Primary,
+		TrackColor:   MulAlpha(th.OnBackground, 0x88),
 	}
 	return func(gtx C) D {
 		return p.layout(gtx)
@@ -59,7 +61,8 @@ func (p ProgressBarStyle) layout(gtx C) D {
 				return shader(fillWidth, fillColor)
 			},
 			),
-		)},
+		)
+	},
 	)
 }
 
@@ -70,6 +73,6 @@ func clamp1(v float32) float32 {
 	} else if v <= 0 {
 		return 0
 	} else {
-		return float32(v)
+		return v
 	}
 }

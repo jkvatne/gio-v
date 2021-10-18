@@ -18,7 +18,7 @@ type editBuffer struct {
 	text             []byte
 
 	// changed tracks whether the buffer content
-	// has changed since the last call to Changed.
+	// has changed since the last call to Changed().
 	changed bool
 }
 
@@ -56,19 +56,19 @@ func (e *editBuffer) moveGap(caret, space int) {
 		txt := make([]byte, e.len()+space)
 		// Expand to capacity.
 		txt = txt[:cap(txt)]
-		gaplen := len(txt) - e.len()
+		gapLength := len(txt) - e.len()
 		if caret > e.gapstart {
 			copy(txt, e.text[:e.gapstart])
-			copy(txt[caret+gaplen:], e.text[caret:])
+			copy(txt[caret+gapLength:], e.text[caret:])
 			copy(txt[e.gapstart:], e.text[e.gapend:caret+e.gapLen()])
 		} else {
 			copy(txt, e.text[:caret])
-			copy(txt[e.gapstart+gaplen:], e.text[e.gapend:])
-			copy(txt[caret+gaplen:], e.text[caret:e.gapstart])
+			copy(txt[e.gapstart+gapLength:], e.text[e.gapend:])
+			copy(txt[caret+gapLength:], e.text[caret:e.gapstart])
 		}
 		e.text = txt
 		e.gapstart = caret
-		e.gapend = e.gapstart + gaplen
+		e.gapend = e.gapstart + gapLength
 	} else {
 		if caret > e.gapstart {
 			copy(e.text[e.gapstart:], e.text[e.gapend:caret+e.gapLen()])

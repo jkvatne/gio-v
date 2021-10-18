@@ -8,16 +8,17 @@ repository available here:
 
 https://github.com/egonelbre/expgio/tree/master/box-shadows
 
-He generously licensed it under the Unlicense, and thus is is
+He generously licensed it under the Unlicense, and thus it is
 reproduced here under the same terms.
 */
 
 import (
+	"image/color"
+
 	"gioui.org/f32"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
-	"image/color"
 )
 
 // ShadowStyle defines a shadow cast by a rounded rectangle.
@@ -35,17 +36,15 @@ type ShadowStyle struct {
 // shadow colors.
 func Shadow(radius, elevation unit.Value) ShadowStyle {
 	return ShadowStyle{
-		CornerRadius:  radius,
-		Elevation:     elevation,
-		UmbraColor:    color.NRGBA{A: 0x50},
-		PenumbraColor: color.NRGBA{A: 0x28},
+		CornerRadius: radius,
+		Elevation:    elevation,
 	}
 }
 
-// Layout renders the shadow into the gtx. The shadow's size will assume
-// that the rectangle casting the shadow is of size gtx.Constraints.Min.
 var alpha = [7]byte{0, 82, 62, 42, 32, 14, 13}
 
+// Layout renders the shadow into the gtx. The shadow's size will assume
+// that the rectangle casting the shadow is of size gtx.Constraints.Min.
 func (s ShadowStyle) Layout(gtx C) D {
 	sz := gtx.Constraints.Min
 	for i := 6; i > 0; i-- {

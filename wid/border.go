@@ -12,7 +12,7 @@ import (
 	"gioui.org/unit"
 )
 
-// Border lays out a widget and draws a border inside it.
+// BorderDef lays out a widget and draws a border inside it.
 type BorderDef struct {
 	Color        color.NRGBA
 	CornerRadius unit.Value

@@ -51,6 +51,7 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 
 func (e *EditDef) layoutEditBackground() func(gtx C) D {
 	return func(gtx C) D {
+		defer op.Save(gtx.Ops).Load()
 		outline := f32.Rectangle{Max: f32.Point{
 			X: float32(gtx.Constraints.Min.X),
 			Y: float32(gtx.Constraints.Min.Y),
@@ -70,13 +71,13 @@ func (e *EditDef) layEdit() layout.Widget {
 		return e.padding.Layout(gtx, func(gtx C) D {
 			return layout.Stack{}.Layout(
 				gtx,
+				layout.Expanded(e.layoutEditBackground()),
 				layout.Expanded(func(gtx C) D {
 					gtx.Constraints.Min.X = 5000
 					return e.th.LabelPadding.Layout(gtx, func(gtx C) D {
 						return e.layoutEdit()(gtx)
 					})
 				}),
-				layout.Expanded(e.layoutEditBackground()),
 				layout.Expanded(LayoutBorder(&e.Clickable, e.th)),
 			)
 		})
@@ -103,11 +104,11 @@ func (e *EditDef) layoutEdit() func(gtx C) D {
 		defer op.Save(gtx.Ops).Load()
 		macro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: e.th.HintColor}.Add(gtx.Ops)
-		var maxlines int
+		var maxLines int
 		if e.Editor.MaxLines <= 1 {
-			maxlines = 1
+			maxLines = 1
 		}
-		tl := aLabel{Alignment: e.Editor.Alignment, MaxLines: maxlines}
+		tl := aLabel{Alignment: e.Editor.Alignment, MaxLines: maxLines}
 		dims := tl.Layout(gtx, e.shaper, e.font, e.th.TextSize, e.hint)
 		call := macro.Stop()
 		if w := dims.Size.X; gtx.Constraints.Min.X < w {

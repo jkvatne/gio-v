@@ -134,20 +134,20 @@ func Disable(v *bool) BtnOption {
 
 func drawInk(gtx C, c Press) {
 	now := gtx.Now
-	t := float64(now.Sub(c.Start).Seconds())
+	t := now.Sub(c.Start).Seconds()
 	end := c.End
 	if end.IsZero() {
 		// If the press hasn't ended, don't fade-out.
 		end = now
 	}
-	endt := float64(end.Sub(c.Start).Seconds())
+	endTime := end.Sub(c.Start).Seconds()
 	// Compute the fade-in/out position in [0;1].
 	var haste float64
 	if c.Cancelled {
 		// If the press was cancelled before the inkwell
-		// was fully faded in, fast forward the animation
+		// was fully faded-in, fast-forward the animation
 		// to match the fade-out.
-		if h := 0.5 - endt/0.9; h > 0 {
+		if h := 0.5 - endTime/0.9; h > 0 {
 			haste = h
 		}
 	}
@@ -161,25 +161,25 @@ func drawInk(gtx C, c Press) {
 	if half2 > 0.5 {
 		return
 	}
-	alphat := half1 + half2
-	// Compute the expand position in [0;1].
+	alpha := half1 + half2
+	// Compute the expanded position in [0;1].
 	if c.Cancelled {
 		// Freeze expansion of cancelled presses.
-		t = endt
+		t = endTime
 	}
 	sizet := math.Min(t*2, 1.0)
 	// Animate only ended presses, and presses that are fading in.
 	if !c.End.IsZero() || sizet <= 1.0 {
 		op.InvalidateOp{}.Add(gtx.Ops)
 	}
-	if alphat > .5 {
+	if alpha > .5 {
 		// Start fadeout after half the animation.
-		alphat = 1.0 - alphat
+		alpha = 1.0 - alpha
 	}
 	// Twice the speed to attain fully faded in at 0.5.
-	t2 := alphat * 2
+	t2 := alpha * 2
 	size := math.Max(float64(gtx.Constraints.Min.Y), float64(gtx.Constraints.Min.X))
-	alpha := 0.7 * alphat * 2 * t2 * (3.0 - 3.0*alphat)
+	alpha = 0.7 * alpha * 2 * t2 * (3.0 - 3.0*alpha)
 	ba, bc := byte(alpha*0xff), byte(0x80)
 	defer op.Save(gtx.Ops).Load()
 	rgba := MulAlpha(color.NRGBA{A: 0xff, R: bc, G: bc, B: bc}, ba)

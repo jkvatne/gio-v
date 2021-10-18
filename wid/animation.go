@@ -190,7 +190,7 @@ func (p Progress) Started() bool {
 	return p.active
 }
 
-// Finished is trou when animation is done
+// Finished is true when animation is done
 func (p Progress) Finished() bool {
 	switch p.direction {
 	case Forward:

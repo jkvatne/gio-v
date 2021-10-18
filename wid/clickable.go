@@ -68,7 +68,7 @@ var prev Focuser
 // First will store the initial focused widget
 var First Focuser
 
-// Disabled returns true if the widget is dirabled
+// Disabled returns true if the widget is disabled
 func (c *Clickable) Disabled() bool {
 	return c.disabled
 }
@@ -94,7 +94,7 @@ func (c *Clickable) HandleClick() {
 	}
 }
 
-// HandleToggle will support toggeling widgets
+// HandleToggle will support toggling widgets
 func (c *Clickable) HandleToggle(value *bool, changed *bool) {
 	for c.Clicked() {
 		if value != nil {
@@ -175,7 +175,7 @@ func (c *Clickable) Clicked() bool {
 	return true
 }
 
-// HasClicks is trure if there are more clicks available
+// HasClicks is true if there are more clicks available
 func (c *Clickable) HasClicks() bool {
 	return len(c.clicks) > 0
 }
@@ -321,7 +321,7 @@ func (c *Clickable) HandleClicks(gtx C) D {
 	return D{}
 }
 
-// LayoutBorder will draw a border around the widghet
+// LayoutBorder will draw a border around the widget
 func LayoutBorder(e *Clickable, th *Theme) func(gtx C) D {
 	return func(gtx C) D {
 		outline := f32.Rectangle{Max: f32.Point{

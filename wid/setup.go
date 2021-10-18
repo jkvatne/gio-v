@@ -54,7 +54,7 @@ func MakeFlex(axis layout.Axis, spacing layout.Spacing, widgets ...layout.Widget
 	var ops op.Ops
 	var dims []image.Point
 	node := makeNode(widgets)
-	gtx := layout.Context{Ops: &ops, Constraints: layout.Constraints{image.Point{X: 0, Y: 0}, image.Point{X: 3000, Y: 600}}}
+	gtx := layout.Context{Ops: &ops, Constraints: layout.Constraints{Min: image.Point{X: 0, Y: 0}, Max: image.Point{X: 3000, Y: 600}}}
 	for _, w := range widgets {
 		d := w(gtx).Size
 		dims = append(dims, d)

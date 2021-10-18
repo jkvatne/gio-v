@@ -78,7 +78,7 @@ type ScrollbarStyle struct {
 	Indicator ScrollIndicatorStyle
 }
 
-// Scrollbar configures the presentation of a scrollbar using the provided
+// MakeScrollbarStyle configures the presentation of a scrollbar using the provided
 // theme and state.
 func MakeScrollbarStyle(th *Theme) ScrollbarStyle {
 	lightFg := th.OnBackground

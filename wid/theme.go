@@ -13,6 +13,7 @@ import (
 	"gioui.org/unit"
 )
 
+// Theme contains color/layout settings for all widgets
 type Theme struct {
 	Shaper                text.Shaper
 	TextSize              unit.Value
@@ -51,20 +52,22 @@ type Theme struct {
 	UmbraColor color.NRGBA
 	// PenumbraColor is the lightest shadow color
 	PenumbraColor color.NRGBA
-	// Text inset is the fracion of font height used for padding around text. Typically 0.2 to 0.6
+	// Text inset is the fraction of font height used for padding around text. Typically, 0.2 to 0.6
 }
 
 type (
+	// C is a shortcut for layout.Context
 	C = layout.Context
+	// D is a shortcut for layout.Dimensions
 	D = layout.Dimensions
 )
 
-// MaterialDesign is the baseline palette for material design.
+// MaterialDesignLight is the baseline palette for material design.
 // https://material.io/design/color/the-color-system.html#color-theme-creation
 var MaterialDesignLight = Theme{
 	Primary:      RGB(0x6200EE),
-	Background:   RGB(0xdddddd),
-	Surface:      RGB(0xcccccc),
+	Background:   RGB(0xeeeeee),
+	Surface:      RGB(0xdddddd),
 	Error:        RGB(0xB00020),
 	OnPrimary:    RGB(0xFFFFFF),
 	OnBackground: RGB(0x000000),
@@ -72,6 +75,7 @@ var MaterialDesignLight = Theme{
 	OnError:      RGB(0xFFFFFF),
 }
 
+// MaterialDesignDark is the baseline palette for material design dark mode
 var MaterialDesignDark = Theme{
 	Primary:      RGB(0xbb86fc),
 	Background:   RGB(0x303030),
@@ -83,6 +87,7 @@ var MaterialDesignDark = Theme{
 	OnError:      RGB(0x000000),
 }
 
+// NewTheme creates a new theme with given FontFace and FontSize, based on the theme t
 func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme {
 	t.Shaper = text.NewCache(fontCollection)
 	t.TextSize = unit.Sp(fontSize)
@@ -95,9 +100,9 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme 
 	t.IconInset = layout.Inset{Top: v, Right: v, Bottom: v, Left: v}
 	t.FingerSize = unit.Dp(38)
 	// Borders
-	t.BorderThickness = t.TextSize.Scale(0.1)
-	t.BorderThicknessActive = t.TextSize.Scale(0.12)
-	t.BorderColor = WithAlpha(t.OnBackground, 128)
+	t.BorderThickness = t.TextSize.Scale(0.13)
+	t.BorderThicknessActive = t.TextSize.Scale(0.18)
+	t.BorderColor = WithAlpha(t.OnBackground, 200)
 	t.BorderColorHovered = WithAlpha(t.OnBackground, 231)
 	t.BorderColorActive = t.Primary
 	t.CornerRadius = t.TextSize.Scale(0.2)
@@ -105,7 +110,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme 
 	t.Elevation = t.TextSize.Scale(0.5)
 	// Text
 	t.LabelPadding = layout.Inset{Top: v, Right: v.Scale(2.0), Bottom: v, Left: v.Scale(2.0)}
-	t.HintColor = DeEmphasis(t.OnBackground, 15)
+	t.HintColor = DeEmphasis(t.OnBackground, 45)
 	t.SelectionColor = MulAlpha(t.Primary, 0x60)
 	// Tooltip
 	t.TooltipInset = layout.UniformInset(unit.Dp(10))
