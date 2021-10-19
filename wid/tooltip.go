@@ -163,9 +163,9 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 	return layout.Stack{}.Layout(gtx,
 		layout.Stacked(w),
 		layout.Expanded(func(gtx C) D {
-			ops := op.Save(gtx.Ops)
-			pointer.PassOp{Pass: true}.Add(gtx.Ops)
-			pointer.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Add(gtx.Ops)
+			defer pointer.PassOp{}.Push(gtx.Ops).Pop()
+			rect := image.Rectangle{Max: gtx.Constraints.Min}
+			defer pointer.Rect(rect).Push(gtx.Ops).Pop()
 			pointer.InputOp{
 				Tag:   t,
 				Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave | pointer.Move,
@@ -213,7 +213,6 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 				call = macro.Stop()
 				op.Defer(gtx.Ops, call)
 			}
-			ops.Load()
 			return D{}
 		}),
 	)

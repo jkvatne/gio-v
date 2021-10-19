@@ -178,7 +178,7 @@ type SelectEvent struct{}
 
 type line struct {
 	offset         image.Point
-	clip           op.CallOp
+	clip           clip.Op
 	selected       bool
 	selectionYOffs int
 	selectionSize  image.Point
@@ -546,7 +546,7 @@ func (e *Editor) layout(gtx C) D {
 	r.Min.Y -= pointerPadding
 	r.Max.X += pointerPadding
 	r.Max.X += pointerPadding
-	pointer.Rect(r).Add(gtx.Ops)
+	defer pointer.Rect(r).Push(gtx.Ops).Pop()
 	pointer.CursorNameOp{Name: pointer.CursorText}.Add(gtx.Ops)
 
 	var scrollRange image.Rectangle
@@ -582,18 +582,18 @@ func (e *Editor) layout(gtx C) D {
 func (e *Editor) PaintSelection(gtx C) {
 	cl := textPadding(e.lines)
 	cl.Max = cl.Max.Add(e.viewSize)
-	clip.Rect(cl).Add(gtx.Ops)
+	defer clip.Rect(cl).Push(gtx.Ops).Pop()
 	for _, shape := range e.shapes {
 		if !shape.selected {
 			continue
 		}
-		stack := op.Save(gtx.Ops)
 		offset := shape.offset
 		offset.Y += shape.selectionYOffs
-		op.Offset(layout.FPt(offset)).Add(gtx.Ops)
-		clip.Rect(image.Rectangle{Max: shape.selectionSize}).Add(gtx.Ops)
+		t := op.Offset(layout.FPt(offset)).Push(gtx.Ops)
+		cl := clip.Rect(image.Rectangle{Max: shape.selectionSize}).Push(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
-		stack.Load()
+		cl.Pop()
+		t.Pop()
 	}
 }
 

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Unlicense OR MIT
+// SPDX-License-Identifier: Unlicense OR MIT
 
 package wid
 
@@ -7,9 +8,8 @@ import (
 	"image/color"
 	"math"
 
-	"gioui.org/io/pointer"
-
 	"gioui.org/f32"
+	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -199,14 +199,13 @@ func paintBorder(gtx C, outline f32.Rectangle, col color.NRGBA, width unit.Value
 		col,
 		clip.Stroke{
 			Path:  clip.UniformRRect(outline, Pxr(gtx, rr)).Path(gtx.Ops),
-			Style: clip.StrokeStyle{Width: Pxr(gtx, width)},
+			Width: Pxr(gtx, width),
 		}.Op(),
 	)
 }
 
 func (b *ButtonDef) layoutBackground() func(gtx C) D {
 	return func(gtx C) D {
-
 		b.LayoutClickable(gtx)
 		b.HandleClicks(gtx)
 		b.HandleKeys(gtx)
@@ -222,7 +221,8 @@ func (b *ButtonDef) layoutBackground() func(gtx C) D {
 			X: float32(gtx.Constraints.Min.X),
 			Y: float32(gtx.Constraints.Min.Y),
 		}}
-		clip.UniformRRect(outline, rr).Add(gtx.Ops)
+		defer clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
+
 		switch {
 		case b.Style == Text && gtx.Queue == nil:
 			// Disabled Outlined button. Text and outline is grey when disabled
@@ -233,7 +233,6 @@ func (b *ButtonDef) layoutBackground() func(gtx C) D {
 		case b.Style == Text:
 			// Outline button, not disabled
 			paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-
 		case b.Style == Outlined && gtx.Queue == nil:
 			// Disabled Outlined button. Text and outline is grey when disabled
 			paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
@@ -293,7 +292,7 @@ func layIcon(b *ButtonDef) layout.Widget {
 				inset.Right = unit.Dp(0)
 			}
 			return inset.Layout(gtx, func(gtx C) D {
-				size := gtx.Px(b.th.TextSize.Scale(1.2))
+				size := gtx.Px(b.th.TextSize.Scale(1.2)) //TODO: Move const to theme
 				gtx.Constraints = layout.Exact(image.Pt(size, size))
 				return b.Icon.Layout(gtx, b.fg)
 			})

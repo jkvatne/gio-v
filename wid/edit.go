@@ -30,7 +30,7 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	// Set up default values
 	e.th = th
 	e.shaper = th.Shaper
-	e.LabelSize = unit.Dp(150)
+	e.LabelSize = th.TextSize.Scale(6)
 	e.MaxLines = 1
 	e.width = unit.Dp(5000) // Default to max width that is possible
 	e.padding = layout.Inset{Top: unit.Dp(10), Bottom: unit.Dp(2), Left: unit.Dp(5), Right: unit.Dp(1)}
@@ -94,7 +94,8 @@ func (e *EditDef) layLabel() layout.Widget {
 			}
 			gtx.Constraints.Min.X = gtx.Metric.Px(e.LabelSize)
 			paint.ColorOp{Color: e.th.OnBackground}.Add(gtx.Ops)
-			return aLabel{Alignment: text.End}.Layout(gtx, e.shaper, e.font, e.th.TextSize, e.hint)
+			w := aLabel{Alignment: text.End}.Layout(gtx, e.shaper, e.font, e.th.TextSize, e.hint)
+			return w
 		})
 	}
 }

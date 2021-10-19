@@ -101,7 +101,7 @@ func (r *RadioButtonStyle) layout(gtx C, checked bool) D {
 			})
 		}),
 	)
-	pointer.Rect(image.Rectangle{Max: dims.Size}).Add(gtx.Ops)
+	defer pointer.Rect(image.Rectangle{Max: dims.Size}).Push(gtx.Ops).Pop()
 	gtx.Constraints.Min = dims.Size
 	r.LayoutClickable(gtx)
 	r.HandleClicks(gtx)

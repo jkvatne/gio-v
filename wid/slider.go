@@ -3,6 +3,8 @@
 package wid
 
 import (
+	"image"
+
 	"gioui.org/f32"
 	"gioui.org/gesture"
 	"gioui.org/io/pointer"
@@ -11,7 +13,6 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
-	"image"
 )
 
 type SliderStyle struct {
@@ -97,7 +98,8 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 		Min: margin.Mul(-1),
 		Max: size.Add(margin),
 	}
-	pointer.Rect(rect).Add(gtx.Ops)
+	defer pointer.Rect(rect).Push(gtx.Ops).Pop()
+	defer pointer.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Push(gtx.Ops).Pop()
 	s.Float.drag.Add(gtx.Ops)
 
 	gtx.Constraints.Min = gtx.Constraints.Min.Add(axis.Convert(image.Pt(0, sizeCross)))
@@ -109,24 +111,18 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	}
 
 	// Draw track before thumb.
-	st := op.Save(gtx.Ops)
 	track := image.Rectangle{
 		Min: axis.Convert(image.Pt(thumbRadius, sizeCross/2-trackWidth/2)),
 		Max: axis.Convert(image.Pt(thumbPos, sizeCross/2+trackWidth/2)),
 	}
-	clip.Rect(track).Add(gtx.Ops)
-	paint.Fill(gtx.Ops, color)
-	st.Load()
+	paint.FillShape(gtx.Ops, color, clip.Rect(track).Op())
 
 	// Draw track after thumb.
-	st = op.Save(gtx.Ops)
 	track = image.Rectangle{
 		Min: axis.Convert(image.Pt(thumbPos, axis.Convert(track.Min).Y)),
 		Max: axis.Convert(image.Pt(sizeMain-thumbRadius, axis.Convert(track.Max).Y)),
 	}
-	clip.Rect(track).Add(gtx.Ops)
-	paint.Fill(gtx.Ops, WithAlpha(color, 80))
-	st.Load()
+	paint.FillShape(gtx.Ops, WithAlpha(color, 80), clip.Rect(track).Op())
 
 	// Draw thumb.
 	pt := axis.Convert(image.Pt(thumbPos, sizeCross/2))

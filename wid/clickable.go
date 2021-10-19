@@ -210,8 +210,8 @@ func (c *Clickable) LayoutClickable(gtx C) D {
 	n := copy(c.clicks, c.clicks[c.prevClicks:])
 	c.clicks = c.clicks[:n]
 	c.prevClicks = n
+	defer pointer.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Push(gtx.Ops).Pop()
 
-	pointer.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Add(gtx.Ops)
 	c.click.Add(gtx.Ops)
 	if c.HasClicks() {
 		c.Focus()
@@ -281,7 +281,7 @@ func (c *Clickable) HandleKeys(gtx C) bool {
 			}
 		}
 	}
-	pointer.PassOp{Pass: true}.Add(gtx.Ops)
+	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
 	key.InputOp{Tag: &c.eventKey, Hint: 0}.Add(gtx.Ops)
 	if c.requestFocus {
 		key.FocusOp{Tag: &c.eventKey}.Add(gtx.Ops)

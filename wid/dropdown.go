@@ -113,7 +113,8 @@ func (b *DropDownDef) option(th *Theme, i int) func(gtx C) D {
 			return aLabel{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, text.Font{}, th.TextSize, b.items[i])
 		}
 		dims := layout.Inset{Top: unit.Dp(2), Left: th.TextSize.Scale(0.4), Right: unit.Dp(2)}.Layout(gtx, lblWidget)
-		pointer.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Add(gtx.Ops)
+		defer pointer.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Push(gtx.Ops).Pop()
+		//defer clip.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Push(gtx.Ops).Pop()
 		pointer.InputOp{
 			Tag:   &b.items[i],
 			Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave,
@@ -162,7 +163,7 @@ func (b *DropDownDef) LayoutBackground() func(gtx C) D {
 			Y: float32(gtx.Constraints.Min.Y),
 		}}
 		paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-		clip.UniformRRect(outline, rr).Add(gtx.Ops)
+		clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
 		LayoutBorder(&b.Clickable, b.th)(gtx)
 		b.LayoutClickable(gtx)
 		b.HandleClicks(gtx)

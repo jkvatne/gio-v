@@ -14,15 +14,17 @@ import (
 	"os"
 	"time"
 
+	"golang.org/x/exp/shiny/materialdesign/icons"
+
+	"gioui.org/text"
+
 	"gioui.org/app"
 	"gioui.org/font/gofont"
 	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/paint"
-	"gioui.org/text"
 	"gioui.org/unit"
-	"golang.org/x/exp/shiny/materialdesign/icons"
 )
 
 var mode = "maximized"
@@ -132,13 +134,16 @@ func updateMode() {
 			win.Option(app.Fullscreen.Option())
 		case mode == "windowed":
 			//Place at a given location.
-			win.Option(app.Size(unit.Px(500), unit.Px(800)), app.Center())
+			// app.Center() is not yet defined
+			//win.Option(app.Size(unit.Px(500), unit.Px(800)), app.Center())
 		case mode == "maximized":
 			//   A maximized window
-			win.Option(app.Maximized.Option())
+			// app.Maximized.Option() is not yet defined
+			//win.Option(app.Maximized.Option())
 		case mode == "centered":
 			// Place at center of monitor
-			win.Option(app.Size(unit.Px(500), unit.Px(800)), app.Center())
+			// app.Center() is not yet defined
+			//win.Option(app.Size(unit.Px(500), unit.Px(800)), app.Center())
 		default:
 		}
 		oldMode = mode
@@ -150,7 +155,6 @@ func setupForm(th *wid.Theme) {
 	wid.First = nil
 	root = wid.MakeList(
 		th, layout.Vertical,
-
 		wid.Label(th, "Demo page", text.Middle, 2.0),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.RadioButton(th, &mode, "fullscreen", "fullscreen"),
@@ -180,14 +184,14 @@ func setupForm(th *wid.Theme) {
 		wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
 			wid.Button(th, "WIDE CENTERED BUTTON",
 				wid.W(500),
-				wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
+				wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines"),
+			),
 		),
 		wid.Label(th, "Two widgets at the right side of the screen:", text.Start, 1.0),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceStart,
 			wid.RoundButton(th, icons.ContentAdd,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 		),
-
 		// Note that buttons default to their minimum size, unless set differently, here aligned to the middle
 		wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
 			wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode), wid.Color(wid.RGB(0x228822))),
@@ -216,17 +220,15 @@ func setupForm(th *wid.Theme) {
 		// Fixed size in Dp
 		wid.Edit(th, wid.Hint("Value 1"), wid.W(300)),
 		// Relative size
-		wid.Edit(th, wid.Hint("Valuexx 2"), wid.W(0.5)),
-
+		wid.Edit(th, wid.Hint("Value 2"), wid.W(0.5)),
 		// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
-		wid.Row(layout.SpaceStart,
+		wid.Row(layout.SpaceBetween,
 			wid.Edit(th, wid.Hint("Value 3")),
 			wid.Edit(th, wid.Hint("Value 4")),
 			wid.Edit(th, wid.Hint("Value 5")),
 			wid.Edit(th, wid.Hint("Value 6")),
 			wid.Edit(th, wid.Hint("Value 7")),
 		),
-
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.Label(th, "Name", text.End, 1.0),
 			wid.Edit(th, wid.Hint("")),

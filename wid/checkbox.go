@@ -3,16 +3,16 @@
 package wid
 
 import (
+	"image"
+	"image/color"
+
 	"gioui.org/f32"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
-	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
-	"image"
-	"image/color"
 )
 
 // CheckBoxDef defines a checkbox widget
@@ -48,7 +48,7 @@ func Checkbox(th *Theme, label string, State *bool, handler func(b bool)) func(g
 	c.handler = handler
 	c.SetupTabs()
 	return func(gtx C) D {
-		dims :=c.layout(gtx)
+		dims := c.layout(gtx)
 		c.HandleToggle(&c.Value, &c.changed)
 		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
 		return dims
@@ -108,12 +108,12 @@ func (c *CheckBoxDef) layout(gtx C) D {
 			})
 		}),
 	)
-	stack := op.Save(gtx.Ops)
-	pointer.Rect(image.Rectangle{Max: dims.Size}).Add(gtx.Ops)
+	//stack := op.Save(gtx.Ops)
+	//pointer.Rect(image.Rectangle{Max: dims.Size}).Add(gtx.Ops)
 	gtx.Constraints.Min = dims.Size
 	c.LayoutClickable(gtx)
 	c.HandleClicks(gtx)
 	c.HandleKeys(gtx)
-	stack.Load()
+	//stack.Load()
 	return dims
 }
