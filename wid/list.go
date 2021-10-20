@@ -34,7 +34,7 @@ func fromListPosition(lp layout.Position, elements int, majorAxisSize int) (star
 	// Compute the location of the beginning of the viewport.
 	viewportStart := (float32(lp.First)*meanElementHeight + listOffsetF) / lengthPx
 
-	return viewportStart, viewportStart + visibleFraction
+	return viewportStart, clamp1(viewportStart + visibleFraction)
 }
 
 // rangeIsScrollable returns whether the viewport described by start and end
@@ -177,22 +177,25 @@ func (s ScrollbarStyle) layout(gtx C, axis layout.Axis, viewportStart, viewportE
 
 				// Compute the pixel size and position of the scroll indicator within
 				// the track.
-				trackLen := float32(gtx.Constraints.Min.X)
-				viewStart := viewportStart * trackLen
-				viewEnd := viewportEnd * trackLen
-				indicatorLen := unit.Max(gtx.Metric, unit.Px(viewEnd-viewStart), s.Indicator.MajorMinLen)
+				trackLen := gtx.Constraints.Min.X
+				viewStart := int(math.Round(float64(viewportStart) * float64(trackLen)))
+				viewEnd := int(math.Round(float64(viewportEnd) * float64(trackLen)))
+				indicatorLen := max(viewEnd-viewStart, gtx.Px(s.Indicator.MajorMinLen))
+				if viewStart+indicatorLen > trackLen {
+					viewStart = trackLen - indicatorLen
+				}
 				indicatorDims := axis.Convert(image.Point{
-					X: gtx.Px(indicatorLen),
+					X: indicatorLen,
 					Y: gtx.Px(s.Indicator.MinorWidth),
 				})
 				indicatorDimsF := layout.FPt(indicatorDims)
 				radius := float32(gtx.Px(s.Indicator.CornerRadius))
 
 				// Lay out the indicator.
-				defer op.Save(gtx.Ops).Load()
-				offset := axis.Convert(image.Pt(int(viewStart), 0))
-				op.Offset(layout.FPt(offset)).Add(gtx.Ops)
-				paint.FillShape(gtx.Ops, s.Indicator.Color, clip.RRect{
+				offset := axis.Convert(image.Pt(viewStart, 0))
+				defer op.Offset(layout.FPt(offset)).Push(gtx.Ops).Pop()
+				//paint.FillShape(gtx.Ops, s.Indicator.Color, clip.RRect{
+				paint.FillShape(gtx.Ops, RGB(0xFFFF00), clip.RRect{
 					Rect: f32.Rectangle{
 						Max: indicatorDimsF,
 					},
@@ -207,8 +210,7 @@ func (s ScrollbarStyle) layout(gtx C, axis layout.Axis, viewportStart, viewportE
 				defer pointer.PassOp{}.Push(gtx.Ops).Pop()
 				defer area.Push(gtx.Ops).Pop()
 				s.Scrollbar.AddIndicator(gtx.Ops)
-
-				return D{Size: axis.Convert(gtx.Constraints.Min)}
+				return layout.Dimensions{Size: axis.Convert(gtx.Constraints.Min)}
 			})
 		}),
 	)
