@@ -73,11 +73,12 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 			call := macro.Stop()
 			macro = op.Record(gtx.Ops)
 			op.Offset(f32.Pt(0, float32(dims.Size.Y))).Add(gtx.Ops)
-			clip.UniformRRect(r, 0).Add(gtx.Ops)
+			stack := clip.UniformRRect(r, 0).Push(gtx.Ops)
 			paint.Fill(gtx.Ops, b.th.Background)
 			// Draw a border around all options
 			paintBorder(gtx, r, b.th.OnBackground, b.th.BorderThickness, unit.Value{})
 			call.Add(gtx.Ops)
+			stack.Pop()
 			call = macro.Stop()
 			op.Defer(gtx.Ops, call)
 

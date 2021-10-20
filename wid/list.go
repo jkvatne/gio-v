@@ -194,8 +194,7 @@ func (s ScrollbarStyle) layout(gtx C, axis layout.Axis, viewportStart, viewportE
 				// Lay out the indicator.
 				offset := axis.Convert(image.Pt(viewStart, 0))
 				defer op.Offset(layout.FPt(offset)).Push(gtx.Ops).Pop()
-				//paint.FillShape(gtx.Ops, s.Indicator.Color, clip.RRect{
-				paint.FillShape(gtx.Ops, RGB(0xFFFF00), clip.RRect{
+				paint.FillShape(gtx.Ops, s.Indicator.Color, clip.RRect{
 					Rect: f32.Rectangle{
 						Max: indicatorDimsF,
 					},
