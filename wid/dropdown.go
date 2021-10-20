@@ -14,6 +14,7 @@ import (
 	"golang.org/x/exp/shiny/materialdesign/icons"
 )
 
+// DropDownDef is the struct for dropdown lists
 type DropDownDef struct {
 	Clickable
 	Widget
@@ -30,6 +31,7 @@ type DropDownDef struct {
 	icon       *Icon
 }
 
+// DropDown returns a dropdown widget
 func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx C) D {
 	b := DropDownDef{}
 	b.icon, _ = NewIcon(icons.NavigationArrowDropDown)
@@ -51,6 +53,7 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 	}
 	return func(gtx C) D {
 		dims := b.Layout(gtx)
+		oldVisible := b.Visible
 		if !b.Focused() {
 			b.Visible = false
 		}
@@ -59,6 +62,9 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 		}
 
 		if b.Visible {
+			if !oldVisible {
+				b.setHovered()
+			}
 			gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
 			gtx.Constraints.Max = image.Pt(dims.Size.X, 9999)
 			macro := op.Record(gtx.Ops)
@@ -75,10 +81,25 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 			call = macro.Stop()
 			op.Defer(gtx.Ops, call)
 
+		} else {
+			b.setHovered()
 		}
 		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
 		return dims
 	}
+}
+
+func (b *DropDownDef) setHovered() {
+	if b.index >= len(b.hovered) {
+		b.index = len(b.hovered) - 1
+	}
+	if b.index < 0 {
+		b.index = 0
+	}
+	for i := 0; i < len(b.hovered); i++ {
+		b.hovered[i] = false
+	}
+	b.hovered[b.index] = true
 }
 
 func (b *DropDownDef) option(th *Theme, i int) func(gtx C) D {
@@ -92,15 +113,18 @@ func (b *DropDownDef) option(th *Theme, i int) func(gtx C) D {
 					b.wasVisible = 0
 					b.hovered[i] = false
 				case pointer.Enter:
+					for j := 0; j < len(b.hovered); j++ {
+						b.hovered[j] = false
+					}
 					b.hovered[i] = true
 				case pointer.Leave:
 					b.hovered[i] = false
 				case pointer.Cancel:
-					//b.hovered[i]=false
+					b.setHovered()
 				}
 			}
 		}
-		if b.hovered[i] || i == b.index {
+		if b.hovered[i] {
 			c := MulAlpha(b.th.OnBackground, 48)
 			if Luminance(b.th.OnBackground) > 28 {
 				c = MulAlpha(b.th.OnBackground, 16)
@@ -123,6 +147,7 @@ func (b *DropDownDef) option(th *Theme, i int) func(gtx C) D {
 	}
 }
 
+// Layout draws the dropdown list
 func (b *DropDownDef) Layout(gtx C) D {
 	b.disabled = false
 	if b.disabler != nil && *b.disabler {
@@ -149,6 +174,7 @@ func (b *DropDownDef) Layout(gtx C) D {
 	})
 }
 
+// LayoutBackground draws the background
 func (b *DropDownDef) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
 		if b.Focused() || b.Hovered() {
@@ -165,13 +191,22 @@ func (b *DropDownDef) LayoutBackground() func(gtx C) D {
 		paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
 		LayoutBorder(&b.Clickable, b.th)(gtx)
+		oldIndex := b.index
 		b.LayoutClickable(gtx)
 		b.HandleClicks(gtx)
 		b.HandleKeys(gtx)
+		if b.index > len(b.hovered) {
+			b.index = len(b.hovered) - 1
+		}
+		if b.index != oldIndex {
+			b.setHovered()
+
+		}
 		return D{Size: gtx.Constraints.Min}
 	}
 }
 
+// LayoutLabel draws the label
 func (b *DropDownDef) LayoutLabel() layout.Widget {
 	return func(gtx C) D {
 		if gtx.Px(b.width) > gtx.Constraints.Min.X {
@@ -190,6 +225,7 @@ func (b *DropDownDef) LayoutLabel() layout.Widget {
 	}
 }
 
+// LayoutIcon draws the icon
 func (b *DropDownDef) LayoutIcon() layout.Widget {
 	return func(gtx C) D {
 		size := gtx.Px(b.th.TextSize.Scale(1.5))
