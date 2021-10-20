@@ -181,7 +181,6 @@ func drawInk(gtx C, c Press) {
 	size := math.Max(float64(gtx.Constraints.Min.Y), float64(gtx.Constraints.Min.X))
 	alpha = 0.7 * alpha * 2 * t2 * (3.0 - 3.0*alpha)
 	ba, bc := byte(alpha*0xff), byte(0x80)
-	defer op.Save(gtx.Ops).Load()
 	rgba := MulAlpha(color.NRGBA{A: 0xff, R: bc, G: bc, B: bc}, ba)
 	ink := paint.ColorOp{Color: rgba}
 	ink.Add(gtx.Ops)
@@ -190,7 +189,7 @@ func drawInk(gtx C, c Press) {
 		X: -rr,
 		Y: -rr,
 	})).Add(gtx.Ops)
-	clip.UniformRRect(f32.Rectangle{Max: f32.Pt(2*rr, 2*rr)}, rr).Add(gtx.Ops)
+	defer clip.UniformRRect(f32.Rectangle{Max: f32.Pt(2*rr, 2*rr)}, rr).Push(gtx.Ops).Pop()
 	paint.PaintOp{}.Add(gtx.Ops)
 }
 

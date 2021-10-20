@@ -601,13 +601,12 @@ func (e *Editor) PaintSelection(gtx C) {
 func (e *Editor) PaintText(gtx C) {
 	cl := textPadding(e.lines)
 	cl.Max = cl.Max.Add(e.viewSize)
-	clip.Rect(cl).Add(gtx.Ops)
+	defer clip.Rect(cl).Push(gtx.Ops).Pop()
 	for _, shape := range e.shapes {
-		stack := op.Save(gtx.Ops)
 		op.Offset(layout.FPt(shape.offset)).Add(gtx.Ops)
-		shape.clip.Add(gtx.Ops)
+		stack := shape.clip.Push(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
-		stack.Load()
+		stack.Pop()
 	}
 }
 
@@ -621,7 +620,6 @@ func (e *Editor) PaintCaret(gtx C) {
 	carX := e.caret.start.x
 	carY := e.caret.start.y
 
-	defer op.Save(gtx.Ops).Load()
 	carX -= carWidth / 2
 	carAsc, carDesc := -e.lines[e.caret.start.lineCol.Y].Bounds.Min.Y, e.lines[e.caret.start.lineCol.Y].Bounds.Max.Y
 	carRect := image.Rectangle{
@@ -644,10 +642,8 @@ func (e *Editor) PaintCaret(gtx C) {
 	cl.Max = cl.Max.Add(e.viewSize)
 	carRect = cl.Intersect(carRect)
 	if !carRect.Empty() {
-		st := op.Save(gtx.Ops)
-		clip.Rect(carRect).Add(gtx.Ops)
+		defer clip.Rect(carRect).Push(gtx.Ops).Pop()
 		paint.PaintOp{}.Add(gtx.Ops)
-		st.Load()
 	}
 }
 

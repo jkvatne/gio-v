@@ -176,12 +176,10 @@ func (l aLabel) Layout(gtx C, s text.Shaper, font text.Font, size unit.Value, tx
 		if !ok {
 			break
 		}
-		stack := op.Save(gtx.Ops)
 		op.Offset(layout.FPt(off)).Add(gtx.Ops)
-		clip.Rect(cl.Sub(off)).Add(gtx.Ops)
-		s.Shape(font, textSize, l).Add(gtx.Ops)
+		defer clip.Rect(cl.Sub(off)).Push(gtx.Ops).Pop()
+		defer s.Shape(font, textSize, l).Push(gtx.Ops).Pop()
 		paint.PaintOp{}.Add(gtx.Ops)
-		stack.Load()
 	}
 	return dims
 }

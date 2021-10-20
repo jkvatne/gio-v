@@ -39,7 +39,6 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 		option.apply(e)
 	}
 	return func(gtx C) D {
-		defer op.Save(gtx.Ops).Load()
 		gtx.Constraints.Min.X = 0
 		return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start, Spacing: layout.SpaceStart}.Layout(
 			gtx,
@@ -51,7 +50,6 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 
 func (e *EditDef) layoutEditBackground() func(gtx C) D {
 	return func(gtx C) D {
-		defer op.Save(gtx.Ops).Load()
 		outline := f32.Rectangle{Max: f32.Point{
 			X: float32(gtx.Constraints.Min.X),
 			Y: float32(gtx.Constraints.Min.Y),
@@ -102,7 +100,6 @@ func (e *EditDef) layLabel() layout.Widget {
 
 func (e *EditDef) layoutEdit() func(gtx C) D {
 	return func(gtx C) D {
-		defer op.Save(gtx.Ops).Load()
 		macro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: e.th.HintColor}.Add(gtx.Ops)
 		var maxLines int

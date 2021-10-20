@@ -64,12 +64,10 @@ func (s *SwitchDef) Layout(gtx C) D {
 		trackColor = Gray(trackColor)
 		dotColor = s.th.Background
 	}
-	stack := op.Save(gtx.Ops)
 	op.Offset(f32.Point{Y: trackOff}).Add(gtx.Ops)
-	clip.UniformRRect(trackRect, trackCorner).Add(gtx.Ops)
+	defer clip.UniformRRect(trackRect, trackCorner).Push(gtx.Ops).Pop()
 	paint.ColorOp{Color: trackColor}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
-	stack.Load()
 
 	if gtx.Queue == nil {
 		dotColor = Disabled(dotColor)
@@ -77,7 +75,6 @@ func (s *SwitchDef) Layout(gtx C) D {
 	}
 
 	// Compute thumb offset and color.
-	stack = op.Save(gtx.Ops)
 	if *s.Value {
 		off := trackWidth - thumbSize
 		op.Offset(f32.Point{X: float32(off)}).Add(gtx.Ops)
@@ -109,7 +106,6 @@ func (s *SwitchDef) Layout(gtx C) D {
 			Center: f32.Point{X: thumbRadius, Y: thumbRadius},
 			Radius: thumbRadius - 1,
 		}.Op(gtx.Ops))
-	stack.Load()
 
 	gtx.Constraints.Min = image.Pt(trackWidth, trackHeight)
 	s.LayoutClickable(gtx)

@@ -29,7 +29,7 @@ func Separator(th *Theme, thickness unit.Value, options ...Option) layout.Widget
 		dim.Y = gtx.Px(s.thickness) + gtx.Px(s.padding.Top) + gtx.Px(s.padding.Bottom)
 		op.Offset(f32.Pt(float32(gtx.Px(s.padding.Left)), float32(gtx.Px(s.padding.Top)))).Add(gtx.Ops)
 		size := image.Pt(dim.X-gtx.Px(s.padding.Left)-gtx.Px(s.padding.Right), gtx.Px(s.thickness))
-		clip.Rect{Max: size}.Add(gtx.Ops)
+		defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
 		paint.ColorOp{Color: s.color}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
 		return layout.Dimensions{Size: dim}
