@@ -19,6 +19,7 @@ type BorderDef struct {
 	Width        unit.Value
 }
 
+// Layout will draw the border
 func (b BorderDef) Layout(gtx C, w layout.Widget) D {
 	dims := w(gtx)
 	sz := layout.FPt(dims.Size)

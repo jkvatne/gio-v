@@ -11,6 +11,7 @@ import (
 	"gioui.org/unit"
 )
 
+// LabelDef is the setup for a label
 type LabelDef struct {
 	// Face defines the text style.
 	Font text.Font
@@ -26,6 +27,7 @@ type LabelDef struct {
 	shaper   text.Shaper
 }
 
+// CreateLabelDef will make a LabelDef
 func CreateLabelDef(th *Theme, text string, align text.Alignment, relSize float32) LabelDef {
 	return LabelDef{
 		Text:      text,
@@ -36,6 +38,7 @@ func CreateLabelDef(th *Theme, text string, align text.Alignment, relSize float3
 	}
 }
 
+// Label  returns a widget for a label
 func Label(th *Theme, text string, align text.Alignment, relSize float32) func(gtx C) D {
 	lbl := LabelDef{
 		Text:      text,
@@ -52,6 +55,7 @@ func Label(th *Theme, text string, align text.Alignment, relSize float32) func(g
 	}
 }
 
+// Layout will draw the label
 func (l LabelDef) Layout(gtx C) D {
 	paint.ColorOp{Color: l.Color}.Add(gtx.Ops)
 	tl := aLabel{Alignment: l.Alignment, MaxLines: l.MaxLines}

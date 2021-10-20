@@ -3,6 +3,8 @@
 package wid
 
 import (
+	"image"
+
 	"gioui.org/f32"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
@@ -10,9 +12,9 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
-	"image"
 )
 
+// SwitchDef is the parameters for a slider
 type SwitchDef struct {
 	Clickable
 	th      *Theme
@@ -22,6 +24,7 @@ type SwitchDef struct {
 	padding layout.Inset
 }
 
+// Switch returns a widget for a switch
 func Switch(th *Theme, State *bool, handler func(b bool)) func(gtx C) D {
 	s := &SwitchDef{}
 	s.th = th

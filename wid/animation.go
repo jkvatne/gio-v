@@ -112,6 +112,7 @@ func (v *VisibilityAnimation) String(gtx C) string {
 // be in.
 type VisibilityAnimationState int
 
+// Visibility constants
 const (
 	Visible VisibilityAnimationState = iota
 	Disappearing

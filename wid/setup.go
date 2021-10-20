@@ -25,6 +25,7 @@ func makeNode(widgets []layout.Widget) node {
 	return node
 }
 
+// MakeList makes a horizontal or vertical list
 func MakeList(th *Theme, dir layout.Axis, widgets ...layout.Widget) layout.Widget {
 	node := makeNode(widgets)
 	listStyle := ListStyle{
@@ -46,10 +47,12 @@ func MakeList(th *Theme, dir layout.Axis, widgets ...layout.Widget) layout.Widge
 	}
 }
 
+// Row makes a row of widgets (horizontaly)
 func Row(spacing layout.Spacing, widgets ...layout.Widget) layout.Widget {
 	return MakeFlex(layout.Horizontal, spacing, widgets...)
 }
 
+// MakeFlex returns a widget for a flex list
 func MakeFlex(axis layout.Axis, spacing layout.Spacing, widgets ...layout.Widget) layout.Widget {
 	var ops op.Ops
 	var dims []image.Point

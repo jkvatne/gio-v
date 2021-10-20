@@ -15,6 +15,7 @@ import (
 	"golang.org/x/exp/shiny/iconvg"
 )
 
+// Icon is the definition of an icon
 type Icon struct {
 	src []byte
 	// Cached values.

@@ -15,6 +15,7 @@ import (
 	"gioui.org/unit"
 )
 
+// SliderStyle is the parameters for a slider
 type SliderStyle struct {
 	Widget
 	Clickable
@@ -41,6 +42,7 @@ func Slider(th *Theme, value *float32, minV, maxV float32, options ...Option) la
 	}
 }
 
+// Layout will draw the slider
 func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	thumbRadius := gtx.Px(s.th.TextSize.Scale(0.5))
 	trackWidth := gtx.Px(s.th.TextSize.Scale(0.5))
