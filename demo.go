@@ -42,7 +42,7 @@ var progress float32
 var sliderValue float32
 
 func main() {
-	flag.StringVar(&mode, "mode", "maximized", "Select windows fullscreen, maximized, centered")
+	flag.StringVar(&mode, "mode", "default", "Select window as fullscreen, maximized, centered or default")
 	flag.StringVar(&fontSize, "fontsize", "large", "Select font size medium,small,large")
 	flag.Parse()
 	progressIncrementer := make(chan float32)
@@ -54,7 +54,7 @@ func main() {
 	}()
 	go func() {
 		currentTheme = wid.NewTheme(gofont.Collection(), 14, wid.MaterialDesignLight)
-		win = app.NewWindow(app.Title("Gio-v demo"))
+		win = app.NewWindow(app.Title("Gio-v demo"), modeFromString(mode).Option())
 		updateMode()
 		setupForm(currentTheme)
 		for {
@@ -126,26 +126,26 @@ func onSwitchMode(v bool) {
 	setupForm(currentTheme)
 }
 
+func modeFromString(s string) app.WindowMode {
+	switch {
+	case mode == "fullscreen":
+		// A full-screen window
+		return app.Fullscreen
+	case mode == "maximized":
+		//   A maximized window
+		return app.Maximized
+	case mode == "centered":
+		// Place at center of monitor
+		return app.Centered
+	default:
+		// Default positioned window with size given
+		return app.Windowed
+	}
+}
+
 func updateMode() {
 	if mode != oldMode {
-		switch {
-		case mode == "fullscreen":
-			// A full-screen window
-			win.Option(app.Fullscreen.Option())
-		case mode == "windowed":
-			//Place at a given location.
-			// app.Center() is not yet defined
-			//win.Option(app.Size(unit.Px(500), unit.Px(800)), app.Center())
-		case mode == "maximized":
-			//   A maximized window
-			// app.Maximized.Option() is not yet defined
-			//win.Option(app.Maximized.Option())
-		case mode == "centered":
-			// Place at center of monitor
-			// app.Center() is not yet defined
-			//win.Option(app.Size(unit.Px(500), unit.Px(800)), app.Center())
-		default:
-		}
+		win.Option(modeFromString(mode).Option())
 		oldMode = mode
 	}
 }
@@ -157,6 +157,7 @@ func setupForm(th *wid.Theme) {
 		th, layout.Vertical,
 		wid.Label(th, "Demo page", text.Middle, 2.0),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
+			wid.RadioButton(th, &mode, "default", "default"),
 			wid.RadioButton(th, &mode, "fullscreen", "fullscreen"),
 			wid.RadioButton(th, &mode, "maximized", "maximized"),
 			wid.RadioButton(th, &mode, "centered", "centered"),

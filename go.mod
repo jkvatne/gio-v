@@ -10,10 +10,9 @@ require (
 
 require (
 	gioui.org/cpu v0.0.0-20210817075930-8d6a761490d2 // indirect
-	gioui.org/shader v1.0.4 // indirect
+	gioui.org/shader v1.0.6 // indirect
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	golang.org/x/text v0.3.6 // indirect
 )
 
-//gioui.org v0.0.0 => github.com/jkvatne/gio v0.0.0
 replace gioui.org => c:/doc/gio
