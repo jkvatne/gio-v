@@ -4,10 +4,8 @@ package wid
 
 import (
 	"image"
-	"image/color"
 
 	"gioui.org/f32"
-	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
@@ -22,10 +20,6 @@ type RadioButtonStyle struct {
 	Key                string
 	Output             *string
 	Label              string
-	TextColor          color.NRGBA
-	TextSize           unit.Value
-	IconColor          color.NRGBA
-	Size               unit.Value
 	CheckedStateIcon   *Icon
 	UncheckedStateIcon *Icon
 }
@@ -36,10 +30,6 @@ func RadioButton(th *Theme, output *string, key string, label string) func(gtx C
 		Label:              label,
 		Output:             output,
 		Key:                key,
-		TextColor:          th.OnBackground,
-		IconColor:          th.OnBackground,
-		TextSize:           th.TextSize.Scale(1.0),
-		Size:               th.TextSize.Scale(1.5),
 		CheckedStateIcon:   th.RadioChecked,
 		UncheckedStateIcon: th.RadioUnchecked,
 	}
@@ -68,23 +58,21 @@ func (r *RadioButtonStyle) layout(gtx C, checked bool) D {
 		layout.Rigid(func(gtx C) D {
 			return layout.Stack{Alignment: layout.Center}.Layout(gtx,
 				layout.Stacked(func(gtx C) D {
-					size := gtx.Px(r.Size) * 5 / 4
-					dims := D{Size: image.Point{X: size, Y: size}}
+					size := gtx.Px(r.th.TextSize.Scale(1.8))
 					if r.Hovered() || r.Focused() {
 						radius := float32(size) / 2
 						paint.FillShape(gtx.Ops,
-							MulAlpha(r.IconColor, 70),
+							MulAlpha(r.th.OnBackground, 70),
 							clip.Circle{Center: f32.Point{X: radius, Y: radius}, Radius: radius}.Op(gtx.Ops))
 					}
-					return dims
+					return D{Size: image.Point{X: size, Y: size}}
 				}),
 				layout.Stacked(func(gtx C) D {
 					return layout.UniformInset(unit.Dp(1)).Layout(gtx, func(gtx C) D {
-						gtx.Constraints.Min = image.Point{X: gtx.Px(r.Size)}
-						icon.Layout(gtx, ColDisabled(r.IconColor, gtx.Queue == nil))
-						return D{
-							Size: image.Point{X: gtx.Px(r.Size), Y: gtx.Px(r.Size)},
-						}
+						size := gtx.Px(r.th.TextSize.Scale(1.8))
+						gtx.Constraints.Min = image.Point{X: size}
+						icon.Layout(gtx, ColDisabled(r.th.OnBackground, gtx.Queue == nil))
+						return D{Size: image.Point{X: size, Y: size}}
 					})
 				}),
 			)
@@ -92,7 +80,7 @@ func (r *RadioButtonStyle) layout(gtx C, checked bool) D {
 
 		layout.Rigid(func(gtx C) D {
 			return layout.Inset{Top: Zv, Right: r.th.TextSize, Bottom: Zv, Left: Zv}.Layout(gtx, func(gtx C) D {
-				paint.ColorOp{Color: r.IconColor}.Add(gtx.Ops)
+				paint.ColorOp{Color: r.th.OnBackground}.Add(gtx.Ops)
 				lbl := r.Label
 				if lbl == "" {
 					lbl = r.Key
@@ -101,7 +89,6 @@ func (r *RadioButtonStyle) layout(gtx C, checked bool) D {
 			})
 		}),
 	)
-	defer pointer.Rect(image.Rectangle{Max: dims.Size}).Push(gtx.Ops).Pop()
 	gtx.Constraints.Min = dims.Size
 	r.LayoutClickable(gtx)
 	r.HandleClicks(gtx)

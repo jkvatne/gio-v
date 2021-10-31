@@ -4,6 +4,7 @@ package wid
 
 import (
 	"image"
+	"image/color"
 
 	"gioui.org/f32"
 	"gioui.org/io/pointer"
@@ -18,7 +19,6 @@ import (
 type SwitchDef struct {
 	Clickable
 	th      *Theme
-	size    unit.Value
 	Value   *bool
 	changed bool
 	padding layout.Inset
@@ -29,7 +29,6 @@ func Switch(th *Theme, State *bool, handler func(b bool)) func(gtx C) D {
 	s := &SwitchDef{}
 	s.th = th
 	s.SetupTabs()
-	s.size = th.TextSize
 	s.Value = State
 	s.handler = handler
 	s.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
@@ -47,10 +46,25 @@ func Switch(th *Theme, State *bool, handler func(b bool)) func(gtx C) D {
 
 // Layout updates the switch and displays it.
 func (s *SwitchDef) Layout(gtx C) D {
-	trackWidth := gtx.Px(s.size.Scale(2.2))
-	trackHeight := gtx.Px(s.size.Scale(1.0))
-	thumbSize := gtx.Px(s.size.Scale(1.25))
-	trackOff := float32(thumbSize-trackHeight) * .4
+
+	// Calculate sizes
+	trackWidth := gtx.Px(s.th.TextSize.Scale(2.1))
+	trackHeight := gtx.Px(s.th.TextSize.Scale(0.8))
+	thumbSize := gtx.Px(s.th.TextSize.Scale(1.2))
+	trackOff := float32(thumbSize-trackHeight) * 0.5
+	thumbRadius := float32(thumbSize) / 2
+
+	// Find colors
+	trackColor := MulAlpha(s.th.Primary, 0x80)
+	dotColor := s.th.Primary
+	if !*s.Value {
+		trackColor = Gray(trackColor)
+		dotColor = s.th.Background
+	}
+	if gtx.Queue == nil {
+		dotColor = Disabled(dotColor)
+		trackColor = Disabled(trackColor)
+	}
 
 	// Draw track.
 	trackCorner := float32(trackHeight) / 2
@@ -58,59 +72,53 @@ func (s *SwitchDef) Layout(gtx C) D {
 		X: float32(trackWidth),
 		Y: float32(trackHeight),
 	}}
-	trackColor := MulAlpha(s.th.Primary, 0x80)
-	dotColor := s.th.Primary
-	if !*s.Value {
-		trackColor = Gray(trackColor)
-		dotColor = s.th.Background
-	}
-	op.Offset(f32.Point{Y: trackOff}).Add(gtx.Ops)
-	defer clip.UniformRRect(trackRect, trackCorner).Push(gtx.Ops).Pop()
+	t := op.Offset(f32.Point{Y: trackOff}).Push(gtx.Ops)
+	cl := clip.UniformRRect(trackRect, trackCorner).Push(gtx.Ops)
 	paint.ColorOp{Color: trackColor}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
+	cl.Pop()
+	t.Pop()
 
-	if gtx.Queue == nil {
-		dotColor = Disabled(dotColor)
-		trackColor = Disabled(trackColor)
-	}
-
-	// Compute thumb offset and color.
+	// Compute thumb offset based on switch on/off state
+	ofs := float32(0)
 	if *s.Value {
-		off := trackWidth - thumbSize
-		op.Offset(f32.Point{X: float32(off)}).Add(gtx.Ops)
+		ofs = float32(trackWidth - thumbSize)
 	}
+	st := op.Offset(f32.Point{X: ofs}).Push(gtx.Ops)
 
-	thumbRadius := float32(thumbSize) / 2
-
-	// Draw hover.
+	// Draw hover/focused circle
 	if s.Hovered() || s.Focused() {
-		r := 1.4 * thumbRadius
+		hoverRadius := 1.4 * thumbRadius
 		paint.FillShape(gtx.Ops, MulAlpha(s.th.Primary, 88),
 			clip.Circle{
 				Center: f32.Point{X: thumbRadius, Y: thumbRadius},
-				Radius: r,
+				Radius: hoverRadius,
 			}.Op(gtx.Ops))
 	}
 
 	// Draw thumb shadow, a translucent disc slightly larger than the thumb itself.
-	// Center shadow horizontally and slightly adjust its Y.
-	paint.FillShape(gtx.Ops, trackColor,
-		clip.Circle{
-			Center: f32.Point{X: thumbRadius, Y: thumbRadius + 0.05},
-			Radius: thumbRadius + 1.5,
-		}.Op(gtx.Ops))
-
+	for i := 6; i > 0; i-- {
+		s := op.Offset(f32.Point{Y: float32(i) * 0.4}).Push(gtx.Ops)
+		paint.FillShape(gtx.Ops, color.NRGBA{A: alpha[i]},
+			clip.Circle{
+				Center: f32.Point{X: thumbRadius, Y: thumbRadius},
+				Radius: thumbRadius + float32(i)*0.8,
+			}.Op(gtx.Ops))
+		s.Pop()
+	}
 	// Draw thumb.
 	paint.FillShape(gtx.Ops, dotColor,
 		clip.Circle{
 			Center: f32.Point{X: thumbRadius, Y: thumbRadius},
-			Radius: thumbRadius - 1,
+			Radius: thumbRadius,
 		}.Op(gtx.Ops))
 
-	gtx.Constraints.Min = image.Pt(trackWidth, trackHeight)
+	st.Pop()
+	// Set area for click and hover
+	gtx.Constraints.Min = image.Pt(trackWidth, thumbSize)
+	// Handle clicks and keyboard
 	s.LayoutClickable(gtx)
 	s.HandleClicks(gtx)
 	s.HandleKeys(gtx)
-	dims := image.Point{X: trackWidth, Y: thumbSize}
-	return D{Size: dims}
+	return D{Size: image.Point{X: trackWidth, Y: thumbSize}}
 }

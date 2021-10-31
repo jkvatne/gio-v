@@ -40,6 +40,7 @@ var win *app.Window           // The main window
 var thb wid.Theme             // Secondary theme used for the color-shifting button
 var progress float32
 var sliderValue float32
+var dummy bool
 
 func main() {
 	flag.StringVar(&mode, "mode", "default", "Select window as fullscreen, maximized, centered or default")
@@ -131,16 +132,11 @@ func modeFromString(s string) app.WindowMode {
 	case mode == "fullscreen":
 		// A full-screen window
 		return app.Fullscreen
-	case mode == "maximized":
-		//   A maximized window
-		return app.Maximized
-	case mode == "centered":
-		// Place at center of monitor
-		return app.Centered
-	default:
+	case mode == "default":
 		// Default positioned window with size given
 		return app.Windowed
 	}
+	return app.Windowed
 }
 
 func updateMode() {
@@ -150,6 +146,14 @@ func updateMode() {
 	}
 }
 
+func onMaximize() {
+	win.Maximize()
+}
+
+func onCenter() {
+	win.Center()
+}
+
 func setupForm(th *wid.Theme) {
 	thb = *th
 	wid.First = nil
@@ -157,10 +161,10 @@ func setupForm(th *wid.Theme) {
 		th, layout.Vertical,
 		wid.Label(th, "Demo page", text.Middle, 2.0),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
-			wid.RadioButton(th, &mode, "default", "default"),
+			wid.RadioButton(th, &mode, "windowed", "windowed"),
 			wid.RadioButton(th, &mode, "fullscreen", "fullscreen"),
-			wid.RadioButton(th, &mode, "maximized", "maximized"),
-			wid.RadioButton(th, &mode, "centered", "centered"),
+			wid.OutlineButton(th, "Maximize", wid.Handler(onMaximize)),
+			wid.OutlineButton(th, "Center", wid.Handler(onCenter)),
 		),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.RadioButton(th, &fontSize, "small", "small"),
@@ -168,8 +172,8 @@ func setupForm(th *wid.Theme) {
 			wid.RadioButton(th, &fontSize, "large", "large"),
 		),
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
-			wid.Label(th, "Switch to select dark mode", text.Start, 1.0),
-			wid.Switch(th, &darkMode, onSwitchMode),
+			wid.Label(th, "A switch", text.Start, 1.0),
+			wid.Switch(th, &dummy, nil),
 		),
 		wid.Checkbox(th, "Checkbox to select dark mode", &darkMode, onSwitchMode),
 		// Three separators to test layout algorithm. Should give three thin lines
