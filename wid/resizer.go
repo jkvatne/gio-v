@@ -3,13 +3,14 @@ package wid
 import (
 	"image"
 
+	"gioui.org/op"
+
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 
 	"gioui.org/gesture"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
-	"gioui.org/op"
 )
 
 // Resize provides a draggable handle in between two widgets for resizing their area.
@@ -34,7 +35,7 @@ func Split(th *Theme, Axis layout.Axis, w1 layout.Widget, w2 layout.Widget) func
 	}
 }
 
-func VertSep(gtx C) D {
+func vertSep(gtx C) D {
 	dim := gtx.Constraints.Max
 	dim.X = 12
 	size := image.Pt(12, dim.Y)
@@ -54,7 +55,7 @@ func (rs *Resize) Layout(gtx C, th *Theme, w1 layout.Widget, w2 layout.Widget) D
 	m := op.Record(gtx.Ops)
 	rs.Length = gtx.Constraints.Max.X
 	rs.Pos = int(rs.Ratio * float32(rs.Length))
-	dims = rs.LayoutSash(gtx, rs.Axis)
+	dims = rs.layoutSash(gtx, rs.Axis)
 	c := m.Stop()
 	rs.Ratio = float32(rs.Pos) / float32(rs.Length)
 	return layout.Flex{
@@ -69,10 +70,14 @@ func (rs *Resize) Layout(gtx C, th *Theme, w1 layout.Widget, w2 layout.Widget) D
 	)
 }
 
-func (rs *Resize) LayoutSash(gtx C, axis layout.Axis) D {
+func (rs *Resize) layoutSash(gtx C, axis layout.Axis) D {
 	gtx.Constraints.Min = image.Point{}
-	dims := VertSep(gtx)
-
+	dims := gtx.Constraints.Max
+	dims.X = 12
+	size := image.Pt(12, dims.Y)
+	defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
+	paint.ColorOp{Color: RGB(0x777777)}.Add(gtx.Ops)
+	paint.PaintOp{}.Add(gtx.Ops)
 	var de *pointer.Event
 	for _, e := range rs.drag.Events(gtx.Metric, gtx, gesture.Axis(axis)) {
 		if e.Type == pointer.Drag {
@@ -94,7 +99,7 @@ func (rs *Resize) LayoutSash(gtx C, axis layout.Axis) D {
 		rs.Pos = rs.Length
 	}
 
-	rect := image.Rectangle{Max: dims.Size}
+	rect := image.Rectangle{Max: dims}
 	defer pointer.Rect(rect).Push(gtx.Ops).Pop()
 	rs.drag.Add(gtx.Ops)
 
@@ -104,5 +109,5 @@ func (rs *Resize) LayoutSash(gtx C, axis layout.Axis) D {
 		pointer.CursorNameOp{Name: pointer.CursorRowResize}.Add(gtx.Ops)
 	}
 
-	return D{Size: dims.Size}
+	return D{Size: dims}
 }
