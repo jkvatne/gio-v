@@ -5,12 +5,12 @@ import (
 
 	"gioui.org/op"
 
-	"gioui.org/op/clip"
-	"gioui.org/op/paint"
-
+	"gioui.org/f32"
 	"gioui.org/gesture"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
+	"gioui.org/op/clip"
+	"gioui.org/op/paint"
 )
 
 // Resize provides a draggable handle in between two widgets for resizing their area.
@@ -61,10 +61,11 @@ func (rs *Resize) lo(gtx C) (op.CallOp, image.Point) {
 	rs.Pos = int(rs.Ratio * float32(rs.Length))
 	gtx.Constraints.Min = image.Point{}
 	dims := gtx.Constraints.Max
-	dims.X = 12
-	size := image.Pt(12, dims.Y)
-	m1 := clip.Rect{Max: size}.Push(gtx.Ops)
-	paint.ColorOp{Color: RGB(0x777777)}.Add(gtx.Ops)
+	dims.X = 18
+	size := image.Pt(3, dims.Y)
+	m1 := op.Offset(f32.Pt(8, 0)).Push(gtx.Ops)
+	m2 := clip.Rect{Max: size}.Push(gtx.Ops)
+	paint.ColorOp{Color: RGB(0x7777FF)}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
 	var de *pointer.Event
 	for _, e := range rs.drag.Events(gtx.Metric, gtx, gesture.Axis(rs.Axis)) {
@@ -88,7 +89,7 @@ func (rs *Resize) lo(gtx C) (op.CallOp, image.Point) {
 	}
 
 	rect := image.Rectangle{Max: dims}
-	m2 := pointer.Rect(rect).Push(gtx.Ops)
+	m3 := pointer.Rect(rect).Push(gtx.Ops)
 	rs.drag.Add(gtx.Ops)
 
 	if rs.Axis == layout.Horizontal {
@@ -98,47 +99,6 @@ func (rs *Resize) lo(gtx C) (op.CallOp, image.Point) {
 	}
 	m1.Pop()
 	m2.Pop()
+	m3.Pop()
 	return m.Stop(), dims
-}
-
-func (rs *Resize) layoutSash(gtx C, axis layout.Axis) D {
-	gtx.Constraints.Min = image.Point{}
-	dims := gtx.Constraints.Max
-	dims.X = 12
-	size := image.Pt(12, dims.Y)
-	defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
-	paint.ColorOp{Color: RGB(0x777777)}.Add(gtx.Ops)
-	paint.PaintOp{}.Add(gtx.Ops)
-	var de *pointer.Event
-	for _, e := range rs.drag.Events(gtx.Metric, gtx, gesture.Axis(axis)) {
-		if e.Type == pointer.Drag {
-			de = &e
-		}
-	}
-	if de != nil {
-		xy := de.Position.X
-		if axis == layout.Vertical {
-			xy = de.Position.Y
-		}
-		rs.Pos += int(xy)
-	}
-
-	// Clamp the handle position, leaving it always visible.
-	if rs.Pos < 0 {
-		rs.Pos = 0
-	} else if rs.Pos > rs.Length {
-		rs.Pos = rs.Length
-	}
-
-	rect := image.Rectangle{Max: dims}
-	defer pointer.Rect(rect).Push(gtx.Ops).Pop()
-	rs.drag.Add(gtx.Ops)
-
-	if axis == layout.Horizontal {
-		pointer.CursorNameOp{Name: pointer.CursorColResize}.Add(gtx.Ops)
-	} else {
-		pointer.CursorNameOp{Name: pointer.CursorRowResize}.Add(gtx.Ops)
-	}
-
-	return D{Size: dims}
 }
