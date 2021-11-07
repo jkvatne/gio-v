@@ -17,9 +17,11 @@ type Resize struct {
 	// Axis defines how the widgets and the handle are laid out.
 	Axis layout.Axis
 	// Ratio defines how much space is available to the first widget.
-	Ratio float32
-	float float
-	Theme *Theme
+	Ratio  float32
+	Theme  *Theme
+	Length int // max constraint for the axis
+	Pos    int // position in pixels of the handle
+	drag   gesture.Drag
 }
 
 // Split is used to layout two widgets with a splitter between. Axis can be Horizontal or Vertical
@@ -32,16 +34,6 @@ func Split(th *Theme, Axis layout.Axis, w1 layout.Widget, w2 layout.Widget) func
 	}
 }
 
-func HorSep(gtx C) D {
-	dim := gtx.Constraints.Max
-	dim.Y = 12
-	size := image.Pt(dim.X, 8)
-	defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
-	paint.ColorOp{Color: RGB(0x777777)}.Add(gtx.Ops)
-	paint.PaintOp{}.Add(gtx.Ops)
-	return layout.Dimensions{Size: dim}
-}
-
 func VertSep(gtx C) D {
 	dim := gtx.Constraints.Max
 	dim.X = 12
@@ -49,33 +41,27 @@ func VertSep(gtx C) D {
 	defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
 	paint.ColorOp{Color: RGB(0x777777)}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
-	return layout.Dimensions{Size: dim}
+	return D{Size: dim}
 }
 
 // Layout displays w1 and w2 with handle in between.
 //
 // The widgets w1 and w2 must be able to gracefully resize their minimum and maximum dimensions
 // in order for the resize to be smooth.
-func (rs *Resize) Layout(gtx layout.Context, th *Theme, w1 layout.Widget, w2 layout.Widget) layout.Dimensions {
+func (rs *Resize) Layout(gtx C, th *Theme, w1 layout.Widget, w2 layout.Widget) D {
 	var dims D
 	// Compute the first widget's max width/height.
 	m := op.Record(gtx.Ops)
-	if rs.Axis == layout.Horizontal {
-		rs.float.Length = gtx.Constraints.Max.X
-		rs.float.Pos = int(rs.Ratio * float32(rs.float.Length))
-		dims = rs.float.Layout(gtx, rs.Axis, VertSep)
-	} else {
-		rs.float.Length = gtx.Constraints.Max.Y
-		rs.float.Pos = int(rs.Ratio * float32(rs.float.Length))
-		dims = rs.float.Layout(gtx, rs.Axis, HorSep)
-	}
+	rs.Length = gtx.Constraints.Max.X
+	rs.Pos = int(rs.Ratio * float32(rs.Length))
+	dims = rs.LayoutSash(gtx, rs.Axis)
 	c := m.Stop()
-	rs.Ratio = float32(rs.float.Pos) / float32(rs.float.Length)
+	rs.Ratio = float32(rs.Pos) / float32(rs.Length)
 	return layout.Flex{
 		Axis: rs.Axis,
 	}.Layout(gtx,
 		layout.Flexed(rs.Ratio, w1),
-		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+		layout.Rigid(func(gtx C) D {
 			c.Add(gtx.Ops)
 			return dims
 		}),
@@ -83,18 +69,12 @@ func (rs *Resize) Layout(gtx layout.Context, th *Theme, w1 layout.Widget, w2 lay
 	)
 }
 
-type float struct {
-	Length int // max constraint for the axis
-	Pos    int // position in pixels of the handle
-	drag   gesture.Drag
-}
-
-func (f *float) Layout(gtx layout.Context, axis layout.Axis, w layout.Widget) layout.Dimensions {
+func (rs *Resize) LayoutSash(gtx C, axis layout.Axis) D {
 	gtx.Constraints.Min = image.Point{}
-	dims := w(gtx)
+	dims := VertSep(gtx)
 
 	var de *pointer.Event
-	for _, e := range f.drag.Events(gtx.Metric, gtx, gesture.Axis(axis)) {
+	for _, e := range rs.drag.Events(gtx.Metric, gtx, gesture.Axis(axis)) {
 		if e.Type == pointer.Drag {
 			de = &e
 		}
@@ -104,19 +84,19 @@ func (f *float) Layout(gtx layout.Context, axis layout.Axis, w layout.Widget) la
 		if axis == layout.Vertical {
 			xy = de.Position.Y
 		}
-		f.Pos += int(xy)
+		rs.Pos += int(xy)
 	}
 
 	// Clamp the handle position, leaving it always visible.
-	if f.Pos < 0 {
-		f.Pos = 0
-	} else if f.Pos > f.Length {
-		f.Pos = f.Length
+	if rs.Pos < 0 {
+		rs.Pos = 0
+	} else if rs.Pos > rs.Length {
+		rs.Pos = rs.Length
 	}
 
 	rect := image.Rectangle{Max: dims.Size}
 	defer pointer.Rect(rect).Push(gtx.Ops).Pop()
-	f.drag.Add(gtx.Ops)
+	rs.drag.Add(gtx.Ops)
 
 	if axis == layout.Horizontal {
 		pointer.CursorNameOp{Name: pointer.CursorColResize}.Add(gtx.Ops)
@@ -124,5 +104,5 @@ func (f *float) Layout(gtx layout.Context, axis layout.Axis, w layout.Widget) la
 		pointer.CursorNameOp{Name: pointer.CursorRowResize}.Add(gtx.Ops)
 	}
 
-	return layout.Dimensions{Size: dims.Size}
+	return D{Size: dims.Size}
 }
