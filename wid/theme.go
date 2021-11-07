@@ -52,7 +52,10 @@ type Theme struct {
 	UmbraColor color.NRGBA
 	// PenumbraColor is the lightest shadow color
 	PenumbraColor color.NRGBA
-	// Text inset is the fraction of font height used for padding around text. Typically, 0.2 to 0.6
+	// SashColor is the color of the moveable divider
+	SashColor   color.NRGBA
+	SashWidth   unit.Value
+	SashPadding unit.Value
 }
 
 type (
@@ -125,6 +128,11 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme 
 		Bottom: t.TextSize.Scale(0.2),
 		Left:   t.TextSize.Scale(0.3),
 	}
+
+	t.SashColor = WithAlpha(t.OnSurface, 0x80)
+	t.SashWidth = t.TextSize.Scale(0.5)
+	t.SashPadding = t.TextSize.Scale(0.5)
+
 	return &t
 }
 

@@ -26,8 +26,8 @@ type Resize struct {
 }
 
 // Split is used to layout two widgets with a splitter between. Axis can be Horizontal or Vertical
-func Split(th *Theme, Axis layout.Axis, w1 layout.Widget, w2 layout.Widget) func(gtx C) D {
-	r := Resize{Axis: Axis}
+func SplitHorizontal(th *Theme, w1 layout.Widget, w2 layout.Widget) func(gtx C) D {
+	r := Resize{Axis: layout.Horizontal}
 	r.Theme = th
 	r.Ratio = 0.5
 	return func(gtx C) D {
@@ -61,12 +61,15 @@ func (rs *Resize) lo(gtx C) (op.CallOp, image.Point) {
 	rs.Pos = int(rs.Ratio * float32(rs.Length))
 	gtx.Constraints.Min = image.Point{}
 	dims := gtx.Constraints.Max
-	dims.X = 18
-	size := image.Pt(3, dims.Y)
-	m1 := op.Offset(f32.Pt(8, 0)).Push(gtx.Ops)
+	dims.X = gtx.Px(rs.Theme.SashWidth) + 2*gtx.Px(rs.Theme.SashPadding)
+	size := image.Pt(gtx.Px(rs.Theme.SashWidth), dims.Y)
+	m1 := op.Offset(f32.Pt(float32(gtx.Px(rs.Theme.SashPadding)), 0)).Push(gtx.Ops)
 	m2 := clip.Rect{Max: size}.Push(gtx.Ops)
-	paint.ColorOp{Color: RGB(0x7777FF)}.Add(gtx.Ops)
+	paint.ColorOp{Color: rs.Theme.SashColor}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
+	m2.Pop()
+	m1.Pop()
+
 	var de *pointer.Event
 	for _, e := range rs.drag.Events(gtx.Metric, gtx, gesture.Axis(rs.Axis)) {
 		if e.Type == pointer.Drag {
@@ -91,14 +94,11 @@ func (rs *Resize) lo(gtx C) (op.CallOp, image.Point) {
 	rect := image.Rectangle{Max: dims}
 	m3 := pointer.Rect(rect).Push(gtx.Ops)
 	rs.drag.Add(gtx.Ops)
-
 	if rs.Axis == layout.Horizontal {
 		pointer.CursorNameOp{Name: pointer.CursorColResize}.Add(gtx.Ops)
 	} else {
 		pointer.CursorNameOp{Name: pointer.CursorRowResize}.Add(gtx.Ops)
 	}
-	m1.Pop()
-	m2.Pop()
 	m3.Pop()
 	return m.Stop(), dims
 }
