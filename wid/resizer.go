@@ -41,6 +41,21 @@ func Split(th *Theme, Axis layout.Axis, w1 layout.Widget, w2 layout.Widget) func
 // in order for the resize to be smooth.
 func (rs *Resize) Layout(gtx C, th *Theme, w1 layout.Widget, w2 layout.Widget) D {
 	// Compute the first widget's max width/height.
+	c, dims := rs.lo(gtx)
+	rs.Ratio = float32(rs.Pos) / float32(rs.Length)
+	return layout.Flex{
+		Axis: rs.Axis,
+	}.Layout(gtx,
+		layout.Flexed(rs.Ratio, w1),
+		layout.Rigid(func(gtx C) D {
+			c.Add(gtx.Ops)
+			return D{Size: dims}
+		}),
+		layout.Flexed(1-rs.Ratio, w2),
+	)
+}
+
+func (rs *Resize) lo(gtx C) (op.CallOp, image.Point) {
 	m := op.Record(gtx.Ops)
 	rs.Length = gtx.Constraints.Max.X
 	rs.Pos = int(rs.Ratio * float32(rs.Length))
@@ -83,18 +98,7 @@ func (rs *Resize) Layout(gtx C, th *Theme, w1 layout.Widget, w2 layout.Widget) D
 	}
 	m1.Pop()
 	m2.Pop()
-	c := m.Stop()
-	rs.Ratio = float32(rs.Pos) / float32(rs.Length)
-	return layout.Flex{
-		Axis: rs.Axis,
-	}.Layout(gtx,
-		layout.Flexed(rs.Ratio, w1),
-		layout.Rigid(func(gtx C) D {
-			c.Add(gtx.Ops)
-			return D{Size: dims}
-		}),
-		layout.Flexed(1-rs.Ratio, w2),
-	)
+	return m.Stop(), dims
 }
 
 func (rs *Resize) layoutSash(gtx C, axis layout.Axis) D {
