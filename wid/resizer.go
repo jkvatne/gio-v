@@ -35,16 +35,6 @@ func Split(th *Theme, Axis layout.Axis, w1 layout.Widget, w2 layout.Widget) func
 	}
 }
 
-func vertSep(gtx C) D {
-	dim := gtx.Constraints.Max
-	dim.X = 12
-	size := image.Pt(12, dim.Y)
-	defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
-	paint.ColorOp{Color: RGB(0x777777)}.Add(gtx.Ops)
-	paint.PaintOp{}.Add(gtx.Ops)
-	return D{Size: dim}
-}
-
 // Layout displays w1 and w2 with handle in between.
 //
 // The widgets w1 and w2 must be able to gracefully resize their minimum and maximum dimensions
