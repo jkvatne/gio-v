@@ -130,7 +130,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme 
 	}
 
 	t.SashColor = WithAlpha(t.OnSurface, 0x80)
-	t.SashWidth = t.TextSize.Scale(0.5)
+	t.SashWidth = t.TextSize.Scale(0.2)
 	t.SashPadding = t.TextSize.Scale(0.5)
 
 	return &t
