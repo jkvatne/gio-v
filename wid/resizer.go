@@ -48,9 +48,15 @@ func SplitVertical(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widget)
 // in order for the resize to be smooth.
 func (rs *Resize) Layout(gtx C, th *Theme, w1 layout.Widget, w2 layout.Widget) D {
 	// Compute the first widget's max width/height.
-	rs.Length = gtx.Constraints.Max.X
-	rs.pos = int(rs.Ratio * float32(rs.Length))
-	rs.dragging(gtx, 0, gtx.Constraints.Max.X)
+	if rs.Axis == layout.Horizontal {
+		rs.Length = gtx.Constraints.Max.X
+		rs.pos = int(rs.Ratio * float32(rs.Length))
+		rs.dragging(gtx, 0, gtx.Constraints.Max.X)
+	} else {
+		rs.Length = gtx.Constraints.Max.Y
+		rs.pos = int(rs.Ratio * float32(rs.Length))
+		rs.dragging(gtx, 0, gtx.Constraints.Max.Y)
+	}
 	rs.Ratio = float32(rs.pos) / float32(rs.Length)
 	return layout.Flex{
 		Axis: rs.Axis,
@@ -69,16 +75,26 @@ func (rs *Resize) setCursor(gtx C, dims image.Point) {
 	rect := image.Rectangle{Max: dims}
 	defer pointer.Rect(rect).Push(gtx.Ops).Pop()
 	rs.drag.Add(gtx.Ops)
-	pointer.CursorNameOp{Name: pointer.CursorColResize}.Add(gtx.Ops)
+	if rs.Axis == layout.Horizontal {
+		pointer.CursorNameOp{Name: pointer.CursorColResize}.Add(gtx.Ops)
+	} else {
+		pointer.CursorNameOp{Name: pointer.CursorRowResize}.Add(gtx.Ops)
+	}
 }
 
 func (rs *Resize) dragging(gtx C, lo int, hi int) {
 	for _, e := range rs.drag.Events(gtx.Metric, gtx, gesture.Axis(rs.Axis)) {
+		var pos int
+		if rs.Axis == layout.Horizontal {
+			pos = int(e.Position.X)
+		} else {
+			pos = int(e.Position.Y)
+		}
 		if e.Type == pointer.Drag {
-			rs.pos += int(e.Position.X) - rs.start
+			rs.pos += pos - rs.start
 		}
 		if e.Type == pointer.Press {
-			rs.start = int(e.Position.X)
+			rs.start = pos
 		}
 	}
 	// Clamp the handle position, leaving it always visible.
@@ -90,10 +106,18 @@ func (rs *Resize) dragging(gtx C, lo int, hi int) {
 }
 
 func (rs *Resize) drawSash(gtx C) image.Point {
-	dims := gtx.Constraints.Max
-	dims.X = gtx.Px(rs.Theme.SashWidth) + 2*gtx.Px(rs.Theme.SashPadding)
-	sashSize := image.Pt(gtx.Px(rs.Theme.SashWidth), dims.Y)
-	defer op.Offset(f32.Pt(float32(gtx.Px(rs.Theme.SashPadding)), 0)).Push(gtx.Ops).Pop()
+	var sashSize, dims image.Point
+	if rs.Axis == layout.Horizontal {
+		dims = gtx.Constraints.Max
+		dims.X = gtx.Px(rs.Theme.SashWidth) + 2*gtx.Px(rs.Theme.SashPadding)
+		sashSize = image.Pt(gtx.Px(rs.Theme.SashWidth), dims.Y)
+		defer op.Offset(f32.Pt(float32(gtx.Px(rs.Theme.SashPadding)), 0)).Push(gtx.Ops).Pop()
+	} else {
+		dims = gtx.Constraints.Max
+		dims.Y = gtx.Px(rs.Theme.SashWidth) + 2*gtx.Px(rs.Theme.SashPadding)
+		sashSize = image.Pt(dims.X, gtx.Px(rs.Theme.SashWidth))
+		defer op.Offset(f32.Pt(0, float32(gtx.Px(rs.Theme.SashPadding)))).Push(gtx.Ops).Pop()
+	}
 	defer clip.Rect{Max: sashSize}.Push(gtx.Ops).Pop()
 	paint.ColorOp{Color: rs.Theme.SashColor}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
