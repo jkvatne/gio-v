@@ -54,11 +54,26 @@ func (rs *Resize) Layout(gtx C, th *Theme, w1 layout.Widget, w2 layout.Widget) D
 	)
 }
 
-func (rs *Resize) lo(gtx C) (op.CallOp, image.Point) {
-	m := op.Record(gtx.Ops)
+func (rs *Resize) dragging(gtx C) {
 	rs.Length = gtx.Constraints.Max.X
 	rs.pos = int(rs.Ratio * float32(rs.Length))
-	gtx.Constraints.Min = image.Point{}
+	for _, e := range rs.drag.Events(gtx.Metric, gtx, gesture.Axis(layout.Horizontal)) {
+		if e.Type == pointer.Drag {
+			rs.pos += int(e.Position.X) - rs.start
+		}
+		if e.Type == pointer.Press {
+			rs.start = int(e.Position.X)
+		}
+	}
+	// Clamp the handle position, leaving it always visible.
+	if rs.pos < 0 {
+		rs.pos = 0
+	} else if rs.pos > rs.Length {
+		rs.pos = rs.Length
+	}
+}
+
+func (rs *Resize) drawSash(gtx C) image.Point {
 	dims := gtx.Constraints.Max
 	dims.X = gtx.Px(rs.Theme.SashWidth) + 2*gtx.Px(rs.Theme.SashPadding)
 	size := image.Pt(gtx.Px(rs.Theme.SashWidth), dims.Y)
@@ -68,23 +83,14 @@ func (rs *Resize) lo(gtx C) (op.CallOp, image.Point) {
 	paint.PaintOp{}.Add(gtx.Ops)
 	m2.Pop()
 	m1.Pop()
+	return dims
+}
 
-	for _, e := range rs.drag.Events(gtx.Metric, gtx, gesture.Axis(layout.Horizontal)) {
-		if e.Type == pointer.Drag {
-			rs.pos += int(e.Position.X) - rs.start
-		}
-		if e.Type == pointer.Press {
-			rs.start = int(e.Position.X)
-		}
-	}
-
-	// Clamp the handle position, leaving it always visible.
-	if rs.pos < 0 {
-		rs.pos = 0
-	} else if rs.pos > rs.Length {
-		rs.pos = rs.Length
-	}
-
+func (rs *Resize) lo(gtx C) (op.CallOp, image.Point) {
+	m := op.Record(gtx.Ops)
+	gtx.Constraints.Min = image.Point{}
+	dims := rs.drawSash(gtx)
+	rs.dragging(gtx)
 	rect := image.Rectangle{Max: dims}
 	m3 := pointer.Rect(rect).Push(gtx.Ops)
 	rs.drag.Add(gtx.Ops)
