@@ -20,6 +20,7 @@ type EditDef struct {
 	alignment layout.Alignment
 	CharLimit uint
 	font      text.Font
+	label     string
 	LabelSize unit.Value
 }
 
@@ -33,19 +34,41 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e.LabelSize = th.TextSize.Scale(6)
 	e.SingleLine = true
 	e.width = unit.Dp(5000) // Default to max width that is possible
-	e.padding = layout.Inset{Top: unit.Dp(10), Bottom: unit.Dp(2), Left: unit.Dp(5), Right: unit.Dp(1)}
+	e.padding = th.EditPadding
 	// Read in options to change from default values to something else.
 	for _, option := range options {
 		option.apply(e)
 	}
 	return func(gtx C) D {
 		gtx.Constraints.Min.X = 0
-		return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start, Spacing: layout.SpaceStart}.Layout(
-			gtx,
-			layout.Rigid(e.layLabel()),
-			layout.Rigid(e.layEdit()),
-		)
+		if e.label == "" {
+			return e.layEdit()(gtx)
+		} else {
+			return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start, Spacing: layout.SpaceStart}.Layout(
+				gtx,
+				layout.Rigid(e.layLabel()),
+				layout.Rigid(e.layEdit()),
+			)
+		}
 	}
+}
+
+// EditOption is options specific to Edits
+type EditOption func(w *EditDef)
+
+// Lbl is an option parameter to set the widget hint (tooltip)
+func Lbl(s string) EditOption {
+	return func(w *EditDef) {
+		w.setLabel(s)
+	}
+}
+
+func (e EditOption) apply(cfg interface{}) {
+	e(cfg.(*EditDef))
+}
+
+func (e *EditDef) setLabel(s string) {
+	e.label = s
 }
 
 func (e *EditDef) layoutEditBackground() func(gtx C) D {
@@ -86,13 +109,16 @@ func (e *EditDef) layLabel() layout.Widget {
 	return func(gtx C) D {
 		p := e.padding
 		p.Top = unit.Dp(p.Top.V + e.th.LabelPadding.Top.V)
+		//if e.label == "" {
+		//	return D{}
+		//}
 		return p.Layout(gtx, func(gtx C) D {
-			if e.hint == "" {
+			if e.label == "" {
 				return D{}
 			}
 			gtx.Constraints.Min.X = gtx.Metric.Px(e.LabelSize)
 			paint.ColorOp{Color: e.th.OnBackground}.Add(gtx.Ops)
-			w := aLabel{Alignment: text.End}.Layout(gtx, e.shaper, e.font, e.th.TextSize, e.hint)
+			w := aLabel{Alignment: text.End}.Layout(gtx, e.shaper, e.font, e.th.TextSize, e.label)
 			return w
 		})
 	}
