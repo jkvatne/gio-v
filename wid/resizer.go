@@ -16,8 +16,7 @@ type Resize struct {
 	Axis   layout.Axis
 	Theme  *Theme
 	Ratio  float32
-	Length int // max constraint for the axis
-	pos    int // position in pixels of the handle
+	Length float32
 	drag   gesture.Drag
 	start  int
 }
@@ -46,15 +45,12 @@ func SplitVertical(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widget)
 func (rs *Resize) Layout(gtx C, th *Theme, w1 layout.Widget, w2 layout.Widget) D {
 	// Compute the first widget's max width/height.
 	if rs.Axis == layout.Horizontal {
-		rs.Length = gtx.Constraints.Max.X
-		rs.pos = int(rs.Ratio * float32(rs.Length))
-		rs.dragging(gtx, 0, gtx.Constraints.Max.X)
+		rs.Length = float32(gtx.Constraints.Max.X)
+		rs.dragging(gtx)
 	} else {
-		rs.Length = gtx.Constraints.Max.Y
-		rs.pos = int(rs.Ratio * float32(rs.Length))
-		rs.dragging(gtx, 0, gtx.Constraints.Max.Y)
+		rs.Length = float32(gtx.Constraints.Max.Y)
+		rs.dragging(gtx)
 	}
-	rs.Ratio = float32(rs.pos) / float32(rs.Length)
 	return layout.Flex{
 		Axis: rs.Axis,
 	}.Layout(gtx,
@@ -79,26 +75,29 @@ func (rs *Resize) setCursor(gtx C, dims image.Point) {
 	}
 }
 
-func (rs *Resize) dragging(gtx C, lo int, hi int) {
+func (rs *Resize) dragging(gtx C) {
+	var dp int
+	pos := int(rs.Ratio * rs.Length)
 	for _, e := range rs.drag.Events(gtx.Metric, gtx, gesture.Axis(rs.Axis)) {
-		var pos int
 		if rs.Axis == layout.Horizontal {
-			pos = int(e.Position.X)
+			dp = int(e.Position.X)
 		} else {
-			pos = int(e.Position.Y)
+			dp = int(e.Position.Y)
 		}
 		if e.Type == pointer.Drag {
-			rs.pos += pos - rs.start
+			pos += dp - rs.start
 		}
 		if e.Type == pointer.Press {
-			rs.start = pos
+			rs.start = dp
+			return
 		}
 	}
 	// Clamp the handle position, leaving it always visible.
-	if rs.pos < lo {
-		rs.pos = lo
-	} else if rs.pos > hi {
-		rs.pos = hi
+	rs.Ratio = float32(pos) / rs.Length
+	if rs.Ratio < 0.05 {
+		rs.Ratio = 0.05
+	} else if rs.Ratio > 0.95 {
+		rs.Ratio = 0.95
 	}
 }
 
