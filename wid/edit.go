@@ -31,7 +31,7 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e.th = th
 	e.shaper = th.Shaper
 	e.LabelSize = th.TextSize.Scale(6)
-	e.MaxLines = 1
+	e.SingleLine = true
 	e.width = unit.Dp(5000) // Default to max width that is possible
 	e.padding = layout.Inset{Top: unit.Dp(10), Bottom: unit.Dp(2), Left: unit.Dp(5), Right: unit.Dp(1)}
 	// Read in options to change from default values to something else.
@@ -103,7 +103,7 @@ func (e *EditDef) layoutEdit() func(gtx C) D {
 		macro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: e.th.HintColor}.Add(gtx.Ops)
 		var maxLines int
-		if e.Editor.MaxLines <= 1 {
+		if e.Editor.SingleLine {
 			maxLines = 1
 		}
 		tl := aLabel{Alignment: e.Editor.Alignment, MaxLines: maxLines}
@@ -125,9 +125,9 @@ func (e *EditDef) layoutEdit() func(gtx C) D {
 		} else {
 			call.Add(gtx.Ops)
 		}
-		if !disabled {
+		if !disabled && e.Editor.Len() > 0 {
 			paint.ColorOp{Color: e.th.OnBackground}.Add(gtx.Ops)
-			e.Editor.PaintCaret(gtx)
+			e.Editor.paintCaret(gtx)
 		}
 		return dims
 	}

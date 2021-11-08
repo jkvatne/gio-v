@@ -35,8 +35,10 @@ import (
 type Editor struct {
 	Clickable
 	Alignment text.Alignment
-	// MaxLines<=1 force the text to stay on a single line.
-	MaxLines int
+	// SingleLine force the text to stay on a single line.
+	// SingleLine also sets the scrolling direction to
+	// horizontal.
+	SingleLine bool
 	// Submit enabled translation of carriage return keys to SubmitEvents.
 	// If not enabled, carriage returns are inserted as newlines in the text.
 	Submit bool
@@ -60,7 +62,7 @@ type Editor struct {
 	valid      bool
 	lines      []text.Line
 	shapes     []line
-	dims       D
+	dims       layout.Dimensions
 
 	caret struct {
 		on     bool
@@ -197,7 +199,7 @@ func (e *Editor) Events() []EditorEvent {
 	return events
 }
 
-func (e *Editor) processEvents(gtx C) {
+func (e *Editor) processEvents(gtx layout.Context) {
 	// Flush events from before the previous Layout.
 	n := copy(e.events, e.events[e.prevEvents:])
 	e.events = e.events[:n]
@@ -225,11 +227,11 @@ func (e *Editor) makeValid(positions ...*combinedPos) {
 	e.valid = true
 }
 
-func (e *Editor) processPointer(gtx C) {
+func (e *Editor) processPointer(gtx layout.Context) {
 	sbounds := e.scrollBounds()
 	var smin, smax int
 	var axis gesture.Axis
-	if e.MaxLines <= 1 {
+	if e.SingleLine {
 		axis = gesture.Horizontal
 		smin, smax = sbounds.Min.X, sbounds.Max.X
 	} else {
@@ -238,7 +240,7 @@ func (e *Editor) processPointer(gtx C) {
 	}
 	sdist := e.scroller.Scroll(gtx.Metric, gtx, gtx.Now, axis)
 	var soff int
-	if e.MaxLines <= 1 {
+	if e.SingleLine {
 		e.scrollRel(sdist, 0)
 		soff = e.scrollOff.X
 	} else {
@@ -308,7 +310,7 @@ func (e *Editor) processPointer(gtx C) {
 	}
 }
 
-func (e *Editor) clickDragEvents(gtx C) []event.Event {
+func (e *Editor) clickDragEvents(gtx layout.Context) []event.Event {
 	var combinedEvents []event.Event
 	for _, evt := range e.click.Events(gtx) {
 		combinedEvents = append(combinedEvents, evt)
@@ -319,7 +321,7 @@ func (e *Editor) clickDragEvents(gtx C) []event.Event {
 	return combinedEvents
 }
 
-func (e *Editor) processKey(gtx C) {
+func (e *Editor) processKey(gtx layout.Context) {
 	if e.rr.Changed() {
 		e.events = append(e.events, ChangeEvent{})
 	}
@@ -443,8 +445,8 @@ func (e *Editor) command(gtx C, k key.Event) bool {
 		if k.Modifiers != key.ModShortcut {
 			return false
 		}
-		if txt := e.SelectedText(); txt != "" {
-			clipboard.WriteOp{Text: txt}.Add(gtx.Ops)
+		if text := e.SelectedText(); text != "" {
+			clipboard.WriteOp{Text: text}.Add(gtx.Ops)
 			if k.Name == "X" {
 				e.Delete(1)
 			}
@@ -470,7 +472,7 @@ func (e *Editor) Layout(gtx C, sh text.Shaper, font text.Font, size unit.Value) 
 		e.textSize = textSize
 	}
 	maxWidth := gtx.Constraints.Max.X
-	if e.MaxLines <= 1 {
+	if e.SingleLine {
 		maxWidth = inf
 	}
 	if maxWidth != e.maxWidth {
@@ -550,7 +552,7 @@ func (e *Editor) layout(gtx C) D {
 	pointer.CursorNameOp{Name: pointer.CursorText}.Add(gtx.Ops)
 
 	var scrollRange image.Rectangle
-	if e.MaxLines <= 1 {
+	if e.SingleLine {
 		scrollRange.Min.X = -e.scrollOff.X
 		scrollRange.Max.X = max(0, e.dims.Size.X-(e.scrollOff.X+e.viewSize.X))
 	} else {
@@ -603,15 +605,16 @@ func (e *Editor) PaintText(gtx C) {
 	cl.Max = cl.Max.Add(e.viewSize)
 	defer clip.Rect(cl).Push(gtx.Ops).Pop()
 	for _, shape := range e.shapes {
-		op.Offset(layout.FPt(shape.offset)).Add(gtx.Ops)
-		stack := shape.clip.Push(gtx.Ops)
+		t := op.Offset(layout.FPt(shape.offset)).Push(gtx.Ops)
+		cl := shape.clip.Push(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
-		stack.Pop()
+		cl.Pop()
+		t.Pop()
 	}
 }
 
-// PaintCaret draws the caret
-func (e *Editor) PaintCaret(gtx C) {
+// paintCaret draws the caret
+func (e *Editor) paintCaret(gtx C) {
 	if !e.caret.on {
 		return
 	}
@@ -667,7 +670,7 @@ func (e *Editor) SetText(s string) {
 
 func (e *Editor) scrollBounds() image.Rectangle {
 	var b image.Rectangle
-	if e.MaxLines <= 1 {
+	if e.SingleLine {
 		if len(e.lines) > 0 {
 			b.Min.X = align(e.Alignment, e.lines[0].Width, e.viewSize.X).Floor()
 			if b.Min.X > 0 {
@@ -722,7 +725,7 @@ func (e *Editor) moveCoord(pos image.Point) {
 	e.caret.start.xoff = 0
 }
 
-func (e *Editor) layoutText(s text.Shaper) ([]text.Line, D) {
+func (e *Editor) layoutText(s text.Shaper) ([]text.Line, layout.Dimensions) {
 	e.rr.Reset()
 	var r io.Reader = &e.rr
 	if e.Mask != 0 {
@@ -739,8 +742,8 @@ func (e *Editor) layoutText(s text.Shaper) ([]text.Line, D) {
 	for i := 0; i < len(lines)-1; i++ {
 		// To avoid layout flickering while editing, assume a soft newline takes
 		// up all available space.
-		if theLayout := lines[i].Layout; len(theLayout.Text) > 0 {
-			r := theLayout.Text[len(theLayout.Text)-1]
+		if layout := lines[i].Layout; len(layout.Text) > 0 {
+			r := layout.Text[len(layout.Text)-1]
 			if r != '\n' {
 				dims.Size.X = e.maxWidth
 				break
@@ -865,7 +868,7 @@ func (e *Editor) append(s string) {
 // a selection, prepend overwrites it.
 // xxx|yyy + prepend zzz => xxx|zzzyyy
 func (e *Editor) prepend(s string) {
-	if e.MaxLines <= 1 {
+	if e.SingleLine {
 		s = strings.ReplaceAll(s, "\n", " ")
 	}
 	e.caret.start.ofs = e.rr.deleteRunes(e.caret.start.ofs, e.caret.end.ofs-e.caret.start.ofs) // Delete any selection first.
@@ -1015,11 +1018,11 @@ func (e *Editor) moveStart(selAct selectionAction) {
 
 func (e *Editor) movePosToStart(pos combinedPos) combinedPos {
 	e.makeValid(&pos)
-	theLayout := e.lines[pos.lineCol.Y].Layout
+	layout := e.lines[pos.lineCol.Y].Layout
 	for i := pos.lineCol.X - 1; i >= 0; i-- {
 		_, s := e.rr.runeBefore(pos.ofs)
 		pos.ofs -= s
-		pos.x -= theLayout.Advances[i]
+		pos.x -= layout.Advances[i]
 	}
 	pos.lineCol.X = 0
 	pos.xoff = -pos.x
@@ -1039,9 +1042,9 @@ func (e *Editor) movePosToEnd(pos combinedPos) combinedPos {
 	if pos.lineCol.Y < len(e.lines)-1 {
 		end = 1
 	}
-	theLayout := l.Layout
-	for i := pos.lineCol.X; i < len(theLayout.Advances)-end; i++ {
-		adv := theLayout.Advances[i]
+	layout := l.Layout
+	for i := pos.lineCol.X; i < len(layout.Advances)-end; i++ {
+		adv := layout.Advances[i]
 		_, s := e.rr.runeAt(pos.ofs)
 		pos.ofs += s
 		pos.x += adv
@@ -1152,7 +1155,7 @@ func (e *Editor) deleteWord(distance int) {
 func (e *Editor) scrollToCaret() {
 	e.makeValid()
 	l := e.lines[e.caret.start.lineCol.Y]
-	if e.MaxLines <= 1 {
+	if e.SingleLine {
 		var dist int
 		if d := e.caret.start.x.Floor() - e.scrollOff.X; d < 0 {
 			dist = d
@@ -1227,7 +1230,7 @@ func (e *Editor) SelectedText() string {
 		return ""
 	}
 	buf := make([]byte, l)
-	_, _ = e.rr.Seek(int64(min(e.caret.start.ofs, e.caret.end.ofs)), io.SeekStart)
+	e.rr.Seek(int64(min(e.caret.start.ofs, e.caret.end.ofs)), io.SeekStart)
 	_, err := e.rr.Read(buf)
 	if err != nil {
 		// The only error that rr.Read can return is EOF, which just means no
