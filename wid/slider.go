@@ -88,12 +88,7 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	s.index = int(s.Float.pos*100 + 0.5)
 	// Unconditionally call setValue in case min, max, or value changed.
 	s.setValue(value, s.Min, s.Max)
-
-	if s.Float.pos < 0 {
-		s.Float.pos = 0
-	} else if s.Float.pos > 1 {
-		s.Float.pos = 1
-	}
+	s.Float.pos = clamp(s.Float.pos, 0, 1)
 
 	margin := s.Float.Axis.Convert(image.Pt(thumbRadius, 0))
 	rect := image.Rectangle{
