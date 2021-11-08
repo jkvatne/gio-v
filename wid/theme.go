@@ -53,9 +53,8 @@ type Theme struct {
 	// PenumbraColor is the lightest shadow color
 	PenumbraColor color.NRGBA
 	// SashColor is the color of the moveable divider
-	SashColor   color.NRGBA
-	SashWidth   unit.Value
-	SashPadding unit.Value
+	SashColor color.NRGBA
+	SashWidth unit.Value
 }
 
 type (
@@ -128,10 +127,9 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme 
 		Bottom: t.TextSize.Scale(0.2),
 		Left:   t.TextSize.Scale(0.3),
 	}
-
+	// Resizer
 	t.SashColor = WithAlpha(t.OnSurface, 0x80)
 	t.SashWidth = t.TextSize.Scale(0.2)
-	t.SashPadding = t.TextSize.Scale(0.5)
 
 	return &t
 }

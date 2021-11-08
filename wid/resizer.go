@@ -3,9 +3,6 @@ package wid
 import (
 	"image"
 
-	"gioui.org/op"
-
-	"gioui.org/f32"
 	"gioui.org/gesture"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
@@ -109,14 +106,12 @@ func (rs *Resize) drawSash(gtx C) image.Point {
 	var sashSize, dims image.Point
 	if rs.Axis == layout.Horizontal {
 		dims = gtx.Constraints.Max
-		dims.X = gtx.Px(rs.Theme.SashWidth) + 2*gtx.Px(rs.Theme.SashPadding)
+		dims.X = gtx.Px(rs.Theme.SashWidth)
 		sashSize = image.Pt(gtx.Px(rs.Theme.SashWidth), dims.Y)
-		defer op.Offset(f32.Pt(float32(gtx.Px(rs.Theme.SashPadding)), 0)).Push(gtx.Ops).Pop()
 	} else {
 		dims = gtx.Constraints.Max
-		dims.Y = gtx.Px(rs.Theme.SashWidth) + 2*gtx.Px(rs.Theme.SashPadding)
+		dims.Y = gtx.Px(rs.Theme.SashWidth)
 		sashSize = image.Pt(dims.X, gtx.Px(rs.Theme.SashWidth))
-		defer op.Offset(f32.Pt(0, float32(gtx.Px(rs.Theme.SashPadding)))).Push(gtx.Ops).Pop()
 	}
 	defer clip.Rect{Max: sashSize}.Push(gtx.Ops).Pop()
 	paint.ColorOp{Color: rs.Theme.SashColor}.Add(gtx.Ops)
