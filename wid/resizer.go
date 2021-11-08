@@ -25,10 +25,8 @@ type Resize struct {
 }
 
 // SplitHorizontal is used to layout two widgets with a vertical splitter between.
-func SplitHorizontal(th *Theme, w1 layout.Widget, w2 layout.Widget) func(gtx C) D {
-	r := Resize{}
-	r.Theme = th
-	r.Ratio = 0.5
+func SplitHorizontal(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widget) func(gtx C) D {
+	r := Resize{Theme: th, Ratio: ratio}
 	return func(gtx C) D {
 		return r.Layout(gtx, th, w1, w2)
 	}
@@ -40,8 +38,11 @@ func SplitHorizontal(th *Theme, w1 layout.Widget, w2 layout.Widget) func(gtx C) 
 // in order for the resize to be smooth.
 func (rs *Resize) Layout(gtx C, th *Theme, w1 layout.Widget, w2 layout.Widget) D {
 	// Compute the first widget's max width/height.
-	c, dims := rs.lo(gtx)
+	rs.Length = gtx.Constraints.Max.X
+	rs.pos = int(rs.Ratio * float32(rs.Length))
+	rs.dragging(gtx, 0, gtx.Constraints.Max.X)
 	rs.Ratio = float32(rs.pos) / float32(rs.Length)
+	c, dims := rs.lo(gtx)
 	return layout.Flex{
 		Axis: layout.Horizontal,
 	}.Layout(gtx,
@@ -54,9 +55,7 @@ func (rs *Resize) Layout(gtx C, th *Theme, w1 layout.Widget, w2 layout.Widget) D
 	)
 }
 
-func (rs *Resize) dragging(gtx C) {
-	rs.Length = gtx.Constraints.Max.X
-	rs.pos = int(rs.Ratio * float32(rs.Length))
+func (rs *Resize) dragging(gtx C, lo int, hi int) {
 	for _, e := range rs.drag.Events(gtx.Metric, gtx, gesture.Axis(layout.Horizontal)) {
 		if e.Type == pointer.Drag {
 			rs.pos += int(e.Position.X) - rs.start
@@ -66,10 +65,10 @@ func (rs *Resize) dragging(gtx C) {
 		}
 	}
 	// Clamp the handle position, leaving it always visible.
-	if rs.pos < 0 {
-		rs.pos = 0
-	} else if rs.pos > rs.Length {
-		rs.pos = rs.Length
+	if rs.pos < lo {
+		rs.pos = lo
+	} else if rs.pos > hi {
+		rs.pos = hi
 	}
 }
 
@@ -90,7 +89,6 @@ func (rs *Resize) lo(gtx C) (op.CallOp, image.Point) {
 	m := op.Record(gtx.Ops)
 	gtx.Constraints.Min = image.Point{}
 	dims := rs.drawSash(gtx)
-	rs.dragging(gtx)
 	rect := image.Rectangle{Max: dims}
 	m3 := pointer.Rect(rect).Push(gtx.Ops)
 	rs.drag.Add(gtx.Ops)

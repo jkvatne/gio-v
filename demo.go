@@ -240,7 +240,7 @@ func setupForm(th *wid.Theme) {
 				wid.Edit(th, wid.Hint("")),
 			),
 		*/
-		wid.SplitHorizontal(th,
+		wid.SplitHorizontal(th, 0.3,
 			wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
 				wid.Edit(th, wid.Hint("Value 8")),
 				wid.Edit(th, wid.Hint("Value 9")),
