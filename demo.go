@@ -146,123 +146,130 @@ func updateMode() {
 }
 
 func onMaximize() {
-	//win.Maximize()
+	win.Maximize()
 }
 
 func onCenter() {
-	//win.Center()
+	win.Center()
 }
 
 func column1(th *wid.Theme) layout.Widget {
 	return wid.MakeList(
 		th, layout.Vertical,
-		wid.Edit(th, wid.Lbl("Value 13")),
-		wid.Edit(th, wid.Lbl("Value 14")),
-		wid.Edit(th, wid.Lbl("Value 15")))
+		wid.Label(th, "Scrollable list of fields with labels", text.Middle, 1.0),
+		wid.Edit(th, wid.Lbl("Value 1")),
+		wid.Edit(th, wid.Lbl("Value 2")),
+		wid.Edit(th, wid.Lbl("Value 3")),
+		wid.Edit(th, wid.Lbl("Value 4")),
+		wid.Edit(th, wid.Lbl("Value 5")))
 }
 
 func column2(th *wid.Theme) layout.Widget {
 	return wid.MakeList(th, layout.Vertical,
-		wid.Edit(th, wid.Hint("Value 16")),
-		wid.Edit(th, wid.Hint("Value 17")),
-		wid.Edit(th, wid.Hint("Value 18")))
+		wid.Label(th, "Scrollable list of fields without labels", text.Middle, 1.0),
+		wid.Edit(th, wid.Hint("Value 1")),
+		wid.Edit(th, wid.Hint("Value 2")),
+		wid.Edit(th, wid.Hint("Value 3")),
+		wid.Edit(th, wid.Hint("Value 4")))
 }
 
 func setupForm(th *wid.Theme) {
 	thb = *th
 	wid.First = nil
-	root = wid.SplitVertical(th, 0.45,
-		wid.SplitHorizontal(th, 0.45, column1(th), column2(th)),
-		wid.MakeList(
-			th, layout.Vertical,
-			wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
-				wid.Label(th, "Demo page", text.Middle, 2.0),
-				wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
-					wid.RadioButton(th, &mode, "windowed", "windowed"),
-					wid.RadioButton(th, &mode, "fullscreen", "fullscreen"),
-					wid.OutlineButton(th, "Maximize", wid.Handler(onMaximize)),
-					wid.OutlineButton(th, "Center", wid.Handler(onCenter)),
-				),
-				wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
-					wid.RadioButton(th, &fontSize, "small", "small"),
-					wid.RadioButton(th, &fontSize, "medium", "medium"),
-					wid.RadioButton(th, &fontSize, "large", "large"),
-				),
-				wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
-					wid.Label(th, "A switch", text.Start, 1.0),
-					wid.Switch(th, &dummy, nil),
-				),
-				wid.Checkbox(th, "Checkbox to select dark mode", &darkMode, onSwitchMode),
-				// Three separators to test layout algorithm. Should give three thin lines
-				wid.Separator(th, unit.Px(5), wid.Color(wid.RGB(0xFF6666)), wid.Pad(5, 20, 5, 20)),
-				wid.Separator(th, unit.Px(1)),
-				wid.Separator(th, unit.Px(1), wid.Pad(1)),
-				wid.Separator(th, unit.Px(1)),
-				wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
-					wid.Label(th, "A slider that can be key operated:", text.Start, 1.0),
-					wid.Slider(th, &sliderValue, 0, 100),
-				),
-				wid.Label(th, "A fixed width button at the middle of the screen:", text.Start, 1.0),
-				wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
-					wid.Button(th, "WIDE CENTERED BUTTON",
-						wid.W(500),
-						wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines"),
+	root = wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
+		wid.Label(th, "Demo page", text.Middle, 1.3),
+		wid.Separator(th, unit.Dp(2), wid.Color(th.SashColor)),
+		wid.SplitVertical(th, 0.25,
+			wid.SplitHorizontal(th, 0.5, column1(th), column2(th)),
+			wid.MakeList(
+				th, layout.Vertical,
+				wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
+					wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
+						wid.RadioButton(th, &mode, "windowed", "windowed"),
+						wid.RadioButton(th, &mode, "fullscreen", "fullscreen"),
+						wid.OutlineButton(th, "Maximize", wid.Handler(onMaximize)),
+						wid.OutlineButton(th, "Center", wid.Handler(onCenter)),
 					),
-				),
-				wid.Label(th, "Two widgets at the right side of the screen:", text.Start, 1.0),
-				wid.MakeFlex(layout.Horizontal, layout.SpaceStart,
-					wid.RoundButton(th, icons.ContentAdd,
-						wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-				),
-				// Note that buttons default to their minimum size, unless set differently, here aligned to the middle
-				wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
-					wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode), wid.Color(wid.RGB(0x228822))),
-					wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.W(150), wid.Color(wid.RGB(0xffff00))),
-					wid.Button(&thb, "Change color", wid.Handler(onClick), wid.W(150)),
-					wid.TextButton(th, "Text button"),
-					wid.OutlineButton(th, "Outline button"),
-				),
-				// Row with all buttons at minimum size, spread evenly
-				wid.MakeFlex(layout.Horizontal, layout.SpaceEvenly,
-					wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode), wid.Min()),
-					wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.Min()),
-					wid.Button(&thb, "Change color", wid.Handler(onClick), wid.Min()),
-					wid.TextButton(th, "Text button", wid.Min()),
-					wid.OutlineButton(th, "Outline button", wid.Min()),
-				),
-				wid.MakeFlex(layout.Horizontal, layout.SpaceEvenly,
-					wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}, wid.W(150)),
-					wid.DropDown(th, 1, []string{"Option 1", "Option 2", "Option 3"}),
-					wid.DropDown(th, 2, []string{"Option 1", "Option 2", "Option 3"}),
-					wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
-					wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
-				),
-				// DropDown defaults to max size, here filling a complete row across the form.
-				wid.DropDown(th, 0, []string{"Option X", "Option Y", "Option Z"}),
-				// Fixed size in Dp
-				wid.Edit(th, wid.Hint("Value 1"), wid.W(300)),
-				// Relative size
-				wid.Edit(th, wid.Hint("Value 2"), wid.W(0.5)),
-				// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
-				wid.Row(layout.SpaceBetween,
-					wid.Edit(th, wid.Hint("Value 3")),
-					wid.Edit(th, wid.Hint("Value 4")),
-					wid.Edit(th, wid.Hint("Value 5")),
-					wid.Edit(th, wid.Hint("Value 6")),
-					wid.Edit(th, wid.Hint("Value 7")),
-				),
-				wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
-					wid.Label(th, "Name", text.End, 1.0),
-					wid.Edit(th, wid.Hint("")),
-				),
-				wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
-					wid.Label(th, "Address", text.End, 1.0),
-					wid.Edit(th, wid.Hint("")),
+					wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
+						wid.RadioButton(th, &fontSize, "small", "small"),
+						wid.RadioButton(th, &fontSize, "medium", "medium"),
+						wid.RadioButton(th, &fontSize, "large", "large"),
+					),
+					wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
+						wid.Label(th, "A switch", text.Start, 1.0),
+						wid.Switch(th, &dummy, nil),
+					),
+					wid.Checkbox(th, "Checkbox to select dark mode", &darkMode, onSwitchMode),
+					// Three separators to test layout algorithm. Should give three thin lines
+					wid.Separator(th, unit.Px(5), wid.Color(wid.RGB(0xFF6666)), wid.Pad(5, 20, 5, 20)),
+					wid.Separator(th, unit.Px(1)),
+					wid.Separator(th, unit.Px(1), wid.Pad(1)),
+					wid.Separator(th, unit.Px(1)),
+					wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
+						wid.Label(th, "A slider that can be key operated:", text.Start, 1.0),
+						wid.Slider(th, &sliderValue, 0, 100),
+					),
+					wid.Label(th, "A fixed width button at the middle of the screen:", text.Start, 1.0),
+					wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
+						wid.Button(th, "WIDE CENTERED BUTTON",
+							wid.W(500),
+							wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines"),
+						),
+					),
+					wid.Label(th, "Two widgets at the right side of the screen:", text.Start, 1.0),
+					wid.MakeFlex(layout.Horizontal, layout.SpaceStart,
+						wid.RoundButton(th, icons.ContentAdd,
+							wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
+					),
+					// Note that buttons default to their minimum size, unless set differently, here aligned to the middle
+					wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
+						wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode), wid.Color(wid.RGB(0x228822))),
+						wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.W(150), wid.Color(wid.RGB(0xffff00))),
+						wid.Button(&thb, "Change color", wid.Handler(onClick), wid.W(150)),
+						wid.TextButton(th, "Text button"),
+						wid.OutlineButton(th, "Outline button"),
+					),
+					// Row with all buttons at minimum size, spread evenly
+					wid.MakeFlex(layout.Horizontal, layout.SpaceEvenly,
+						wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode), wid.Min()),
+						wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.Min()),
+						wid.Button(&thb, "Change color", wid.Handler(onClick), wid.Min()),
+						wid.TextButton(th, "Text button", wid.Min()),
+						wid.OutlineButton(th, "Outline button", wid.Min()),
+					),
+					wid.MakeFlex(layout.Horizontal, layout.SpaceEvenly,
+						wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}, wid.W(150)),
+						wid.DropDown(th, 1, []string{"Option 1", "Option 2", "Option 3"}),
+						wid.DropDown(th, 2, []string{"Option 1", "Option 2", "Option 3"}),
+						wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
+						wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
+					),
+					// DropDown defaults to max size, here filling a complete row across the form.
+					wid.DropDown(th, 0, []string{"Option X", "Option Y", "Option Z"}),
+					// Fixed size in Dp
+					wid.Edit(th, wid.Hint("Value 1"), wid.W(300)),
+					// Relative size
+					wid.Edit(th, wid.Hint("Value 2"), wid.W(0.5)),
+					// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
+					wid.Row(layout.SpaceBetween,
+						wid.Edit(th, wid.Hint("Value 3")),
+						wid.Edit(th, wid.Hint("Value 4")),
+						wid.Edit(th, wid.Hint("Value 5")),
+						wid.Edit(th, wid.Hint("Value 6")),
+						wid.Edit(th, wid.Hint("Value 7")),
+					),
+					wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
+						wid.Label(th, "Name", text.End, 1.0),
+						wid.Edit(th, wid.Hint("")),
+					),
+					wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
+						wid.Label(th, "Address", text.End, 1.0),
+						wid.Edit(th, wid.Hint("")),
+					),
 				),
 			),
 		),
 	)
-
 	//wid.ProgressBar(th, &progress),
 	//wid.ImageFromJpgFile("gopher.jpg"),
 	//)
