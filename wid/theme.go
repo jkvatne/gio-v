@@ -49,10 +49,6 @@ type Theme struct {
 	ListInset             layout.Inset
 	// Elevation is the shadow width
 	Elevation unit.Value
-	// UmbraColor is the darkest shadow color
-	UmbraColor color.NRGBA
-	// PenumbraColor is the lightest shadow color
-	PenumbraColor color.NRGBA
 	// SashColor is the color of the moveable divider
 	SashColor color.NRGBA
 	SashWidth unit.Value

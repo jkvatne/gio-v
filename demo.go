@@ -14,6 +14,9 @@ import (
 	"os"
 	"time"
 
+	"gioui.org/text"
+	"golang.org/x/exp/shiny/materialdesign/icons"
+
 	"gioui.org/app"
 	"gioui.org/font/gofont"
 	"gioui.org/io/system"
@@ -150,12 +153,29 @@ func onCenter() {
 	//win.Center()
 }
 
+func column1(th *wid.Theme) layout.Widget {
+	return wid.MakeList(
+		th, layout.Vertical,
+		wid.Edit(th, wid.Lbl("Value 13")),
+		wid.Edit(th, wid.Lbl("Value 14")),
+		wid.Edit(th, wid.Lbl("Value 15")))
+}
+
+func column2(th *wid.Theme) layout.Widget {
+	return wid.MakeList(th, layout.Vertical,
+		wid.Edit(th, wid.Hint("Value 16")),
+		wid.Edit(th, wid.Hint("Value 17")),
+		wid.Edit(th, wid.Hint("Value 18")))
+}
+
 func setupForm(th *wid.Theme) {
 	thb = *th
 	wid.First = nil
-	/*
-		root = wid.MakeList(
+	root = wid.SplitVertical(th, 0.45,
+		wid.SplitHorizontal(th, 0.45, column1(th), column2(th)),
+		wid.MakeList(
 			th, layout.Vertical,
+			wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
 				wid.Label(th, "Demo page", text.Middle, 2.0),
 				wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 					wid.RadioButton(th, &mode, "windowed", "windowed"),
@@ -239,25 +259,6 @@ func setupForm(th *wid.Theme) {
 					wid.Label(th, "Address", text.End, 1.0),
 					wid.Edit(th, wid.Hint("")),
 				),
-	*/
-	root = wid.SplitVertical(th, 0.45,
-		wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
-			wid.Edit(th, wid.Lbl("Value 1, no hint")),
-			wid.Edit(th, wid.Lbl("Value 2, with hint"), wid.Hint("Hint for value 2")),
-			wid.Edit(th, wid.Hint("Hint for value 3")),
-			wid.Edit(th),
-			wid.Edit(th),
-		),
-		wid.SplitHorizontal(th, 0.45,
-			wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
-				wid.Edit(th, wid.Lbl("Value 13")),
-				wid.Edit(th, wid.Lbl("Value 14")),
-				wid.Edit(th, wid.Lbl("Value 15")),
-			),
-			wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
-				wid.Edit(th, wid.Hint("Value 16")),
-				wid.Edit(th, wid.Hint("Value 17")),
-				wid.Edit(th, wid.Hint("Value 18")),
 			),
 		),
 	)

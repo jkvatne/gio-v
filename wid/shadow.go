@@ -26,9 +26,8 @@ import (
 // TODO(whereswaldon): make this support RRects that do not have
 // uniform corner radii.
 type ShadowStyle struct {
-	CornerRadius                            unit.Value
-	Elevation                               unit.Value
-	AmbientColor, PenumbraColor, UmbraColor color.NRGBA
+	CornerRadius unit.Value
+	Elevation    unit.Value
 }
 
 // Shadow defines a shadow cast by a rounded rectangle with the given
