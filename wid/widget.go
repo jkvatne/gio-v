@@ -14,7 +14,7 @@ type Widget struct {
 	hint    string
 	padding layout.Inset
 	width   unit.Value
-	color   color.NRGBA
+	fgColor color.NRGBA
 }
 
 // WidgetIf is the interface functions for widgets, used by options to set parameters
@@ -58,7 +58,7 @@ func (wid *Widget) setPadding(padding layout.Inset) {
 }
 
 func (wid *Widget) setColor(c color.NRGBA) {
-	wid.color = c
+	wid.fgColor = c
 }
 
 // Pad is used to set default widget paddings

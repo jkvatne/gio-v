@@ -91,9 +91,9 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func
 	return func(gtx C) D {
 		b.fg = th.OnPrimary
 		b.bg = th.Primary
-		if b.Widget.color.A != 0 {
-			b.bg = b.Widget.color
-			if Luminance(b.Widget.color) > 127 {
+		if b.Widget.fgColor.A != 0 {
+			b.bg = b.Widget.fgColor
+			if Luminance(b.Widget.fgColor) > 127 {
 				b.fg = RGB(0x000000)
 			} else {
 				b.fg = RGB(0xFFFFFF)

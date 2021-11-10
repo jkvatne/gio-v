@@ -14,7 +14,6 @@ import (
 	"os"
 	"time"
 
-	"gioui.org/text"
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
 	"gioui.org/app"
@@ -156,7 +155,7 @@ func onCenter() {
 func column1(th *wid.Theme) layout.Widget {
 	return wid.MakeList(
 		th, layout.Vertical,
-		wid.Label(th, "Scrollable list of fields with labels", text.Middle, 1.0),
+		wid.Label(th, "Scrollable list of fields with labels", wid.Middle()),
 		wid.Edit(th, wid.Lbl("Value 1")),
 		wid.Edit(th, wid.Lbl("Value 2")),
 		wid.Edit(th, wid.Lbl("Value 3")),
@@ -166,7 +165,7 @@ func column1(th *wid.Theme) layout.Widget {
 
 func column2(th *wid.Theme) layout.Widget {
 	return wid.MakeList(th, layout.Vertical,
-		wid.Label(th, "Scrollable list of fields without labels", text.Middle, 1.0),
+		wid.Label(th, "Scrollable list of fields without labels", wid.Middle()),
 		wid.Edit(th, wid.Hint("Value 1")),
 		wid.Edit(th, wid.Hint("Value 2")),
 		wid.Edit(th, wid.Hint("Value 3")),
@@ -177,7 +176,7 @@ func setupForm(th *wid.Theme) {
 	thb = *th
 	wid.First = nil
 	root = wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
-		wid.Label(th, "Demo page", text.Middle, 1.3),
+		wid.Label(th, "Demo page", wid.Middle(), wid.Large(), wid.Bold()),
 		wid.Separator(th, unit.Dp(2), wid.Color(th.SashColor)),
 		wid.SplitVertical(th, 0.25,
 			wid.SplitHorizontal(th, 0.5, column1(th), column2(th)),
@@ -196,7 +195,7 @@ func setupForm(th *wid.Theme) {
 						wid.RadioButton(th, &fontSize, "large", "large"),
 					),
 					wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
-						wid.Label(th, "A switch", text.Start, 1.0),
+						wid.Label(th, "A switch"),
 						wid.Switch(th, &dummy, nil),
 					),
 					wid.Checkbox(th, "Checkbox to select dark mode", &darkMode, onSwitchMode),
@@ -206,17 +205,17 @@ func setupForm(th *wid.Theme) {
 					wid.Separator(th, unit.Px(1), wid.Pad(1)),
 					wid.Separator(th, unit.Px(1)),
 					wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
-						wid.Label(th, "A slider that can be key operated:", text.Start, 1.0),
+						wid.Label(th, "A slider that can be key operated:"),
 						wid.Slider(th, &sliderValue, 0, 100),
 					),
-					wid.Label(th, "A fixed width button at the middle of the screen:", text.Start, 1.0),
+					wid.Label(th, "A fixed width button at the middle of the screen:"),
 					wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
 						wid.Button(th, "WIDE CENTERED BUTTON",
 							wid.W(500),
 							wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines"),
 						),
 					),
-					wid.Label(th, "Two widgets at the right side of the screen:", text.Start, 1.0),
+					wid.Label(th, "Two widgets at the right side of the screen:"),
 					wid.MakeFlex(layout.Horizontal, layout.SpaceStart,
 						wid.RoundButton(th, icons.ContentAdd,
 							wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
@@ -259,11 +258,11 @@ func setupForm(th *wid.Theme) {
 						wid.Edit(th, wid.Hint("Value 7")),
 					),
 					wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
-						wid.Label(th, "Name", text.End, 1.0),
+						wid.Label(th, "Name", wid.End()),
 						wid.Edit(th, wid.Hint("")),
 					),
 					wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
-						wid.Label(th, "Address", text.End, 1.0),
+						wid.Label(th, "Address", wid.End()),
 						wid.Edit(th, wid.Hint("")),
 					),
 				),

@@ -21,7 +21,7 @@ type SeparatorStyle struct {
 func Separator(th *Theme, thickness unit.Value, options ...Option) layout.Widget {
 	s := SeparatorStyle{}
 	s.thickness = thickness
-	s.color = th.OnBackground
+	s.fgColor = th.OnBackground
 	s.Apply(options...)
 
 	return func(gtx C) D {
@@ -30,7 +30,7 @@ func Separator(th *Theme, thickness unit.Value, options ...Option) layout.Widget
 		op.Offset(f32.Pt(float32(gtx.Px(s.padding.Left)), float32(gtx.Px(s.padding.Top)))).Add(gtx.Ops)
 		size := image.Pt(dim.X-gtx.Px(s.padding.Left)-gtx.Px(s.padding.Right), gtx.Px(s.thickness))
 		defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
-		paint.ColorOp{Color: s.color}.Add(gtx.Ops)
+		paint.ColorOp{Color: s.fgColor}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
 		return layout.Dimensions{Size: dim}
 	}

@@ -9,7 +9,6 @@ import (
 	"gioui.org/layout"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"gioui.org/text"
 	"gioui.org/unit"
 )
 
@@ -85,7 +84,7 @@ func (r *RadioButtonStyle) layout(gtx C, checked bool) D {
 				if lbl == "" {
 					lbl = r.Key
 				}
-				return Label(r.th, lbl, text.Start, 1.0)(gtx)
+				return Label(r.th, lbl)(gtx) //  text.Start, 1.0
 			})
 		}),
 	)

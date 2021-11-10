@@ -54,25 +54,31 @@ type Tooltip struct {
 
 // MobileTooltip constructs a tooltip suitable for use on mobile devices.
 func MobileTooltip(th *Theme, tips string) Tooltip {
-	txt := CreateLabelDef(th, tips, text.Start, 0.9)
-	txt.Color = th.TooltipOnBackground
 	return Tooltip{
-		Fg:   th.TooltipOnBackground,
-		Bg:   th.TooltipBackground,
-		Text: txt,
+		Fg: th.TooltipOnBackground,
+		Bg: th.TooltipBackground,
+		Text: LabelDef{
+			Text:      tips,
+			Font:      text.Font{Weight: text.Medium},
+			TextSize:  th.TextSize.Scale(0.9),
+			shaper:    th.Shaper,
+			Alignment: text.Start},
 	}
 }
 
 // DesktopTooltip constructs a tooltip suitable for use on desktop devices.
 func DesktopTooltip(th *Theme, tips string) Tooltip {
-	txt := CreateLabelDef(th, tips, text.Start, 0.9)
-	txt.Color = th.TooltipOnBackground
 	return Tooltip{
-		Text:         txt,
 		Fg:           th.TooltipOnBackground,
 		Bg:           th.TooltipBackground,
 		MaxWidth:     th.TooltipWidth,
 		CornerRadius: th.TooltipCornerRadius,
+		Text: LabelDef{
+			Text:      tips,
+			Font:      text.Font{Weight: text.Medium},
+			TextSize:  th.TextSize.Scale(0.9),
+			shaper:    th.Shaper,
+			Alignment: text.Start},
 	}
 }
 
@@ -177,7 +183,7 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 				macro := op.Record(gtx.Ops)
 				v := t.VisibilityAnimation.Revealed(gtx)
 				bg := WithAlpha(t.Bg, uint8(v*255))
-				t.Text.Color = WithAlpha(t.Fg, uint8(v*255))
+				t.Text.fgColor = WithAlpha(t.Fg, uint8(v*255))
 				gtx.Constraints.Max.X = gtx.Metric.Px(t.MaxWidth)
 				p := t.Text.TextSize.Scale(0.5)
 				inset := layout.Inset{Top: p, Right: p, Bottom: p, Left: p}
@@ -193,7 +199,7 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 							SW:   rr,
 							SE:   rr,
 						}.Op(gtx.Ops))
-						paintBorder(gtx, outline, t.Text.Color, unit.Dp(1.0), unit.Dp(rr))
+						paintBorder(gtx, outline, t.Text.fgColor, unit.Dp(1.0), unit.Dp(rr))
 						return D{}
 					}),
 					layout.Stacked(func(gtx C) D {
