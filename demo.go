@@ -8,6 +8,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"gio-v/wid"
 	"image"
 	"image/color"
@@ -55,7 +56,7 @@ func main() {
 		currentTheme = wid.NewTheme(gofont.Collection(), 14, wid.MaterialDesignLight)
 		win = app.NewWindow(app.Title("Gio-v demo"), modeFromString(mode).Option())
 		updateMode()
-		setupForm(currentTheme)
+		setupGridDemo(currentTheme)
 		for {
 			select {
 			case e := <-win.Events():
@@ -90,7 +91,7 @@ func handleFrameEvents(th *wid.Theme, e system.FrameEvent) {
 		oldFontSize = fontSize
 		oldWindowSize = e.Size
 		updateMode()
-		setupForm(th)
+		setupGridDemo(th)
 	}
 	var ops op.Ops
 	gtx := layout.NewContext(&ops, e)
@@ -122,7 +123,7 @@ func onSwitchMode(v bool) {
 	} else {
 		currentTheme = wid.NewTheme(gofont.Collection(), s, wid.MaterialDesignDark)
 	}
-	setupForm(currentTheme)
+	setupGridDemo(currentTheme)
 }
 
 func modeFromString(s string) app.WindowMode {
@@ -172,7 +173,7 @@ func column2(th *wid.Theme) layout.Widget {
 		wid.Edit(th, wid.Hint("Value 4")))
 }
 
-func setupForm(th *wid.Theme) {
+func setupFormDemo(th *wid.Theme) {
 	thb = *th
 	wid.First = nil
 	root = wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
@@ -272,5 +273,67 @@ func setupForm(th *wid.Theme) {
 	//wid.ProgressBar(th, &progress),
 	//wid.ImageFromJpgFile("gopher.jpg"),
 	//)
+	wid.First.Focus()
+}
+
+type person struct {
+	Selected bool
+	Name     string
+	Age      int
+	Address  string
+}
+
+var data = []person{
+	{Name: "Ole", Age: 21, Address: "Storgata 3"},
+	{Name: "Per Pedersen", Age: 22, Address: "Svenskveien 33"},
+	{Name: "Nils", Age: 23, Address: "Brogata 34"},
+	{Name: "Kai", Age: 28, Address: "Soleieveien 12"},
+	{Name: "Gro", Age: 29, Address: "Blomsterveien 22"},
+	{Name: "Ole", Age: 21, Address: "Blåklokkevikua 33"},
+	{Name: "Per Pedersen", Age: 22, Address: "Gamleveien 35"},
+	{Name: "Nils", Age: 23, Address: "Nygata 64"},
+	{Name: "Sindre Gratangen", Age: 28, Address: "Brosundet 34"},
+	{Name: "Gro", Age: 29, Address: "Blomsterveien 22"},
+	{Name: "Petter Olsen", Age: 21, Address: "Katavågen 44"},
+	{Name: "Per Pedersen", Age: 22, Address: "Nidelva 43"},
+	{Name: "Nils", Age: 23, Address: "B.K.veien 66"},
+	{Name: "Kai", Age: 28, Address: "Here"},
+	{Name: "Gro", Age: 29, Address: "Blomsterveien 22"},
+	{Name: "Ole", Age: 21, Address: "Here"},
+	{Name: "Per Pedersen", Age: 22, Address: "Here"},
+	{Name: "Nils", Age: 23, Address: "Here"},
+	{Name: "Kai", Age: 28, Address: "Here"},
+	{Name: "Gro", Age: 29, Address: "Blomsterveien 22"},
+	{Name: "Ole", Age: 21, Address: "Here"},
+	{Name: "Per Pedersen", Age: 22, Address: "Here"},
+	{Name: "Nils", Age: 23, Address: "Here"},
+	{Name: "Kai", Age: 28, Address: "Here"},
+	{Name: "Gro", Age: 29, Address: "Blomsterveien 22"},
+}
+
+var selectAll bool
+var v = []float32{1.0, 0.3, 2.0}
+
+func grid(th *wid.Theme, data []person) layout.Widget {
+	var names = []layout.Widget{
+		wid.Checkbox(th, "Name", &selectAll, nil),
+		wid.Label(th, "Age"),
+		wid.Label(th, "Address")}
+	var lines = []layout.Widget{wid.MakeRow(layout.Horizontal, v, names...), wid.Separator(th, unit.Dp(0.5))}
+	for i := 0; i < len(data); i++ {
+		w := wid.MakeRow(layout.Horizontal, v,
+			wid.Checkbox(th, data[i].Name, &data[i].Selected, nil),
+			wid.Label(th, fmt.Sprintf("%d", data[i].Age)),
+			wid.Label(th, data[i].Address),
+		)
+		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5)))
+	}
+	return wid.MakeList(th, layout.Vertical, lines...)
+}
+
+func setupGridDemo(th *wid.Theme) {
+	thb = *th
+	wid.First = nil
+	root = wid.MakeFlex(layout.Vertical, layout.SpaceEnd, grid(th, data))
 	wid.First.Focus()
 }
