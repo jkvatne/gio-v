@@ -285,7 +285,7 @@ type person struct {
 
 var data = []person{
 	{Name: "Ole", Age: 21, Address: "Storgata 3"},
-	{Name: "Per Pedersen", Age: 22, Address: "Svenskveien 33"},
+	{Name: "Per Pedersen", Age: 22, Address: "Svenskveien 33", Selected: true},
 	{Name: "Nils", Age: 23, Address: "Brogata 34"},
 	{Name: "Kai", Age: 28, Address: "Soleieveien 12"},
 	{Name: "Gro", Age: 29, Address: "Blomsterveien 22"},
@@ -322,7 +322,11 @@ func grid(th *wid.Theme, data []person) layout.Widget {
 		wid.Label(th, "Address", wid.Bold())}
 	var lines = []layout.Widget{wid.MakeRow(layout.Horizontal, th.Surface, v, names...), wid.Separator(th, unit.Dp(0.5))}
 	for i := 0; i < len(data); i++ {
-		w := wid.MakeRow(layout.Horizontal, th.Background, v,
+		c := th.Background
+		if data[i].Selected {
+			c = wid.Interpolate(th.Background, th.Primary, 0.1)
+		}
+		w := wid.MakeRow(layout.Horizontal, c, v,
 			wid.Checkbox(th, " ", &data[i].Selected, nil),
 			wid.Label(th, data[i].Name),
 			wid.Label(th, fmt.Sprintf("%d", data[i].Age)),

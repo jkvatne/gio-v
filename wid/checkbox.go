@@ -28,7 +28,7 @@ type CheckBoxDef struct {
 	shaper             text.Shaper
 	CheckedStateIcon   *Icon
 	UncheckedStateIcon *Icon
-	Value              bool
+	Value              *bool
 	changed            bool
 }
 
@@ -36,7 +36,7 @@ type CheckBoxDef struct {
 func Checkbox(th *Theme, label string, State *bool, handler func(b bool)) func(gtx C) D {
 	c := &CheckBoxDef{
 		Label:              label,
-		Value:              *State,
+		Value:              State,
 		TextColor:          th.OnBackground,
 		IconColor:          th.OnBackground,
 		TextSize:           th.TextSize.Scale(1.0),
@@ -49,7 +49,7 @@ func Checkbox(th *Theme, label string, State *bool, handler func(b bool)) func(g
 	c.SetupTabs()
 	return func(gtx C) D {
 		dims := c.layout(gtx)
-		c.HandleToggle(&c.Value, &c.changed)
+		c.HandleToggle(c.Value, &c.changed)
 		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
 		return dims
 	}
@@ -57,7 +57,7 @@ func Checkbox(th *Theme, label string, State *bool, handler func(b bool)) func(g
 
 func (c *CheckBoxDef) layout(gtx C) D {
 	icon := c.UncheckedStateIcon
-	if c.Value {
+	if *c.Value {
 		icon = c.CheckedStateIcon
 	}
 	dims := layout.Flex{Alignment: layout.Middle}.Layout(gtx,
