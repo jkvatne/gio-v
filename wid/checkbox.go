@@ -84,13 +84,16 @@ func (c *CheckBoxDef) layout(gtx C) D {
 					return dims
 				}),
 				layout.Stacked(func(gtx C) D {
-					return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
+					return layout.UniformInset(unit.Dp(1)).Layout(gtx, func(gtx C) D {
 						size := gtx.Px(c.Size)
 						col := c.IconColor
 						if gtx.Queue == nil {
 							col = Disabled(col)
 						}
 						gtx.Constraints.Min = image.Point{X: size}
+						if gtx.Constraints.Min.X > gtx.Constraints.Max.X {
+							gtx.Constraints.Max.X = gtx.Constraints.Min.X
+						}
 						icon.Layout(gtx, col)
 						return D{
 							Size: image.Point{X: size, Y: size},
@@ -99,21 +102,19 @@ func (c *CheckBoxDef) layout(gtx C) D {
 				}),
 			)
 		}),
-
-		layout.Rigid(func(gtx C) D {
-			return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
-				paint.ColorOp{Color: c.TextColor}.Add(gtx.Ops)
-				tl := aLabel{Alignment: text.Middle, MaxLines: 1}
-				return tl.Layout(gtx, c.shaper, c.Font, c.TextSize, c.Label)
-			})
-		}),
+		/*
+			layout.Rigid(func(gtx C) D {
+				return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
+					paint.ColorOp{Color: c.TextColor}.Add(gtx.Ops)
+					tl := aLabel{Alignment: text.Middle, MaxLines: 1}
+					return tl.Layout(gtx, c.shaper, c.Font, c.TextSize, c.Label)
+				})
+			}),
+		*/
 	)
-	//stack := op.Save(gtx.Ops)
-	//pointer.Rect(image.Rectangle{Max: dims.Size}).Add(gtx.Ops)
 	gtx.Constraints.Min = dims.Size
 	c.LayoutClickable(gtx)
 	c.HandleClicks(gtx)
 	c.HandleKeys(gtx)
-	//stack.Load()
 	return dims
 }

@@ -312,17 +312,19 @@ var data = []person{
 }
 
 var selectAll bool
-var v = []float32{1.0, 0.3, 2.0}
+var v = []float32{0.1, 1.0, 0.3, 2.0}
 
 func grid(th *wid.Theme, data []person) layout.Widget {
 	var names = []layout.Widget{
-		wid.Checkbox(th, "Name", &selectAll, nil),
+		wid.Checkbox(th, " ", &selectAll, nil),
+		wid.Label(th, "Name"),
 		wid.Label(th, "Age"),
 		wid.Label(th, "Address")}
 	var lines = []layout.Widget{wid.MakeRow(layout.Horizontal, v, names...), wid.Separator(th, unit.Dp(0.5))}
 	for i := 0; i < len(data); i++ {
 		w := wid.MakeRow(layout.Horizontal, v,
-			wid.Checkbox(th, data[i].Name, &data[i].Selected, nil),
+			wid.Checkbox(th, " ", &data[i].Selected, nil),
+			wid.Label(th, data[i].Name),
 			wid.Label(th, fmt.Sprintf("%d", data[i].Age)),
 			wid.Label(th, data[i].Address),
 		)
