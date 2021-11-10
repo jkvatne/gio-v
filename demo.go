@@ -36,7 +36,7 @@ var root layout.Widget      // root is the root widget (usually a list), and is 
 var darkMode = false
 var oldWindowSize image.Point // the current window size, used to detect changes
 var win *app.Window           // The main window
-var thb wid.Theme             // Secondary theme used for the color-shifting button
+var thb *wid.Theme            // Secondary theme used for the color-shifting button
 var progress float32
 var sliderValue float32
 var dummy bool
@@ -174,7 +174,7 @@ func column2(th *wid.Theme) layout.Widget {
 }
 
 func setupFormDemo(th *wid.Theme) {
-	thb = *th
+	thb = th
 	wid.First = nil
 	root = wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
 		wid.Label(th, "Demo page", wid.Middle(), wid.Large(), wid.Bold()),
@@ -225,7 +225,7 @@ func setupFormDemo(th *wid.Theme) {
 					wid.MakeFlex(layout.Horizontal, layout.SpaceSides,
 						wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode), wid.Color(wid.RGB(0x228822))),
 						wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.W(150), wid.Color(wid.RGB(0xffff00))),
-						wid.Button(&thb, "Change color", wid.Handler(onClick), wid.W(150)),
+						wid.Button(thb, "Change color", wid.Handler(onClick), wid.W(150)),
 						wid.TextButton(th, "Text button"),
 						wid.OutlineButton(th, "Outline button"),
 					),
@@ -233,7 +233,7 @@ func setupFormDemo(th *wid.Theme) {
 					wid.MakeFlex(layout.Horizontal, layout.SpaceEvenly,
 						wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode), wid.Min()),
 						wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.Min()),
-						wid.Button(&thb, "Change color", wid.Handler(onClick), wid.Min()),
+						wid.Button(thb, "Change color", wid.Handler(onClick), wid.Min()),
 						wid.TextButton(th, "Text button", wid.Min()),
 						wid.OutlineButton(th, "Outline button", wid.Min()),
 					),
@@ -317,12 +317,12 @@ var v = []float32{0.1, 1.0, 0.3, 2.0}
 func grid(th *wid.Theme, data []person) layout.Widget {
 	var names = []layout.Widget{
 		wid.Checkbox(th, " ", &selectAll, nil),
-		wid.Label(th, "Name"),
-		wid.Label(th, "Age"),
-		wid.Label(th, "Address")}
-	var lines = []layout.Widget{wid.MakeRow(layout.Horizontal, v, names...), wid.Separator(th, unit.Dp(0.5))}
+		wid.Label(th, "Name", wid.Bold()),
+		wid.Label(th, "Age", wid.Bold()),
+		wid.Label(th, "Address", wid.Bold())}
+	var lines = []layout.Widget{wid.MakeRow(layout.Horizontal, th.Surface, v, names...), wid.Separator(th, unit.Dp(0.5))}
 	for i := 0; i < len(data); i++ {
-		w := wid.MakeRow(layout.Horizontal, v,
+		w := wid.MakeRow(layout.Horizontal, th.Background, v,
 			wid.Checkbox(th, " ", &data[i].Selected, nil),
 			wid.Label(th, data[i].Name),
 			wid.Label(th, fmt.Sprintf("%d", data[i].Age)),
@@ -334,7 +334,8 @@ func grid(th *wid.Theme, data []person) layout.Widget {
 }
 
 func setupGridDemo(th *wid.Theme) {
-	thb = *th
+	thb = th
+	thb.Background = wid.RGB(0xFFFFFF)
 	wid.First = nil
 	root = wid.MakeFlex(layout.Vertical, layout.SpaceEnd, grid(th, data))
 	wid.First.Focus()
