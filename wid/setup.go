@@ -1,11 +1,9 @@
+// SPDX-License-Identifier: Unlicense OR MIT
+
 package wid
 
 import (
 	"image"
-	"image/color"
-
-	"gioui.org/op/clip"
-	"gioui.org/op/paint"
 
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -77,39 +75,5 @@ func MakeFlex(axis layout.Axis, spacing layout.Spacing, widgets ...layout.Widget
 			}
 		}
 		return layout.Flex{Axis: axis, Alignment: layout.Middle, Spacing: spacing}.Layout(gtx, children...)
-	}
-}
-
-// MakeFlex returns a widget for a flex list
-func MakeRow(axis layout.Axis, col color.NRGBA, weight []float32, widgets ...layout.Widget) layout.Widget {
-	var ops op.Ops
-	var y int
-	node := makeNode(widgets)
-	gtx := layout.Context{Ops: &ops, Constraints: layout.Constraints{Min: image.Point{X: 0, Y: 0}, Max: image.Point{X: 3000, Y: 600}}}
-	for _, w := range widgets {
-		d := w(gtx).Size
-		if d.Y > y {
-			y = d.Y
-		}
-	}
-
-	return func(gtx C) D {
-		var children []layout.FlexChild
-		for i := 0; i < len(node.children); i++ {
-			wg := *node.children[i].w
-			w := float32(1.0)
-			if len(weight) > i {
-				w = weight[i]
-			}
-			children = append(children, layout.Flexed(w, func(gtx C) D { return wg(gtx) }))
-		}
-		macro := op.Record(gtx.Ops)
-		d := layout.Flex{Axis: axis, Alignment: layout.Middle}.Layout(gtx, children...)
-		call := macro.Stop()
-		defer clip.Rect{Max: d.Size}.Push(gtx.Ops).Pop()
-		paint.ColorOp{Color: col}.Add(gtx.Ops)
-		paint.PaintOp{}.Add(gtx.Ops)
-		call.Add(gtx.Ops)
-		return d
 	}
 }

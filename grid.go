@@ -57,13 +57,9 @@ func grid(th *wid.Theme, data []person) layout.Widget {
 		wid.Label(th, "Name", wid.Bold()),
 		wid.Label(th, "Age", wid.Bold()),
 		wid.Label(th, "Address", wid.Bold())}
-	var lines = []layout.Widget{wid.MakeRow(layout.Horizontal, th.Surface, v, names...), wid.Separator(th, unit.Dp(0.5))}
+	var lines = []layout.Widget{wid.MakeRow(th, layout.Horizontal, &selectAll, v, names...), wid.Separator(th, unit.Dp(0.5))}
 	for i := 0; i < len(data); i++ {
-		c := th.Background
-		if data[i].Selected {
-			c = wid.Interpolate(th.Background, th.Primary, 0.1)
-		}
-		w := wid.MakeRow(layout.Horizontal, c, v,
+		w := wid.MakeRow(th, layout.Horizontal, &data[i].Selected, v,
 			wid.Checkbox(th, " ", &data[i].Selected, onCheck),
 			wid.Label(th, data[i].Name),
 			wid.Label(th, fmt.Sprintf("%d", data[i].Age)),
@@ -88,5 +84,5 @@ func setupGridDemo(th *wid.Theme) {
 }
 
 func onCheck(b bool) {
-	setup()
+	// Called when a checkbox in a row is clicked. Not used yet.
 }

@@ -6,6 +6,8 @@ import (
 	"image"
 	"time"
 
+	"gioui.org/op/clip"
+
 	"gioui.org/layout"
 
 	"gioui.org/f32"
@@ -230,7 +232,7 @@ func (c *Clickable) LayoutClickable(gtx C) D {
 	n := copy(c.clicks, c.clicks[c.prevClicks:])
 	c.clicks = c.clicks[:n]
 	c.prevClicks = n
-	defer pointer.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Push(gtx.Ops).Pop()
+	defer clip.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Push(gtx.Ops).Pop()
 
 	c.click.Add(gtx.Ops)
 	if c.HasClicks() {
