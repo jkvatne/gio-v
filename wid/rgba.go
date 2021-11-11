@@ -8,6 +8,16 @@ import (
 	"gioui.org/unit"
 )
 
+// Some default colors
+var (
+	Red    = RGB(0xFF0000)
+	Yellow = RGB(0xFFFF00)
+	Green  = RGB(0x00FF00)
+	Blue   = RGB(0x0000FF)
+	White  = RGB(0xFFFFFF)
+	Black  = RGB(0x000000)
+)
+
 // Zv is a zero unit.Value. Just saving a few keystrokes
 var Zv = unit.Value{}
 

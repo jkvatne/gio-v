@@ -66,7 +66,7 @@ type (
 var MaterialDesignLight = Theme{
 	Primary:      RGB(0x6200EE),
 	Background:   RGB(0xeeeeee),
-	Surface:      RGB(0xdddddd),
+	Surface:      RGB(0xffffff),
 	Error:        RGB(0xB00020),
 	OnPrimary:    RGB(0xFFFFFF),
 	OnBackground: RGB(0x000000),
