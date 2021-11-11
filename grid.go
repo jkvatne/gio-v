@@ -52,14 +52,21 @@ var v = []float32{0.1, 1.0, 0.3, 2.0}
 
 // Grid is a widget that lays out the grid. This is all that is needed.
 func grid(th *wid.Theme, data []person) layout.Widget {
-	var names = []layout.Widget{
-		wid.Checkbox(th, " ", &selectAll, nil),
-		wid.Label(th, "Name", wid.Bold()),
-		wid.Label(th, "Age", wid.Bold()),
-		wid.Label(th, "Address", wid.Bold())}
-	var lines = []layout.Widget{wid.MakeRow(th, layout.Horizontal, &selectAll, v, names...), wid.Separator(th, unit.Dp(0.5))}
+	// Set up a new theme for the headings
+	thh := *th
+	thh.TextSize = th.TextSize.Scale(0.85)
+	thh.OnBackground = wid.WithAlpha(th.OnSurface, 192)
+
+	heading := wid.Row(th, &selectAll, v,
+		wid.Checkbox(&thh, " ", &selectAll, nil),
+		wid.Label(&thh, "Name", wid.Bold()),
+		wid.Label(&thh, "Age", wid.Bold()),
+		wid.Label(&thh, "Address", wid.Bold()))
+
+	//var lines = []layout.Widget{wid.Row(th, &selectAll, v, names...), wid.Separator(th, unit.Dp(0.5))}
+	var lines []layout.Widget
 	for i := 0; i < len(data); i++ {
-		w := wid.MakeRow(th, layout.Horizontal, &data[i].Selected, v,
+		w := wid.Row(th, &data[i].Selected, v,
 			wid.Checkbox(th, " ", &data[i].Selected, onCheck),
 			wid.Label(th, data[i].Name),
 			wid.Label(th, fmt.Sprintf("%d", data[i].Age)),
@@ -67,15 +74,16 @@ func grid(th *wid.Theme, data []person) layout.Widget {
 		)
 		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5)))
 	}
-	return wid.MakeList(th, layout.Vertical, lines...)
+	grid := wid.MakeList(th, layout.Vertical, lines...)
+	return wid.Col(heading, wid.Separator(th, unit.Dp(0.5)), grid)
 }
 
 func setupGridDemo(th *wid.Theme) {
 	// thb is the theme for highlighted rows.
 	thb = th
 	wid.Init()
-	wid.Setup(wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
-		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
+	wid.Setup(wid.Col(
+		wid.Row(th, nil, nil,
 			wid.Checkbox(th, "Grid demo", &showGrid, onSwitchMode),
 			wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode)),
 		wid.Separator(th, unit.Dp(2.0)),
