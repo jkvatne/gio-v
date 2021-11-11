@@ -78,7 +78,7 @@ var MaterialDesignLight = Theme{
 var MaterialDesignDark = Theme{
 	Primary:      RGB(0xbb86fc),
 	Background:   RGB(0x303030),
-	Surface:      RGB(0x000000),
+	Surface:      RGB(0x404040),
 	Error:        RGB(0xcf6679),
 	OnPrimary:    RGB(0x000000),
 	OnBackground: RGB(0xffffff),

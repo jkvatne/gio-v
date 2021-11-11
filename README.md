@@ -94,3 +94,7 @@ Dual MIT/Unlicense; same as Gio
 # Demo
 
 ![Demo.go](https://github.com/jkvatne/gio-v/blob/main/demo.png)
+
+# Grid demo
+
+![Demo.go](https://github.com/jkvatne/gio-v/blob/main/grid.png)

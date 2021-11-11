@@ -8,7 +8,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"gio-v/wid"
 	"image"
 	"image/color"
@@ -40,11 +39,13 @@ var thb *wid.Theme            // Secondary theme used for the color-shifting but
 var progress float32
 var sliderValue float32
 var dummy bool
+var showGrid = true
 
 func main() {
 	flag.StringVar(&mode, "mode", "default", "Select window as fullscreen, maximized, centered or default")
 	flag.StringVar(&fontSize, "fontsize", "large", "Select font size medium,small,large")
 	flag.Parse()
+	makePersons()
 	progressIncrementer := make(chan float32)
 	go func() {
 		for {
@@ -56,7 +57,7 @@ func main() {
 		currentTheme = wid.NewTheme(gofont.Collection(), 14, wid.MaterialDesignLight)
 		win = app.NewWindow(app.Title("Gio-v demo"), modeFromString(mode).Option())
 		updateMode()
-		setupGridDemo(currentTheme)
+		setup()
 		for {
 			select {
 			case e := <-win.Events():
@@ -64,7 +65,7 @@ func main() {
 				case system.DestroyEvent:
 					os.Exit(0)
 				case system.FrameEvent:
-					handleFrameEvents(currentTheme, e)
+					handleFrameEvents(e)
 				}
 			case pg := <-progressIncrementer:
 				progress += pg
@@ -78,25 +79,25 @@ func main() {
 	app.Main()
 }
 
-func handleFrameEvents(th *wid.Theme, e system.FrameEvent) {
+func handleFrameEvents(e system.FrameEvent) {
 	if oldWindowSize.X != e.Size.X || oldWindowSize.Y != e.Size.Y || mode != oldMode || fontSize != oldFontSize {
 		switch fontSize {
 		case "medium", "Medium":
-			th.TextSize = unit.Dp(float32(e.Size.Y) / 60)
+			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 60)
 		case "large", "Large":
-			th.TextSize = unit.Dp(float32(e.Size.Y) / 45)
+			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 45)
 		case "small", "Small":
-			th.TextSize = unit.Dp(float32(e.Size.Y) / 80)
+			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 80)
 		}
 		oldFontSize = fontSize
 		oldWindowSize = e.Size
 		updateMode()
-		setupGridDemo(th)
+		setup()
 	}
 	var ops op.Ops
 	gtx := layout.NewContext(&ops, e)
 	// Set background color
-	paint.Fill(gtx.Ops, th.Background)
+	paint.Fill(gtx.Ops, currentTheme.Background)
 	// Traverse the widget tree and generate drawing operations
 	root(gtx)
 	// Apply the actual screen drawing
@@ -123,7 +124,7 @@ func onSwitchMode(v bool) {
 	} else {
 		currentTheme = wid.NewTheme(gofont.Collection(), s, wid.MaterialDesignDark)
 	}
-	setupGridDemo(currentTheme)
+	setup()
 }
 
 func modeFromString(s string) app.WindowMode {
@@ -269,78 +270,16 @@ func setupFormDemo(th *wid.Theme) {
 				),
 			),
 		),
+		wid.ProgressBar(th, &progress),
+		wid.ImageFromJpgFile("gopher.jpg"),
 	)
-	//wid.ProgressBar(th, &progress),
-	//wid.ImageFromJpgFile("gopher.jpg"),
-	//)
 	wid.First.Focus()
 }
 
-type person struct {
-	Selected bool
-	Name     string
-	Age      int
-	Address  string
-}
-
-var data = []person{
-	{Name: "Ole", Age: 21, Address: "Storgata 3"},
-	{Name: "Per Pedersen", Age: 22, Address: "Svenskveien 33", Selected: true},
-	{Name: "Nils", Age: 23, Address: "Brogata 34"},
-	{Name: "Kai", Age: 28, Address: "Soleieveien 12"},
-	{Name: "Gro", Age: 29, Address: "Blomsterveien 22"},
-	{Name: "Ole", Age: 21, Address: "Blåklokkevikua 33"},
-	{Name: "Per Pedersen", Age: 22, Address: "Gamleveien 35"},
-	{Name: "Nils", Age: 23, Address: "Nygata 64"},
-	{Name: "Sindre Gratangen", Age: 28, Address: "Brosundet 34"},
-	{Name: "Gro", Age: 29, Address: "Blomsterveien 22"},
-	{Name: "Petter Olsen", Age: 21, Address: "Katavågen 44"},
-	{Name: "Per Pedersen", Age: 22, Address: "Nidelva 43"},
-	{Name: "Nils", Age: 23, Address: "B.K.veien 66"},
-	{Name: "Kai", Age: 28, Address: "Here"},
-	{Name: "Gro", Age: 29, Address: "Blomsterveien 22"},
-	{Name: "Ole", Age: 21, Address: "Here"},
-	{Name: "Per Pedersen", Age: 22, Address: "Here"},
-	{Name: "Nils", Age: 23, Address: "Here"},
-	{Name: "Kai", Age: 28, Address: "Here"},
-	{Name: "Gro", Age: 29, Address: "Blomsterveien 22"},
-	{Name: "Ole", Age: 21, Address: "Here"},
-	{Name: "Per Pedersen", Age: 22, Address: "Here"},
-	{Name: "Nils", Age: 23, Address: "Here"},
-	{Name: "Kai", Age: 28, Address: "Here"},
-	{Name: "Gro", Age: 29, Address: "Blomsterveien 22"},
-}
-
-var selectAll bool
-var v = []float32{0.1, 1.0, 0.3, 2.0}
-
-func grid(th *wid.Theme, data []person) layout.Widget {
-	var names = []layout.Widget{
-		wid.Checkbox(th, " ", &selectAll, nil),
-		wid.Label(th, "Name", wid.Bold()),
-		wid.Label(th, "Age", wid.Bold()),
-		wid.Label(th, "Address", wid.Bold())}
-	var lines = []layout.Widget{wid.MakeRow(layout.Horizontal, th.Surface, v, names...), wid.Separator(th, unit.Dp(0.5))}
-	for i := 0; i < len(data); i++ {
-		c := th.Background
-		if data[i].Selected {
-			c = wid.Interpolate(th.Background, th.Primary, 0.1)
-		}
-		w := wid.MakeRow(layout.Horizontal, c, v,
-			wid.Checkbox(th, " ", &data[i].Selected, nil),
-			wid.Label(th, data[i].Name),
-			wid.Label(th, fmt.Sprintf("%d", data[i].Age)),
-			wid.Label(th, data[i].Address),
-		)
-		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5)))
+func setup() {
+	if showGrid {
+		setupGridDemo(currentTheme)
+	} else {
+		setupFormDemo(currentTheme)
 	}
-	return wid.MakeList(th, layout.Vertical, lines...)
-}
-
-func setupGridDemo(th *wid.Theme) {
-	thb = th
-	thb.Background = wid.RGB(0xFFFFFF)
-	wid.First = nil
-	root = wid.MakeFlex(layout.Vertical, layout.SpaceEnd, grid(th, data))
-	wid.First.Focus()
 }

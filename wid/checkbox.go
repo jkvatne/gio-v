@@ -102,15 +102,13 @@ func (c *CheckBoxDef) layout(gtx C) D {
 				}),
 			)
 		}),
-		/*
-			layout.Rigid(func(gtx C) D {
-				return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
-					paint.ColorOp{Color: c.TextColor}.Add(gtx.Ops)
-					tl := aLabel{Alignment: text.Middle, MaxLines: 1}
-					return tl.Layout(gtx, c.shaper, c.Font, c.TextSize, c.Label)
-				})
-			}),
-		*/
+		layout.Rigid(func(gtx C) D {
+			return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
+				paint.ColorOp{Color: c.TextColor}.Add(gtx.Ops)
+				tl := aLabel{Alignment: text.Middle, MaxLines: 1}
+				return tl.Layout(gtx, c.shaper, c.Font, c.TextSize, c.Label)
+			})
+		}),
 	)
 	gtx.Constraints.Min = dims.Size
 	c.LayoutClickable(gtx)
