@@ -6,6 +6,8 @@ import (
 	"image"
 	"time"
 
+	"gioui.org/layout"
+
 	"gioui.org/f32"
 	"gioui.org/gesture"
 	"gioui.org/io/key"
@@ -62,11 +64,29 @@ type Press struct {
 	Cancelled bool
 }
 
-// Global value used to save the previous widget that was tab-able
-var prev Focuser
+// Prev is a global value used to save the previous widget that was tab-able
+var Prev Focuser
 
 // First will store the initial focused widget
 var First Focuser
+
+// Root is the root widget (usually a list), and is the root of the widget tree
+var Root layout.Widget
+
+// Init will initialize the widget tree
+func Init() {
+	// Drop all old data
+	Root = nil
+	First = nil
+	Prev = nil
+}
+
+// Setup will initialze root
+func Setup(w layout.Widget) {
+	Root = w
+	// Focus the component to be focused at startup.
+	First.Focus()
+}
 
 // Disabled returns true if the widget is disabled
 func (c *Clickable) Disabled() bool {
@@ -78,11 +98,11 @@ func (c *Clickable) SetupTabs() {
 	if First == nil {
 		First = c
 	}
-	if prev != nil {
-		c.SetPrev(prev)
-		prev.SetNext(c)
+	if Prev != nil {
+		c.SetPrev(Prev)
+		Prev.SetNext(c)
 	}
-	prev = c
+	Prev = c
 }
 
 // HandleClick will call the callback function

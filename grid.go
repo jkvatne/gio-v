@@ -77,15 +77,14 @@ func grid(th *wid.Theme, data []person) layout.Widget {
 func setupGridDemo(th *wid.Theme) {
 	// thb is the theme for highlighted rows.
 	thb = th
-	root = wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
+	wid.Init()
+	wid.Setup(wid.MakeFlex(layout.Vertical, layout.SpaceEnd,
 		wid.MakeFlex(layout.Horizontal, layout.SpaceEnd,
 			wid.Checkbox(th, "Grid demo", &showGrid, onSwitchMode),
 			wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode)),
 		wid.Separator(th, unit.Dp(2.0)),
 		grid(th, data),
-	)
-	// Focus the component to be focused at startup.
-	wid.First.Focus()
+	))
 }
 
 func onCheck(b bool) {
