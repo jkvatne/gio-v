@@ -33,6 +33,7 @@ func Label(th *Theme, str string, options ...Option) func(gtx C) D {
 		Alignment: text.Start,
 		Font:      text.Font{Weight: text.Medium, Style: text.Regular},
 		padding:   th.LabelPadding,
+		MaxLines:  1,
 	}
 	w.th = th
 	w.fgColor = th.OnBackground

@@ -19,26 +19,24 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 	children := makeChildren(false, weights, widgets...)
 	return func(gtx C) D {
 		bgColor := th.Background
-		if selected != nil && *selected {
-			bgColor = Interpolate(th.Background, th.Primary, 0.1)
-		} else if r.Hovered() {
+		if r.Hovered() {
 			bgColor = Interpolate(th.Background, th.Primary, 0.05)
+		} else if selected != nil && *selected {
+			bgColor = Interpolate(th.Background, th.Primary, 0.1)
 		}
 		macro := op.Record(gtx.Ops)
-		d := layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle}.Layout(gtx, children...)
+		dims := layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle}.Layout(gtx, children...)
 		call := macro.Stop()
 		// Draw background
-		defer clip.Rect{Max: d.Size}.Push(gtx.Ops).Pop()
-		//if bgColor != th.Background {
+		defer clip.Rect{Max: dims.Size}.Push(gtx.Ops).Pop()
 		paint.ColorOp{Color: bgColor}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
-		//}
 		// Then play the macro to draw children
-		gtx.Constraints.Min = d.Size
+		gtx.Constraints.Min = dims.Size
 		r.LayoutClickable(gtx)
 		r.HandleClicks(gtx)
 		r.HandleToggle(selected, nil)
 		call.Add(gtx.Ops)
-		return d
+		return dims
 	}
 }

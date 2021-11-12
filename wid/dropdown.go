@@ -137,9 +137,8 @@ func (b *DropDownDef) option(th *Theme, i int) func(gtx C) D {
 		lblWidget := func(gtx C) D {
 			return aLabel{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, text.Font{}, th.TextSize, b.items[i])
 		}
-		dims := layout.Inset{Top: unit.Dp(2), Left: th.TextSize.Scale(0.4), Right: unit.Dp(2)}.Layout(gtx, lblWidget)
-		defer pointer.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Push(gtx.Ops).Pop()
-		//defer clip.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Push(gtx.Ops).Pop()
+		dims := layout.Inset{Top: unit.Dp(2), Left: th.TextSize.Scale(0.4), Right: unit.Dp(0)}.Layout(gtx, lblWidget)
+		defer clip.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Push(gtx.Ops).Pop()
 		pointer.InputOp{
 			Tag:   &b.items[i],
 			Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave,
@@ -170,7 +169,8 @@ func (b *DropDownDef) Layout(gtx C) D {
 						layout.Flexed(1.0, b.LayoutLabel()),
 						layout.Rigid(b.LayoutIcon()),
 					)
-				}),
+				},
+			),
 		)
 	})
 }
@@ -213,7 +213,10 @@ func (b *DropDownDef) LayoutLabel() layout.Widget {
 		if gtx.Px(b.width) > gtx.Constraints.Min.X {
 			gtx.Constraints.Min.X = gtx.Px(b.width)
 		}
-		return b.th.LabelPadding.Layout(gtx, func(gtx C) D {
+		// A little trick to bring the label closer to the arrow, and avoid a big gap.
+		pad := b.th.LabelPadding
+		pad.Right = unit.Dp(-5)
+		return pad.Layout(gtx, func(gtx C) D {
 			paint.ColorOp{Color: b.th.OnBackground}.Add(gtx.Ops)
 			if b.index < 0 {
 				b.index = 0
@@ -221,7 +224,7 @@ func (b *DropDownDef) LayoutLabel() layout.Widget {
 			if b.index >= len(b.items) {
 				b.index = len(b.items) - 1
 			}
-			return aLabel{Alignment: text.Start}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.items[b.index])
+			return aLabel{Alignment: text.Start, MaxLines: 1}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.items[b.index])
 		})
 	}
 }

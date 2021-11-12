@@ -26,7 +26,7 @@ type person struct {
 
 var data = []person{
 	{Name: "Ole", Age: 21, Address: "Storgata 3", Status: 1},
-	{Name: "Per Pedersen", Age: 22, Address: "Svenskveien 33", Selected: true},
+	{Name: "Per Pedersen", Age: 22, Address: "Svenskveien 33", Selected: true, Status: 1},
 	{Name: "Nils", Age: 23, Address: "Brogata 34"},
 	{Name: "Kai", Age: 28, Address: "Soleieveien 12"},
 	{Name: "Gro", Age: 29, Address: "Blomsterveien 22"},
@@ -52,19 +52,18 @@ func makePersons() {
 var selectAll bool
 
 // v is the relative width of each column. Use like Flexed weight.
-var v = []float32{0.1, 1.0, 0.3, 2.0, 0.5}
+var v = []float32{0, 24, 8, 30, 10}
 
 // Grid is a widget that lays out the grid. This is all that is needed.
 func grid(th *wid.Theme, data []person) layout.Widget {
 	// Set up a new theme for the headings and rows
 	thh := *th
 	thg := *th
-	thh.TextSize = th.TextSize.Scale(0.85)
 	thh.OnBackground = wid.WithAlpha(th.OnSurface, 192)
 	thh.Background = th.Surface
 	thg.Background = th.Surface
 	heading := wid.Row(&thh, &selectAll, v,
-		wid.Checkbox(&thh, " ", &selectAll, onCheck),
+		wid.Checkbox(&thh, "", &selectAll, onCheck),
 		wid.Label(&thh, "Name", wid.Bold()),
 		wid.Label(&thh, "Age", wid.Bold()),
 		wid.Label(&thh, "Address", wid.Bold()),
@@ -72,13 +71,14 @@ func grid(th *wid.Theme, data []person) layout.Widget {
 
 	//var lines = []layout.Widget{wid.Row(th, &selectAll, v, names...), wid.Separator(th, unit.Dp(0.5))}
 	var lines []layout.Widget
-	for i := 0; i < len(data); i++ {
+	for i := 0; i < 2; i++ { //OBS len(data); i++ {
 		w := wid.Row(&thg, &data[i].Selected, v,
-			wid.Checkbox(&thg, " ", &data[i].Selected, nil),
+			wid.Checkbox(&thg, "", &data[i].Selected, nil),
 			wid.Label(&thg, data[i].Name),
 			wid.Label(&thg, fmt.Sprintf("%d", data[i].Age)),
 			wid.Label(&thg, data[i].Address),
-			wid.DropDown(&thg, data[i].Status, []string{"Vaild", "Invalid", "Unknown"}))
+			wid.DropDown(&thg, data[i].Status, []string{"Male", "Female", "Other"}),
+		)
 		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5)))
 	}
 	grid := wid.MakeList(&thg, layout.Vertical, lines...)
