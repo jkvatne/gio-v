@@ -41,7 +41,7 @@ var data = []person{
 
 // Make a lot of persons...
 func makePersons() {
-	for i := 1; i < 1000; i++ {
+	for i := 1; i < 100; i++ {
 		data[0].Age = i
 		data = append(data, data[0])
 	}
@@ -52,7 +52,7 @@ func makePersons() {
 var selectAll bool
 
 // v is the relative width of each column. Use like Flexed weight.
-var v = []float32{0, 24, 8, 30, 10}
+var v = []float32{35, 600, 400, 80, 200, 200}
 
 // Grid is a widget that lays out the grid. This is all that is needed.
 func grid(th *wid.Theme, data []person) layout.Widget {
@@ -65,19 +65,17 @@ func grid(th *wid.Theme, data []person) layout.Widget {
 	heading := wid.Row(&thh, &selectAll, v,
 		wid.Checkbox(&thh, "", &selectAll, onCheck),
 		wid.Label(&thh, "Name", wid.Bold()),
-		wid.Label(&thh, "Age", wid.Bold()),
 		wid.Label(&thh, "Address", wid.Bold()),
-		wid.Label(&thh, "Status"))
-
-	//var lines = []layout.Widget{wid.Row(th, &selectAll, v, names...), wid.Separator(th, unit.Dp(0.5))}
+		wid.Label(&thh, "Age", wid.Bold()),
+	)
 	var lines []layout.Widget
-	for i := 0; i < 2; i++ { //OBS len(data); i++ {
+	for i := 0; i < len(data); i++ {
 		w := wid.Row(&thg, &data[i].Selected, v,
 			wid.Checkbox(&thg, "", &data[i].Selected, nil),
 			wid.Label(&thg, data[i].Name),
-			wid.Label(&thg, fmt.Sprintf("%d", data[i].Age)),
 			wid.Label(&thg, data[i].Address),
-			wid.DropDown(&thg, data[i].Status, []string{"Male", "Female", "Other"}),
+			wid.Label(&thg, fmt.Sprintf("%d", data[i].Age)),
+			//wid.DropDown(&thg, data[i].Status, []string{"Male", "Female", "Other"}),
 		)
 		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5)))
 	}
@@ -109,9 +107,9 @@ func InsetGrid(th *wid.Theme, grid layout.Widget) layout.Widget {
 func setupGridDemo(th *wid.Theme) {
 	wid.Init()
 	wid.Setup(wid.Col(
-		wid.Row(th, nil, nil,
-			wid.Checkbox(th, "Grid demo", &showGrid, onSwitchMode),
-			wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode)),
+		//wid.Row(th, nil, nil,
+		//	wid.Checkbox(th, "Grid demo", &showGrid, onSwitchMode),
+		//	wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode)),
 		wid.Separator(th, unit.Dp(2.0)),
 		InsetGrid(th, grid(th, data)),
 	))

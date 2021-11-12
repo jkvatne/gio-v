@@ -29,8 +29,9 @@ func MakeList(th *Theme, dir layout.Axis, widgets ...layout.Widget) layout.Widge
 	node := makeNode(widgets)
 	listStyle := ListStyle{
 		list:           &layout.List{Axis: dir},
-		ScrollbarStyle: MakeScrollbarStyle(th),
-		AnchorStrategy: Overlay,
+		VScrollBar:     MakeScrollbarStyle(th),
+		HScrollBar:     MakeScrollbarStyle(th),
+		AnchorStrategy: Occupy,
 	}
 	return func(gtx C) D {
 		var ch []layout.Widget
@@ -56,7 +57,7 @@ func makeChildren(rigid bool, weights []float32, widgets ...layout.Widget) []lay
 		if len(weights) > i {
 			w = weights[i]
 		}
-		if len(weights) > i && weights[i] == 0 || rigid {
+		if len(weights) > i && weights[i] > 1.0 || rigid {
 			children = append(children, layout.Rigid(func(gtx C) D { return wg(gtx) }))
 		} else {
 			children = append(children, layout.Flexed(w, func(gtx C) D { return wg(gtx) }))

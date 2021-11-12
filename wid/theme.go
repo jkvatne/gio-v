@@ -50,8 +50,9 @@ type Theme struct {
 	// Elevation is the shadow width
 	Elevation unit.Value
 	// SashColor is the color of the moveable divider
-	SashColor color.NRGBA
-	SashWidth unit.Value
+	SashColor  color.NRGBA
+	SashWidth  unit.Value
+	TrackColor color.NRGBA
 }
 
 type (
@@ -128,7 +129,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme 
 	// Resizer
 	t.SashColor = WithAlpha(t.OnSurface, 0x80)
 	t.SashWidth = t.TextSize.Scale(0.2)
-
+	t.TrackColor = WithAlpha(t.OnSurface, 0x40)
 	return &t
 }
 

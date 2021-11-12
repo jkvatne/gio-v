@@ -87,7 +87,9 @@ func Init() {
 func Setup(w layout.Widget) {
 	Root = w
 	// Focus the component to be focused at startup.
-	First.Focus()
+	if First != nil {
+		First.Focus()
+	}
 }
 
 // Disabled returns true if the widget is disabled

@@ -92,6 +92,7 @@ func MakeScrollbarStyle(th *Theme) ScrollbarStyle {
 		Track: ScrollTrackStyle{
 			MajorPadding: unit.Dp(2),
 			MinorPadding: unit.Dp(2),
+			Color:        th.TrackColor,
 		},
 		Indicator: ScrollIndicatorStyle{
 			MajorMinLen:  unit.Dp(a),
@@ -230,47 +231,51 @@ const (
 
 // ListStyle configures the presentation of a layout.List with a scrollbar.
 type ListStyle struct {
-	list *layout.List
-	ScrollbarStyle
+	list       *layout.List
+	VScrollBar ScrollbarStyle
+	HScrollBar ScrollbarStyle
 	AnchorStrategy
 }
 
 // Layout the list and its scrollbar.
 func (l ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
-	originalConstraints := gtx.Constraints
+	//originalConstraints := gtx.Constraints
 
 	// Determine how much space the scrollbar occupies.
-	barWidth := gtx.Px(l.Width(gtx.Metric))
+	barWidth := gtx.Px(l.VScrollBar.Width(gtx.Metric))
 
 	if l.AnchorStrategy == Occupy {
 		// Reserve space for the scrollbar using the gtx constraints.
-		max := l.list.Axis.Convert(gtx.Constraints.Max)
+		/*max := l.list.Axis.Convert(gtx.Constraints.Max)
 		min := l.list.Axis.Convert(gtx.Constraints.Min)
 		max.Y -= barWidth
 		min.Y -= barWidth
 		gtx.Constraints.Max = l.list.Axis.Convert(max)
 		gtx.Constraints.Min = l.list.Axis.Convert(min)
+		*/
+		max := gtx.Constraints.Max
+		min := gtx.Constraints.Min
+		max.X -= barWidth
+		min.Y -= barWidth
+		gtx.Constraints.Max = max
+		gtx.Constraints.Min = max
 	}
 
 	listDims := l.list.Layout(gtx, length, w)
-	gtx.Constraints = originalConstraints
+	//gtx.Constraints = originalConstraints
 
 	// Draw the scrollbar.
-	anchoring := layout.E
-	if l.list.Axis == layout.Horizontal {
-		anchoring = layout.S
-	}
 	majorAxisSize := l.list.Axis.Convert(listDims.Size).X
 	start, end := fromListPosition(l.list.Position, length, majorAxisSize)
-	anchoring.Layout(gtx, func(gtx C) D {
+	layout.E.Layout(gtx, func(gtx C) D {
 		// layout.Dimension respects the minimum, so ensure that the
 		// scrollbar will be drawn on the correct edge even if the provided
 		// layout.Context had a zero minimum constraint.
 		gtx.Constraints.Min = gtx.Constraints.Max
-		return l.ScrollbarStyle.Layout(gtx, l.list.Axis, start, end)
+		return l.VScrollBar.Layout(gtx, layout.Vertical, start, end)
 	})
 
-	if delta := l.Scrollbar.ScrollDistance(); delta != 0 {
+	if delta := l.VScrollBar.Scrollbar.ScrollDistance(); delta != 0 {
 		// Handle any changes to the list position as a result of user interaction
 		// with the scrollbar.
 		deltaPx := int(math.Round(float64(float32(l.list.Position.Length) * delta)))
@@ -287,6 +292,17 @@ func (l ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 		cross := l.list.Axis.Convert(listDims.Size)
 		cross.Y += barWidth
 		listDims.Size = l.list.Axis.Convert(cross)
+	}
+
+	layout.S.Layout(gtx, func(gtx C) D {
+		gtx.Constraints.Min = gtx.Constraints.Max
+		return l.HScrollBar.Layout(gtx, layout.Horizontal, start, end)
+	})
+
+	if delta := l.HScrollBar.Scrollbar.ScrollDistance(); delta != 0 {
+		deltaPx := int(math.Round(float64(float32(l.list.Position.Length) * delta)))
+		l.list.Position.Offset += deltaPx
+		l.list.Position.BeforeEnd = true
 	}
 
 	return listDims
