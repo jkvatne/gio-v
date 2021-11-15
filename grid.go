@@ -51,10 +51,10 @@ func makePersons() {
 // It could be used to check/uncheck all boxes in the table
 var selectAll bool
 
-var colWidth = []float32{35, 400, 400, 250, 200}
+var colWidth = []float32{35, 500, 500, 550, 500}
 
 // Grid is a widget that lays out the grid. This is all that is needed.
-func grid(th *wid.Theme, data []person) layout.Widget {
+func Grid(th *wid.Theme, data []person) layout.Widget {
 	totalWidth := float32(0)
 	for i := 0; i < len(colWidth); i++ {
 		totalWidth += colWidth[i]
@@ -70,6 +70,7 @@ func grid(th *wid.Theme, data []person) layout.Widget {
 		wid.Label(&thh, "Name", wid.Bold()),
 		wid.Label(&thh, "Address", wid.Bold()),
 		wid.Label(&thh, "Age", wid.Bold()),
+		wid.Label(&thh, "Gender", wid.Bold()),
 	)
 	var lines []layout.Widget
 	for i := 0; i < len(data); i++ {
@@ -83,7 +84,10 @@ func grid(th *wid.Theme, data []person) layout.Widget {
 		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5), wid.W(totalWidth)))
 	}
 	grid := wid.MakeList(&thg, layout.Vertical, lines...)
-	return wid.Col(heading, wid.Separator(th, unit.Dp(0.5)), grid)
+	return wid.Col(
+		heading,
+		wid.Separator(th, unit.Dp(0.5)),
+		grid)
 }
 
 // InsetGrid is the grid with some padding
@@ -110,11 +114,12 @@ func InsetGrid(th *wid.Theme, grid layout.Widget) layout.Widget {
 func setupGridDemo(th *wid.Theme) {
 	wid.Init()
 	wid.Setup(wid.Col(
-		//wid.Row(th, nil, nil,
-		//	wid.Checkbox(th, "Grid demo", &showGrid, onSwitchMode),
-		//	wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode)),
-		wid.Separator(th, unit.Dp(2.0)),
-		InsetGrid(th, grid(th, data)),
+		wid.Row(th, nil, nil,
+			wid.Checkbox(th, "Grid demo", &showGrid, onSwitchMode),
+			wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode)),
+		wid.Separator(th, unit.Dp(2.0), wid.Pad(10, 0, 10, 0)),
+		//InsetGrid(th, grid(th, data)),
+		Grid(th, data),
 	))
 }
 

@@ -44,8 +44,14 @@ func makeChildren(rigid bool, weights []float32, widgets ...layout.Widget) []lay
 
 // Col makes a column of widgets.
 func Col(widgets ...layout.Widget) layout.Widget {
-	children := makeChildren(true, nil, widgets...)
+	//	children := makeChildren(true, nil, widgets...)
+	var children []layout.FlexChild
+	node := makeNode(widgets)
+	for i := 0; i < len(widgets); i++ {
+		wg := *node.children[i].w
+		children = append(children, layout.Rigid(func(gtx C) D { return wg(gtx) }))
+	}
 	return func(gtx C) D {
-		return layout.Flex{Axis: layout.Vertical, Alignment: layout.Middle, Spacing: layout.SpaceEnd}.Layout(gtx, children...)
+		return layout.Flex{Axis: layout.Vertical, Alignment: layout.Start, Spacing: layout.SpaceEnd}.Layout(gtx, children...)
 	}
 }

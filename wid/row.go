@@ -6,6 +6,7 @@ import (
 	"image"
 
 	"gioui.org/f32"
+
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -27,19 +28,23 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 		} else if selected != nil && *selected {
 			bgColor = Interpolate(th.Background, th.Primary, 0.1)
 		}
-		macro1 := op.Record(gtx.Ops)
 		// Check child sizes
 		dims := make([]D, len(widgets))
 		call := make([]op.CallOp, len(widgets))
 
 		for i, child := range widgets {
 			c := gtx
-			c.Constraints.Max.X = int(weights[i])
-			c.Constraints.Min.X = int(weights[i])
+			if weights != nil {
+				c.Constraints.Max.X = int(weights[i])
+			} else {
+				c.Constraints.Max.X = gtx.Constraints.Max.X / len(widgets)
+			}
+			c.Constraints.Min.X = c.Constraints.Max.X
 			macro := op.Record(c.Ops)
 			dims[i] = child(c)
 			call[i] = macro.Stop()
 		}
+		macro1 := op.Record(gtx.Ops)
 		pos := float32(0)
 		for i := range widgets {
 			trans := op.Offset(f32.Pt(pos, 0)).Push(gtx.Ops)
