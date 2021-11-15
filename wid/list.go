@@ -269,24 +269,14 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	//originalConstraints := gtx.Constraints
 
 	// Determine how much space the scrollbar occupies.
-	//barWidth := gtx.Px(l.VScrollBar.Width(gtx.Metric))
+	barWidth := gtx.Px(l.VScrollBar.Width(gtx.Metric))
 
-	//if l.AnchorStrategy == Occupy {
-	// Reserve space for the scrollbar using the gtx constraints.
-	/*max := l.list.Axis.Convert(gtx.Constraints.Max)
-	min := l.list.Axis.Convert(gtx.Constraints.Min)
-	max.Y -= barWidth
-	min.Y -= barWidth
-	gtx.Constraints.Max = l.list.Axis.Convert(max)
-	gtx.Constraints.Min = l.list.Axis.Convert(min)
-	*/
-	//min := gtx.Constraints.Min
-	//max.X -= barWidth
-	//min.Y -= barWidth
-
-	if l.AnchorStrategy == Overlay {
-		gtx.Constraints.Min = gtx.Constraints.Max
+	if l.AnchorStrategy == Occupy && barWidth > 0 {
+		// Reserve space for the scrollbars using the gtx constraints.
+		gtx.Constraints.Max.X -= barWidth
+		gtx.Constraints.Max.Y -= barWidth
 	}
+	gtx.Constraints.Min = gtx.Constraints.Max
 
 	// Draw the list
 	macro := op.Record(gtx.Ops)
@@ -294,16 +284,19 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	call := macro.Stop()
 	pt := image.Pt(-l.Hpos, 0)
 	trans := op.Offset(layout.FPt(pt)).Push(gtx.Ops)
+	cl := clip.Rect{Max: gtx.Constraints.Min}.Push(gtx.Ops)
 	call.Add(gtx.Ops)
+	cl.Pop()
 	trans.Pop()
 
-	//gtx.Constraints = originalConstraints
-
-	//if l.AnchorStrategy == Occupy {
-	// Increase the width to account for the space occupied by the scrollbar.
-	//cross := l.list.Axis.Convert(listDims.Size)
-	//cross.Y += barWidth
-	//listDims.Size = l.list.Axis.Convert(cross)
+	if l.AnchorStrategy == Occupy {
+		// Increase the width to account for the space occupied by the scrollbar.
+		listDims.Size.X += barWidth
+		listDims.Size.Y += barWidth
+		gtx.Constraints.Max.X += barWidth
+		gtx.Constraints.Max.Y += barWidth
+		gtx.Constraints.Min = gtx.Constraints.Max
+	}
 
 	// Draw the Vertical scrollbar.
 	majorAxisSize := l.list.Axis.Convert(listDims.Size).X
