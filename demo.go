@@ -240,15 +240,6 @@ func demo(th *wid.Theme) layout.Widget {
 						wid.TextButton(th, "Text button", wid.Min()),
 						wid.OutlineButton(th, "Outline button", wid.Min()),
 					),
-					wid.Row(th, nil, nil,
-						wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}, wid.W(150)),
-						wid.DropDown(th, 1, []string{"Option 1", "Option 2", "Option 3"}),
-						wid.DropDown(th, 2, []string{"Option 1", "Option 2", "Option 3"}),
-						wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
-						wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
-					),
-					// DropDown defaults to max size, here filling a complete row across the form.
-					wid.DropDown(th, 0, []string{"Option X", "Option Y", "Option Z"}),
 					// Fixed size in Dp
 					wid.Edit(th, wid.Hint("Value 1"), wid.W(300)),
 					// Relative size
@@ -276,6 +267,20 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.ImageFromJpgFile("gopher.jpg"))
 }
 
+func dropDownDemo(th *wid.Theme) layout.Widget {
+	return wid.Col(
+		wid.Row(th, nil, nil,
+			wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}, wid.W(150)),
+			wid.DropDown(th, 1, []string{"Option 1", "Option 2", "Option 3"}),
+			wid.DropDown(th, 2, []string{"Option 1", "Option 2", "Option 3"}),
+			wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
+			wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
+		),
+		// DropDown defaults to max size, here filling a complete row across the form.
+		wid.DropDown(th, 0, []string{"Option X", "Option Y", "Option Z"}),
+	)
+}
+
 var page = "Grid"
 
 func setup() {
@@ -283,6 +288,8 @@ func setup() {
 	var currentPage layout.Widget
 	if page == "Grid" {
 		currentPage = Grid(th, data)
+	} else if page == "DropDown" {
+		currentPage = dropDownDemo(th)
 	} else {
 		currentPage = demo(th)
 	}
