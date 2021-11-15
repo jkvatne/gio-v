@@ -46,7 +46,7 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 		b.Items = append(b.Items, b.option(th, i))
 		b.hovered = append(b.hovered, false)
 	}
-	b.list = MakeList(th, Overlay, b.Items...)
+	b.list = MakeList(th, Overlay, 0, b.Items...)
 	b.Pad(5, 2, 1, 2)
 	for _, option := range options {
 		option.apply(&b)

@@ -240,7 +240,7 @@ type ListStyle struct {
 }
 
 // MakeList makes a vertical list
-func MakeList(th *Theme, a AnchorStrategy, widgets ...layout.Widget) layout.Widget {
+func MakeList(th *Theme, a AnchorStrategy, totalWidth int, widgets ...layout.Widget) layout.Widget {
 	node := makeNode(widgets)
 	listStyle := ListStyle{
 		list:           &layout.List{Axis: layout.Vertical},
@@ -248,7 +248,8 @@ func MakeList(th *Theme, a AnchorStrategy, widgets ...layout.Widget) layout.Widg
 		HScrollBar:     MakeScrollbarStyle(th),
 		AnchorStrategy: a,
 	}
-	listStyle.Width = 2000
+	listStyle.Width = totalWidth + 15
+
 	return func(gtx C) D {
 		var ch []layout.Widget
 		for i := 0; i < len(node.children); i++ {

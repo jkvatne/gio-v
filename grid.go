@@ -3,7 +3,7 @@
 package main
 
 // This file demonstrates a simple grid, trying to follow https://material.io/components/data-tables
-// It scrolls verticaly only, but implements highlighting of rows.
+// It scrolls verticaly and horizontaly and implements highlighting of rows.
 
 import (
 	"fmt"
@@ -39,7 +39,7 @@ var data = []person{
 	{Name: "Per Pedersen", Age: 22, Address: "Nidelva 43"},
 }
 
-// Make a lot of persons...
+// Make a lot of extra persons...
 func makePersons() {
 	for i := 1; i < 100; i++ {
 		data[0].Age = i
@@ -51,7 +51,7 @@ func makePersons() {
 // It could be used to check/uncheck all boxes in the table
 var selectAll bool
 
-var colWidth = []float32{35, 400, 400, 450, 400}
+var colWidth = []float32{35, 300, 300, 300, 300}
 
 // Grid is a widget that lays out the grid. This is all that is needed.
 func Grid(th *wid.Theme, data []person) layout.Widget {
@@ -85,7 +85,7 @@ func Grid(th *wid.Theme, data []person) layout.Widget {
 		)
 		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5), wid.W(totalWidth)))
 	}
-	return wid.MakeList(&thg, wid.Occupy, lines...)
+	return wid.MakeList(&thg, wid.Occupy, int(totalWidth), lines...)
 }
 
 // InsetGrid is the grid with some padding
@@ -109,20 +109,8 @@ func InsetGrid(th *wid.Theme, grid layout.Widget) layout.Widget {
 	}
 }
 
-func setupGridDemo(th *wid.Theme) {
-	wid.Init()
-	wid.Setup(wid.Col(
-		wid.Row(th, nil, nil,
-			wid.RadioButton(th, &page, "Grid", "Grid demo"),
-			wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode)),
-		wid.Separator(th, unit.Dp(2.0)),
-		//InsetGrid(th, grid(th, data)),
-		Grid(th, data),
-	))
-}
-
 func onCheck(b bool) {
-	// Called when a checkbox in a row is clicked. Not used yet.
+	// Called when the header checkbox is clicked. It will set or clear all rows.
 	for i := 0; i < len(data); i++ {
 		data[i].Selected = selectAll
 	}
