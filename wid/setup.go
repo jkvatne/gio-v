@@ -24,30 +24,6 @@ func makeNode(widgets []layout.Widget) node {
 	return node
 }
 
-// MakeList makes a horizontal or vertical list
-func MakeList(th *Theme, dir layout.Axis, widgets ...layout.Widget) layout.Widget {
-	node := makeNode(widgets)
-	listStyle := ListStyle{
-		list:           &layout.List{Axis: dir},
-		VScrollBar:     MakeScrollbarStyle(th),
-		HScrollBar:     MakeScrollbarStyle(th),
-		AnchorStrategy: Occupy,
-	}
-	return func(gtx C) D {
-		var ch []layout.Widget
-		for i := 0; i < len(node.children); i++ {
-			ch = append(ch, *node.children[i].w)
-		}
-		return listStyle.Layout(
-			gtx,
-			len(ch),
-			func(gtx C, i int) D {
-				return ch[i](gtx)
-			},
-		)
-	}
-}
-
 func makeChildren(rigid bool, weights []float32, widgets ...layout.Widget) []layout.FlexChild {
 	var children []layout.FlexChild
 	node := makeNode(widgets)

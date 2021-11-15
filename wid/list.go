@@ -232,13 +232,40 @@ const (
 // ListStyle configures the presentation of a layout.List with a scrollbar.
 type ListStyle struct {
 	list       *layout.List
+	Hpos       int
+	Width      int
 	VScrollBar ScrollbarStyle
 	HScrollBar ScrollbarStyle
 	AnchorStrategy
 }
 
+// MakeList makes a horizontal or vertical list
+func MakeList(th *Theme, dir layout.Axis, widgets ...layout.Widget) layout.Widget {
+	node := makeNode(widgets)
+	listStyle := ListStyle{
+		list:           &layout.List{Axis: dir},
+		VScrollBar:     MakeScrollbarStyle(th),
+		HScrollBar:     MakeScrollbarStyle(th),
+		AnchorStrategy: Occupy,
+	}
+	listStyle.Width = 2000
+	return func(gtx C) D {
+		var ch []layout.Widget
+		for i := 0; i < len(node.children); i++ {
+			ch = append(ch, *node.children[i].w)
+		}
+		return listStyle.Layout(
+			gtx,
+			len(ch),
+			func(gtx C, i int) D {
+				return ch[i](gtx)
+			},
+		)
+	}
+}
+
 // Layout the list and its scrollbar.
-func (l ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
+func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	//originalConstraints := gtx.Constraints
 
 	// Determine how much space the scrollbar occupies.
@@ -261,31 +288,16 @@ func (l ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 		gtx.Constraints.Min = max
 	}
 
+	// Draw the list
+	macro := op.Record(gtx.Ops)
 	listDims := l.list.Layout(gtx, length, w)
+	call := macro.Stop()
+	pt := image.Pt(-l.Hpos, 0)
+	trans := op.Offset(layout.FPt(pt)).Push(gtx.Ops)
+	call.Add(gtx.Ops)
+	trans.Pop()
+
 	//gtx.Constraints = originalConstraints
-
-	// Draw the scrollbar.
-	majorAxisSize := l.list.Axis.Convert(listDims.Size).X
-	start, end := fromListPosition(l.list.Position, length, majorAxisSize)
-	layout.E.Layout(gtx, func(gtx C) D {
-		// layout.Dimension respects the minimum, so ensure that the
-		// scrollbar will be drawn on the correct edge even if the provided
-		// layout.Context had a zero minimum constraint.
-		gtx.Constraints.Min = gtx.Constraints.Max
-		return l.VScrollBar.Layout(gtx, layout.Vertical, start, end)
-	})
-
-	if delta := l.VScrollBar.Scrollbar.ScrollDistance(); delta != 0 {
-		// Handle any changes to the list position as a result of user interaction
-		// with the scrollbar.
-		deltaPx := int(math.Round(float64(float32(l.list.Position.Length) * delta)))
-		l.list.Position.Offset += deltaPx
-
-		// Ensure that the list pays attention to the Offset field when the scrollbar drag
-		// is started while the bar is at the end of the list. Without this, the scrollbar
-		// cannot be dragged away from the end.
-		l.list.Position.BeforeEnd = true
-	}
 
 	if l.AnchorStrategy == Occupy {
 		// Increase the width to account for the space occupied by the scrollbar.
@@ -294,15 +306,39 @@ func (l ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 		listDims.Size = l.list.Axis.Convert(cross)
 	}
 
-	layout.S.Layout(gtx, func(gtx C) D {
+	// Draw the Vertical scrollbar.
+	majorAxisSize := l.list.Axis.Convert(listDims.Size).X
+	start, end := fromListPosition(l.list.Position, length, majorAxisSize)
+
+	layout.E.Layout(gtx, func(gtx C) D {
 		gtx.Constraints.Min = gtx.Constraints.Max
-		return l.HScrollBar.Layout(gtx, layout.Horizontal, start, end)
+		return l.VScrollBar.Layout(gtx, layout.Vertical, start, end)
 	})
 
-	if delta := l.HScrollBar.Scrollbar.ScrollDistance(); delta != 0 {
+	if delta := l.VScrollBar.Scrollbar.ScrollDistance(); delta != 0 {
 		deltaPx := int(math.Round(float64(float32(l.list.Position.Length) * delta)))
 		l.list.Position.Offset += deltaPx
 		l.list.Position.BeforeEnd = true
+	}
+
+	// Draw the Horizontal scrollbar l.Hpos is offset into content, and l.Width is content size.
+	hStart := float32(l.Hpos) / float32(l.Width)
+	hEnd := hStart + float32(gtx.Constraints.Max.X)/float32(l.Width)
+	layout.S.Layout(gtx, func(gtx C) D {
+		gtx.Constraints.Min = gtx.Constraints.Max
+		return l.HScrollBar.Layout(gtx, layout.Horizontal, hStart, hEnd)
+	})
+
+	delta := l.HScrollBar.Scrollbar.ScrollDistance()
+	if delta != 0 {
+		deltaPx := int(math.Round(float64(float32(l.Width) * delta)))
+		l.Hpos += deltaPx
+		if l.Hpos < 0 {
+			l.Hpos = 0
+		}
+		if l.Hpos > l.Width-gtx.Constraints.Max.X {
+			l.Hpos = l.Width - gtx.Constraints.Max.X
+		}
 	}
 
 	return listDims

@@ -15,6 +15,7 @@ import (
 type SeparatorStyle struct {
 	Widget
 	thickness unit.Value
+	length    int
 }
 
 // Separator creates a material separator widget
@@ -29,6 +30,9 @@ func Separator(th *Theme, thickness unit.Value, options ...Option) layout.Widget
 		dim.Y = gtx.Px(s.thickness) + gtx.Px(s.padding.Top) + gtx.Px(s.padding.Bottom)
 		op.Offset(f32.Pt(float32(gtx.Px(s.padding.Left)), float32(gtx.Px(s.padding.Top)))).Add(gtx.Ops)
 		size := image.Pt(dim.X-gtx.Px(s.padding.Left)-gtx.Px(s.padding.Right), gtx.Px(s.thickness))
+		if w := gtx.Px(s.Widget.width); w > size.X {
+			size.X = w
+		}
 		defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
 		paint.ColorOp{Color: s.fgColor}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
