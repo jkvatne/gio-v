@@ -156,7 +156,7 @@ func (s ScrollbarStyle) layout(gtx C, axis layout.Axis, viewportStart, viewportE
 			area := image.Rectangle{
 				Max: gtx.Constraints.Min,
 			}
-			pointerArea := pointer.Rect(area)
+			pointerArea := clip.Rect(area)
 			defer pointerArea.Push(gtx.Ops).Pop()
 			s.Scrollbar.AddDrag(gtx.Ops)
 
@@ -206,7 +206,7 @@ func (s ScrollbarStyle) layout(gtx C, axis layout.Axis, viewportStart, viewportE
 				}.Op(gtx.Ops))
 
 				// Add the indicator pointer hit area.
-				area := pointer.Rect(image.Rectangle{Max: indicatorDims})
+				area := clip.Rect(image.Rectangle{Max: indicatorDims})
 				defer pointer.PassOp{}.Push(gtx.Ops).Pop()
 				defer area.Push(gtx.Ops).Pop()
 				s.Scrollbar.AddIndicator(gtx.Ops)
@@ -246,7 +246,7 @@ func MakeList(th *Theme, dir layout.Axis, widgets ...layout.Widget) layout.Widge
 		list:           &layout.List{Axis: dir},
 		VScrollBar:     MakeScrollbarStyle(th),
 		HScrollBar:     MakeScrollbarStyle(th),
-		AnchorStrategy: Occupy,
+		AnchorStrategy: Overlay,
 	}
 	listStyle.Width = 2000
 	return func(gtx C) D {
@@ -269,23 +269,23 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	//originalConstraints := gtx.Constraints
 
 	// Determine how much space the scrollbar occupies.
-	barWidth := gtx.Px(l.VScrollBar.Width(gtx.Metric))
+	//barWidth := gtx.Px(l.VScrollBar.Width(gtx.Metric))
 
-	if l.AnchorStrategy == Occupy {
-		// Reserve space for the scrollbar using the gtx constraints.
-		/*max := l.list.Axis.Convert(gtx.Constraints.Max)
-		min := l.list.Axis.Convert(gtx.Constraints.Min)
-		max.Y -= barWidth
-		min.Y -= barWidth
-		gtx.Constraints.Max = l.list.Axis.Convert(max)
-		gtx.Constraints.Min = l.list.Axis.Convert(min)
-		*/
-		max := gtx.Constraints.Max
-		min := gtx.Constraints.Min
-		max.X -= barWidth
-		min.Y -= barWidth
-		gtx.Constraints.Max = max
-		gtx.Constraints.Min = max
+	//if l.AnchorStrategy == Occupy {
+	// Reserve space for the scrollbar using the gtx constraints.
+	/*max := l.list.Axis.Convert(gtx.Constraints.Max)
+	min := l.list.Axis.Convert(gtx.Constraints.Min)
+	max.Y -= barWidth
+	min.Y -= barWidth
+	gtx.Constraints.Max = l.list.Axis.Convert(max)
+	gtx.Constraints.Min = l.list.Axis.Convert(min)
+	*/
+	//min := gtx.Constraints.Min
+	//max.X -= barWidth
+	//min.Y -= barWidth
+
+	if l.AnchorStrategy == Overlay {
+		gtx.Constraints.Min = gtx.Constraints.Max
 	}
 
 	// Draw the list
@@ -299,12 +299,11 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 
 	//gtx.Constraints = originalConstraints
 
-	if l.AnchorStrategy == Occupy {
-		// Increase the width to account for the space occupied by the scrollbar.
-		cross := l.list.Axis.Convert(listDims.Size)
-		cross.Y += barWidth
-		listDims.Size = l.list.Axis.Convert(cross)
-	}
+	//if l.AnchorStrategy == Occupy {
+	// Increase the width to account for the space occupied by the scrollbar.
+	//cross := l.list.Axis.Convert(listDims.Size)
+	//cross.Y += barWidth
+	//listDims.Size = l.list.Axis.Convert(cross)
 
 	// Draw the Vertical scrollbar.
 	majorAxisSize := l.list.Axis.Convert(listDims.Size).X

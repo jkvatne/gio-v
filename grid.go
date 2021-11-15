@@ -73,6 +73,8 @@ func Grid(th *wid.Theme, data []person) layout.Widget {
 		wid.Label(&thh, "Gender", wid.Bold()),
 	)
 	var lines []layout.Widget
+	lines = append(lines, heading)
+	lines = append(lines, wid.Separator(th, unit.Dp(2.0), wid.W(totalWidth)))
 	for i := 0; i < len(data); i++ {
 		w := wid.Row(&thg, &data[i].Selected, colWidth,
 			wid.Checkbox(&thg, "", &data[i].Selected, nil),
@@ -83,11 +85,7 @@ func Grid(th *wid.Theme, data []person) layout.Widget {
 		)
 		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5), wid.W(totalWidth)))
 	}
-	grid := wid.MakeList(&thg, layout.Vertical, lines...)
-	return wid.Col(
-		heading,
-		wid.Separator(th, unit.Dp(0.5)),
-		grid)
+	return wid.MakeList(&thg, layout.Vertical, lines...)
 }
 
 // InsetGrid is the grid with some padding
@@ -117,7 +115,7 @@ func setupGridDemo(th *wid.Theme) {
 		wid.Row(th, nil, nil,
 			wid.Checkbox(th, "Grid demo", &showGrid, onSwitchMode),
 			wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode)),
-		wid.Separator(th, unit.Dp(2.0), wid.Pad(10, 0, 10, 0)),
+		wid.Separator(th, unit.Dp(2.0)),
 		//InsetGrid(th, grid(th, data)),
 		Grid(th, data),
 	))
