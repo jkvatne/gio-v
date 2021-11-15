@@ -105,6 +105,7 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func
 		return dims
 	}
 }
+
 func (b BtnOption) apply(cfg interface{}) {
 	b(cfg.(*ButtonDef))
 }

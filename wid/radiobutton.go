@@ -24,7 +24,7 @@ type RadioButtonStyle struct {
 }
 
 // RadioButton returns a RadioButton with a label. The key specifies the initial value for the output
-func RadioButton(th *Theme, output *string, key string, label string) func(gtx C) D {
+func RadioButton(th *Theme, output *string, key string, label string, options ...Option) func(gtx C) D {
 	r := RadioButtonStyle{
 		Label:              label,
 		Output:             output,
@@ -33,6 +33,9 @@ func RadioButton(th *Theme, output *string, key string, label string) func(gtx C
 		UncheckedStateIcon: th.RadioUnchecked,
 	}
 	r.th = th
+	for _, option := range options {
+		option.apply(&r)
+	}
 	r.SetupTabs()
 	return func(gtx C) D {
 		isSelected := *r.Output == r.Key
@@ -42,9 +45,26 @@ func RadioButton(th *Theme, output *string, key string, label string) func(gtx C
 			if r.Output != nil {
 				*r.Output = r.Key
 			}
+			if r.handler != nil {
+				r.handler(true)
+			}
 		}
 		return dims
 	}
+}
+
+type RbOption func(style *RadioButtonStyle)
+
+// Handler is an optional parameter to set a callback when the button is clicked
+func Do(f func()) RbOption {
+	foo := func(b bool) { f() }
+	return func(b *RadioButtonStyle) {
+		b.handler = foo
+	}
+}
+
+func (b RbOption) apply(cfg interface{}) {
+	b(cfg.(*RadioButtonStyle))
 }
 
 func (r *RadioButtonStyle) layout(gtx C, checked bool) D {

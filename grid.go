@@ -51,7 +51,7 @@ func makePersons() {
 // It could be used to check/uncheck all boxes in the table
 var selectAll bool
 
-var colWidth = []float32{35, 500, 500, 550, 500}
+var colWidth = []float32{35, 400, 400, 450, 400}
 
 // Grid is a widget that lays out the grid. This is all that is needed.
 func Grid(th *wid.Theme, data []person) layout.Widget {
@@ -113,7 +113,7 @@ func setupGridDemo(th *wid.Theme) {
 	wid.Init()
 	wid.Setup(wid.Col(
 		wid.Row(th, nil, nil,
-			wid.Checkbox(th, "Grid demo", &showGrid, onSwitchMode),
+			wid.RadioButton(th, &page, "Grid", "Grid demo"),
 			wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode)),
 		wid.Separator(th, unit.Dp(2.0)),
 		//InsetGrid(th, grid(th, data)),
