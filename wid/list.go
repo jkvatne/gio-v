@@ -239,14 +239,14 @@ type ListStyle struct {
 	AnchorStrategy
 }
 
-// MakeList makes a horizontal or vertical list
-func MakeList(th *Theme, dir layout.Axis, widgets ...layout.Widget) layout.Widget {
+// MakeList makes a vertical list
+func MakeList(th *Theme, a AnchorStrategy, widgets ...layout.Widget) layout.Widget {
 	node := makeNode(widgets)
 	listStyle := ListStyle{
-		list:           &layout.List{Axis: dir},
+		list:           &layout.List{Axis: layout.Vertical},
 		VScrollBar:     MakeScrollbarStyle(th),
 		HScrollBar:     MakeScrollbarStyle(th),
-		AnchorStrategy: Overlay,
+		AnchorStrategy: a,
 	}
 	listStyle.Width = 2000
 	return func(gtx C) D {
@@ -266,8 +266,6 @@ func MakeList(th *Theme, dir layout.Axis, widgets ...layout.Widget) layout.Widge
 
 // Layout the list and its scrollbar.
 func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
-	//originalConstraints := gtx.Constraints
-
 	// Determine how much space the scrollbar occupies.
 	barWidth := gtx.Px(l.VScrollBar.Width(gtx.Metric))
 
@@ -283,12 +281,11 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	listDims := l.list.Layout(gtx, length, w)
 	call := macro.Stop()
 	pt := image.Pt(-l.Hpos, 0)
-	trans := op.Offset(layout.FPt(pt)).Push(gtx.Ops)
 	cl := clip.Rect{Max: gtx.Constraints.Min}.Push(gtx.Ops)
+	trans := op.Offset(layout.FPt(pt)).Push(gtx.Ops)
 	call.Add(gtx.Ops)
-	cl.Pop()
 	trans.Pop()
-
+	cl.Pop()
 	if l.AnchorStrategy == Occupy {
 		// Increase the width to account for the space occupied by the scrollbar.
 		listDims.Size.X += barWidth
@@ -301,12 +298,10 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	// Draw the Vertical scrollbar.
 	majorAxisSize := l.list.Axis.Convert(listDims.Size).X
 	start, end := fromListPosition(l.list.Position, length, majorAxisSize)
-
 	layout.E.Layout(gtx, func(gtx C) D {
 		gtx.Constraints.Min = gtx.Constraints.Max
 		return l.VScrollBar.Layout(gtx, layout.Vertical, start, end)
 	})
-
 	if delta := l.VScrollBar.Scrollbar.ScrollDistance(); delta != 0 {
 		deltaPx := int(math.Round(float64(float32(l.list.Position.Length) * delta)))
 		l.list.Position.Offset += deltaPx
@@ -320,7 +315,6 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 		gtx.Constraints.Min = gtx.Constraints.Max
 		return l.HScrollBar.Layout(gtx, layout.Horizontal, hStart, hEnd)
 	})
-
 	delta := l.HScrollBar.Scrollbar.ScrollDistance()
 	if delta != 0 {
 		deltaPx := int(math.Round(float64(float32(l.Width) * delta)))

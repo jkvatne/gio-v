@@ -85,7 +85,7 @@ func Grid(th *wid.Theme, data []person) layout.Widget {
 		)
 		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5), wid.W(totalWidth)))
 	}
-	return wid.MakeList(&thg, layout.Vertical, lines...)
+	return wid.MakeList(&thg, wid.Occupy, lines...)
 }
 
 // InsetGrid is the grid with some padding
