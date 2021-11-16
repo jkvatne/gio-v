@@ -45,8 +45,11 @@ type Theme struct {
 	TooltipOnBackground   color.NRGBA
 	LabelPadding          layout.Inset
 	EditPadding           layout.Inset
+	DropDownPadding       layout.Inset
 	IconInset             layout.Inset
 	ListInset             layout.Inset
+	ButtonPadding         layout.Inset
+	ButtonLabelPadding    layout.Inset
 	// Elevation is the shadow width
 	Elevation unit.Value
 	// SashColor is the color of the movable divider
@@ -110,9 +113,12 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme 
 	t.Elevation = t.TextSize.Scale(0.5)
 	// Text
 	t.LabelPadding = layout.Inset{Top: v, Right: v.Scale(2.0), Bottom: v, Left: v.Scale(2.0)}
+	t.DropDownPadding = t.LabelPadding
 	t.HintColor = DeEmphasis(t.OnBackground, 45)
 	t.SelectionColor = MulAlpha(t.Primary, 0x60)
 	t.EditPadding = layout.Inset{Top: v.Scale(2.0), Right: v.Scale(2.0), Bottom: v, Left: v.Scale(2.0)}
+	t.ButtonPadding = t.LabelPadding
+	t.ButtonLabelPadding = t.LabelPadding
 	// Tooltip
 	t.TooltipInset = layout.UniformInset(unit.Dp(10))
 	t.TooltipCornerRadius = unit.Dp(6.0)

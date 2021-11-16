@@ -54,7 +54,7 @@ func main() {
 	}()
 	go func() {
 		currentTheme = wid.NewTheme(gofont.Collection(), 14, wid.MaterialDesignLight)
-		win = app.NewWindow(app.Title("Gio-v demo"), modeFromString(mode).Option(), app.Size(unit.Dp(900), unit.Dp(700)))
+		win = app.NewWindow(app.Title("Gio-v demo"), modeFromString(mode).Option(), app.Size(unit.Dp(900), unit.Dp(500)))
 		updateMode()
 		setup()
 		for {

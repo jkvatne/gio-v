@@ -222,7 +222,7 @@ func (b *DropDownDef) LayoutLabel() layout.Widget {
 			gtx.Constraints.Min.X = gtx.Px(b.width)
 		}
 		// A little trick to bring the label closer to the arrow, and avoid a big gap.
-		pad := b.th.LabelPadding
+		pad := b.th.DropDownPadding
 		pad.Right = unit.Dp(-5)
 		return pad.Layout(gtx, func(gtx C) D {
 			paint.ColorOp{Color: b.th.OnBackground}.Add(gtx.Ops)

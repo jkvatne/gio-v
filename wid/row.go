@@ -20,7 +20,6 @@ type rowDef struct {
 // Row returns a widget grid row with selectable color.
 func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget) layout.Widget {
 	r := rowDef{}
-	//children := makeChildren(false, weights, widgets...)
 	return func(gtx C) D {
 		bgColor := th.Background
 		if r.Hovered() {
@@ -28,10 +27,9 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 		} else if selected != nil && *selected {
 			bgColor = Interpolate(th.Background, th.Primary, 0.1)
 		}
-		// Check child sizes
 		dims := make([]D, len(widgets))
 		call := make([]op.CallOp, len(widgets))
-
+		// Check child sizes
 		for i, child := range widgets {
 			c := gtx
 			if weights != nil {
@@ -44,8 +42,10 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 			dims[i] = child(c)
 			call[i] = macro.Stop()
 		}
-		macro1 := op.Record(gtx.Ops)
+		macro := op.Record(gtx.Ops)
 		pos := float32(0)
+		// Generate all the rendering commands for the children,
+		// translated to correct location
 		for i := range widgets {
 			trans := op.Offset(f32.Pt(pos, 0)).Push(gtx.Ops)
 			call[i].Add(gtx.Ops)
@@ -53,17 +53,17 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 			pos += float32(dims[i].Size.X)
 		}
 		dim := D{Size: image.Pt(int(pos), dims[0].Size.Y)}
-		call1 := macro1.Stop()
+		drawAll := macro.Stop()
 		// Draw background
 		defer clip.Rect{Max: dim.Size}.Push(gtx.Ops).Pop()
 		paint.ColorOp{Color: bgColor}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
-		// Then play the macro to draw children
 		gtx.Constraints.Min = dim.Size
 		r.LayoutClickable(gtx)
 		r.HandleClicks(gtx)
 		r.HandleToggle(selected, nil)
-		call1.Add(gtx.Ops)
+		// Then play the macro to draw all the children
+		drawAll.Add(gtx.Ops)
 		return dim
 	}
 }

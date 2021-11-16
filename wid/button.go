@@ -90,8 +90,8 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func
 	b.shaper = th.Shaper
 	b.Style = style
 	b.align = layout.Middle
-	// Apply default padding. Can be overridden by option function
-	b.Pad(5, 2, 2, 2)
+	// Apply standard padding on the outside of the button. Can be overridden by option function
+	b.padding = th.ButtonPadding
 	for _, option := range options {
 		option.apply(&b)
 	}
@@ -286,7 +286,7 @@ func layLabel(b *ButtonDef) layout.Widget {
 		return func(gtx C) D { return D{} }
 	}
 	return func(gtx C) D {
-		return b.th.LabelPadding.Layout(gtx, func(gtx C) D {
+		return b.th.ButtonLabelPadding.Layout(gtx, func(gtx C) D {
 			switch {
 			case (b.Style == Text || b.Style == Outlined) && gtx.Queue == nil:
 				paint.ColorOp{Color: Disabled(b.bg)}.Add(gtx.Ops)

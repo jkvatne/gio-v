@@ -109,12 +109,16 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidth []fl
 	for i := 0; i < len(colWidth); i++ {
 		totalWidth += colWidth[i]
 	}
-	// Set up a new theme for the headings and rows
+	// Setup theme for heading.
 	thh := *th
-	thg := *th
 	thh.OnBackground = wid.WithAlpha(th.Primary, 210)
 	thh.Background = th.Surface
+	thh.LabelPadding = layout.UniformInset(th.TextSize.Scale(0.4))
+	// Setup theme for grid labels.
+	thg := *th
 	thg.Background = th.Surface
+	thg.LabelPadding = layout.UniformInset(th.TextSize.Scale(0.35))
+	// Configure a row with headings.
 	heading := wid.Row(&thh, &selectAll, colWidth,
 		wid.Checkbox(&thh, "", &selectAll, onCheck),
 		wid.HeaderButton(&thh, "Name", wid.Handler(onNameClick), wid.W(colWidth[1]), wid.BtnIcon(nameIcon)),
