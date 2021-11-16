@@ -88,7 +88,7 @@ func (r *RadioButtonStyle) layout(gtx C, checked bool) D {
 				}),
 				layout.Stacked(func(gtx C) D {
 					return layout.UniformInset(unit.Dp(1)).Layout(gtx, func(gtx C) D {
-						size := gtx.Px(r.th.TextSize.Scale(1.8))
+						size := gtx.Px(r.th.TextSize.Scale(1.3))
 						gtx.Constraints.Min = image.Point{X: size}
 						icon.Layout(gtx, ColDisabled(r.th.OnBackground, gtx.Queue == nil))
 						return D{Size: image.Point{X: size, Y: size}}
