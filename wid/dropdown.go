@@ -66,17 +66,17 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 				b.setHovered()
 			}
 			gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
-			gtx.Constraints.Max = image.Pt(dims.Size.X, 9999)
+			gtx.Constraints.Max.Y = gtx.Constraints.Max.Y - dims.Size.Y - 5
 			macro := op.Record(gtx.Ops)
 			dims2 := b.list(gtx)
-			r := f32.Rect(0, 0, float32(dims2.Size.X), float32(dims2.Size.Y))
+			listClipRect := f32.Rect(0, 0, float32(dims2.Size.X), float32(dims2.Size.Y))
 			call := macro.Stop()
 			macro = op.Record(gtx.Ops)
 			op.Offset(f32.Pt(0, float32(dims.Size.Y))).Add(gtx.Ops)
-			stack := clip.UniformRRect(r, 0).Push(gtx.Ops)
+			stack := clip.UniformRRect(listClipRect, 0).Push(gtx.Ops)
 			paint.Fill(gtx.Ops, b.th.Background)
 			// Draw a border around all options
-			paintBorder(gtx, r, b.th.OnBackground, b.th.BorderThickness, unit.Value{})
+			paintBorder(gtx, listClipRect, b.th.OnBackground, b.th.BorderThickness, unit.Value{})
 			call.Add(gtx.Ops)
 			stack.Pop()
 			call = macro.Stop()

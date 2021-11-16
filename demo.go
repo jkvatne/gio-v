@@ -8,6 +8,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"gio-v/wid"
 	"image"
 	"image/color"
@@ -268,9 +269,13 @@ func demo(th *wid.Theme) layout.Widget {
 }
 
 func dropDownDemo(th *wid.Theme) layout.Widget {
+	var longList []string
+	for i := 1; i < 100; i++ {
+		longList = append(longList, fmt.Sprintf("Option %d", i))
+	}
 	return wid.Col(
 		wid.Row(th, nil, nil,
-			wid.DropDown(th, 0, []string{"A", "B", "C", "D", "E", "F", "G"}, wid.W(150)),
+			wid.DropDown(th, 0, longList, wid.W(250)),
 			wid.DropDown(th, 1, []string{"Option 1", "Option 2", "Option 3"}),
 			wid.DropDown(th, 2, []string{"Option 1", "Option 2", "Option 3"}),
 			wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
