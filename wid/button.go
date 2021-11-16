@@ -47,6 +47,7 @@ type ButtonDef struct {
 	Style        ButtonStyle
 	fg           color.NRGBA
 	bg           color.NRGBA
+	align        layout.Alignment
 }
 
 // BtnOption is the options for buttons only
@@ -73,6 +74,12 @@ func Button(th *Theme, label string, options ...Option) func(gtx C) D {
 	return aButton(Contained, th, label, options...)
 }
 
+// HeaderButton is a shortcut to a text only button with left justified text and a given size
+func HeaderButton(th *Theme, label string, options ...Option) func(gtx C) D {
+	options = append(options, AlignLeft())
+	return aButton(Text, th, label, options...)
+}
+
 func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func(gtx C) D {
 	b := ButtonDef{}
 	b.SetupTabs()
@@ -82,6 +89,7 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func
 	b.Font = text.Font{Weight: text.Medium}
 	b.shaper = th.Shaper
 	b.Style = style
+	b.align = layout.Middle
 	// Apply default padding. Can be overridden by option function
 	b.Pad(5, 2, 2, 2)
 	for _, option := range options {
@@ -89,8 +97,13 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func
 	}
 	b.Tooltip = PlatformTooltip(th, b.hint)
 	return func(gtx C) D {
-		b.fg = th.OnPrimary
-		b.bg = th.Primary
+		if style == Contained {
+			b.fg = th.OnPrimary
+			b.bg = th.Primary
+		} else {
+			b.fg = th.OnBackground
+			b.bg = color.NRGBA{}
+		}
 		if b.Widget.fgColor.A != 0 {
 			b.bg = b.Widget.fgColor
 			if Luminance(b.Widget.fgColor) > 127 {
@@ -108,6 +121,13 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func
 
 func (b BtnOption) apply(cfg interface{}) {
 	b(cfg.(*ButtonDef))
+}
+
+// AlignLeft will align text to the left. Used for Text buttons.
+func AlignLeft() BtnOption {
+	return func(b *ButtonDef) {
+		b.align = layout.Start
+	}
 }
 
 // BtnIcon sets button icon
@@ -231,8 +251,7 @@ func (b *ButtonDef) layoutBackground() func(gtx C) D {
 			// Outline button, hovered/focused
 			paint.FillShape(gtx.Ops, Hovered(b.th.Background), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		case b.Style == Text:
-			// Outline button, not disabled
-			paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			// Outline button, not disabled, keep transparent.
 		case b.Style == Outlined && gtx.Queue == nil:
 			// Disabled Outlined button. Text and outline is grey when disabled
 			paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
@@ -276,7 +295,7 @@ func layLabel(b *ButtonDef) layout.Widget {
 			case b.Style == Contained:
 				paint.ColorOp{Color: b.fg}.Add(gtx.Ops)
 			case b.Style == Outlined || b.Style == Text:
-				paint.ColorOp{Color: b.bg}.Add(gtx.Ops)
+				paint.ColorOp{Color: b.fg}.Add(gtx.Ops)
 			}
 			return aLabel{Alignment: text.Middle}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.Text)
 		})
@@ -315,7 +334,7 @@ func (b *ButtonDef) layout(gtx C) D {
 				layout.Stacked(
 					func(gtx C) D {
 						gtx.Constraints.Min = min
-						return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceSides}.Layout(
+						return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceEnd}.Layout(
 							gtx,
 							layout.Rigid(layIcon(b)),
 							layout.Rigid(layLabel(b)),

@@ -10,6 +10,8 @@ import (
 	"gio-v/wid"
 	"sort"
 
+	"golang.org/x/exp/shiny/materialdesign/icons"
+
 	"gioui.org/layout"
 	"gioui.org/unit"
 )
@@ -46,6 +48,7 @@ func makePersons() {
 }
 
 var dir bool
+var sortCol int
 
 func onNameClick() {
 	if dir {
@@ -54,6 +57,7 @@ func onNameClick() {
 		sort.Slice(data, func(i, j int) bool { return data[i].Name >= data[j].Name })
 	}
 	dir = !dir
+	sortCol = 1
 	update()
 }
 
@@ -64,6 +68,7 @@ func onAddressClick() {
 		sort.Slice(data, func(i, j int) bool { return data[i].Address >= data[j].Address })
 	}
 	dir = !dir
+	sortCol = 2
 	update()
 }
 
@@ -71,18 +76,35 @@ func onAgeClick() {
 	if dir {
 		sort.Slice(data, func(i, j int) bool { return data[i].Age < data[j].Age })
 	} else {
-		sort.Slice(data, func(i, j int) bool { return data[i].Age < data[j].Age })
+		sort.Slice(data, func(i, j int) bool { return data[i].Age >= data[j].Age })
 	}
 	dir = !dir
+	sortCol = 3
 	update()
 }
 
 // selectAll is not used, but is controlled from the heading checkbox.
 // It could be used to check/uncheck all boxes in the table
 var selectAll bool
+var nameIcon []byte
+var addressIcon []byte
+var ageIcon []byte
+
+func getIcon(colNo int) []byte {
+	if sortCol == colNo {
+		if dir {
+			return icons.HardwareKeyboardArrowUp
+		}
+		return icons.HardwareKeyboardArrowDown
+	}
+	return nil
+}
 
 // Grid is a widget that lays out the grid. This is all that is needed.
 func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidth []float32) layout.Widget {
+	nameIcon = getIcon(1)
+	addressIcon = getIcon(2)
+	ageIcon = getIcon(3)
 	totalWidth := float32(0)
 	for i := 0; i < len(colWidth); i++ {
 		totalWidth += colWidth[i]
@@ -90,14 +112,14 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidth []fl
 	// Set up a new theme for the headings and rows
 	thh := *th
 	thg := *th
-	thh.OnBackground = wid.WithAlpha(th.OnSurface, 192)
+	thh.OnBackground = wid.WithAlpha(th.Primary, 210)
 	thh.Background = th.Surface
 	thg.Background = th.Surface
 	heading := wid.Row(&thh, &selectAll, colWidth,
 		wid.Checkbox(&thh, "", &selectAll, onCheck),
-		wid.TextButton(&thh, "Name", wid.Handler(onNameClick)),
-		wid.TextButton(&thh, "Address", wid.Handler(onAddressClick)),
-		wid.TextButton(&thh, "Age", wid.Handler(onAgeClick)),
+		wid.HeaderButton(&thh, "Name", wid.Handler(onNameClick), wid.W(colWidth[1]), wid.BtnIcon(nameIcon)),
+		wid.HeaderButton(&thh, "Address", wid.Handler(onAddressClick), wid.W(colWidth[2]), wid.BtnIcon(addressIcon)),
+		wid.HeaderButton(&thh, "Age", wid.Handler(onAgeClick), wid.W(colWidth[3]), wid.BtnIcon(ageIcon)),
 		wid.Label(&thh, "Gender", wid.Bold()),
 	)
 	var lines []layout.Widget
