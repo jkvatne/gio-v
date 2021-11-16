@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"gio-v/wid"
+	"sort"
 
 	"gioui.org/layout"
 	"gioui.org/unit"
@@ -22,16 +23,16 @@ type person struct {
 }
 
 var data = []person{
-	{Name: "Ole", Age: 21, Address: "Storgata 3", Status: 1},
+	{Name: "Ole Karlsen", Age: 21, Address: "Storgata 3", Status: 1},
 	{Name: "Per Pedersen", Age: 22, Address: "Svenskveien 33", Selected: true, Status: 1},
-	{Name: "Nils", Age: 23, Address: "Brogata 34"},
-	{Name: "Kai", Age: 28, Address: "Soleieveien 12"},
-	{Name: "Gro", Age: 29, Address: "Blomsterveien 22"},
-	{Name: "Ole", Age: 21, Address: "Blåklokkevikua 33"},
+	{Name: "Nils Aure", Age: 23, Address: "Brogata 34"},
+	{Name: "Kai Oppdal", Age: 28, Address: "Soleieveien 12"},
+	{Name: "Gro Arneberg", Age: 29, Address: "Blomsterveien 22"},
+	{Name: "Ole Kolås", Age: 21, Address: "Blåklokkevikua 33"},
 	{Name: "Per Pedersen", Age: 22, Address: "Gamleveien 35"},
-	{Name: "Nils", Age: 23, Address: "Nygata 64"},
+	{Name: "Nils Vukubråten", Age: 23, Address: "Nygata 64"},
 	{Name: "Sindre Gratangen", Age: 28, Address: "Brosundet 34"},
-	{Name: "Gro", Age: 29, Address: "Blomsterveien 22"},
+	{Name: "Gro Nilsasveen", Age: 29, Address: "Blomsterveien 22"},
 	{Name: "Petter Olsen", Age: 21, Address: "Katavågen 44"},
 	{Name: "Per Pedersen", Age: 22, Address: "Nidelva 43"},
 }
@@ -42,6 +43,38 @@ func makePersons() {
 		data[0].Age = i
 		data = append(data, data[0])
 	}
+}
+
+var dir bool
+
+func onNameClick() {
+	if dir {
+		sort.Slice(data, func(i, j int) bool { return data[i].Name < data[j].Name })
+	} else {
+		sort.Slice(data, func(i, j int) bool { return data[i].Name >= data[j].Name })
+	}
+	dir = !dir
+	update()
+}
+
+func onAddressClick() {
+	if dir {
+		sort.Slice(data, func(i, j int) bool { return data[i].Address < data[j].Address })
+	} else {
+		sort.Slice(data, func(i, j int) bool { return data[i].Address >= data[j].Address })
+	}
+	dir = !dir
+	update()
+}
+
+func onAgeClick() {
+	if dir {
+		sort.Slice(data, func(i, j int) bool { return data[i].Age < data[j].Age })
+	} else {
+		sort.Slice(data, func(i, j int) bool { return data[i].Age < data[j].Age })
+	}
+	dir = !dir
+	update()
 }
 
 // selectAll is not used, but is controlled from the heading checkbox.
@@ -62,9 +95,9 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidth []fl
 	thg.Background = th.Surface
 	heading := wid.Row(&thh, &selectAll, colWidth,
 		wid.Checkbox(&thh, "", &selectAll, onCheck),
-		wid.Label(&thh, "Name", wid.Bold()),
-		wid.Label(&thh, "Address", wid.Bold()),
-		wid.Label(&thh, "Age", wid.Bold()),
+		wid.TextButton(&thh, "Name", wid.Handler(onNameClick)),
+		wid.TextButton(&thh, "Address", wid.Handler(onAddressClick)),
+		wid.TextButton(&thh, "Age", wid.Handler(onAgeClick)),
 		wid.Label(&thh, "Gender", wid.Bold()),
 	)
 	var lines []layout.Widget

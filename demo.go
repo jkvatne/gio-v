@@ -288,7 +288,7 @@ func dropDownDemo(th *wid.Theme) layout.Widget {
 		))
 }
 
-var page = "DropDown"
+var page = "Grid1"
 
 var topRowPadding = layout.Inset{Top: unit.Dp(8), Bottom: unit.Dp(8), Left: unit.Dp(8), Right: unit.Dp(8)}
 
