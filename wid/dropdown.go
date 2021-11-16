@@ -52,6 +52,11 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 		option.apply(&b)
 	}
 	return func(gtx C) D {
+		// orgConstraint := gtx.Constraints
+		if b.width.V > 0 {
+			gtx.Constraints.Min.X = gtx.Px(b.width)
+			gtx.Constraints.Max.X = gtx.Px(b.width)
+		}
 		dims := b.Layout(gtx)
 		oldVisible := b.Visible
 		if !b.Focused() {
@@ -67,6 +72,8 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 			}
 			gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
 			gtx.Constraints.Max.Y = gtx.Constraints.Max.Y - dims.Size.Y - 5
+			//gtx.Constraints.Max.X = orgConstraint.Max.X
+			//gtx.Constraints.Min.X = orgConstraint.Max.X
 			macro := op.Record(gtx.Ops)
 			dims2 := b.list(gtx)
 			listClipRect := f32.Rect(0, 0, float32(dims2.Size.X), float32(dims2.Size.Y))
@@ -163,6 +170,10 @@ func (b *DropDownDef) Layout(gtx C) D {
 					if min.X != 0 {
 						gtx.Constraints.Min = min
 						gtx.Constraints.Max.X = min.X
+					}
+					if b.width.V > 0 {
+						gtx.Constraints.Max.X = gtx.Px(b.width)
+						gtx.Constraints.Min.X = gtx.Px(b.width)
 					}
 					return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start}.Layout(
 						gtx,

@@ -273,20 +273,23 @@ func dropDownDemo(th *wid.Theme) layout.Widget {
 	for i := 1; i < 100; i++ {
 		longList = append(longList, fmt.Sprintf("Option %d", i))
 	}
-	return wid.Col(
-		wid.Row(th, nil, nil,
+	return wid.Pad(topRowPadding,
+		wid.Col(
+			wid.Row(th, nil, nil,
+				wid.DropDown(th, 1, []string{"Option 1", "Option 2", "Option 3"}),
+				wid.DropDown(th, 2, []string{"Option 1", "Option 2", "Option 3"}),
+				wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
+				wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
+			),
+			// DropDown defaults to max size, here filling a complete row across the form.
+			wid.DropDown(th, 0, []string{"Option X", "Option Y", "Option Z"}),
+			wid.Separator(th, unit.Dp(2.0), wid.Pads(20, 0)),
+			wid.Label(th, "A very long list with scrolling, with fixed width 250"),
 			wid.DropDown(th, 0, longList, wid.W(250)),
-			wid.DropDown(th, 1, []string{"Option 1", "Option 2", "Option 3"}),
-			wid.DropDown(th, 2, []string{"Option 1", "Option 2", "Option 3"}),
-			wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
-			wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
-		),
-		// DropDown defaults to max size, here filling a complete row across the form.
-		wid.DropDown(th, 0, []string{"Option X", "Option Y", "Option Z"}),
-	)
+		))
 }
 
-var page = "Grid1"
+var page = "DropDown"
 
 var topRowPadding = layout.Inset{Top: unit.Dp(8), Bottom: unit.Dp(8), Left: unit.Dp(8), Right: unit.Dp(8)}
 

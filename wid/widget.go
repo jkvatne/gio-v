@@ -103,7 +103,7 @@ func Color(c color.NRGBA) WidgetOption {
 	}
 }
 
-// Pad is an option parameter to set customized padding. Noe that 1,2,3 or 4 paddings can be specified.
+// Pads is an option parameter to set customized padding. Noe that 1,2,3 or 4 paddings can be specified.
 // If 1 is supplide, it is used for left,right,top,bottom, all with the same padding
 // If 2 is supplied, the first is used for top/bottom, and the second for left and riht padding
 // If 4 is supplied, it is used for top, right, bottom, left in that sequence.
@@ -130,7 +130,7 @@ func CalcMin(gtx C, width unit.Value) image.Point {
 	min := gtx.Constraints.Min
 	if width.V <= 1.0 {
 		min.X = gtx.Px(width.Scale(float32(gtx.Constraints.Max.X)))
-	} else if min.X < gtx.Px(width) {
+	} else if width.V != 0 { //OBS } if min.X < gtx.Px(width) {
 		min.X = gtx.Px(width)
 	}
 	if min.X > gtx.Constraints.Max.X {

@@ -267,8 +267,7 @@ func MakeList(th *Theme, a AnchorStrategy, totalWidth int, widgets ...layout.Wid
 
 // Layout the list and its scrollbar.
 func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
-	gtx.Constraints.Min = gtx.Constraints.Max
-	//originalConstraints := gtx.Constraints
+	originalConstraints := gtx.Constraints
 	// Determine how much space the scrollbar occupies.
 	barWidth := gtx.Px(l.VScrollBar.Width(gtx.Metric))
 
@@ -281,11 +280,12 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	macro := op.Record(gtx.Ops)
 	listDims := l.list.Layout(gtx, length, w)
 	call := macro.Stop()
+	cl := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
 
-	//gtx.Constraints = originalConstraints
+	gtx.Constraints = originalConstraints
+	gtx.Constraints.Min = gtx.Constraints.Max
 
 	pt := image.Pt(-l.Hpos, 0)
-	cl := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
 	trans := op.Offset(layout.FPt(pt)).Push(gtx.Ops)
 	call.Add(gtx.Ops)
 	trans.Pop()
