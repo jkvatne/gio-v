@@ -270,7 +270,7 @@ func demo(th *wid.Theme) layout.Widget {
 func dropDownDemo(th *wid.Theme) layout.Widget {
 	return wid.Col(
 		wid.Row(th, nil, nil,
-			wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}, wid.W(150)),
+			wid.DropDown(th, 0, []string{"A", "B", "C", "D", "E", "F", "G"}, wid.W(150)),
 			wid.DropDown(th, 1, []string{"Option 1", "Option 2", "Option 3"}),
 			wid.DropDown(th, 2, []string{"Option 1", "Option 2", "Option 3"}),
 			wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),

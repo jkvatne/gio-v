@@ -275,8 +275,9 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 		gtx.Constraints.Max.X -= barWidth
 		gtx.Constraints.Max.Y -= barWidth
 	}
+	//OBS
 	gtx.Constraints.Min = gtx.Constraints.Max
-
+	//gtx.Constraints.Min.Y = 0
 	// Draw the list
 	macro := op.Record(gtx.Ops)
 	listDims := l.list.Layout(gtx, length, w)
