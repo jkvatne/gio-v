@@ -55,3 +55,10 @@ func Col(widgets ...layout.Widget) layout.Widget {
 		return layout.Flex{Axis: layout.Vertical, Alignment: layout.Start, Spacing: layout.SpaceEnd}.Layout(gtx, children...)
 	}
 }
+
+// Padded adds a pading around a widget
+func Pad(padding layout.Inset, w func(gtx C) D) func(gtx C) D {
+	return func(gtx C) D {
+		return padding.Layout(gtx, w)
+	}
+}

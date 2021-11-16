@@ -205,9 +205,9 @@ func demo(th *wid.Theme) layout.Widget {
 					),
 					wid.Checkbox(th, "Checkbox to select dark mode", &darkMode, onSwitchMode),
 					// Three separators to test layout algorithm. Should give three thin lines
-					wid.Separator(th, unit.Px(5), wid.Color(wid.RGB(0xFF6666)), wid.Pad(5, 20, 5, 20)),
+					wid.Separator(th, unit.Px(5), wid.Color(wid.RGB(0xFF6666)), wid.Pads(5, 20, 5, 20)),
 					wid.Separator(th, unit.Px(1)),
-					wid.Separator(th, unit.Px(1), wid.Pad(1)),
+					wid.Separator(th, unit.Px(1), wid.Pads(1)),
 					wid.Separator(th, unit.Px(1)),
 					wid.Row(th, nil, nil,
 						wid.Label(th, "A slider that can be key operated:"),
@@ -288,6 +288,8 @@ func dropDownDemo(th *wid.Theme) layout.Widget {
 
 var page = "Grid"
 
+var topRowPadding = layout.Inset{Top: unit.Dp(8), Bottom: unit.Dp(8), Left: unit.Dp(8), Right: unit.Dp(8)}
+
 func setup() {
 	th := currentTheme
 	var currentPage layout.Widget
@@ -300,12 +302,12 @@ func setup() {
 	}
 	wid.Init()
 	wid.Setup(wid.Col(
-		wid.Row(th, nil, nil,
+		wid.Pad(topRowPadding, wid.Row(th, nil, nil,
 			wid.RadioButton(th, &page, "Grid", "Grid demo", wid.Do(update)),
 			wid.RadioButton(th, &page, "Buttons", "Button demo", wid.Do(update)),
 			wid.RadioButton(th, &page, "DropDown", "DropDown demo", wid.Do(update)),
 			wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode),
-		),
+		)),
 		wid.Separator(th, unit.Dp(2.0)),
 		currentPage,
 	))

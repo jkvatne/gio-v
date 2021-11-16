@@ -108,7 +108,7 @@ func Color(c color.NRGBA) WidgetOption {
 // If 2 is supplied, the first is used for top/bottom, and the second for left and riht padding
 // If 4 is supplied, it is used for top, right, bottom, left in that sequence.
 // All values are in Dp (float32 device independent pixels)
-func Pad(pads ...float32) WidgetOption {
+func Pads(pads ...float32) WidgetOption {
 	return func(w WidgetIf) {
 		switch len(pads) {
 		case 0:

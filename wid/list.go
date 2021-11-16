@@ -267,6 +267,7 @@ func MakeList(th *Theme, a AnchorStrategy, totalWidth int, widgets ...layout.Wid
 
 // Layout the list and its scrollbar.
 func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
+	gtx.Constraints.Min = gtx.Constraints.Max
 	originalConstraints := gtx.Constraints
 	// Determine how much space the scrollbar occupies.
 	barWidth := gtx.Px(l.VScrollBar.Width(gtx.Metric))
@@ -276,27 +277,23 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 		gtx.Constraints.Max.X -= barWidth
 		gtx.Constraints.Max.Y -= barWidth
 	}
-	//OBS
-	//gtx.Constraints.Min = gtx.Constraints.Max
-	//gtx.Constraints.Min.Y = 0
 	// Draw the list
 	macro := op.Record(gtx.Ops)
 	listDims := l.list.Layout(gtx, length, w)
 	call := macro.Stop()
+
 	gtx.Constraints = originalConstraints
+
 	pt := image.Pt(-l.Hpos, 0)
-	//cl := clip.Rect{Max: gtx.Constraints.Min}.Push(gtx.Ops)
 	trans := op.Offset(layout.FPt(pt)).Push(gtx.Ops)
 	call.Add(gtx.Ops)
 	trans.Pop()
-	// cl.Pop()
 	if l.AnchorStrategy == Occupy {
 		// Increase the width to account for the space occupied by the scrollbar.
 		listDims.Size.X += barWidth
 		listDims.Size.Y += barWidth
 		gtx.Constraints.Max.X += barWidth
 		gtx.Constraints.Max.Y += barWidth
-		//gtx.Constraints.Min = gtx.Constraints.Max
 	}
 
 	// Draw the Vertical scrollbar.
