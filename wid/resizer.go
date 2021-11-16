@@ -25,7 +25,7 @@ type Resize struct {
 func SplitHorizontal(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widget) func(gtx C) D {
 	rs := Resize{Theme: th, ratio: ratio, axis: layout.Horizontal}
 	return func(gtx C) D {
-		return rs.Layout(gtx, th, w1, w2)
+		return rs.Layout(gtx, w1, w2)
 	}
 }
 
@@ -33,12 +33,12 @@ func SplitHorizontal(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widge
 func SplitVertical(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widget) func(gtx C) D {
 	rs := Resize{Theme: th, ratio: ratio, axis: layout.Vertical}
 	return func(gtx C) D {
-		return rs.Layout(gtx, th, w1, w2)
+		return rs.Layout(gtx, w1, w2)
 	}
 }
 
 // Layout displays w1 and w2 with handle in between.
-func (rs *Resize) Layout(gtx C, th *Theme, w1 layout.Widget, w2 layout.Widget) D {
+func (rs *Resize) Layout(gtx C, w1 layout.Widget, w2 layout.Widget) D {
 	// Compute the first widget's max width/height.
 	if rs.axis == layout.Horizontal {
 		rs.dragging(gtx, float32(gtx.Constraints.Max.X))
@@ -60,7 +60,7 @@ func (rs *Resize) Layout(gtx C, th *Theme, w1 layout.Widget, w2 layout.Widget) D
 
 func (rs *Resize) setCursor(gtx C, dims image.Point) {
 	rect := image.Rectangle{Max: dims}
-	defer pointer.Rect(rect).Push(gtx.Ops).Pop()
+	defer clip.Rect(rect).Push(gtx.Ops).Pop()
 	rs.drag.Add(gtx.Ops)
 	if rs.axis == layout.Horizontal {
 		pointer.CursorNameOp{Name: pointer.CursorColResize}.Add(gtx.Ops)

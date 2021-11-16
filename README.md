@@ -17,7 +17,7 @@ THIS IS WORK IN PROGRESS - ANYTHING CAN CHANGE AT ANY TIME
 
 ## Material design
 
-Quite a lot of effort has gone into making it look like google's examples of material design forms. The shadows are noe
+Quite a lot of effort has gone into making it look like Google's examples of material design forms. The shadows are noe
 almost identical, and hover/focus are at least similar.
 
 ## Keyboard only operation

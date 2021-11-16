@@ -24,24 +24,6 @@ func makeNode(widgets []layout.Widget) node {
 	return node
 }
 
-func makeChildren(rigid bool, weights []float32, widgets ...layout.Widget) []layout.FlexChild {
-	var children []layout.FlexChild
-	node := makeNode(widgets)
-	for i := 0; i < len(node.children); i++ {
-		wg := *node.children[i].w
-		w := float32(1.0)
-		if len(weights) > i {
-			w = weights[i]
-		}
-		if len(weights) > i && weights[i] > 1.0 || rigid {
-			children = append(children, layout.Rigid(func(gtx C) D { return wg(gtx) }))
-		} else {
-			children = append(children, layout.Flexed(w, func(gtx C) D { return wg(gtx) }))
-		}
-	}
-	return children
-}
-
 // Col makes a column of widgets.
 func Col(widgets ...layout.Widget) layout.Widget {
 	//	children := makeChildren(true, nil, widgets...)
@@ -56,7 +38,7 @@ func Col(widgets ...layout.Widget) layout.Widget {
 	}
 }
 
-// Padded adds a pading around a widget
+// Pad adds a padding around a widget.
 func Pad(padding layout.Inset, w func(gtx C) D) func(gtx C) D {
 	return func(gtx C) D {
 		return padding.Layout(gtx, w)

@@ -75,21 +75,6 @@ var First Focuser
 // Root is the root widget (usually a list), and is the root of the widget tree
 var Root layout.Widget
 
-/*
-type ClickOption func(*Clickable)
-
-// Handler is an optional parameter to set a callback when the button is clicked
-func Handler(f func()) ClickOption {
-	foo := func(b bool) { f() }
-	return func(b *Clickable) {
-		b.handler = foo
-	}
-}
-
-func (b ClickOption) apply(cfg interface{}) {
-	b(cfg.(*Clickable))
-}
-*/
 // Init will initialize the widget tree
 func Init() {
 	// Drop all old data

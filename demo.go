@@ -39,7 +39,6 @@ var thb *wid.Theme            // Secondary theme used for the color-shifting but
 var progress float32
 var sliderValue float32
 var dummy bool
-var showGrid = true
 
 func main() {
 	flag.StringVar(&mode, "mode", "default", "Select window as fullscreen, maximized, centered or default")
@@ -133,10 +132,10 @@ func onSwitchMode(v bool) {
 
 func modeFromString(s string) app.WindowMode {
 	switch {
-	case mode == "fullscreen":
+	case s == "fullscreen":
 		// A full-screen window
 		return app.Fullscreen
-	case mode == "default":
+	case s == "default":
 		// Default positioned window with size given
 		return app.Windowed
 	}
@@ -293,15 +292,18 @@ var page = "DropDown"
 
 var topRowPadding = layout.Inset{Top: unit.Dp(8), Bottom: unit.Dp(8), Left: unit.Dp(8), Right: unit.Dp(8)}
 
+var largeColWidth = []float32{35, 300, 300, 300, 300}
+var smallColWidth = []float32{30, 200, 200, 60, 150}
+
 func setup() {
 	th := currentTheme
 	var currentPage layout.Widget
 	if page == "Grid1" {
-		currentPage = Grid(th, wid.Occupy, data)
+		currentPage = Grid(th, wid.Occupy, data, largeColWidth)
 	} else if page == "Grid2" {
-		currentPage = Grid(th, wid.Overlay, data)
+		currentPage = Grid(th, wid.Overlay, data, largeColWidth)
 	} else if page == "Grid3" {
-		currentPage = Grid(th, wid.Overlay, data[:5])
+		currentPage = Grid(th, wid.Overlay, data[:5], smallColWidth)
 	} else if page == "DropDown" {
 		currentPage = dropDownDemo(th)
 	} else {

@@ -157,7 +157,7 @@ func (p1 screenPos) Less(p2 screenPos) bool {
 func (l aLabel) Layout(gtx C, s text.Shaper, font text.Font, size unit.Value, txt string) D {
 	cs := gtx.Constraints
 	textSize := fixed.I(gtx.Px(size))
-	// This is a trick to avoid skipping the last word in a label. Instead we clip it.
+	// This is a trick to avoid skipping the last word in a label. Instead, we clip it.
 	defer clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops).Pop()
 	var lines []text.Line
 	if l.MaxLines == 1 {
@@ -184,9 +184,11 @@ func (l aLabel) Layout(gtx C, s text.Shaper, font text.Font, size unit.Value, tx
 			break
 		}
 		op.Offset(layout.FPt(off)).Add(gtx.Ops)
-		defer clip.Rect(cl.Sub(off)).Push(gtx.Ops).Pop()
-		defer s.Shape(font, textSize, l).Push(gtx.Ops).Pop()
+		s1 := clip.Rect(cl.Sub(off)).Push(gtx.Ops)
+		s2 := s.Shape(font, textSize, l).Push(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
+		s2.Pop()
+		s1.Pop()
 	}
 	return dims
 }

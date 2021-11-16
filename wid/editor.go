@@ -445,8 +445,8 @@ func (e *Editor) command(gtx C, k key.Event) bool {
 		if k.Modifiers != key.ModShortcut {
 			return false
 		}
-		if text := e.SelectedText(); text != "" {
-			clipboard.WriteOp{Text: text}.Add(gtx.Ops)
+		if txt := e.SelectedText(); txt != "" {
+			clipboard.WriteOp{Text: txt}.Add(gtx.Ops)
 			if k.Name == "X" {
 				e.Delete(1)
 			}
@@ -548,7 +548,7 @@ func (e *Editor) layout(gtx C) D {
 	r.Min.Y -= pointerPadding
 	r.Max.X += pointerPadding
 	r.Max.X += pointerPadding
-	defer pointer.Rect(r).Push(gtx.Ops).Pop()
+	defer clip.Rect(r).Push(gtx.Ops).Pop()
 	pointer.CursorNameOp{Name: pointer.CursorText}.Add(gtx.Ops)
 
 	var scrollRange image.Rectangle
@@ -742,8 +742,8 @@ func (e *Editor) layoutText(s text.Shaper) ([]text.Line, layout.Dimensions) {
 	for i := 0; i < len(lines)-1; i++ {
 		// To avoid layout flickering while editing, assume a soft newline takes
 		// up all available space.
-		if layout := lines[i].Layout; len(layout.Text) > 0 {
-			r := layout.Text[len(layout.Text)-1]
+		if lo := lines[i].Layout; len(lo.Text) > 0 {
+			r := lo.Text[len(lo.Text)-1]
 			if r != '\n' {
 				dims.Size.X = e.maxWidth
 				break
@@ -1018,11 +1018,11 @@ func (e *Editor) moveStart(selAct selectionAction) {
 
 func (e *Editor) movePosToStart(pos combinedPos) combinedPos {
 	e.makeValid(&pos)
-	layout := e.lines[pos.lineCol.Y].Layout
+	lo := e.lines[pos.lineCol.Y].Layout
 	for i := pos.lineCol.X - 1; i >= 0; i-- {
 		_, s := e.rr.runeBefore(pos.ofs)
 		pos.ofs -= s
-		pos.x -= layout.Advances[i]
+		pos.x -= lo.Advances[i]
 	}
 	pos.lineCol.X = 0
 	pos.xoff = -pos.x
@@ -1042,9 +1042,9 @@ func (e *Editor) movePosToEnd(pos combinedPos) combinedPos {
 	if pos.lineCol.Y < len(e.lines)-1 {
 		end = 1
 	}
-	layout := l.Layout
-	for i := pos.lineCol.X; i < len(layout.Advances)-end; i++ {
-		adv := layout.Advances[i]
+	lo := l.Layout
+	for i := pos.lineCol.X; i < len(lo.Advances)-end; i++ {
+		adv := lo.Advances[i]
 		_, s := e.rr.runeAt(pos.ofs)
 		pos.ofs += s
 		pos.x += adv
@@ -1230,7 +1230,7 @@ func (e *Editor) SelectedText() string {
 		return ""
 	}
 	buf := make([]byte, l)
-	e.rr.Seek(int64(min(e.caret.start.ofs, e.caret.end.ofs)), io.SeekStart)
+	_, _ = e.rr.Seek(int64(min(e.caret.start.ofs, e.caret.end.ofs)), io.SeekStart)
 	_, err := e.rr.Read(buf)
 	if err != nil {
 		// The only error that rr.Read can return is EOF, which just means no

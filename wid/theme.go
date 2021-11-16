@@ -49,7 +49,7 @@ type Theme struct {
 	ListInset             layout.Inset
 	// Elevation is the shadow width
 	Elevation unit.Value
-	// SashColor is the color of the moveable divider
+	// SashColor is the color of the movable divider
 	SashColor  color.NRGBA
 	SashWidth  unit.Value
 	TrackColor color.NRGBA

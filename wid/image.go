@@ -17,12 +17,12 @@ import (
 
 // )
 
-// Image is a widget that displays an image.
+// ImageDef is a widget that displays an image.
 type ImageDef struct {
 	// Src is the image to display.
 	Src paint.ImageOp
 	// Fit specifies how to scale the image to the constraints.
-	// By default it does not do any scaling.
+	// By default, it does not do any scaling.
 	Fit Fit
 	// Position specifies where to position the image within
 	// the constraints.

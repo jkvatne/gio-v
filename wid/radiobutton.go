@@ -55,7 +55,7 @@ func RadioButton(th *Theme, output *string, key string, label string, options ..
 
 type RbOption func(style *RadioButtonStyle)
 
-// Handler is an optional parameter to set a callback when the button is clicked
+// Do is an optional parameter to set a callback when the button is clicked
 func Do(f func()) RbOption {
 	foo := func(b bool) { f() }
 	return func(b *RadioButtonStyle) {

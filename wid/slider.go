@@ -95,8 +95,8 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 		Min: margin.Mul(-1),
 		Max: size.Add(margin),
 	}
-	defer pointer.Rect(rect).Push(gtx.Ops).Pop()
-	defer pointer.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Push(gtx.Ops).Pop()
+	defer clip.Rect(rect).Push(gtx.Ops).Pop()
+	defer clip.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Push(gtx.Ops).Pop()
 	s.Float.drag.Add(gtx.Ops)
 
 	gtx.Constraints.Min = gtx.Constraints.Min.Add(axis.Convert(image.Pt(0, sizeCross)))
@@ -181,8 +181,7 @@ func (s *SliderStyle) Pos() float32 {
 	return s.Float.pos * s.Float.length
 }
 
-// Changed reports whether the value has changed since
-// the last call to Changed.
+// Changed reports whether the value has changed since lat time called.
 func (s *SliderStyle) Changed() bool {
 	changed := s.Float.changed
 	s.Float.changed = false

@@ -9,9 +9,6 @@ import (
 	"fmt"
 	"gio-v/wid"
 
-	"gioui.org/op/clip"
-	"gioui.org/op/paint"
-
 	"gioui.org/layout"
 	"gioui.org/unit"
 )
@@ -51,10 +48,8 @@ func makePersons() {
 // It could be used to check/uncheck all boxes in the table
 var selectAll bool
 
-var colWidth = []float32{35, 300, 300, 300, 300}
-
 // Grid is a widget that lays out the grid. This is all that is needed.
-func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person) layout.Widget {
+func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidth []float32) layout.Widget {
 	totalWidth := float32(0)
 	for i := 0; i < len(colWidth); i++ {
 		totalWidth += colWidth[i]
@@ -88,30 +83,9 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person) layout.Widget
 	return wid.MakeList(&thg, anchor, int(totalWidth), lines...)
 }
 
-// InsetGrid is the grid with some padding
-func InsetGrid(th *wid.Theme, grid layout.Widget) layout.Widget {
-	outerPadding := layout.UniformInset(th.TextSize.Scale(1.0))
-	innerPadding := layout.UniformInset(unit.Dp(2))
-	return func(gtx wid.C) wid.D {
-		//Outer padding. Drawn with background color.
-		c := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
-		paint.ColorOp{Color: th.Background}.Add(gtx.Ops)
-		paint.PaintOp{}.Add(gtx.Ops)
-		c.Pop()
-		return outerPadding.Layout(gtx, func(gtx wid.C) wid.D {
-			// Inner padding.Drawn with surface background
-			c := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
-			paint.ColorOp{Color: th.Surface}.Add(gtx.Ops)
-			paint.PaintOp{}.Add(gtx.Ops)
-			c.Pop()
-			return innerPadding.Layout(gtx, grid)
-		})
-	}
-}
-
 func onCheck(b bool) {
 	// Called when the header checkbox is clicked. It will set or clear all rows.
 	for i := 0; i < len(data); i++ {
-		data[i].Selected = selectAll
+		data[i].Selected = b
 	}
 }
