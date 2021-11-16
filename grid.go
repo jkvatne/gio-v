@@ -54,7 +54,7 @@ var selectAll bool
 var colWidth = []float32{35, 300, 300, 300, 300}
 
 // Grid is a widget that lays out the grid. This is all that is needed.
-func Grid(th *wid.Theme, data []person) layout.Widget {
+func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person) layout.Widget {
 	totalWidth := float32(0)
 	for i := 0; i < len(colWidth); i++ {
 		totalWidth += colWidth[i]
@@ -85,7 +85,7 @@ func Grid(th *wid.Theme, data []person) layout.Widget {
 		)
 		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5), wid.W(totalWidth)))
 	}
-	return wid.MakeList(&thg, wid.Occupy, int(totalWidth), lines...)
+	return wid.MakeList(&thg, anchor, int(totalWidth), lines...)
 }
 
 // InsetGrid is the grid with some padding

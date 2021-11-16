@@ -286,15 +286,19 @@ func dropDownDemo(th *wid.Theme) layout.Widget {
 	)
 }
 
-var page = "Grid"
+var page = "Grid1"
 
 var topRowPadding = layout.Inset{Top: unit.Dp(8), Bottom: unit.Dp(8), Left: unit.Dp(8), Right: unit.Dp(8)}
 
 func setup() {
 	th := currentTheme
 	var currentPage layout.Widget
-	if page == "Grid" {
-		currentPage = Grid(th, data)
+	if page == "Grid1" {
+		currentPage = Grid(th, wid.Occupy, data)
+	} else if page == "Grid2" {
+		currentPage = Grid(th, wid.Overlay, data)
+	} else if page == "Grid3" {
+		currentPage = Grid(th, wid.Overlay, data[:5])
 	} else if page == "DropDown" {
 		currentPage = dropDownDemo(th)
 	} else {
@@ -303,7 +307,9 @@ func setup() {
 	wid.Init()
 	wid.Setup(wid.Col(
 		wid.Pad(topRowPadding, wid.Row(th, nil, nil,
-			wid.RadioButton(th, &page, "Grid", "Grid demo", wid.Do(update)),
+			wid.RadioButton(th, &page, "Grid1", "Grid Occupy", wid.Do(update)),
+			wid.RadioButton(th, &page, "Grid2", "Grid Overlay", wid.Do(update)),
+			wid.RadioButton(th, &page, "Grid3", "Small grid", wid.Do(update)),
 			wid.RadioButton(th, &page, "Buttons", "Button demo", wid.Do(update)),
 			wid.RadioButton(th, &page, "DropDown", "DropDown demo", wid.Do(update)),
 			wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode),
