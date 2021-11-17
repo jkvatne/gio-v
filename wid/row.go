@@ -29,11 +29,26 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 		}
 		dims := make([]D, len(widgets))
 		call := make([]op.CallOp, len(widgets))
+		// Calculate widths
+		fracSum := float32(0.0)
+		fixSum := float32(0.0)
+		for _, w := range weights {
+			if w < 1.0 {
+				fracSum += w
+			} else {
+				fixSum += float32(gtx.Px((th.TextSize).Scale(w)))
+			}
+		}
+		scale := (float32(gtx.Constraints.Max.X) - fixSum) / float32(gtx.Px((th.TextSize).Scale(fracSum)))
 		// Check child sizes
 		for i, child := range widgets {
 			c := gtx
 			if weights != nil {
-				c.Constraints.Max.X = int(weights[i])
+				if weights[i] < 1.0 {
+					c.Constraints.Max.X = gtx.Px((th.TextSize).Scale(weights[i] * scale))
+				} else {
+					c.Constraints.Max.X = gtx.Px(th.TextSize.Scale(weights[i]))
+				}
 			} else {
 				c.Constraints.Max.X = gtx.Constraints.Max.X / len(widgets)
 			}

@@ -121,9 +121,9 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidth []fl
 	// Configure a row with headings.
 	heading := wid.Row(&thh, &selectAll, colWidth,
 		wid.Checkbox(&thh, "", &selectAll, onCheck),
-		wid.HeaderButton(&thh, "Name", wid.Handler(onNameClick), wid.W(colWidth[1]), wid.BtnIcon(nameIcon)),
-		wid.HeaderButton(&thh, "Address", wid.Handler(onAddressClick), wid.W(colWidth[2]), wid.BtnIcon(addressIcon)),
-		wid.HeaderButton(&thh, "Age", wid.Handler(onAgeClick), wid.W(colWidth[3]), wid.BtnIcon(ageIcon)),
+		wid.HeaderButton(&thh, "Name", wid.Handler(onNameClick), wid.W(9999), wid.BtnIcon(nameIcon)),
+		wid.HeaderButton(&thh, "Address", wid.Handler(onAddressClick), wid.W(9999), wid.BtnIcon(addressIcon)),
+		wid.HeaderButton(&thh, "Age", wid.Handler(onAgeClick), wid.W(9999), wid.BtnIcon(ageIcon)),
 		wid.Label(&thh, "Gender", wid.Bold()),
 	)
 	var lines []layout.Widget

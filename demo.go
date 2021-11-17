@@ -275,7 +275,7 @@ func dropDownDemo(th *wid.Theme) layout.Widget {
 	return wid.Pad(topRowPadding,
 		wid.Col(
 			wid.Row(th, nil, nil,
-				wid.DropDown(th, 1, []string{"Option 1", "Option 2", "Option 3"}),
+				wid.DropDown(th, 1, []string{"Option 1 with very long text", "Option 2", "Option 3"}),
 				wid.DropDown(th, 2, []string{"Option 1", "Option 2", "Option 3"}),
 				wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
 				wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
@@ -292,8 +292,9 @@ var page = "Grid1"
 
 var topRowPadding = layout.Inset{Top: unit.Dp(8), Bottom: unit.Dp(8), Left: unit.Dp(8), Right: unit.Dp(8)}
 
-var largeColWidth = []float32{35, 300, 300, 300, 300}
-var smallColWidth = []float32{30, 200, 200, 60, 150}
+var largeColWidth = []float32{2, 20, 20, 20, 20}
+var smallColWidth = []float32{2, 20, 0.9, 6, 15}
+var fracColWidth = []float32{2, 20.3, 0.3, 6, 0.14}
 
 func setup() {
 	th := currentTheme
@@ -301,9 +302,9 @@ func setup() {
 	if page == "Grid1" {
 		currentPage = Grid(th, wid.Occupy, data, largeColWidth)
 	} else if page == "Grid2" {
-		currentPage = Grid(th, wid.Overlay, data, largeColWidth)
+		currentPage = Grid(th, wid.Overlay, data, smallColWidth)
 	} else if page == "Grid3" {
-		currentPage = Grid(th, wid.Overlay, data[:5], smallColWidth)
+		currentPage = Grid(th, wid.Overlay, data[:5], fracColWidth)
 	} else if page == "DropDown" {
 		currentPage = dropDownDemo(th)
 	} else {
