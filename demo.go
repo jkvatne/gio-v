@@ -312,11 +312,11 @@ func setup() {
 	wid.Init()
 	wid.Setup(wid.Col(
 		wid.Pad(topRowPadding, wid.Row(th, nil, nil,
-			wid.RadioButton(th, &page, "Grid1", "Grid Occupy", wid.Do(update)),
-			wid.RadioButton(th, &page, "Grid2", "Grid Overlay", wid.Do(update)),
-			wid.RadioButton(th, &page, "Grid3", "Small grid", wid.Do(update)),
-			wid.RadioButton(th, &page, "Buttons", "Button demo", wid.Do(update)),
-			wid.RadioButton(th, &page, "DropDown", "DropDown demo", wid.Do(update)),
+			wid.RadioButton(th, &page, "Grid1", "Grid1", wid.Do(update)),
+			wid.RadioButton(th, &page, "Grid2", "Grid2", wid.Do(update)),
+			wid.RadioButton(th, &page, "Grid3", "Grid3", wid.Do(update)),
+			wid.RadioButton(th, &page, "Buttons", "Buttons", wid.Do(update)),
+			wid.RadioButton(th, &page, "DropDown", "DropDowns", wid.Do(update)),
 			wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode),
 		)),
 		wid.Separator(th, unit.Dp(2.0)),

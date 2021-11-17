@@ -5,6 +5,8 @@ package wid
 import (
 	"image"
 
+	"gioui.org/text"
+
 	"gioui.org/f32"
 	"gioui.org/layout"
 	"gioui.org/op/clip"
@@ -98,13 +100,16 @@ func (r *RadioButtonStyle) layout(gtx C, checked bool) D {
 		}),
 
 		layout.Rigid(func(gtx C) D {
-			return layout.Inset{Top: Zv, Right: r.th.TextSize, Bottom: Zv, Left: Zv}.Layout(gtx, func(gtx C) D {
+			return layout.Inset{}.Layout(gtx, func(gtx C) D {
 				paint.ColorOp{Color: r.th.OnBackground}.Add(gtx.Ops)
 				lbl := r.Label
 				if lbl == "" {
 					lbl = r.Key
 				}
-				return Label(r.th, lbl)(gtx) //  text.Start, 1.0
+				//return Label(r.th, lbl)(gtx) //  text.Start, 1.0
+				paint.ColorOp{Color: r.th.OnBackground}.Add(gtx.Ops)
+				tl := aLabel{Alignment: text.Start, MaxLines: 1}
+				return tl.Layout(gtx, r.th.Shaper, text.Font{Weight: text.Medium, Style: text.Regular}, r.th.TextSize, lbl)
 			})
 		}),
 	)
