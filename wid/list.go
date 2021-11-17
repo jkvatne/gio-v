@@ -233,14 +233,29 @@ const (
 type ListStyle struct {
 	list       *layout.List
 	Hpos       int
-	Width      int
+	Width      unit.Value
 	VScrollBar ScrollbarStyle
 	HScrollBar ScrollbarStyle
 	AnchorStrategy
 }
 
+func totalWidth(th *Theme, colWidths []float32) unit.Value {
+	if colWidths == nil {
+		return unit.Value{}
+	}
+	fixSum := float32(0.0)
+	for _, w := range colWidths {
+		if w < 1.0 {
+			return unit.Value{}
+		} else {
+			fixSum += float32(th.TextSize.Scale(w).V)
+		}
+	}
+	return unit.Value{V: fixSum, U: unit.UnitDp}
+}
+
 // MakeList makes a vertical list
-func MakeList(th *Theme, a AnchorStrategy, totalWidth int, widgets ...layout.Widget) layout.Widget {
+func MakeList(th *Theme, a AnchorStrategy, colWidths []float32, widgets ...layout.Widget) layout.Widget {
 	node := makeNode(widgets)
 	listStyle := ListStyle{
 		list:           &layout.List{Axis: layout.Vertical},
@@ -248,7 +263,8 @@ func MakeList(th *Theme, a AnchorStrategy, totalWidth int, widgets ...layout.Wid
 		HScrollBar:     MakeScrollbarStyle(th),
 		AnchorStrategy: a,
 	}
-	listStyle.Width = totalWidth + 15
+
+	listStyle.Width = totalWidth(th, colWidths)
 
 	return func(gtx C) D {
 		var ch []layout.Widget
@@ -313,21 +329,21 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	}
 
 	// Draw the Horizontal scrollbar l.Hpos is offset into content, and l.Width is content size.
-	hStart := float32(l.Hpos) / float32(l.Width)
-	hEnd := hStart + float32(gtx.Constraints.Max.X)/float32(l.Width)
+	hStart := float32(l.Hpos) / float32(gtx.Px(l.Width))
+	hEnd := hStart + float32(gtx.Constraints.Max.X)/float32(gtx.Px(l.Width))
 	layout.S.Layout(gtx, func(gtx C) D {
 		gtx.Constraints.Min = gtx.Constraints.Max
 		return l.HScrollBar.Layout(gtx, layout.Horizontal, hStart, hEnd)
 	})
 	delta := l.HScrollBar.Scrollbar.ScrollDistance()
 	if delta != 0 {
-		deltaPx := int(math.Round(float64(float32(l.Width) * delta)))
+		deltaPx := int(math.Round(float64(float32(gtx.Px(l.Width)) * delta)))
 		l.Hpos += deltaPx
 		if l.Hpos < 0 {
 			l.Hpos = 0
 		}
-		if l.Hpos > l.Width-gtx.Constraints.Max.X+barWidth {
-			l.Hpos = l.Width - gtx.Constraints.Max.X + barWidth
+		if l.Hpos > gtx.Px(l.Width)-gtx.Constraints.Max.X+barWidth {
+			l.Hpos = gtx.Px(l.Width) - gtx.Constraints.Max.X + barWidth
 		}
 	}
 

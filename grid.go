@@ -128,7 +128,7 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidth []fl
 	)
 	var lines []layout.Widget
 	lines = append(lines, heading)
-	lines = append(lines, wid.Separator(th, unit.Dp(2.0), wid.W(totalWidth)))
+	lines = append(lines, wid.Separator(th, unit.Dp(2.0), wid.W(9999))) //  totalWidth)))
 	for i := 0; i < len(data); i++ {
 		w := wid.Row(&thg, &data[i].Selected, colWidth,
 			wid.Checkbox(&thg, "", &data[i].Selected, nil),
@@ -137,9 +137,9 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidth []fl
 			wid.Label(&thg, fmt.Sprintf("%d", data[i].Age)),
 			wid.DropDown(&thg, data[i].Status, []string{"Male", "Female", "Other"}),
 		)
-		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5), wid.W(totalWidth)))
+		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5), wid.W(9999))) //totalWidth)))
 	}
-	return wid.MakeList(&thg, anchor, int(totalWidth), lines...)
+	return wid.MakeList(&thg, anchor, colWidth, lines...)
 }
 
 func onCheck(b bool) {
