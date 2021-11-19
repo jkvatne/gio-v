@@ -233,25 +233,40 @@ const (
 type ListStyle struct {
 	list       *layout.List
 	Hpos       int
-	Width      unit.Value
 	VScrollBar ScrollbarStyle
 	HScrollBar ScrollbarStyle
 	AnchorStrategy
 }
 
-func totalWidth(th *Theme, colWidths []float32) unit.Value {
-	if colWidths == nil {
-		return unit.Value{}
+// Calculate widths
+func calcWidths(gtx C, textSize unit.Value, weights []float32) []int {
+	if weights == nil {
+		return nil
 	}
+	fracSum := float32(0.0)
 	fixSum := float32(0.0)
-	for _, w := range colWidths {
-		if w < 1.0 {
-			return unit.Value{}
+	widths := make([]int, len(weights))
+	for _, w := range weights {
+		if w <= 1.0 {
+			fracSum += w
 		} else {
-			fixSum += float32(th.TextSize.Scale(w).V)
+			fixSum += w
 		}
 	}
-	return unit.Value{V: fixSum, U: unit.UnitDp}
+	fixWidth := gtx.Px(textSize.Scale(fixSum)) / 2
+	scale := float32(gtx.Constraints.Max.X-fixWidth) / fracSum
+	for i := range weights {
+		if weights != nil {
+			if weights[i] <= 1.0 {
+				widths[i] = int(weights[i] * scale)
+			} else {
+				widths[i] = gtx.Px(textSize.Scale(weights[i])) / 2
+			}
+		} else {
+			widths[i] = gtx.Constraints.Max.X / len(weights)
+		}
+	}
+	return widths
 }
 
 // MakeList makes a vertical list
@@ -263,8 +278,6 @@ func MakeList(th *Theme, a AnchorStrategy, colWidths []float32, widgets ...layou
 		HScrollBar:     MakeScrollbarStyle(th),
 		AnchorStrategy: a,
 	}
-
-	listStyle.Width = totalWidth(th, colWidths)
 
 	return func(gtx C) D {
 		var ch []layout.Widget
@@ -308,7 +321,7 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	call.Add(gtx.Ops)
 	trans.Pop()
 	cl.Pop()
-
+	width := listDims.Size.X
 	// Increase the width to account for the space occupied by the scrollbar.
 	listDims.Size.X += barWidth
 	listDims.Size.Y += barWidth
@@ -329,21 +342,24 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	}
 
 	// Draw the Horizontal scrollbar l.Hpos is offset into content, and l.Width is content size.
-	hStart := float32(l.Hpos) / float32(gtx.Px(l.Width))
-	hEnd := hStart + float32(gtx.Constraints.Max.X)/float32(gtx.Px(l.Width))
-	layout.S.Layout(gtx, func(gtx C) D {
-		gtx.Constraints.Min = gtx.Constraints.Max
-		return l.HScrollBar.Layout(gtx, layout.Horizontal, hStart, hEnd)
-	})
-	delta := l.HScrollBar.Scrollbar.ScrollDistance()
-	if delta != 0 {
-		deltaPx := int(math.Round(float64(float32(gtx.Px(l.Width)) * delta)))
-		l.Hpos += deltaPx
-		if l.Hpos < 0 {
-			l.Hpos = 0
-		}
-		if l.Hpos > gtx.Px(l.Width)-gtx.Constraints.Max.X+barWidth {
-			l.Hpos = gtx.Px(l.Width) - gtx.Constraints.Max.X + barWidth
+
+	if width > 0 {
+		hStart := float32(l.Hpos) / float32(width)
+		hEnd := hStart + float32(gtx.Constraints.Max.X)/float32(width)
+		layout.S.Layout(gtx, func(gtx C) D {
+			gtx.Constraints.Min = gtx.Constraints.Max
+			return l.HScrollBar.Layout(gtx, layout.Horizontal, hStart, hEnd)
+		})
+		delta := l.HScrollBar.Scrollbar.ScrollDistance()
+		if delta != 0 {
+			deltaPx := int(math.Round(float64(float32(width) * delta)))
+			l.Hpos += deltaPx
+			if l.Hpos < 0 {
+				l.Hpos = 0
+			}
+			if l.Hpos > width-gtx.Constraints.Max.X+barWidth {
+				l.Hpos = width - gtx.Constraints.Max.X + barWidth
+			}
 		}
 	}
 

@@ -288,10 +288,11 @@ func dropDownDemo(th *wid.Theme) layout.Widget {
 		))
 }
 
-var page = "Grid1"
+var page = "Grid2"
 
 var topRowPadding = layout.Inset{Top: unit.Dp(8), Bottom: unit.Dp(8), Left: unit.Dp(8), Right: unit.Dp(8)}
 
+// Column widths are given in units of approximately one average character width (en).
 var largeColWidth = []float32{2, 20, 20, 20, 20}
 var smallColWidth = []float32{2, 20, 0.9, 6, 15}
 var fracColWidth = []float32{2, 20.3, 0.3, 6, 0.14}

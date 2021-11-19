@@ -105,7 +105,7 @@ func (c *CheckBoxDef) layout(gtx C) D {
 		layout.Rigid(func(gtx C) D {
 			return layout.Inset{Top: unit.Dp(2), Right: unit.Dp(0), Bottom: unit.Dp(2), Left: unit.Dp(0)}.Layout(gtx, func(gtx C) D {
 				paint.ColorOp{Color: c.TextColor}.Add(gtx.Ops)
-				tl := aLabel{Alignment: text.Middle, MaxLines: 1}
+				tl := aLabel{Alignment: text.Start, MaxLines: 1}
 				return tl.Layout(gtx, c.shaper, c.Font, c.TextSize, c.Label)
 			})
 		}),
