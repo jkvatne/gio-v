@@ -34,6 +34,7 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 		call := make([]op.CallOp, len(widgets))
 		widths := calcWidths(gtx, th.TextSize, weights[:len(widgets)])
 		// Check child sizes and make macros for each widget in a row
+		yMax := 0
 		for i, child := range widgets {
 			c := gtx
 			if len(widths) > i {
@@ -46,6 +47,9 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 			macro := op.Record(c.Ops)
 			dims[i] = child(c)
 			call[i] = macro.Stop()
+			if yMax < dims[i].Size.Y {
+				yMax = dims[i].Size.Y
+			}
 		}
 		macro := op.Record(gtx.Ops)
 		pos := float32(0)
@@ -58,7 +62,7 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 			pos += float32(dims[i].Size.X)
 		}
 		// The row width is now the position after the last drawn widget.
-		dim := D{Size: image.Pt(int(pos), dims[0].Size.Y)}
+		dim := D{Size: image.Pt(int(pos), yMax)}
 		drawAll := macro.Stop()
 		// Draw background.
 		defer clip.Rect{Max: dim.Size}.Push(gtx.Ops).Pop()

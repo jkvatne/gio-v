@@ -82,11 +82,11 @@ func handleFrameEvents(e system.FrameEvent) {
 	if oldWindowSize.X != e.Size.X || oldWindowSize.Y != e.Size.Y || mode != oldMode || fontSize != oldFontSize {
 		switch fontSize {
 		case "medium", "Medium":
-			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 60)
-		case "large", "Large":
-			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 45)
-		case "small", "Small":
 			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 80)
+		case "large", "Large":
+			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 60)
+		case "small", "Small":
+			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 100)
 		}
 		oldFontSize = fontSize
 		oldWindowSize = e.Size
@@ -165,7 +165,9 @@ func column1(th *wid.Theme) layout.Widget {
 		wid.Edit(th, wid.Lbl("Value 2")),
 		wid.Edit(th, wid.Lbl("Value 3")),
 		wid.Edit(th, wid.Lbl("Value 4")),
-		wid.Edit(th, wid.Lbl("Value 5")))
+		wid.Edit(th, wid.Lbl("Value 5")),
+		wid.Edit(th, wid.Lbl("Value 6")),
+		wid.Edit(th, wid.Lbl("Value 7")))
 }
 
 func column2(th *wid.Theme) layout.Widget {
@@ -174,7 +176,10 @@ func column2(th *wid.Theme) layout.Widget {
 		wid.Edit(th, wid.Hint("Value 1")),
 		wid.Edit(th, wid.Hint("Value 2")),
 		wid.Edit(th, wid.Hint("Value 3")),
-		wid.Edit(th, wid.Hint("Value 4")))
+		wid.Edit(th, wid.Hint("Value 4")),
+		wid.Edit(th, wid.Hint("Value 5")),
+		wid.Edit(th, wid.Hint("Value 6")),
+		wid.Edit(th, wid.Hint("Value 7")))
 }
 
 func demo(th *wid.Theme) layout.Widget {
@@ -208,7 +213,7 @@ func demo(th *wid.Theme) layout.Widget {
 					wid.Separator(th, unit.Px(1)),
 					wid.Separator(th, unit.Px(1), wid.Pads(1)),
 					wid.Separator(th, unit.Px(1)),
-					wid.Row(th, nil, nil,
+					wid.Row(th, nil, []float32{0.3, 0.7},
 						wid.Label(th, "A slider that can be key operated:"),
 						wid.Slider(th, &sliderValue, 0, 100),
 					),
@@ -216,12 +221,14 @@ func demo(th *wid.Theme) layout.Widget {
 					wid.Row(th, nil, nil,
 						wid.Button(th, "WIDE CENTERED BUTTON",
 							wid.W(500),
-							wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines"),
+							wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts, breaking it into several lines"),
 						),
 					),
-					wid.Label(th, "Two widgets at the right side of the screen:"),
-					wid.Row(th, nil, nil,
+					wid.Label(th, "Two widgets at the left side of the screen:"),
+					wid.Row(th, nil, []float32{0.05, 0.9},
 						wid.RoundButton(th, icons.ContentAdd,
+							wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
+						wid.RoundButton(th, icons.ContentSave,
 							wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 					),
 					// Note that buttons default to their minimum size, unless set differently, here aligned to the middle
@@ -288,12 +295,12 @@ func dropDownDemo(th *wid.Theme) layout.Widget {
 		))
 }
 
-var page = "Grid2"
+var page = "Buttons"
 
 var topRowPadding = layout.Inset{Top: unit.Dp(8), Bottom: unit.Dp(8), Left: unit.Dp(8), Right: unit.Dp(8)}
 
 // Column widths are given in units of approximately one average character width (en).
-var largeColWidth = []float32{2, 20, 20, 20, 20}
+var largeColWidth = []float32{2, 40, 40, 40, 40}
 var smallColWidth = []float32{2, 20, 0.9, 6, 15}
 var fracColWidth = []float32{2, 20.3, 0.3, 6, 0.14}
 

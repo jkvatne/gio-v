@@ -105,10 +105,6 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidth []fl
 	nameIcon = getIcon(1)
 	addressIcon = getIcon(2)
 	ageIcon = getIcon(3)
-	totalWidth := float32(0)
-	for i := 0; i < len(colWidth); i++ {
-		totalWidth += colWidth[i]
-	}
 	// Setup theme for heading.
 	thh := *th
 	thh.OnBackground = wid.WithAlpha(th.Primary, 210)
@@ -128,7 +124,7 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidth []fl
 	)
 	var lines []layout.Widget
 	lines = append(lines, heading)
-	lines = append(lines, wid.Separator(th, unit.Dp(2.0), wid.W(9999))) //  totalWidth)))
+	lines = append(lines, wid.Separator(th, unit.Dp(2.0), wid.W(9999)))
 	for i := 0; i < len(data); i++ {
 		w := wid.Row(&thg, &data[i].Selected, colWidth,
 			wid.Checkbox(&thg, "", &data[i].Selected, nil),
@@ -137,7 +133,7 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidth []fl
 			wid.Label(&thg, fmt.Sprintf("%d", data[i].Age)),
 			wid.DropDown(&thg, data[i].Status, []string{"Male", "Female", "Other"}),
 		)
-		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5), wid.W(9999))) //totalWidth)))
+		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5), wid.W(9999)))
 	}
 	return wid.MakeList(&thg, anchor, colWidth, lines...)
 }

@@ -56,7 +56,7 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 // EditOption is options specific to Edits
 type EditOption func(w *EditDef)
 
-// Lbl is an option parameter to set the widget hint (tooltip)
+// Lbl is an option parameter to set the widget label
 func Lbl(s string) EditOption {
 	return func(w *EditDef) {
 		w.setLabel(s)

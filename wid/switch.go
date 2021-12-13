@@ -50,7 +50,7 @@ func (s *SwitchDef) Layout(gtx C) D {
 	// Calculate sizes
 	trackWidth := gtx.Px(s.th.TextSize.Scale(2.1))
 	trackHeight := gtx.Px(s.th.TextSize.Scale(0.8))
-	thumbSize := gtx.Px(s.th.TextSize.Scale(1.2))
+	thumbSize := gtx.Px(s.th.TextSize.Scale(1.05))
 	trackOff := float32(thumbSize-trackHeight) * 0.5
 	thumbRadius := float32(thumbSize) / 2
 

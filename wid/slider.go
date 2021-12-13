@@ -100,7 +100,7 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	s.Float.drag.Add(gtx.Ops)
 
 	gtx.Constraints.Min = gtx.Constraints.Min.Add(axis.Convert(image.Pt(0, sizeCross)))
-	thumbPos := thumbRadius + int(s.Pos())
+	thumbPos := thumbRadius + int(s.Float.pos*s.Float.length)
 
 	color := WithAlpha(s.th.OnBackground, 175)
 	if gtx.Queue == nil {
@@ -112,14 +112,20 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 		Min: axis.Convert(image.Pt(thumbRadius, sizeCross/2-trackWidth/2)),
 		Max: axis.Convert(image.Pt(thumbPos, sizeCross/2+trackWidth/2)),
 	}
-	paint.FillShape(gtx.Ops, color, clip.Rect(track).Op())
+	paint.FillShape(gtx.Ops, color, clip.RRect{
+		Rect: f32.Rect(float32(track.Min.X), float32(track.Min.Y), float32(track.Max.X), float32(track.Max.Y)),
+		SW:   5, NW: 5, NE: 5, SE: 5,
+	}.Op(gtx.Ops))
 
 	// Draw track after thumb.
 	track = image.Rectangle{
 		Min: axis.Convert(image.Pt(thumbPos, axis.Convert(track.Min).Y)),
 		Max: axis.Convert(image.Pt(sizeMain-thumbRadius, axis.Convert(track.Max).Y)),
 	}
-	paint.FillShape(gtx.Ops, WithAlpha(color, 80), clip.Rect(track).Op())
+	paint.FillShape(gtx.Ops, WithAlpha(color, 80), clip.RRect{
+		Rect: f32.Rect(float32(track.Min.X), float32(track.Min.Y), float32(track.Max.X), float32(track.Max.Y)),
+		SW:   5, NW: 5, NE: 5, SE: 5,
+	}.Op(gtx.Ops))
 
 	// Draw thumb.
 	pt := axis.Convert(image.Pt(thumbPos, sizeCross/2))

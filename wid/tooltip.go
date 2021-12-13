@@ -203,7 +203,7 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 						return D{}
 					}),
 					layout.Stacked(func(gtx C) D {
-						return inset.Layout(gtx, t.Text.Layout) //t.th.TooltipInset.Layout(gtx, t.Text.Layout)
+						return inset.Layout(gtx, t.Text.Layout)
 					}),
 				)
 				if int(t.position.X)+dims.Size.X > maxx {
