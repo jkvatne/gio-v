@@ -199,7 +199,7 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 							SW:   rr,
 							SE:   rr,
 						}.Op(gtx.Ops))
-						paintBorder(gtx, outline, t.Text.fgColor, unit.Dp(1.0), unit.Dp(rr))
+						paintBorder(gtx, outline, t.Text.fgColor, unit.Dp(1.0), t.CornerRadius)
 						return D{}
 					}),
 					layout.Stacked(func(gtx C) D {
