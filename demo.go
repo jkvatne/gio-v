@@ -267,11 +267,12 @@ func demo(th *wid.Theme) layout.Widget {
 						wid.Label(th, "Address", wid.End()),
 						wid.Edit(th, wid.Hint("")),
 					),
-				),
+					wid.Separator(th, unit.Dp(2.0)),
+					wid.ImageFromJpgFile("gopher.jpg")),
 			),
 		),
-		wid.ProgressBar(th, &progress),
-		wid.ImageFromJpgFile("gopher.jpg"))
+	)
+	//wid.ProgressBar(th, &progress),
 }
 
 func dropDownDemo(th *wid.Theme) layout.Widget {

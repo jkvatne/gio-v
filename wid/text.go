@@ -9,6 +9,7 @@ import (
 
 	"gioui.org/layout"
 	"gioui.org/op"
+
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
@@ -157,10 +158,10 @@ func (p1 screenPos) Less(p2 screenPos) bool {
 func (l aLabel) Layout(gtx C, s text.Shaper, font text.Font, size unit.Value, txt string) D {
 	cs := gtx.Constraints
 	textSize := fixed.I(gtx.Px(size))
-	// This is a trick to avoid skipping the last word in a label. Instead, we clip it.
-	defer clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops).Pop()
 	var lines []text.Line
 	if l.MaxLines == 1 {
+		// This is a trick to avoid skipping the last word in a label. Instead, we clip it.
+		defer clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops).Pop()
 		lines = s.LayoutString(font, textSize, cs.Max.X*2, txt)
 	} else {
 		lines = s.LayoutString(font, textSize, cs.Max.X, txt)
@@ -183,12 +184,13 @@ func (l aLabel) Layout(gtx C, s text.Shaper, font text.Font, size unit.Value, tx
 		if !ok {
 			break
 		}
-		op.Offset(layout.FPt(off)).Add(gtx.Ops)
+		s0 := op.Offset(layout.FPt(off)).Push(gtx.Ops)
 		s1 := clip.Rect(cl.Sub(off)).Push(gtx.Ops)
 		s2 := s.Shape(font, textSize, l).Push(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
 		s2.Pop()
 		s1.Pop()
+		s0.Pop()
 	}
 	return dims
 }
