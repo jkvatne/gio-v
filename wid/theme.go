@@ -13,22 +13,27 @@ import (
 	"gioui.org/unit"
 )
 
+// Palette is the basic colors (according to Material Design), from where most other collors are derived
+type Palette struct {
+	Primary      color.NRGBA
+	OnPrimary    color.NRGBA
+	OnBackground color.NRGBA
+	Background   color.NRGBA
+	Surface      color.NRGBA
+	OnSurface    color.NRGBA
+	Error        color.NRGBA
+	OnError      color.NRGBA
+}
+
 // Theme contains color/layout settings for all widgets
 type Theme struct {
+	Palette
 	Shaper                text.Shaper
 	TextSize              unit.Value
 	CheckBoxChecked       *Icon
 	CheckBoxUnchecked     *Icon
 	RadioChecked          *Icon
 	RadioUnchecked        *Icon
-	Primary               color.NRGBA
-	OnPrimary             color.NRGBA
-	OnBackground          color.NRGBA
-	Background            color.NRGBA
-	Surface               color.NRGBA
-	OnSurface             color.NRGBA
-	Error                 color.NRGBA
-	OnError               color.NRGBA
 	FingerSize            unit.Value // FingerSize is the minimum touch target size.
 	HintColor             color.NRGBA
 	SelectionColor        color.NRGBA
@@ -67,7 +72,7 @@ type (
 
 // MaterialDesignLight is the baseline palette for material design.
 // https://material.io/design/color/the-color-system.html#color-theme-creation
-var MaterialDesignLight = Theme{
+var MaterialDesignLight = Palette{
 	Primary:      RGB(0x6200EE),
 	Background:   RGB(0xeeeeee),
 	Surface:      RGB(0xffffff),
@@ -79,7 +84,7 @@ var MaterialDesignLight = Theme{
 }
 
 // MaterialDesignDark is the baseline palette for material design dark mode
-var MaterialDesignDark = Theme{
+var MaterialDesignDark = Palette{
 	Primary:      RGB(0xbb86fc),
 	Background:   RGB(0x303030),
 	Surface:      RGB(0x404040),
@@ -91,7 +96,9 @@ var MaterialDesignDark = Theme{
 }
 
 // NewTheme creates a new theme with given FontFace and FontSize, based on the theme t
-func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme {
+func NewTheme(fontCollection []text.FontFace, fontSize float32, p Palette) *Theme {
+	t := new(Theme)
+	t.Palette = p
 	t.Shaper = text.NewCache(fontCollection)
 	t.TextSize = unit.Sp(fontSize)
 	v := t.TextSize.Scale(0.2)
@@ -123,8 +130,8 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme 
 	t.TooltipInset = layout.UniformInset(unit.Dp(10))
 	t.TooltipCornerRadius = unit.Dp(6.0)
 	t.TooltipWidth = t.TextSize.Scale(20)
-	t.TooltipBackground = color.NRGBA{R: 255, G: 255, B: 160, A: 233}
-	t.TooltipOnBackground = color.NRGBA{A: 255}
+	t.TooltipBackground = Interpolate(t.OnSurface, t.Surface, 0.9)
+	t.TooltipOnBackground = t.OnSurface
 	// List
 	t.ListInset = layout.Inset{
 		Top:    t.TextSize.Scale(0.2),
@@ -136,7 +143,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, t Theme) *Theme 
 	t.SashColor = WithAlpha(t.OnSurface, 0x80)
 	t.SashWidth = t.TextSize.Scale(0.2)
 	t.TrackColor = WithAlpha(t.OnSurface, 0x40)
-	return &t
+	return t
 }
 
 func mustIcon(ic *Icon, err error) *Icon {
