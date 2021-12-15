@@ -10,8 +10,6 @@ import (
 	"gio-v/wid"
 	"sort"
 
-	"golang.org/x/exp/shiny/materialdesign/icons"
-
 	"gioui.org/layout"
 	"gioui.org/unit"
 )
@@ -39,12 +37,14 @@ var data = []person{
 	{Name: "Per Pedersen", Age: 22, Address: "Nidelva 43"},
 }
 
-// Make a lot of extra persons...
-func makePersons() {
-	for i := 1; i < 100; i++ {
+// Make list of n persons.
+func makePersons(n int) {
+	m := n - len(data)
+	for i := 1; i < m; i++ {
 		data[0].Age = i
 		data = append(data, data[0])
 	}
+	data = data[0:n]
 }
 
 var dir bool
@@ -86,16 +86,16 @@ func onAgeClick() {
 // selectAll is not used, but is controlled from the heading checkbox.
 // It could be used to check/uncheck all boxes in the table
 var selectAll bool
-var nameIcon []byte
-var addressIcon []byte
-var ageIcon []byte
+var nameIcon *wid.Icon
+var addressIcon *wid.Icon
+var ageIcon *wid.Icon
 
-func getIcon(colNo int) []byte {
+func getIcon(colNo int) *wid.Icon {
 	if sortCol == colNo {
 		if dir {
-			return icons.HardwareKeyboardArrowUp
+			return upIcon
 		}
-		return icons.HardwareKeyboardArrowDown
+		return downIcon
 	}
 	return nil
 }

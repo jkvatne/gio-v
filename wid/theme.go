@@ -55,6 +55,7 @@ type Theme struct {
 	ListInset             layout.Inset
 	ButtonPadding         layout.Inset
 	ButtonLabelPadding    layout.Inset
+	IconSize              unit.Value
 	// Elevation is the shadow width
 	Elevation unit.Value
 	// SashColor is the color of the movable divider
@@ -101,7 +102,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, p Palette) *Them
 	t.Palette = p
 	t.Shaper = text.NewCache(fontCollection)
 	t.TextSize = unit.Sp(fontSize)
-	v := t.TextSize.Scale(0.2)
+	v := t.TextSize.Scale(0.4)
 	// Icons
 	t.CheckBoxChecked = mustIcon(NewIcon(icons.ToggleCheckBox))
 	t.CheckBoxUnchecked = mustIcon(NewIcon(icons.ToggleCheckBoxOutlineBlank))
@@ -124,8 +125,10 @@ func NewTheme(fontCollection []text.FontFace, fontSize float32, p Palette) *Them
 	t.HintColor = DeEmphasis(t.OnBackground, 45)
 	t.SelectionColor = MulAlpha(t.Primary, 0x60)
 	t.EditPadding = layout.Inset{Top: v.Scale(2.0), Right: v.Scale(2.0), Bottom: v, Left: v.Scale(2.0)}
+	// Buttons
 	t.ButtonPadding = t.LabelPadding
-	t.ButtonLabelPadding = t.LabelPadding
+	t.ButtonLabelPadding = layout.Inset{Top: v, Right: v.Scale(3.0), Bottom: v, Left: v.Scale(3.0)}
+	t.IconSize = t.TextSize.Scale(1.5)
 	// Tooltip
 	t.TooltipInset = layout.UniformInset(unit.Dp(10))
 	t.TooltipCornerRadius = unit.Dp(6.0)

@@ -43,13 +43,12 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 		gtx.Constraints.Min.X = 0
 		if e.label == "" {
 			return e.layEdit()(gtx)
-		} else {
-			return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start, Spacing: layout.SpaceStart}.Layout(
-				gtx,
-				layout.Rigid(e.layLabel()),
-				layout.Rigid(e.layEdit()),
-			)
 		}
+		return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start, Spacing: layout.SpaceStart}.Layout(
+			gtx,
+			layout.Rigid(e.layLabel()),
+			layout.Rigid(e.layEdit()),
+		)
 	}
 }
 
@@ -92,7 +91,7 @@ func (e *EditDef) layEdit() layout.Widget {
 		return e.padding.Layout(gtx, func(gtx C) D {
 			return layout.Stack{}.Layout(
 				gtx,
-				layout.Expanded(e.layoutEditBackground()),
+				//layout.Expanded(e.layoutEditBackground()),
 				layout.Expanded(func(gtx C) D {
 					gtx.Constraints.Min.X = 5000
 					return e.th.LabelPadding.Layout(gtx, func(gtx C) D {
@@ -109,9 +108,6 @@ func (e *EditDef) layLabel() layout.Widget {
 	return func(gtx C) D {
 		p := e.padding
 		p.Top = unit.Dp(p.Top.V + e.th.LabelPadding.Top.V)
-		//if e.label == "" {
-		//	return D{}
-		//}
 		return p.Layout(gtx, func(gtx C) D {
 			if e.label == "" {
 				return D{}

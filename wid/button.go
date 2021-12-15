@@ -54,7 +54,7 @@ type ButtonDef struct {
 type BtnOption func(*ButtonDef)
 
 // RoundButton is a shortcut to a round button
-func RoundButton(th *Theme, d []byte, options ...Option) func(gtx C) D {
+func RoundButton(th *Theme, d *Icon, options ...Option) func(gtx C) D {
 	options = append(options, BtnIcon(d), W(0))
 	return aButton(Round, th, "", options...)
 }
@@ -131,8 +131,7 @@ func AlignLeft() BtnOption {
 }
 
 // BtnIcon sets button icon
-func BtnIcon(d []byte) BtnOption {
-	i, _ := NewIcon(d)
+func BtnIcon(i *Icon) BtnOption {
 	return func(b *ButtonDef) {
 		b.Icon = i
 	}
@@ -307,7 +306,7 @@ func layIcon(b *ButtonDef) layout.Widget {
 				inset.Right = unit.Dp(0)
 			}
 			return inset.Layout(gtx, func(gtx C) D {
-				size := gtx.Px(b.th.TextSize.Scale(1.2)) //TODO: Move const to theme
+				size := gtx.Px(b.th.IconSize)
 				gtx.Constraints = layout.Exact(image.Pt(size, size))
 				return b.Icon.Layout(gtx, b.fg)
 			})
@@ -330,11 +329,17 @@ func (b *ButtonDef) layout(gtx C) D {
 				layout.Stacked(
 					func(gtx C) D {
 						gtx.Constraints.Min = min
-						return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceEnd}.Layout(
-							gtx,
-							layout.Rigid(layIcon(b)),
-							layout.Rigid(layLabel(b)),
-						)
+						if gtx.Constraints.Max.X < min.X {
+							gtx.Constraints.Max.X = min.X
+						}
+						if b.Icon != nil {
+							return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceEnd}.Layout(
+								gtx,
+								layout.Rigid(layIcon(b)),
+								layout.Rigid(layLabel(b)),
+							)
+						}
+						return layLabel(b)(gtx)
 					}),
 			)
 		})

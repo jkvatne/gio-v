@@ -12,8 +12,14 @@ import (
 	"gio-v/wid"
 	"image"
 	"image/color"
+	"log"
 	"os"
+	"runtime"
 	"time"
+
+	"gioui.org/widget"
+
+	"gioui.org/widget/material"
 
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
@@ -39,20 +45,40 @@ var thb *wid.Theme            // Secondary theme used for the color-shifting but
 var progress float32
 var sliderValue float32
 var dummy bool
+var th *material.Theme
+var icon *widget.Icon
+var addIcon *wid.Icon
+var homeIcon *wid.Icon
+var checkIcon *wid.Icon
+var upIcon *wid.Icon
+var downIcon *wid.Icon
+var count float64
+var startTime time.Time
 
 func main() {
 	flag.StringVar(&mode, "mode", "default", "Select window as fullscreen, maximized, centered or default")
 	flag.StringVar(&fontSize, "fontsize", "large", "Select font size medium,small,large")
 	flag.Parse()
-	makePersons()
+	addIcon, _ = wid.NewIcon(icons.ContentAdd)
+	checkIcon, _ = wid.NewIcon(icons.ActionCheckCircle)
+	upIcon, _ = wid.NewIcon(icons.HardwareKeyboardArrowUp)
+	downIcon, _ = wid.NewIcon(icons.HardwareKeyboardArrowDown)
+
+	makePersons(100)
+	ic, err := widget.NewIcon(icons.ContentAdd)
+	if err != nil {
+		log.Fatal(err)
+	}
+	icon = ic
 	progressIncrementer := make(chan float32)
 	go func() {
 		for {
-			time.Sleep(time.Millisecond * 500)
-			progressIncrementer <- 0.1
+			time.Sleep(time.Millisecond * 1)
+			progressIncrementer <- 0.001
 		}
 	}()
 	go func() {
+		th = material.NewTheme(gofont.Collection())
 		currentTheme = wid.NewTheme(gofont.Collection(), 14, wid.MaterialDesignLight)
 		win = app.NewWindow(app.Title("Gio-v demo"), modeFromString(mode).Option(), app.Size(unit.Dp(900), unit.Dp(500)))
 		updateMode()
@@ -76,31 +102,6 @@ func main() {
 		}
 	}()
 	app.Main()
-}
-
-func handleFrameEvents(e system.FrameEvent) {
-	if oldWindowSize.X != e.Size.X || oldWindowSize.Y != e.Size.Y || mode != oldMode || fontSize != oldFontSize {
-		switch fontSize {
-		case "medium", "Medium":
-			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 80)
-		case "large", "Large":
-			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 60)
-		case "small", "Small":
-			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 100)
-		}
-		oldFontSize = fontSize
-		oldWindowSize = e.Size
-		updateMode()
-		setup()
-	}
-	var ops op.Ops
-	gtx := layout.NewContext(&ops, e)
-	// Set background color
-	paint.Fill(gtx.Ops, currentTheme.Background)
-	// Traverse the widget tree and generate drawing operations
-	wid.Root(gtx)
-	// Apply the actual screen drawing
-	e.Frame(gtx.Ops)
 }
 
 func onClick() {
@@ -184,8 +185,16 @@ func column2(th *wid.Theme) layout.Widget {
 
 func demo(th *wid.Theme) layout.Widget {
 	thb = th
+	y := startTime.Year()
+	if y == 1 {
+		startTime = time.Now()
+	}
 	return wid.Col(
 		wid.Label(th, "Demo page", wid.Middle(), wid.Large(), wid.Bold()),
+		wid.Row(th, nil, nil,
+			wid.ProgressBar(th, &progress),
+			wid.Value(th, func() string { return fmt.Sprintf(" %0.1f", count/time.Since(startTime).Seconds()) }),
+		),
 		wid.Separator(th, unit.Dp(2), wid.Color(th.SashColor)),
 		wid.SplitVertical(th, 0.25,
 			wid.SplitHorizontal(th, 0.5, column1(th), column2(th)),
@@ -226,53 +235,51 @@ func demo(th *wid.Theme) layout.Widget {
 					),
 					wid.Label(th, "Two widgets at the left side of the screen:"),
 					wid.Row(th, nil, []float32{0.05, 0.9},
-						wid.RoundButton(th, icons.ContentAdd,
+						wid.RoundButton(th, addIcon,
 							wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-						wid.RoundButton(th, icons.ContentSave,
+						wid.RoundButton(th, checkIcon,
 							wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 					),
 					// Note that buttons default to their minimum size, unless set differently, here aligned to the middle
-					wid.Row(th, nil, nil,
-						wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode), wid.Color(wid.RGB(0x228822))),
-						wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.W(150), wid.Color(wid.RGB(0xffff00))),
-						wid.Button(thb, "Change color", wid.Handler(onClick), wid.W(150)),
-						wid.TextButton(th, "Text button"),
-						wid.OutlineButton(th, "Outline button"),
-					),
-					// Row with all buttons at minimum size, spread evenly
-					wid.Row(th, nil, nil,
-						wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode), wid.Min()),
-						wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle), wid.Min()),
-						wid.Button(thb, "Change color", wid.Handler(onClick), wid.Min()),
-						wid.TextButton(th, "Text button", wid.Min()),
-						wid.OutlineButton(th, "Outline button", wid.Min()),
-					),
-					// Fixed size in Dp
-					wid.Edit(th, wid.Hint("Value 1"), wid.W(300)),
-					// Relative size
-					wid.Edit(th, wid.Hint("Value 2"), wid.W(0.5)),
-					// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
-					wid.Row(th, nil, nil,
-						wid.Edit(th, wid.Hint("Value 3")),
-						wid.Edit(th, wid.Hint("Value 4")),
-						wid.Edit(th, wid.Hint("Value 5")),
-						wid.Edit(th, wid.Hint("Value 6")),
-						wid.Edit(th, wid.Hint("Value 7")),
-					),
-					wid.Row(th, nil, nil,
-						wid.Label(th, "Name", wid.End()),
-						wid.Edit(th, wid.Hint("")),
-					),
-					wid.Row(th, nil, nil,
-						wid.Label(th, "Address", wid.End()),
-						wid.Edit(th, wid.Hint("")),
-					),
-					wid.Separator(th, unit.Dp(2.0)),
-					wid.ImageFromJpgFile("gopher.jpg")),
-			),
+					wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Color(wid.RGB(0xffff00))),
+					wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Disable(&darkMode), wid.Color(wid.RGB(0x228822))),
+					wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Color(wid.RGB(0xffff00))),
+					wid.Button(thb, "Change color", wid.Handler(onClick), wid.W(150)),
+					wid.TextButton(th, "Text button"),
+					wid.OutlineButton(th, "Outline button"),
+				),
+				// Row with all buttons at minimum size, spread evenly
+				wid.Row(th, nil, nil,
+					wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Disable(&darkMode), wid.Min()),
+					wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.Min()),
+					wid.Button(thb, "Change color", wid.Handler(onClick), wid.Min()),
+					wid.TextButton(th, "Text button", wid.Min()),
+					wid.OutlineButton(th, "Outline button", wid.Min()),
+				),
+				// Fixed size in Dp
+				wid.Edit(th, wid.Hint("Value 1"), wid.W(300)),
+				// Relative size
+				wid.Edit(th, wid.Hint("Value 2"), wid.W(0.5)),
+				// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
+				wid.Row(th, nil, nil,
+					wid.Edit(th, wid.Hint("Value 3")),
+					wid.Edit(th, wid.Hint("Value 4")),
+					wid.Edit(th, wid.Hint("Value 5")),
+					wid.Edit(th, wid.Hint("Value 6")),
+					wid.Edit(th, wid.Hint("Value 7")),
+				),
+				wid.Row(th, nil, nil,
+					wid.Label(th, "Name", wid.End()),
+					wid.Edit(th, wid.Hint("")),
+				),
+				wid.Row(th, nil, nil,
+					wid.Label(th, "Address", wid.End()),
+					wid.Edit(th, wid.Hint("")),
+				),
+				wid.Separator(th, unit.Dp(2.0)),
+				wid.ImageFromJpgFile("gopher.jpg")),
 		),
 	)
-	//wid.ProgressBar(th, &progress),
 }
 
 func dropDownDemo(th *wid.Theme) layout.Widget {
@@ -316,21 +323,74 @@ func setup() {
 		currentPage = Grid(th, wid.Overlay, data[:5], fracColWidth)
 	} else if page == "DropDown" {
 		currentPage = dropDownDemo(th)
-	} else {
+	} else if page == "Buttons" {
 		currentPage = demo(th)
+	} else if page == "KitchenV" {
+		currentPage = kitchenV(th)
 	}
 	wid.Init()
-	wid.Setup(wid.Col(
-		wid.Pad(topRowPadding, wid.Row(th, nil, nil,
-			wid.RadioButton(th, &page, "Grid1", "Grid1", wid.Do(update)),
-			wid.RadioButton(th, &page, "Grid2", "Grid2", wid.Do(update)),
-			wid.RadioButton(th, &page, "Grid3", "Grid3", wid.Do(update)),
-			wid.RadioButton(th, &page, "Buttons", "Buttons", wid.Do(update)),
-			wid.RadioButton(th, &page, "DropDown", "DropDowns", wid.Do(update)),
-			wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode),
-		)),
-		wid.Separator(th, unit.Dp(2.0)),
-		currentPage,
-	))
-	wid.First.Focus()
+	if page == "KitchenX" || page == "KitchenV" {
+		wid.Setup(currentPage)
+	} else {
+		wid.Setup(wid.Col(
+			wid.Pad(topRowPadding, wid.Row(th, nil, nil,
+				wid.RadioButton(th, &page, "Grid1", "Grid1", wid.Do(update)),
+				wid.RadioButton(th, &page, "Grid2", "Grid2", wid.Do(update)),
+				wid.RadioButton(th, &page, "Grid3", "Grid3", wid.Do(update)),
+				wid.RadioButton(th, &page, "Buttons", "Buttons", wid.Do(update)),
+				wid.RadioButton(th, &page, "DropDown", "DropDowns", wid.Do(update)),
+				wid.RadioButton(th, &page, "KitchenX", "KitchenX", wid.Do(update)),
+				wid.RadioButton(th, &page, "KitchenV", "KitchenV", wid.Do(update)),
+				wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode),
+			)),
+			wid.Separator(th, unit.Dp(2.0)),
+			currentPage,
+		))
+	}
+}
+
+func handleFrameEvents(e system.FrameEvent) {
+	if oldWindowSize.X != e.Size.X || oldWindowSize.Y != e.Size.Y || mode != oldMode || fontSize != oldFontSize {
+		switch fontSize {
+		case "medium", "Medium":
+			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 80)
+		case "large", "Large":
+			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 60)
+		case "small", "Small":
+			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 100)
+		}
+		oldFontSize = fontSize
+		oldWindowSize = e.Size
+		updateMode()
+		setup()
+	}
+	var ops op.Ops
+	gtx := layout.NewContext(&ops, e)
+	// Set background color
+	paint.Fill(gtx.Ops, currentTheme.Background)
+	// Traverse the widget tree and generate drawing operations
+	if page == "KitchenX" {
+		kitchenX(gtx, th)
+	} else {
+		count++
+		wid.Root(gtx)
+	}
+	// Apply the actual screen drawing
+	e.Frame(gtx.Ops)
+}
+
+var prevAlloc uint64
+var prevGc uint32
+
+// PrintMemUsage outputs the current, total and OS memory being used. As well as the number
+// of garage collection cycles completed.
+func PrintMemUsage(txt string) {
+	var m runtime.MemStats
+	runtime.GC()
+	runtime.ReadMemStats(&m)
+	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
+	fmt.Printf("%s\tDeltaAlloc = %0.3f MiB", txt, (float64(m.Alloc)-float64(prevAlloc))/1024/1024)
+	fmt.Printf("\tNumGC = %v\n", m.NumGC-prevGc)
+	prevGc = m.NumGC
+	prevAlloc = m.Alloc
 }

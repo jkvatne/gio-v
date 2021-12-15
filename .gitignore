@@ -1,2 +1,6 @@
 .gradle
 **/android/build
+*.exe
+profile*.*
+profile.out
+.idea/

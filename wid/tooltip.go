@@ -58,7 +58,7 @@ func MobileTooltip(th *Theme, tips string) Tooltip {
 		Fg: th.TooltipOnBackground,
 		Bg: th.TooltipBackground,
 		Text: LabelDef{
-			Text:      tips,
+			Stringer:  func() string { return tips },
 			Font:      text.Font{Weight: text.Medium},
 			TextSize:  th.TextSize.Scale(0.9),
 			shaper:    th.Shaper,
@@ -74,7 +74,7 @@ func DesktopTooltip(th *Theme, tips string) Tooltip {
 		MaxWidth:     th.TooltipWidth,
 		CornerRadius: th.TooltipCornerRadius,
 		Text: LabelDef{
-			Text:      tips,
+			Stringer:  func() string { return tips },
 			Font:      text.Font{Weight: text.Medium},
 			TextSize:  th.TextSize.Scale(0.9),
 			shaper:    th.Shaper,

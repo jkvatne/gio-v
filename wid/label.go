@@ -18,16 +18,16 @@ type LabelDef struct {
 	Alignment text.Alignment
 	// MaxLines limits the number of lines. Zero means no limit.
 	MaxLines int
-	Text     string
 	TextSize unit.Value
 	padding  layout.Inset
 	shaper   text.Shaper
+	Stringer func() string
 }
 
 // Label  returns a widget for a label.
 func Label(th *Theme, str string, options ...Option) func(gtx C) D {
 	w := LabelDef{
-		Text:      str,
+		Stringer:  func() string { return str },
 		TextSize:  th.TextSize,
 		shaper:    th.Shaper,
 		Alignment: text.Start,
@@ -47,8 +47,44 @@ func Label(th *Theme, str string, options ...Option) func(gtx C) D {
 	}
 }
 
+// Label  returns a widget for a label.
+func Value(th *Theme, s func() string, options ...Option) func(gtx C) D {
+	w := LabelDef{
+		Stringer:  s,
+		TextSize:  th.TextSize,
+		shaper:    th.Shaper,
+		Alignment: text.Start,
+		Font:      text.Font{Weight: text.Medium, Style: text.Regular},
+		padding:   th.LabelPadding,
+		MaxLines:  1,
+	}
+	w.th = th
+	w.fgColor = th.OnBackground
+	for _, option := range options {
+		option.apply(&w)
+	}
+
+	return func(gtx C) D {
+		return w.padding.Layout(gtx, func(gtx C) D {
+			return w.Layout(gtx)
+		})
+	}
+}
+
 // LabelOption is options specific to Edits.
 type LabelOption func(w *LabelDef)
+
+func Str(s string) LabelOption {
+	return func(d *LabelDef) {
+		d.Stringer = func() string { return s }
+	}
+}
+
+func Val(s func() string) LabelOption {
+	return func(d *LabelDef) {
+		d.Stringer = s
+	}
+}
 
 // Bold is an option parameter to set the widget hint (tooltip).
 func Bold() LabelOption {
@@ -107,5 +143,5 @@ func (e LabelOption) apply(cfg interface{}) {
 func (l LabelDef) Layout(gtx C) D {
 	paint.ColorOp{Color: l.fgColor}.Add(gtx.Ops)
 	tl := aLabel{Alignment: l.Alignment, MaxLines: l.MaxLines}
-	return tl.Layout(gtx, l.shaper, l.Font, l.TextSize, l.Text)
+	return tl.Layout(gtx, l.shaper, l.Font, l.TextSize, l.Stringer())
 }
