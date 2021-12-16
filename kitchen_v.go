@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gio-v/wid"
+	"time"
 
 	"gioui.org/layout"
 )
@@ -11,6 +12,8 @@ func endKitchen() {
 	page = "KitchenX"
 	oldMode = "xx"
 	PrintMemUsage("Gio-v")
+	startTime = time.Now()
+	count = 0
 }
 
 func kitchenV(th *wid.Theme) layout.Widget {
@@ -26,7 +29,11 @@ func kitchenV(th *wid.Theme) layout.Widget {
 			wid.Button(thb, "Blue", wid.Color(wid.Blue)),
 			wid.TextButton(th, "Show other", wid.Handler(endKitchen)),
 		),
-		wid.ProgressBar(th, &progress),
+		wid.Row(th, nil, nil,
+			wid.ProgressBar(th, &progress),
+			wid.Value(th, func() string { return fmt.Sprintf(" %0.1f frames/second", count/time.Since(startTime).Seconds()) }),
+		),
+
 		wid.Row(th, nil, nil,
 			wid.RadioButton(th, &radioButtonValue, "RadioButton1", "RadioButton1"),
 			wid.RadioButton(th, &radioButtonValue, "RadioButton2", "RadioButton2"),

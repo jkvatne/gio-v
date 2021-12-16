@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"gio-v/wid"
 	"image"
 	"image/color"
 	"math"
+	"time"
 
 	"gioui.org/text"
 
@@ -163,6 +165,8 @@ func kitchenX(gtx layout.Context, th *material.Theme) layout.Dimensions {
 									page = "KitchenV"
 									oldMode = "xx"
 									PrintMemUsage("Gio-X")
+									startTime = time.Now()
+									count = 0
 								}
 								return layout.Center.Layout(gtx, flatBtnText.Layout)
 							})
@@ -172,6 +176,8 @@ func kitchenX(gtx layout.Context, th *material.Theme) layout.Dimensions {
 			)
 		},
 		material.ProgressBar(th, progress).Layout,
+		wid.Value(currentTheme, func() string { return fmt.Sprintf(" %0.1f frames/second", count/time.Since(startTime).Seconds()) }),
+
 		func(gtx C) D {
 			return layout.Flex{}.Layout(gtx,
 				layout.Rigid(material.RadioButton(th, radioButtonsGroup, "r1", "RadioButton1").Layout),

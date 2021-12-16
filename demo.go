@@ -73,8 +73,8 @@ func main() {
 	progressIncrementer := make(chan float32)
 	go func() {
 		for {
-			time.Sleep(time.Millisecond * 1)
-			progressIncrementer <- 0.001
+			time.Sleep(time.Millisecond * 2)
+			progressIncrementer <- 0.002
 		}
 	}()
 	go func() {
@@ -188,12 +188,13 @@ func demo(th *wid.Theme) layout.Widget {
 	y := startTime.Year()
 	if y == 1 {
 		startTime = time.Now()
+		count = 0
 	}
 	return wid.Col(
 		wid.Label(th, "Demo page", wid.Middle(), wid.Large(), wid.Bold()),
 		wid.Row(th, nil, nil,
 			wid.ProgressBar(th, &progress),
-			wid.Value(th, func() string { return fmt.Sprintf(" %0.1f", count/time.Since(startTime).Seconds()) }),
+			wid.Value(th, func() string { return fmt.Sprintf(" %0.1f frames/second", count/time.Since(startTime).Seconds()) }),
 		),
 		wid.Separator(th, unit.Dp(2), wid.Color(th.SashColor)),
 		wid.SplitVertical(th, 0.25,
@@ -241,12 +242,14 @@ func demo(th *wid.Theme) layout.Widget {
 							wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 					),
 					// Note that buttons default to their minimum size, unless set differently, here aligned to the middle
-					wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Color(wid.RGB(0xffff00))),
-					wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Disable(&darkMode), wid.Color(wid.RGB(0x228822))),
-					wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Color(wid.RGB(0xffff00))),
-					wid.Button(thb, "Change color", wid.Handler(onClick), wid.W(150)),
-					wid.TextButton(th, "Text button"),
-					wid.OutlineButton(th, "Outline button"),
+					wid.Row(th, nil, nil,
+						wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Color(wid.RGB(0xffff00))),
+						wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Disable(&darkMode), wid.Color(wid.RGB(0x228822))),
+						wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Color(wid.RGB(0xffff00))),
+						wid.Button(thb, "Change color", wid.Handler(onClick), wid.W(150)),
+						wid.TextButton(th, "Text button"),
+						wid.OutlineButton(th, "Outline button"),
+					),
 				),
 				// Row with all buttons at minimum size, spread evenly
 				wid.Row(th, nil, nil,
@@ -369,10 +372,10 @@ func handleFrameEvents(e system.FrameEvent) {
 	// Set background color
 	paint.Fill(gtx.Ops, currentTheme.Background)
 	// Traverse the widget tree and generate drawing operations
+	count++
 	if page == "KitchenX" {
 		kitchenX(gtx, th)
 	} else {
-		count++
 		wid.Root(gtx)
 	}
 	// Apply the actual screen drawing
