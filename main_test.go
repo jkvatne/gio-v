@@ -42,15 +42,15 @@ func DoLayout(b *testing.B, show string, n int) {
 	}
 }
 
-func BenchmarkKitchenX(b *testing.B) {
-	DoLayout(b, "KitchenX", 1)
-}
-
 func BenchmarkKitchenV(b *testing.B) {
 	DoLayout(b, "KitchenV", 1)
 }
 
 /*
+func BenchmarkKitchenX(b *testing.B) {
+	DoLayout(b, "KitchenX", 1)
+}
+
 // BenchmarkGrid1 tests with 1 person in the data table
 func Benchmark1(b *testing.B) {
 	DoLayout(b, "Grid1", 1)

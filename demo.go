@@ -63,7 +63,7 @@ func main() {
 	checkIcon, _ = wid.NewIcon(icons.ActionCheckCircle)
 	upIcon, _ = wid.NewIcon(icons.HardwareKeyboardArrowUp)
 	downIcon, _ = wid.NewIcon(icons.HardwareKeyboardArrowDown)
-
+	homeIcon, _ = wid.NewIcon(icons.ActionHome)
 	makePersons(100)
 	ic, err := widget.NewIcon(icons.ContentAdd)
 	if err != nil {
@@ -241,23 +241,13 @@ func demo(th *wid.Theme) layout.Widget {
 						wid.RoundButton(th, checkIcon,
 							wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 					),
-					// Note that buttons default to their minimum size, unless set differently, here aligned to the middle
-					wid.Row(th, nil, nil,
-						wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Color(wid.RGB(0xffff00))),
-						wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Disable(&darkMode), wid.Color(wid.RGB(0x228822))),
-						wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Color(wid.RGB(0xffff00))),
-						wid.Button(thb, "Change color", wid.Handler(onClick), wid.W(150)),
-						wid.TextButton(th, "Text button"),
-						wid.OutlineButton(th, "Outline button"),
-					),
 				),
-				// Row with all buttons at minimum size, spread evenly
 				wid.Row(th, nil, nil,
-					wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Disable(&darkMode), wid.Min()),
-					wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.Min()),
-					wid.Button(thb, "Change color", wid.Handler(onClick), wid.Min()),
-					wid.TextButton(th, "Text button", wid.Min()),
-					wid.OutlineButton(th, "Outline button", wid.Min()),
+					wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Disable(&darkMode), wid.Color(wid.RGB(0x228822))),
+					wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Color(wid.RGB(0xffff00))),
+					wid.Button(thb, "Change color", wid.Handler(onClick), wid.W(150)),
+					wid.TextButton(th, "Text button"),
+					wid.OutlineButton(th, "Outline button"),
 				),
 				// Fixed size in Dp
 				wid.Edit(th, wid.Hint("Value 1"), wid.W(300)),

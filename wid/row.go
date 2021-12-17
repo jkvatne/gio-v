@@ -23,6 +23,9 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 	if weights == nil {
 		weights = []float32{1, 1, 1, 1, 1, 1, 1, 1}
 	}
+	dims := make([]D, len(widgets))
+	call := make([]op.CallOp, len(widgets))
+	widths := make([]int, len(widgets))
 	return func(gtx C) D {
 		bgColor := th.Background
 		if r.Hovered() {
@@ -30,13 +33,11 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 		} else if selected != nil && *selected {
 			bgColor = Interpolate(th.Background, th.Primary, 0.1)
 		}
-		dims := make([]D, len(widgets))
-		call := make([]op.CallOp, len(widgets))
-		widths := calcWidths(gtx, th.TextSize, weights[:len(widgets)])
+		calcWidths(gtx, th.TextSize, weights[:len(widgets)], widths)
 		// Check child sizes and make macros for each widget in a row
 		yMax := 0
+		c := gtx
 		for i, child := range widgets {
-			c := gtx
 			if len(widths) > i {
 				c.Constraints.Max.X = widths[i]
 				c.Constraints.Min.X = c.Constraints.Max.X

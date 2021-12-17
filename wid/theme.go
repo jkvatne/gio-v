@@ -30,6 +30,7 @@ type Theme struct {
 	Palette
 	Shaper                text.Shaper
 	TextSize              unit.Value
+	DefaultFont           text.Font
 	CheckBoxChecked       *Icon
 	CheckBoxUnchecked     *Icon
 	RadioChecked          *Icon

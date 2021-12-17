@@ -239,13 +239,12 @@ type ListStyle struct {
 }
 
 // Calculate widths
-func calcWidths(gtx C, textSize unit.Value, weights []float32) []int {
+func calcWidths(gtx C, textSize unit.Value, weights []float32, widths []int) {
 	if weights == nil {
-		return nil
+		return
 	}
 	fracSum := float32(0.0)
 	fixSum := float32(0.0)
-	widths := make([]int, len(weights))
 	for _, w := range weights {
 		if w <= 1.0 {
 			fracSum += w
@@ -266,7 +265,6 @@ func calcWidths(gtx C, textSize unit.Value, weights []float32) []int {
 			widths[i] = gtx.Constraints.Max.X / len(weights)
 		}
 	}
-	return widths
 }
 
 // MakeList makes a vertical list

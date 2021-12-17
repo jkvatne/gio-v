@@ -16,9 +16,8 @@ import (
 
 // DropDownDef is the struct for dropdown lists.
 type DropDownDef struct {
-	Clickable
 	Widget
-	shadow     ShadowStyle
+	Clickable
 	disabler   *bool
 	Font       text.Font
 	shaper     text.Shaper
@@ -31,14 +30,12 @@ type DropDownDef struct {
 	icon       *Icon
 }
 
-// DropDown returns a dropdown widget.
-func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx C) D {
+func DropDownInfo(th *Theme, index int, items []string, options ...Option) *DropDownDef {
 	b := DropDownDef{}
 	b.icon, _ = NewIcon(icons.NavigationArrowDropDown)
 	b.SetupTabs()
 	b.th = th
 	b.Font = text.Font{Weight: text.Medium}
-	b.shadow = Shadow(th.CornerRadius, th.Elevation)
 	b.shaper = th.Shaper
 	b.index = index
 	b.items = items
@@ -51,6 +48,12 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 	for _, option := range options {
 		option.apply(&b)
 	}
+	return &b
+}
+
+// DropDown returns a dropdown widget.
+func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx C) D {
+	b := DropDownInfo(th, index, items, options...)
 	return func(gtx C) D {
 		if b.width.V > 0 {
 			gtx.Constraints.Min.X = gtx.Px(b.width)
