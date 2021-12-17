@@ -43,8 +43,8 @@ func DropDownInfo(th *Theme, index int, items []string, options ...Option) *Drop
 		b.Items = append(b.Items, b.option(th, i))
 		b.hovered = append(b.hovered, false)
 	}
-	b.list = MakeList(th, Overlay, nil, b.Items...)
-	b.Pad(5, 2, 1, 2)
+	b.list = MakeList(th, Overlay, b.Items...)
+	b.padding = th.LabelPadding
 	for _, option := range options {
 		option.apply(&b)
 	}
@@ -54,47 +54,48 @@ func DropDownInfo(th *Theme, index int, items []string, options ...Option) *Drop
 // DropDown returns a dropdown widget.
 func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx C) D {
 	b := DropDownInfo(th, index, items, options...)
-	return func(gtx C) D {
-		if b.width.V > 0 {
-			gtx.Constraints.Min.X = gtx.Px(b.width)
-			gtx.Constraints.Max.X = gtx.Px(b.width)
-		}
-		dims := b.Layout(gtx)
-		oldVisible := b.Visible
-		if !b.Focused() {
-			b.Visible = false
-		}
-		for b.Clicked() {
-			b.Visible = !b.Visible
-		}
+	return b.DropDown
+}
+func (b *DropDownDef) DropDown(gtx C) D {
+	if b.width.V > 0 {
+		gtx.Constraints.Min.X = gtx.Px(b.width)
+		gtx.Constraints.Max.X = gtx.Px(b.width)
+	}
+	dims := b.Layout(gtx)
+	oldVisible := b.Visible
+	if !b.Focused() {
+		b.Visible = false
+	}
+	for b.Clicked() {
+		b.Visible = !b.Visible
+	}
 
-		if b.Visible {
-			if !oldVisible {
-				b.setHovered()
-			}
-			gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
-			gtx.Constraints.Max.Y = gtx.Constraints.Max.Y - dims.Size.Y - 5
-			macro := op.Record(gtx.Ops)
-			dims2 := b.list(gtx)
-			listClipRect := f32.Rect(0, 0, float32(dims2.Size.X), float32(dims2.Size.Y))
-			call := macro.Stop()
-			macro = op.Record(gtx.Ops)
-			op.Offset(f32.Pt(0, float32(dims.Size.Y))).Add(gtx.Ops)
-			stack := clip.UniformRRect(listClipRect, 0).Push(gtx.Ops)
-			paint.Fill(gtx.Ops, b.th.Background)
-			// Draw a border around all options
-			paintBorder(gtx, listClipRect, b.th.OnBackground, b.th.BorderThickness, unit.Value{})
-			call.Add(gtx.Ops)
-			stack.Pop()
-			call = macro.Stop()
-			op.Defer(gtx.Ops, call)
-
-		} else {
+	if b.Visible {
+		if !oldVisible {
 			b.setHovered()
 		}
-		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
-		return dims
+		gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
+		gtx.Constraints.Max.Y = gtx.Constraints.Max.Y - dims.Size.Y - 5
+		macro := op.Record(gtx.Ops)
+		dims2 := b.list(gtx)
+		listClipRect := f32.Rect(0, 0, float32(dims2.Size.X), float32(dims2.Size.Y))
+		call := macro.Stop()
+		macro = op.Record(gtx.Ops)
+		op.Offset(f32.Pt(0, float32(dims.Size.Y))).Add(gtx.Ops)
+		stack := clip.UniformRRect(listClipRect, 0).Push(gtx.Ops)
+		paint.Fill(gtx.Ops, b.th.Background)
+		// Draw a border around all options
+		paintBorder(gtx, listClipRect, b.th.OnBackground, b.th.BorderThickness, unit.Value{})
+		call.Add(gtx.Ops)
+		stack.Pop()
+		call = macro.Stop()
+		op.Defer(gtx.Ops, call)
+
+	} else {
+		b.setHovered()
 	}
+	pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
+	return dims
 }
 
 func (b *DropDownDef) setHovered() {

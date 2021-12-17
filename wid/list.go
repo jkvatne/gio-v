@@ -268,7 +268,7 @@ func calcWidths(gtx C, textSize unit.Value, weights []float32, widths []int) {
 }
 
 // MakeList makes a vertical list
-func MakeList(th *Theme, a AnchorStrategy, colWidths []float32, widgets ...layout.Widget) layout.Widget {
+func MakeList(th *Theme, a AnchorStrategy, widgets ...layout.Widget) layout.Widget {
 	node := makeNode(widgets)
 	listStyle := ListStyle{
 		list:           &layout.List{Axis: layout.Vertical},

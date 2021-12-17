@@ -159,8 +159,7 @@ func onCenter() {
 }
 
 func column1(th *wid.Theme) layout.Widget {
-	return wid.MakeList(
-		th, wid.Occupy, nil,
+	return wid.MakeList(th, wid.Occupy,
 		wid.Label(th, "Scrollable list of fields with labels", wid.Middle()),
 		wid.Edit(th, wid.Lbl("Value 1")),
 		wid.Edit(th, wid.Lbl("Value 2")),
@@ -172,7 +171,7 @@ func column1(th *wid.Theme) layout.Widget {
 }
 
 func column2(th *wid.Theme) layout.Widget {
-	return wid.MakeList(th, wid.Occupy, nil,
+	return wid.MakeList(th, wid.Occupy,
 		wid.Label(th, "Scrollable list of fields without labels", wid.Middle()),
 		wid.Edit(th, wid.Hint("Value 1")),
 		wid.Edit(th, wid.Hint("Value 2")),
@@ -199,8 +198,7 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Separator(th, unit.Dp(2), wid.Color(th.SashColor)),
 		wid.SplitVertical(th, 0.25,
 			wid.SplitHorizontal(th, 0.5, column1(th), column2(th)),
-			wid.MakeList(
-				th, wid.Occupy, nil,
+			wid.MakeList(th, wid.Occupy,
 				wid.Col(
 					wid.Row(th, nil, nil,
 						wid.RadioButton(th, &mode, "windowed", "windowed"),
