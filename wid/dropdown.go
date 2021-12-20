@@ -14,8 +14,8 @@ import (
 	"golang.org/x/exp/shiny/materialdesign/icons"
 )
 
-// DropDownDef is the struct for dropdown lists.
-type DropDownDef struct {
+// DropDownStyle is the struct for dropdown lists.
+type DropDownStyle struct {
 	Widget
 	Clickable
 	disabler   *bool
@@ -30,8 +30,9 @@ type DropDownDef struct {
 	icon       *Icon
 }
 
-func DropDownInfo(th *Theme, index int, items []string, options ...Option) *DropDownDef {
-	b := DropDownDef{}
+// DropDownVar returns an initiated struct with drop-dow box setup info
+func DropDownVar(th *Theme, index int, items []string, options ...Option) *DropDownStyle {
+	b := DropDownStyle{}
 	b.icon, _ = NewIcon(icons.NavigationArrowDropDown)
 	b.SetupTabs()
 	b.th = th
@@ -53,15 +54,17 @@ func DropDownInfo(th *Theme, index int, items []string, options ...Option) *Drop
 
 // DropDown returns a dropdown widget.
 func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx C) D {
-	b := DropDownInfo(th, index, items, options...)
-	return b.DropDown
+	b := DropDownVar(th, index, items, options...)
+	return b.Layout
 }
-func (b *DropDownDef) DropDown(gtx C) D {
+
+// DropDown is a widget for a drop-down combo-box.
+func (b *DropDownStyle) Layout(gtx C) D {
 	if b.width.V > 0 {
 		gtx.Constraints.Min.X = gtx.Px(b.width)
 		gtx.Constraints.Max.X = gtx.Px(b.width)
 	}
-	dims := b.Layout(gtx)
+	dims := b.layout(gtx)
 	oldVisible := b.Visible
 	if !b.Focused() {
 		b.Visible = false
@@ -77,8 +80,8 @@ func (b *DropDownDef) DropDown(gtx C) D {
 		gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
 		gtx.Constraints.Max.Y = gtx.Constraints.Max.Y - dims.Size.Y - 5
 		macro := op.Record(gtx.Ops)
-		dims2 := b.list(gtx)
-		listClipRect := f32.Rect(0, 0, float32(dims2.Size.X), float32(dims2.Size.Y))
+		_ = b.list(gtx)
+		listClipRect := f32.Rect(0, 0, float32(gtx.Constraints.Min.X), float32(gtx.Constraints.Min.Y))
 		call := macro.Stop()
 		macro = op.Record(gtx.Ops)
 		op.Offset(f32.Pt(0, float32(dims.Size.Y))).Add(gtx.Ops)
@@ -98,7 +101,7 @@ func (b *DropDownDef) DropDown(gtx C) D {
 	return dims
 }
 
-func (b *DropDownDef) setHovered() {
+func (b *DropDownStyle) setHovered() {
 	if b.index >= len(b.hovered) {
 		b.index = len(b.hovered) - 1
 	}
@@ -111,7 +114,7 @@ func (b *DropDownDef) setHovered() {
 	b.hovered[b.index] = true
 }
 
-func (b *DropDownDef) option(th *Theme, i int) func(gtx C) D {
+func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 	return func(gtx C) D {
 		for _, e := range gtx.Events(&b.items[i]) {
 			if e, ok := e.(pointer.Event); ok {
@@ -155,8 +158,8 @@ func (b *DropDownDef) option(th *Theme, i int) func(gtx C) D {
 	}
 }
 
-// Layout draws the dropdown list.
-func (b *DropDownDef) Layout(gtx C) D {
+// layout draws the dropdown list.
+func (b *DropDownStyle) layout(gtx C) D {
 	b.disabled = false
 	if b.disabler != nil && *b.disabler {
 		gtx = gtx.Disabled()
@@ -168,7 +171,7 @@ func (b *DropDownDef) Layout(gtx C) D {
 			layout.Expanded(b.LayoutBackground()),
 			layout.Stacked(
 				func(gtx C) D {
-					if min.X != 0 {
+					if min.X > 0 {
 						gtx.Constraints.Min = min
 						gtx.Constraints.Max.X = min.X
 					}
@@ -188,7 +191,7 @@ func (b *DropDownDef) Layout(gtx C) D {
 }
 
 // LayoutBackground draws the background.
-func (b *DropDownDef) LayoutBackground() func(gtx C) D {
+func (b *DropDownStyle) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
 		if b.Focused() || b.Hovered() {
 			Shadow(b.th.CornerRadius, b.th.Elevation).Layout(gtx)
@@ -220,7 +223,7 @@ func (b *DropDownDef) LayoutBackground() func(gtx C) D {
 }
 
 // LayoutLabel draws the label
-func (b *DropDownDef) LayoutLabel() layout.Widget {
+func (b *DropDownStyle) LayoutLabel() layout.Widget {
 	return func(gtx C) D {
 		if gtx.Px(b.width) > gtx.Constraints.Min.X {
 			gtx.Constraints.Min.X = gtx.Px(b.width)
@@ -242,7 +245,7 @@ func (b *DropDownDef) LayoutLabel() layout.Widget {
 }
 
 // LayoutIcon draws the icon
-func (b *DropDownDef) LayoutIcon() layout.Widget {
+func (b *DropDownStyle) LayoutIcon() layout.Widget {
 	return func(gtx C) D {
 		size := gtx.Px(b.th.TextSize.Scale(1.5))
 		gtx.Constraints = layout.Exact(image.Pt(size, size))
