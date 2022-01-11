@@ -125,7 +125,7 @@ func kitchenX(gtx layout.Context, th *material.Theme) layout.Dimensions {
 		func(gtx C) D {
 			return layout.Flex{Alignment: layout.Middle}.Layout(gtx,
 				layout.Rigid(func(gtx C) D {
-					return in.Layout(gtx, material.IconButton(th, iconButton, icon).Layout)
+					return in.Layout(gtx, material.IconButton(th, iconButton, icon, "??").Layout)
 				}),
 				layout.Rigid(func(gtx C) D {
 					return in.Layout(gtx, iconAndTextButton{theme: th, icon: icon, word: "Icon", button: iconTextButton}.Layout)

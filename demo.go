@@ -80,8 +80,8 @@ func main() {
 	go func() {
 		th = material.NewTheme(gofont.Collection())
 		currentTheme = wid.NewTheme(gofont.Collection(), 14, wid.MaterialDesignLight)
-		win = app.NewWindow(app.Title("Gio-v demo"), modeFromString(mode).Option(), app.Size(unit.Dp(900), unit.Dp(500)))
-		updateMode()
+		win = app.NewWindow(app.Title("Gio-v demo"), modeFromString(mode).Option(), app.Size(unit.Dp(900), unit.Dp(500)), app.Centered())
+		win.Center()
 		setup()
 		for {
 			select {
@@ -141,13 +141,6 @@ func modeFromString(s string) app.WindowMode {
 		return app.Windowed
 	}
 	return app.Windowed
-}
-
-func updateMode() {
-	if mode != oldMode {
-		win.Option(modeFromString(mode).Option())
-		oldMode = mode
-	}
 }
 
 func onMaximize() {
@@ -352,7 +345,7 @@ func setup() {
 }
 
 func handleFrameEvents(e system.FrameEvent) {
-	if oldWindowSize.X != e.Size.X || oldWindowSize.Y != e.Size.Y || mode != oldMode || fontSize != oldFontSize {
+	if oldWindowSize.X != e.Size.X || oldWindowSize.Y != e.Size.Y || fontSize != oldFontSize || wid.Root == nil {
 		switch fontSize {
 		case "medium", "Medium":
 			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 80)
@@ -363,7 +356,6 @@ func handleFrameEvents(e system.FrameEvent) {
 		}
 		oldFontSize = fontSize
 		oldWindowSize = e.Size
-		updateMode()
 		setup()
 	}
 	var ops op.Ops

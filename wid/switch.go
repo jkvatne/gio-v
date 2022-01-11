@@ -87,31 +87,22 @@ func (s *SwitchDef) Layout(gtx C) D {
 	st := op.Offset(f32.Point{X: ofs}).Push(gtx.Ops)
 
 	// Draw hover/focused circle
+	hoverRadius := float32(2.4 * thumbRadius)
 	if s.Hovered() || s.Focused() {
-		hoverRadius := 1.4 * thumbRadius
 		paint.FillShape(gtx.Ops, MulAlpha(s.th.Primary, 88),
-			clip.Circle{
-				Center: f32.Point{X: thumbRadius, Y: thumbRadius},
-				Radius: hoverRadius,
-			}.Op(gtx.Ops))
+			clip.Ellipse{f32.Point{}, f32.Point{X: hoverRadius, Y: hoverRadius}}.Op(gtx.Ops))
 	}
 
 	// Draw thumb shadow, a translucent disc slightly larger than the thumb itself.
 	for i := 6; i > 0; i-- {
 		s := op.Offset(f32.Point{Y: float32(i) * 0.4}).Push(gtx.Ops)
 		paint.FillShape(gtx.Ops, color.NRGBA{A: alpha[i]},
-			clip.Circle{
-				Center: f32.Point{X: thumbRadius, Y: thumbRadius},
-				Radius: thumbRadius + float32(i)*0.8,
-			}.Op(gtx.Ops))
+			clip.Ellipse{f32.Point{}, f32.Point{X: hoverRadius, Y: hoverRadius}}.Op(gtx.Ops))
 		s.Pop()
 	}
 	// Draw thumb.
 	paint.FillShape(gtx.Ops, dotColor,
-		clip.Circle{
-			Center: f32.Point{X: thumbRadius, Y: thumbRadius},
-			Radius: thumbRadius,
-		}.Op(gtx.Ops))
+		clip.Ellipse{f32.Point{}, f32.Point{X: hoverRadius, Y: hoverRadius}}.Op(gtx.Ops))
 
 	st.Pop()
 	// Set area for click and hover

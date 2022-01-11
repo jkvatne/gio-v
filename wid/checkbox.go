@@ -73,13 +73,7 @@ func (c *CheckBoxDef) layout(gtx C) D {
 					}
 
 					background := MulAlpha(c.IconColor, 70)
-
-					radius := float32(size) / 2
-					paint.FillShape(gtx.Ops, background,
-						clip.Circle{
-							Center: f32.Point{X: radius, Y: radius},
-							Radius: radius,
-						}.Op(gtx.Ops))
+					paint.FillShape(gtx.Ops, background, clip.Ellipse{f32.Point{}, f32.Pt(float32(size), float32(size))}.Op(gtx.Ops))
 
 					return dims
 				}),

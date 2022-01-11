@@ -130,19 +130,17 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	// Draw thumb.
 	pt := axis.Convert(image.Pt(thumbPos, sizeCross/2))
 	if s.Hovered() || s.Focused() {
-		paint.FillShape(gtx.Ops, MulAlpha(s.th.OnBackground, 88),
-			clip.Circle{
-				Center: f32.Point{X: float32(pt.X), Y: float32(pt.Y)},
-				Radius: 1.4 * float32(thumbRadius),
-			}.Op(gtx.Ops))
+		r := float32(thumbRadius) * 1.35
+		ul := f32.Pt(float32(pt.X)-r, float32(pt.Y)-r)
+		lr := f32.Pt(float32(pt.X)+r, float32(pt.Y)+r)
+		paint.FillShape(gtx.Ops, MulAlpha(s.th.OnBackground, 88), clip.Ellipse{Min: ul, Max: lr}.Op(gtx.Ops))
 	} else {
 		color = s.th.OnBackground
 	}
-	paint.FillShape(gtx.Ops, s.th.OnBackground,
-		clip.Circle{
-			Center: f32.Point{X: float32(pt.X), Y: float32(pt.Y)},
-			Radius: float32(thumbRadius),
-		}.Op(gtx.Ops))
+	r := thumbRadius
+	ul := f32.Pt(float32(pt.X-r), float32(pt.Y-r))
+	lr := f32.Pt(float32(pt.X+r), float32(pt.Y+r))
+	paint.FillShape(gtx.Ops, s.th.OnBackground, clip.Ellipse{ul, lr}.Op(gtx.Ops))
 
 	s.LayoutClickable(gtx)
 

@@ -81,10 +81,9 @@ func (r *RadioButtonStyle) layout(gtx C, checked bool) D {
 				layout.Stacked(func(gtx C) D {
 					size := gtx.Px(r.th.TextSize.Scale(1.8))
 					if r.Hovered() || r.Focused() {
-						radius := float32(size) / 2
 						paint.FillShape(gtx.Ops,
 							MulAlpha(r.th.OnBackground, 70),
-							clip.Circle{Center: f32.Point{X: radius, Y: radius}, Radius: radius}.Op(gtx.Ops))
+							clip.Ellipse{f32.Point{}, f32.Pt(float32(size), float32(size))}.Op(gtx.Ops))
 					}
 					return D{Size: image.Point{X: size, Y: size}}
 				}),

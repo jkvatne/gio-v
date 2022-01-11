@@ -186,7 +186,7 @@ func (l aLabel) Layout(gtx C, s text.Shaper, font text.Font, size unit.Value, tx
 		}
 		s0 := op.Offset(layout.FPt(off)).Push(gtx.Ops)
 		s1 := clip.Rect(cl.Sub(off)).Push(gtx.Ops)
-		s2 := s.Shape(font, textSize, l).Push(gtx.Ops)
+		s2 := clip.Outline{Path: s.Shape(font, textSize, l)}.Op().Push(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
 		s2.Pop()
 		s1.Pop()
