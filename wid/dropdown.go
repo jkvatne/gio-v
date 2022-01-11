@@ -52,18 +52,6 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) *DropDow
 	return &b
 }
 
-// DropDown returns a dropdown widget.
-// func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx C) D {
-//	b := DropDownVar(th, index, items, options...)
-//	return b.Layout
-// }
-
-// DropDownWidget returns a dropdown widget.
-func DropDownWidget(th *Theme, index *int, items []string, options ...Option) func(gtx C) D {
-	b := DropDown(th, index, items, options...)
-	return b.Layout
-}
-
 // Layout adds padding to a dropdown box drawn with b.layout().
 func (b *DropDownStyle) Layout(gtx C) D {
 	return b.padding.Layout(gtx, func(gtx layout.Context) layout.Dimensions {

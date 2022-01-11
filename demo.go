@@ -43,7 +43,8 @@ var oldWindowSize image.Point // the current window size, used to detect changes
 var win *app.Window           // The main window
 var thb *wid.Theme            // Secondary theme used for the color-shifting button
 var progress float32
-var sliderValue float32
+var sliderValue1 float32
+var sliderValue2 float32
 var dummy bool
 var th *material.Theme
 var icon *widget.Icon
@@ -215,7 +216,7 @@ func demo(th *wid.Theme) layout.Widget {
 					wid.Separator(th, unit.Px(1)),
 					wid.Row(th, nil, []float32{0.3, 0.7},
 						wid.Label(th, "A slider that can be key operated:"),
-						wid.Slider(th, &sliderValue, 0, 100),
+						wid.Slider(th, &sliderValue1, 0, 100).Layout,
 					),
 					wid.Label(th, "A fixed width button at the middle of the screen:"),
 					wid.Row(th, nil, nil,

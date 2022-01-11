@@ -40,8 +40,8 @@ func kitchenV(th *wid.Theme) layout.Widget {
 			wid.RadioButton(th, &radioButtonValue, "RadioButton3", "RadioButton3"),
 		),
 		wid.Row(th, nil, []float32{0.9, 0.1},
-			wid.Slider(th, &sliderValue, 0, 100),
-			wid.Value(th, func() string { return fmt.Sprintf("  %0.2f", sliderValue) }),
+			wid.Slider(th, &sliderValue2, 0, 100).Layout,
+			wid.Value(th, func() string { return fmt.Sprintf("  %0.2f", sliderValue2) }),
 		),
 	)
 }

@@ -19,92 +19,90 @@ import (
 type SliderStyle struct {
 	Widget
 	Clickable
-	Float
-	Min, Max float32
+	axis     layout.Axis
+	drag     gesture.Drag
+	pos      float32 // position normalized to [0, 1]
+	length   float32
+	min, max float32
 	Value    *float32
 }
 
 // Slider is for selecting a value in a range.
-func Slider(th *Theme, value *float32, minV, maxV float32, options ...Option) layout.Widget {
+func Slider(th *Theme, value *float32, minV, maxV float32, options ...Option) *SliderStyle {
 	s := SliderStyle{
-		Min:   minV,
-		Max:   maxV,
-		Value: value,
+		min: minV,
+		max: maxV,
 	}
+	s.Value = value
 	s.th = th
 	s.SetupTabs()
 	s.width = unit.Dp(99999)
 	s.Apply(options...)
-
-	return func(gtx C) D {
-		gtx.Constraints.Min = CalcMin(gtx, s.width)
-		return s.Layout(gtx)
-	}
+	return &s
 }
 
 // Layout will draw the slider
-func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
+func (s *SliderStyle) Layout(gtx C) D {
+	gtx.Constraints.Min = CalcMin(gtx, s.width)
 	thumbRadius := gtx.Px(s.th.TextSize.Scale(0.5))
 	trackWidth := gtx.Px(s.th.TextSize.Scale(0.5))
 
-	axis := s.Float.Axis
 	// Keep a minimum length so that the track is always visible.
 	minLength := thumbRadius + 3*thumbRadius + thumbRadius
 	// Try to expand to finger size, but only if the constraints
 	// allow for it.
-	touchSizePx := min(gtx.Px(s.th.FingerSize), axis.Convert(gtx.Constraints.Max).Y)
-	sizeMain := max(axis.Convert(gtx.Constraints.Min).X, minLength)
+	touchSizePx := min(gtx.Px(s.th.FingerSize), s.axis.Convert(gtx.Constraints.Max).Y)
+	sizeMain := max(s.axis.Convert(gtx.Constraints.Min).X, minLength)
 	sizeCross := max(2*thumbRadius, touchSizePx)
-	size := axis.Convert(image.Pt(sizeMain, sizeCross))
+	size := s.axis.Convert(image.Pt(sizeMain, sizeCross))
 
-	o := axis.Convert(image.Pt(thumbRadius, 0))
+	o := s.axis.Convert(image.Pt(thumbRadius, 0))
 	op.Offset(layout.FPt(o)).Add(gtx.Ops)
-	gtx.Constraints.Min = axis.Convert(image.Pt(sizeMain-2*thumbRadius, sizeCross))
+	gtx.Constraints.Min = s.axis.Convert(image.Pt(sizeMain-2*thumbRadius, sizeCross))
 
 	size = gtx.Constraints.Min
-	s.Float.length = float32(s.Float.Axis.Convert(size).X)
+	s.length = float32(s.axis.Convert(size).X)
 
 	var de *pointer.Event
-	for _, e := range s.Float.drag.Events(gtx.Metric, gtx, gesture.Axis(s.Float.Axis)) {
+	for _, e := range s.drag.Events(gtx.Metric, gtx, gesture.Axis(s.axis)) {
 		if e.Type == pointer.Press || e.Type == pointer.Drag {
 			de = &e
 		}
 	}
-	value := s.Float.Value
 	if s.HandleKeys(gtx) {
 		if s.index != nil {
-			s.Float.pos = float32(*s.index) / 100.0
+			s.pos = float32(*s.index) / 100.0
 		}
-		value = s.Min + (s.Max-s.Min)*s.Float.pos
+		*s.Value = s.min + (s.max-s.min)*s.pos
 	}
 	if de != nil {
 		xy := de.Position.X
-		if s.Float.Axis == layout.Vertical {
+		if s.axis == layout.Vertical {
 			xy = de.Position.Y
 		}
-		s.Float.pos = (xy - float32(thumbRadius)) / s.Float.length
-		value = s.Min + (s.Max-s.Min)*s.Float.pos
-	} else if s.Min != s.Max {
-		s.Float.pos = (value - s.Min) / (s.Max - s.Min)
+		s.pos = (xy - float32(thumbRadius)) / s.length
+		*s.Value = s.min + (s.max-s.min)*s.pos
+	} else if s.min != s.max {
+		s.pos = (*s.Value - s.min) / (s.max - s.min)
 	}
 	if s.index != nil {
-		*s.index = int(s.Float.pos*100 + 0.5)
+		*s.index = int(s.pos*100 + 0.5)
 	}
 	// Unconditionally call setValue in case min, max, or value changed.
-	s.setValue(value, s.Min, s.Max)
-	s.Float.pos = clamp(s.Float.pos, 0, 1)
+	s.setValue(*s.Value, s.min, s.max)
+	s.pos = clamp(s.pos, 0, 1)
 
-	margin := s.Float.Axis.Convert(image.Pt(thumbRadius, 0))
+	margin := s.axis.Convert(image.Pt(thumbRadius, 0))
 	rect := image.Rectangle{
 		Min: margin.Mul(-1),
 		Max: size.Add(margin),
 	}
 	defer clip.Rect(rect).Push(gtx.Ops).Pop()
 	defer clip.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Push(gtx.Ops).Pop()
-	s.Float.drag.Add(gtx.Ops)
+	s.drag.Add(gtx.Ops)
 
-	gtx.Constraints.Min = gtx.Constraints.Min.Add(axis.Convert(image.Pt(0, sizeCross)))
-	thumbPos := thumbRadius + int(s.Float.pos*s.Float.length)
+	gtx.Constraints.Min = gtx.Constraints.Min.Add(s.axis.Convert(image.Pt(0, sizeCross)))
+	thumbPos := thumbRadius + int(s.pos*s.length)
 
 	color := WithAlpha(s.th.OnBackground, 175)
 	if gtx.Queue == nil {
@@ -113,8 +111,8 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 
 	// Draw track before thumb.
 	track := image.Rectangle{
-		Min: axis.Convert(image.Pt(thumbRadius, sizeCross/2-trackWidth/2)),
-		Max: axis.Convert(image.Pt(thumbPos, sizeCross/2+trackWidth/2)),
+		Min: s.axis.Convert(image.Pt(thumbRadius, sizeCross/2-trackWidth/2)),
+		Max: s.axis.Convert(image.Pt(thumbPos, sizeCross/2+trackWidth/2)),
 	}
 	paint.FillShape(gtx.Ops, color, clip.RRect{
 		Rect: f32.Rect(float32(track.Min.X), float32(track.Min.Y), float32(track.Max.X), float32(track.Max.Y)),
@@ -123,8 +121,8 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 
 	// Draw track after thumb.
 	track = image.Rectangle{
-		Min: axis.Convert(image.Pt(thumbPos, axis.Convert(track.Min).Y)),
-		Max: axis.Convert(image.Pt(sizeMain-thumbRadius, axis.Convert(track.Max).Y)),
+		Min: s.axis.Convert(image.Pt(thumbPos, s.axis.Convert(track.Min).Y)),
+		Max: s.axis.Convert(image.Pt(sizeMain-thumbRadius, s.axis.Convert(track.Max).Y)),
 	}
 	paint.FillShape(gtx.Ops, WithAlpha(color, 80), clip.RRect{
 		Rect: f32.Rect(float32(track.Min.X), float32(track.Min.Y), float32(track.Max.X), float32(track.Max.Y)),
@@ -132,7 +130,7 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	}.Op(gtx.Ops))
 
 	// Draw thumb.
-	pt := axis.Convert(image.Pt(thumbPos, sizeCross/2))
+	pt := s.axis.Convert(image.Pt(thumbPos, sizeCross/2))
 	if s.Hovered() || s.Focused() {
 		r := float32(thumbRadius) * 1.35
 		ul := f32.Pt(float32(pt.X)-r, float32(pt.Y)-r)
@@ -153,19 +151,6 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	return layout.Dimensions{Size: size}
 }
 
-// Float is for selecting a value in a range.
-type Float struct {
-	Value   float32
-	Axis    layout.Axis
-	drag    gesture.Drag
-	pos     float32 // position normalized to [0, 1]
-	length  float32
-	changed bool
-}
-
-// Dragging returns whether the value is being interacted with.
-func (s *SliderStyle) Dragging() bool { return s.Float.drag.Dragging() }
-
 func (s *SliderStyle) setValue(value, min, max float32) {
 	if min > max {
 		min, max = max, min
@@ -175,23 +160,10 @@ func (s *SliderStyle) setValue(value, min, max float32) {
 	} else if value > max {
 		value = max
 	}
-	if s.Float.Value != value {
-		s.Float.Value = value
-		s.Float.changed = true
+	if *s.Value != value {
+		*s.Value = value
 	}
 	if s.Value != nil {
 		*s.Value = value
 	}
-}
-
-// Pos reports the selected position.
-func (s *SliderStyle) Pos() float32 {
-	return s.Float.pos * s.Float.length
-}
-
-// Changed reports whether the value has changed since lat time called.
-func (s *SliderStyle) Changed() bool {
-	changed := s.Float.changed
-	s.Float.changed = false
-	return changed
 }
