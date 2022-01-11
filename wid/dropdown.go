@@ -58,13 +58,46 @@ func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx 
 	return b.Layout
 }
 
-// DropDown is a widget for a drop-down combo-box.
+// Layout adds padding to a dropdown box drawn with b.layout().
 func (b *DropDownStyle) Layout(gtx C) D {
+	return b.padding.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		return b.layout(gtx)
+	})
+}
+
+func (b *DropDownStyle) layout(gtx C) D {
 	if b.width.V > 0 {
 		gtx.Constraints.Min.X = gtx.Px(b.width)
 		gtx.Constraints.Max.X = gtx.Px(b.width)
 	}
-	dims := b.layout(gtx)
+
+	b.disabled = false
+	if b.disabler != nil && *b.disabler {
+		gtx = gtx.Disabled()
+		b.disabled = true
+	}
+	min := CalcMin(gtx, b.width)
+	dims := layout.Stack{Alignment: layout.Center}.Layout(gtx,
+		layout.Expanded(b.LayoutBackground()),
+		layout.Stacked(
+			func(gtx C) D {
+				if min.X > 0 {
+					gtx.Constraints.Min = min
+					gtx.Constraints.Max.X = min.X
+				}
+				if b.width.V > 0 {
+					gtx.Constraints.Max.X = gtx.Px(b.width)
+					gtx.Constraints.Min.X = gtx.Px(b.width)
+				}
+				return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start}.Layout(
+					gtx,
+					layout.Flexed(1.0, b.LayoutLabel()),
+					layout.Rigid(b.LayoutIcon()),
+				)
+			},
+		),
+	)
+
 	oldVisible := b.Visible
 	if !b.Focused() {
 		b.Visible = false
@@ -80,8 +113,8 @@ func (b *DropDownStyle) Layout(gtx C) D {
 		gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
 		gtx.Constraints.Max.Y = gtx.Constraints.Max.Y - dims.Size.Y - 5
 		macro := op.Record(gtx.Ops)
-		_ = b.list(gtx)
-		listClipRect := f32.Rect(0, 0, float32(gtx.Constraints.Min.X), float32(gtx.Constraints.Min.Y))
+		d := b.list(gtx)
+		listClipRect := f32.Rect(0, 0, float32(gtx.Constraints.Min.X), float32(d.Size.Y)) // gtx.Constraints.Min.Y))
 		call := macro.Stop()
 		macro = op.Record(gtx.Ops)
 		op.Offset(f32.Pt(0, float32(dims.Size.Y))).Add(gtx.Ops)
@@ -156,38 +189,6 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 		}.Add(gtx.Ops)
 		return dims
 	}
-}
-
-// layout draws the dropdown list.
-func (b *DropDownStyle) layout(gtx C) D {
-	b.disabled = false
-	if b.disabler != nil && *b.disabler {
-		gtx = gtx.Disabled()
-		b.disabled = true
-	}
-	min := CalcMin(gtx, b.width)
-	return b.padding.Layout(gtx, func(gtx C) D {
-		return layout.Stack{Alignment: layout.Center}.Layout(gtx,
-			layout.Expanded(b.LayoutBackground()),
-			layout.Stacked(
-				func(gtx C) D {
-					if min.X > 0 {
-						gtx.Constraints.Min = min
-						gtx.Constraints.Max.X = min.X
-					}
-					if b.width.V > 0 {
-						gtx.Constraints.Max.X = gtx.Px(b.width)
-						gtx.Constraints.Min.X = gtx.Px(b.width)
-					}
-					return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start}.Layout(
-						gtx,
-						layout.Flexed(1.0, b.LayoutLabel()),
-						layout.Rigid(b.LayoutIcon()),
-					)
-				},
-			),
-		)
-	})
 }
 
 // LayoutBackground draws the background.
