@@ -265,6 +265,18 @@ func demo(th *wid.Theme) layout.Widget {
 	)
 }
 
+var (
+	dropDownValue1 = 1
+	dropDownValue2 = 1
+	dropDownValue3 = 1
+	dropDownValue4 = 1
+	dropDownValue5 = 1
+	dropDownValue6 = 1
+	dropDownValue7 = 1
+	dropDownValue8 = 1
+	dropDownValue9 = 1
+)
+
 func dropDownDemo(th *wid.Theme) layout.Widget {
 	var longList []string
 	for i := 1; i < 100; i++ {
@@ -273,21 +285,21 @@ func dropDownDemo(th *wid.Theme) layout.Widget {
 	return wid.Pad(topRowPadding,
 		wid.Col(
 			wid.Row(th, nil, nil,
-				wid.DropDown(th, 1, []string{"Option 1 with very long text", "Option 2", "Option 3"}),
-				wid.DropDown(th, 2, []string{"Option 1", "Option 2", "Option 3"}),
-				wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
-				wid.DropDown(th, 0, []string{"Option A", "Option B", "Option C"}),
+				wid.DropDown(th, &dropDownValue1, []string{"Option 1 with very long text", "Option 2", "Option 3"}).Layout,
+				wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}).Layout,
+				wid.DropDown(th, &dropDownValue3, []string{"Option A", "Option B", "Option C"}).Layout,
+				wid.DropDown(th, &dropDownValue4, []string{"Option A", "Option B", "Option C"}).Layout,
 			),
 			// DropDown defaults to max size, here filling a complete row across the form.
-			wid.DropDown(th, 0, []string{"Option X", "Option Y", "Option Z"}),
+			wid.DropDown(th, &dropDownValue5, []string{"Option X", "Option Y", "Option Z"}).Layout,
 			wid.Separator(th, unit.Dp(2.0), wid.Pads(20, 0)),
 			wid.Label(th, "A very long list with scrolling, with fixed width 250"),
-			wid.DropDown(th, 0, longList, wid.W(250)),
-			wid.DropDown(th, 1, []string{"Option 1 with very long text", "Option 2", "Option 3"}, wid.W(250)),
+			wid.DropDown(th, &dropDownValue6, longList, wid.W(250)).Layout,
+			wid.DropDown(th, &dropDownValue7, []string{"Option 1 with very long text", "Option 2", "Option 3"}, wid.W(250)).Layout,
 			dropdown1.Layout,
 			dropdown2.Layout,
-			wid.DropDown(th, 0, []string{"Option 1", "Option 3", "Option 5"}),
-			wid.DropDown(th, 0, []string{"Option 2", "Option 4", "Option 6"}),
+			wid.DropDown(th, &dropDownValue8, []string{"Option 1", "Option 3", "Option 5"}).Layout,
+			wid.DropDown(th, &dropDownValue9, []string{"Option 2", "Option 4", "Option 6"}).Layout,
 		))
 }
 
@@ -304,8 +316,8 @@ var dropdown2 *wid.DropDownStyle
 
 func setup() {
 	th := currentTheme
-	dropdown1 = wid.DropDownVar(th, 0, []string{"Option A", "Option B", "Option C", "Option D"})
-	dropdown2 = wid.DropDownVar(th, 1, []string{"Option D", "Option E", "Option F"})
+	dropdown1 = wid.DropDown(th, &dropDownValue1, []string{"Option A", "Option B", "Option C", "Option D"})
+	dropdown2 = wid.DropDown(th, &dropDownValue2, []string{"Option D", "Option E", "Option F"})
 	var currentPage layout.Widget
 	if page == "Grid1" {
 		currentPage = Grid(th, wid.Occupy, data, largeColWidth)

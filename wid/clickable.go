@@ -44,7 +44,7 @@ type Clickable struct {
 	requestFocus bool
 	next         *Focuser
 	prev         *Focuser
-	index        int
+	index        *int
 }
 
 // Click represents a click.
@@ -274,22 +274,22 @@ func (c *Clickable) HandleKeys(gtx C) bool {
 				newKey = true
 			case key.NameUpArrow, key.NameLeftArrow:
 				if !ke.Modifiers.Contain(key.ModCtrl) {
-					c.index--
+					*c.index--
 				} else {
-					c.index -= 10
+					*c.index -= 10
 				}
 				newKey = true
 			case key.NameHome:
-				c.index = 0
+				*c.index = 0
 				newKey = true
 			case key.NameEnd:
-				c.index = 100
+				*c.index = 100
 				newKey = true
 			case key.NameDownArrow, key.NameRightArrow:
 				if !ke.Modifiers.Contain(key.ModCtrl) {
-					c.index++
+					*c.index++
 				} else {
-					c.index += 10
+					*c.index += 10
 				}
 				newKey = true
 			case key.NameTab:

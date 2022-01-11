@@ -72,7 +72,9 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	}
 	value := s.Float.Value
 	if s.HandleKeys(gtx) {
-		s.Float.pos = float32(s.index) / 100.0
+		if s.index != nil {
+			s.Float.pos = float32(*s.index) / 100.0
+		}
 		value = s.Min + (s.Max-s.Min)*s.Float.pos
 	}
 	if de != nil {
@@ -85,7 +87,9 @@ func (s *SliderStyle) Layout(gtx layout.Context) layout.Dimensions {
 	} else if s.Min != s.Max {
 		s.Float.pos = (value - s.Min) / (s.Max - s.Min)
 	}
-	s.index = int(s.Float.pos*100 + 0.5)
+	if s.index != nil {
+		*s.index = int(s.Float.pos*100 + 0.5)
+	}
 	// Unconditionally call setValue in case min, max, or value changed.
 	s.setValue(value, s.Min, s.Max)
 	s.Float.pos = clamp(s.Float.pos, 0, 1)

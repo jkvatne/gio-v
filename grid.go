@@ -131,7 +131,7 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidth []fl
 			wid.Label(&thg, data[i].Name),
 			wid.Label(&thg, data[i].Address),
 			wid.Label(&thg, fmt.Sprintf("%d", data[i].Age)),
-			wid.DropDown(&thg, data[i].Status, []string{"Male", "Female", "Other"}),
+			wid.DropDownWidget(&thg, &data[i].Status, []string{"Male", "Female", "Other"}),
 		)
 		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5), wid.W(9999)))
 	}

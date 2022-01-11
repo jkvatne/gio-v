@@ -30,8 +30,8 @@ type DropDownStyle struct {
 	icon       *Icon
 }
 
-// DropDownVar returns an initiated struct with drop-dow box setup info
-func DropDownVar(th *Theme, index int, items []string, options ...Option) *DropDownStyle {
+// DropDown returns an initiated struct with drop-dow box setup info
+func DropDown(th *Theme, index *int, items []string, options ...Option) *DropDownStyle {
 	b := DropDownStyle{}
 	b.icon, _ = NewIcon(icons.NavigationArrowDropDown)
 	b.SetupTabs()
@@ -53,8 +53,14 @@ func DropDownVar(th *Theme, index int, items []string, options ...Option) *DropD
 }
 
 // DropDown returns a dropdown widget.
-func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx C) D {
-	b := DropDownVar(th, index, items, options...)
+// func DropDown(th *Theme, index int, items []string, options ...Option) func(gtx C) D {
+//	b := DropDownVar(th, index, items, options...)
+//	return b.Layout
+// }
+
+// DropDownWidget returns a dropdown widget.
+func DropDownWidget(th *Theme, index *int, items []string, options ...Option) func(gtx C) D {
+	b := DropDown(th, index, items, options...)
 	return b.Layout
 }
 
@@ -135,16 +141,16 @@ func (b *DropDownStyle) layout(gtx C) D {
 }
 
 func (b *DropDownStyle) setHovered() {
-	if b.index >= len(b.hovered) {
-		b.index = len(b.hovered) - 1
+	if *b.index >= len(b.hovered) {
+		*b.index = len(b.hovered) - 1
 	}
-	if b.index < 0 {
-		b.index = 0
+	if *b.index < 0 {
+		*b.index = 0
 	}
 	for i := 0; i < len(b.hovered); i++ {
 		b.hovered[i] = false
 	}
-	b.hovered[b.index] = true
+	b.hovered[*b.index] = true
 }
 
 func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
@@ -153,7 +159,7 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 			if e, ok := e.(pointer.Event); ok {
 				switch e.Type {
 				case pointer.Release:
-					b.index = i
+					*b.index = i
 					b.Visible = false
 					b.wasVisible = 0
 					b.hovered[i] = false
@@ -208,14 +214,14 @@ func (b *DropDownStyle) LayoutBackground() func(gtx C) D {
 		paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
 		LayoutBorder(&b.Clickable, b.th)(gtx)
-		oldIndex := b.index
+		oldIndex := *b.index
 		b.LayoutClickable(gtx)
 		b.HandleClicks(gtx)
 		b.HandleKeys(gtx)
-		if b.index > len(b.hovered) {
-			b.index = len(b.hovered) - 1
+		if *b.index > len(b.hovered) {
+			*b.index = len(b.hovered) - 1
 		}
-		if b.index != oldIndex {
+		if *b.index != oldIndex {
 			b.setHovered()
 
 		}
@@ -234,13 +240,13 @@ func (b *DropDownStyle) LayoutLabel() layout.Widget {
 		pad.Right = unit.Dp(-5)
 		return pad.Layout(gtx, func(gtx C) D {
 			paint.ColorOp{Color: b.th.OnBackground}.Add(gtx.Ops)
-			if b.index < 0 {
-				b.index = 0
+			if *b.index < 0 {
+				*b.index = 0
 			}
-			if b.index >= len(b.items) {
-				b.index = len(b.items) - 1
+			if *b.index >= len(b.items) {
+				*b.index = len(b.items) - 1
 			}
-			return aLabel{Alignment: text.Start, MaxLines: 1}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.items[b.index])
+			return aLabel{Alignment: text.Start, MaxLines: 1}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.items[*b.index])
 		})
 	}
 }
