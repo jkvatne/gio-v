@@ -10,7 +10,6 @@ import (
 
 	"gioui.org/layout"
 
-	"gioui.org/f32"
 	"gioui.org/gesture"
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
@@ -56,7 +55,7 @@ type Click struct {
 // Press represents a past pointer press.
 type Press struct {
 	// Position of the press.
-	Position f32.Point
+	Position image.Point
 	// Start is when the press began.
 	Start time.Time
 	// End is when the press was ended by a release or cancel.
@@ -348,9 +347,9 @@ func (c *Clickable) HandleClicks(gtx C) D {
 // LayoutBorder will draw a border around the widget
 func LayoutBorder(e *Clickable, th *Theme) func(gtx C) D {
 	return func(gtx C) D {
-		outline := f32.Rectangle{Max: f32.Point{
-			X: float32(gtx.Constraints.Min.X),
-			Y: float32(gtx.Constraints.Min.Y),
+		outline := image.Rectangle{Max: image.Point{
+			X: gtx.Constraints.Min.X,
+			Y: gtx.Constraints.Min.Y,
 		}}
 		if e.Focused() {
 			paintBorder(gtx, outline, MulAlpha(th.Primary, 255), th.BorderThicknessActive, th.CornerRadius)

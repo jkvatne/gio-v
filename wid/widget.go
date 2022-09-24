@@ -15,7 +15,7 @@ type Widget struct {
 	th      *Theme
 	hint    string
 	padding layout.Inset
-	width   unit.Value
+	width   unit.Dp
 	fgColor color.NRGBA
 }
 
@@ -126,12 +126,12 @@ func Pads(pads ...float32) WidgetOption {
 }
 
 // CalcMin will calculate the minimum size of widget
-func CalcMin(gtx C, width unit.Value) image.Point {
+func CalcMin(gtx C, width unit.Dp) image.Point {
 	min := gtx.Constraints.Min
-	if width.V <= 1.0 {
-		min.X = gtx.Px(width.Scale(float32(gtx.Constraints.Max.X)))
-	} else if width.V != 0 {
-		min.X = gtx.Px(width)
+	if width <= 1.0 {
+		min.X = gtx.Dp(width * unit.Dp(gtx.Constraints.Max.X))
+	} else if width != 0 {
+		min.X = gtx.Dp(width)
 	}
 	if min.X > gtx.Constraints.Max.X {
 		min.X = gtx.Constraints.Max.X

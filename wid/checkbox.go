@@ -6,8 +6,8 @@ import (
 	"image"
 	"image/color"
 
-	"gioui.org/f32"
 	"gioui.org/io/pointer"
+
 	"gioui.org/layout"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
@@ -22,9 +22,9 @@ type CheckBoxDef struct {
 	Label              string
 	TextColor          color.NRGBA
 	Font               text.Font
-	TextSize           unit.Value
+	TextSize           unit.Sp
 	IconColor          color.NRGBA
-	Size               unit.Value
+	Size               unit.Sp
 	shaper             text.Shaper
 	CheckedStateIcon   *Icon
 	UncheckedStateIcon *Icon
@@ -39,18 +39,18 @@ func Checkbox(th *Theme, label string, State *bool, handler func(b bool)) func(g
 		Value:              State,
 		TextColor:          th.OnBackground,
 		IconColor:          th.OnBackground,
-		TextSize:           th.TextSize.Scale(1.0),
-		Size:               th.TextSize.Scale(1.5),
+		TextSize:           th.TextSize,
 		shaper:             th.Shaper,
 		CheckedStateIcon:   th.CheckBoxChecked,
 		UncheckedStateIcon: th.CheckBoxUnchecked,
 	}
+	c.Size = th.TextSize * 1.5
 	c.handler = handler
 	c.SetupTabs()
 	return func(gtx C) D {
 		dims := c.layout(gtx)
 		c.HandleToggle(c.Value, &c.changed)
-		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
+		pointer.CursorPointer.Add(gtx.Ops)
 		return dims
 	}
 }
@@ -64,7 +64,7 @@ func (c *CheckBoxDef) layout(gtx C) D {
 		layout.Rigid(func(gtx C) D {
 			return layout.Stack{Alignment: layout.Center}.Layout(gtx,
 				layout.Stacked(func(gtx C) D {
-					size := gtx.Px(c.Size) * 4 / 3
+					size := gtx.Sp(c.Size) * 4 / 3
 					dims := D{
 						Size: image.Point{X: size, Y: size},
 					}
@@ -73,13 +73,13 @@ func (c *CheckBoxDef) layout(gtx C) D {
 					}
 
 					background := MulAlpha(c.IconColor, 70)
-					paint.FillShape(gtx.Ops, background, clip.Ellipse{f32.Point{}, f32.Pt(float32(size), float32(size))}.Op(gtx.Ops))
+					paint.FillShape(gtx.Ops, background, clip.Ellipse{image.Point{}, image.Pt(size, size)}.Op(gtx.Ops))
 
 					return dims
 				}),
 				layout.Stacked(func(gtx C) D {
 					return layout.UniformInset(unit.Dp(1)).Layout(gtx, func(gtx C) D {
-						size := gtx.Px(c.Size)
+						size := gtx.Sp(c.Size)
 						col := c.IconColor
 						if gtx.Queue == nil {
 							col = Disabled(col)

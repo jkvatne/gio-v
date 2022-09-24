@@ -7,7 +7,6 @@ import (
 
 	"gioui.org/text"
 
-	"gioui.org/f32"
 	"gioui.org/layout"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
@@ -79,17 +78,17 @@ func (r *RadioButtonStyle) layout(gtx C, checked bool) D {
 		layout.Rigid(func(gtx C) D {
 			return layout.Stack{Alignment: layout.Center}.Layout(gtx,
 				layout.Stacked(func(gtx C) D {
-					size := gtx.Px(r.th.TextSize.Scale(1.8))
+					size := gtx.Sp(r.th.TextSize * 1.8)
 					if r.Hovered() || r.Focused() {
 						paint.FillShape(gtx.Ops,
 							MulAlpha(r.th.OnBackground, 70),
-							clip.Ellipse{f32.Point{}, f32.Pt(float32(size), float32(size))}.Op(gtx.Ops))
+							clip.Ellipse{image.Point{}, image.Pt(size, size)}.Op(gtx.Ops))
 					}
 					return D{Size: image.Point{X: size, Y: size}}
 				}),
 				layout.Stacked(func(gtx C) D {
 					return layout.UniformInset(unit.Dp(1)).Layout(gtx, func(gtx C) D {
-						size := gtx.Px(r.th.TextSize.Scale(1.3))
+						size := gtx.Sp(r.th.TextSize * 1.3)
 						gtx.Constraints.Min = image.Point{X: size}
 						icon.Layout(gtx, ColDisabled(r.th.OnBackground, gtx.Queue == nil))
 						return D{Size: image.Point{X: size, Y: size}}
@@ -105,7 +104,7 @@ func (r *RadioButtonStyle) layout(gtx C, checked bool) D {
 				if lbl == "" {
 					lbl = r.Key
 				}
-				//return Label(r.th, lbl)(gtx) //  text.Start, 1.0
+				// return Label(r.th, lbl)(gtx) //  text.Start, 1.0
 				paint.ColorOp{Color: r.th.OnBackground}.Add(gtx.Ops)
 				tl := aLabel{Alignment: text.Start, MaxLines: 1}
 				return tl.Layout(gtx, r.th.Shaper, text.Font{Weight: text.Medium, Style: text.Regular}, r.th.TextSize, lbl)

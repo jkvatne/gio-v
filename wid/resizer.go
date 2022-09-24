@@ -63,9 +63,9 @@ func (rs *Resize) setCursor(gtx C, dims image.Point) {
 	defer clip.Rect(rect).Push(gtx.Ops).Pop()
 	rs.drag.Add(gtx.Ops)
 	if rs.axis == layout.Horizontal {
-		pointer.CursorNameOp{Name: pointer.CursorColResize}.Add(gtx.Ops)
+		pointer.CursorColResize.Add(gtx.Ops)
 	} else {
-		pointer.CursorNameOp{Name: pointer.CursorRowResize}.Add(gtx.Ops)
+		pointer.CursorRowResize.Add(gtx.Ops)
 	}
 }
 
@@ -102,12 +102,12 @@ func (rs *Resize) drawSash(gtx C) image.Point {
 	var sashSize, dims image.Point
 	if rs.axis == layout.Horizontal {
 		dims = gtx.Constraints.Max
-		dims.X = gtx.Px(rs.Theme.SashWidth)
-		sashSize = image.Pt(gtx.Px(rs.Theme.SashWidth), dims.Y)
+		dims.X = gtx.Dp(rs.Theme.SashWidth)
+		sashSize = image.Pt(gtx.Dp(rs.Theme.SashWidth), dims.Y)
 	} else {
 		dims = gtx.Constraints.Max
-		dims.Y = gtx.Px(rs.Theme.SashWidth)
-		sashSize = image.Pt(dims.X, gtx.Px(rs.Theme.SashWidth))
+		dims.Y = gtx.Dp(rs.Theme.SashWidth)
+		sashSize = image.Pt(dims.X, gtx.Dp(rs.Theme.SashWidth))
 	}
 	defer clip.Rect{Max: sashSize}.Push(gtx.Ops).Pop()
 	paint.ColorOp{Color: rs.Theme.SashColor}.Add(gtx.Ops)

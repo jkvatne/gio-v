@@ -109,17 +109,17 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidth []fl
 	thh := *th
 	thh.OnBackground = wid.WithAlpha(th.Primary, 210)
 	thh.Background = th.Surface
-	thh.LabelPadding = layout.UniformInset(th.TextSize.Scale(0.4))
+	thh.LabelPadding = layout.UniformInset(unit.Dp(th.TextSize * 0.4))
 	// Setup theme for grid labels.
 	thg := *th
 	thg.Background = th.Surface
-	thg.LabelPadding = layout.UniformInset(th.TextSize.Scale(0.35))
+	thg.LabelPadding = layout.UniformInset(unit.Dp(th.TextSize * 0.35))
 	// Configure a row with headings.
 	heading := wid.Row(&thh, &selectAll, colWidth,
 		wid.Checkbox(&thh, "", &selectAll, onCheck),
-		wid.HeaderButton(&thh, "Name", wid.Handler(onNameClick), wid.W(9999), wid.BtnIcon(nameIcon)),
-		wid.HeaderButton(&thh, "Address", wid.Handler(onAddressClick), wid.W(9999), wid.BtnIcon(addressIcon)),
-		wid.HeaderButton(&thh, "Age", wid.Handler(onAgeClick), wid.W(9999), wid.BtnIcon(ageIcon)),
+		wid.HeaderButton(&thh, "Name", wid.Handler(onNameClick), wid.W(9999), wid.BtnIcon(nameIcon)).Layout,
+		wid.HeaderButton(&thh, "Address", wid.Handler(onAddressClick), wid.W(9999), wid.BtnIcon(addressIcon)).Layout,
+		wid.HeaderButton(&thh, "Age", wid.Handler(onAgeClick), wid.W(9999), wid.BtnIcon(ageIcon)).Layout,
 		wid.Label(&thh, "Gender", wid.Bold()),
 	)
 	var lines []layout.Widget

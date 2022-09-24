@@ -12,7 +12,6 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"gioui.org/unit"
 )
 
 // )
@@ -63,9 +62,8 @@ func (im ImageDef) Layout(gtx layout.Context) layout.Dimensions {
 		scale = float32(160.0 / 72.0)
 	}
 
-	size := im.Src.Size()
-	wf, hf := float32(size.X), float32(size.Y)
-	w, h := gtx.Px(unit.Dp(wf*scale)), gtx.Px(unit.Dp(hf*scale))
+	w := int(float32(im.Src.Size().X) * scale)
+	h := int(float32(im.Src.Size().Y) * scale)
 
 	dims, trans := im.Fit.scale(gtx.Constraints, im.Position, layout.Dimensions{Size: image.Pt(w, h)})
 	defer clip.Rect{Max: dims.Size}.Push(gtx.Ops).Pop()

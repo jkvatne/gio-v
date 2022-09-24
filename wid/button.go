@@ -8,8 +8,8 @@ import (
 	"image/color"
 	"math"
 
-	"gioui.org/f32"
 	"gioui.org/io/pointer"
+
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -40,7 +40,7 @@ type ButtonDef struct {
 	shadow       ShadowStyle
 	disabler     *bool
 	Text         string
-	ToolTipWidth unit.Value
+	ToolTipWidth unit.Dp
 	Font         text.Font
 	shaper       text.Shaper
 	Icon         *Icon
@@ -54,33 +54,33 @@ type ButtonDef struct {
 type BtnOption func(*ButtonDef)
 
 // RoundButton is a shortcut to a round button
-func RoundButton(th *Theme, d *Icon, options ...Option) func(gtx C) D {
+func RoundButton(th *Theme, d *Icon, options ...Option) *ButtonDef {
 	options = append(options, BtnIcon(d), W(0))
 	return aButton(Round, th, "", options...)
 }
 
 // TextButton is a shortcut to a text only button
-func TextButton(th *Theme, label string, options ...Option) func(gtx C) D {
+func TextButton(th *Theme, label string, options ...Option) *ButtonDef {
 	return aButton(Text, th, label, options...)
 }
 
 // OutlineButton is a shortcut to an outlined button
-func OutlineButton(th *Theme, label string, options ...Option) func(gtx C) D {
+func OutlineButton(th *Theme, label string, options ...Option) *ButtonDef {
 	return aButton(Outlined, th, label, options...)
 }
 
 // Button is the generic button selector
-func Button(th *Theme, label string, options ...Option) func(gtx C) D {
+func Button(th *Theme, label string, options ...Option) *ButtonDef {
 	return aButton(Contained, th, label, options...)
 }
 
 // HeaderButton is a shortcut to a text only button with left justified text and a given size
-func HeaderButton(th *Theme, label string, options ...Option) func(gtx C) D {
+func HeaderButton(th *Theme, label string, options ...Option) *ButtonDef {
 	options = append(options, AlignLeft())
 	return aButton(Text, th, label, options...)
 }
 
-func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func(gtx C) D {
+func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *ButtonDef {
 	b := ButtonDef{}
 	b.SetupTabs()
 	// Setup default values
@@ -96,27 +96,30 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) func
 		option.apply(&b)
 	}
 	b.Tooltip = PlatformTooltip(th, b.hint)
-	return func(gtx C) D {
-		if style == Contained || style == Round {
-			b.fg = th.OnPrimary
-			b.bg = th.Primary
-		} else {
-			b.fg = th.OnBackground
-			b.bg = color.NRGBA{}
-		}
-		if b.Widget.fgColor.A != 0 {
-			b.bg = b.Widget.fgColor
-			if Luminance(b.Widget.fgColor) > 127 {
-				b.fg = RGB(0x000000)
-			} else {
-				b.fg = RGB(0xFFFFFF)
-			}
-		}
-		dims := b.layout(gtx)
-		b.HandleClick()
-		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
-		return dims
+	return &b
+}
+
+// Layout will draw a button defined in b.
+func (b *ButtonDef) Layout(gtx C) D {
+	if b.Style == Contained || b.Style == Round {
+		b.fg = b.th.OnPrimary
+		b.bg = b.th.Primary
+	} else {
+		b.fg = b.th.OnBackground
+		b.bg = color.NRGBA{}
 	}
+	if b.Widget.fgColor.A != 0 {
+		b.bg = b.Widget.fgColor
+		if Luminance(b.Widget.fgColor) > 127 {
+			b.fg = RGB(0x000000)
+		} else {
+			b.fg = RGB(0xFFFFFF)
+		}
+	}
+	dims := b.layout(gtx)
+	b.HandleClick()
+	pointer.CursorPointer.Add(gtx.Ops)
+	return dims
 }
 
 func (b BtnOption) apply(cfg interface{}) {
@@ -153,71 +156,109 @@ func Disable(v *bool) BtnOption {
 }
 
 func drawInk(gtx C, c Press) {
+	// duration is the number of seconds for the
+	// completed animation: expand while fading in, then
+	// out.
+	const (
+		expandDuration = float32(0.5)
+		fadeDuration   = float32(0.9)
+	)
+
 	now := gtx.Now
-	t := now.Sub(c.Start).Seconds()
+
+	t := float32(now.Sub(c.Start).Seconds())
+
 	end := c.End
 	if end.IsZero() {
 		// If the press hasn't ended, don't fade-out.
 		end = now
 	}
-	endTime := end.Sub(c.Start).Seconds()
+
+	endt := float32(end.Sub(c.Start).Seconds())
+
 	// Compute the fade-in/out position in [0;1].
-	var haste float64
-	if c.Cancelled {
-		// If the press was cancelled before the inkwell
-		// was fully faded-in, fast-forward the animation
-		// to match the fade-out.
-		if h := 0.5 - endTime/0.9; h > 0 {
-			haste = h
+	var alphat float32
+	{
+		var haste float32
+		if c.Cancelled {
+			// If the press was cancelled before the inkwell
+			// was fully faded in, fast forward the animation
+			// to match the fade-out.
+			if h := 0.5 - endt/fadeDuration; h > 0 {
+				haste = h
+			}
 		}
+		// Fade in.
+		half1 := t/fadeDuration + haste
+		if half1 > 0.5 {
+			half1 = 0.5
+		}
+
+		// Fade out.
+		half2 := float32(now.Sub(end).Seconds())
+		half2 /= fadeDuration
+		half2 += haste
+		if half2 > 0.5 {
+			// Too old.
+			return
+		}
+
+		alphat = half1 + half2
 	}
-	// Fade in.
-	half1 := math.Max(t/0.9+haste, 0.5)
-	if half1 > 0.5 {
-		half1 = 0.5
-	}
-	// Fade out.
-	half2 := now.Sub(end).Seconds()/0.9 + haste
-	if half2 > 0.5 {
-		return
-	}
-	alpha := half1 + half2
-	// Compute the expanded position in [0;1].
+
+	// Compute the expand position in [0;1].
+	sizet := t
 	if c.Cancelled {
 		// Freeze expansion of cancelled presses.
-		t = endTime
+		sizet = endt
 	}
-	sizet := math.Min(t*2, 1.0)
+	sizet /= expandDuration
+
 	// Animate only ended presses, and presses that are fading in.
 	if !c.End.IsZero() || sizet <= 1.0 {
 		op.InvalidateOp{}.Add(gtx.Ops)
 	}
-	if alpha > .5 {
+
+	if sizet > 1.0 {
+		sizet = 1.0
+	}
+
+	if alphat > .5 {
 		// Start fadeout after half the animation.
-		alpha = 1.0 - alpha
+		alphat = 1.0 - alphat
 	}
 	// Twice the speed to attain fully faded in at 0.5.
-	t2 := alpha * 2
-	size := math.Max(float64(gtx.Constraints.Min.Y), float64(gtx.Constraints.Min.X))
-	alpha = 0.7 * alpha * 2 * t2 * (3.0 - 3.0*alpha)
-	ba, bc := byte(alpha*0xff), byte(0x80)
+	t2 := alphat * 2
+	// Beziér ease-in curve.
+	alphaBezier := t2 * t2 * (3.0 - 2.0*t2)
+	sizeBezier := sizet * sizet * (3.0 - 2.0*sizet)
+	size := gtx.Constraints.Min.X
+	if h := gtx.Constraints.Min.Y; h > size {
+		size = h
+	}
+	// Cover the entire constraints min rectangle and
+	// apply curve values to size and color.
+	size = int(float32(size) * 2 * float32(math.Sqrt(2)) * sizeBezier)
+	alpha := 0.7 * alphaBezier
+	const col = 0.8
+	ba, bc := byte(alpha*0xff), byte(col*0xff)
 	rgba := MulAlpha(color.NRGBA{A: 0xff, R: bc, G: bc, B: bc}, ba)
 	ink := paint.ColorOp{Color: rgba}
 	ink.Add(gtx.Ops)
-	rr := float32(size * math.Sqrt(2.0) * sizet * sizet * (3.0 - 2.0*sizet))
-	op.Offset(c.Position.Add(f32.Point{
+	rr := size / 2
+	defer op.Offset(c.Position.Add(image.Point{
 		X: -rr,
 		Y: -rr,
-	})).Add(gtx.Ops)
-	defer clip.UniformRRect(f32.Rectangle{Max: f32.Pt(2*rr, 2*rr)}, rr).Push(gtx.Ops).Pop()
+	})).Push(gtx.Ops).Pop()
+	defer clip.UniformRRect(image.Rectangle{Max: image.Pt(size, size)}, rr).Push(gtx.Ops).Pop()
 	paint.PaintOp{}.Add(gtx.Ops)
 }
 
-func paintBorder(gtx C, outline f32.Rectangle, col color.NRGBA, width unit.Value, rr unit.Value) {
+func paintBorder(gtx C, outline image.Rectangle, col color.NRGBA, width unit.Dp, rr unit.Dp) {
 	paint.FillShape(gtx.Ops,
 		col,
 		clip.Stroke{
-			Path:  clip.UniformRRect(outline, Pxr(gtx, rr)).Path(gtx.Ops),
+			Path:  clip.UniformRRect(outline, gtx.Dp(rr)).Path(gtx.Ops),
 			Width: Pxr(gtx, width),
 		}.Op(),
 	)
@@ -229,16 +270,17 @@ func (b *ButtonDef) layoutBackground() func(gtx C) D {
 		b.HandleClicks(gtx)
 		b.HandleKeys(gtx)
 
-		rr := Pxr(gtx, b.th.CornerRadius)
+		rr := gtx.Dp(b.th.CornerRadius)
 		if b.Style == Round {
-			rr = float32(gtx.Constraints.Min.Y) / 2.0
+			rr = gtx.Constraints.Min.Y / 2
 		}
 		if b.Focused() || b.Hovered() {
-			Shadow(unit.Px(rr), b.th.Elevation).Layout(gtx)
+			e := b.th.Elevation
+			Shadow(rr, gtx.Dp(e)).Layout(gtx)
 		}
-		outline := f32.Rectangle{Max: f32.Point{
-			X: float32(gtx.Constraints.Min.X),
-			Y: float32(gtx.Constraints.Min.Y),
+		outline := image.Rectangle{Max: image.Point{
+			X: gtx.Constraints.Min.X,
+			Y: gtx.Constraints.Min.Y,
 		}}
 		defer clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
 
@@ -306,7 +348,7 @@ func layIcon(b *ButtonDef) layout.Widget {
 				inset.Right = unit.Dp(0)
 			}
 			return inset.Layout(gtx, func(gtx C) D {
-				size := gtx.Px(b.th.IconSize)
+				size := gtx.Dp(b.th.IconSize)
 				gtx.Constraints = layout.Exact(image.Pt(size, size))
 				return b.Icon.Layout(gtx, b.fg)
 			})

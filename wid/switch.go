@@ -6,8 +6,8 @@ import (
 	"image"
 	"image/color"
 
-	"gioui.org/f32"
 	"gioui.org/io/pointer"
+
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -39,7 +39,7 @@ func Switch(th *Theme, State *bool, handler func(b bool)) func(gtx C) D {
 		} else {
 			s.HandleToggle(s.Value, &s.changed)
 		}
-		pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
+		pointer.CursorPointer.Add(gtx.Ops)
 		return dims
 	}
 }
@@ -48,11 +48,11 @@ func Switch(th *Theme, State *bool, handler func(b bool)) func(gtx C) D {
 func (s *SwitchDef) Layout(gtx C) D {
 
 	// Calculate sizes
-	trackWidth := gtx.Px(s.th.TextSize.Scale(2.1))
-	trackHeight := gtx.Px(s.th.TextSize.Scale(0.8))
-	thumbSize := gtx.Px(s.th.TextSize.Scale(1.05))
-	trackOff := float32(thumbSize-trackHeight) * 0.5
-	thumbRadius := float32(thumbSize) / 2
+	trackWidth := gtx.Sp(s.th.TextSize * 2.1)
+	trackHeight := gtx.Sp(s.th.TextSize * 0.8)
+	thumbSize := gtx.Sp(s.th.TextSize * 1.05)
+	trackOff := (thumbSize - trackHeight) / 2
+	thumbRadius := thumbSize / 2
 
 	// Find colors
 	trackColor := MulAlpha(s.th.Primary, 0x80)
@@ -67,12 +67,9 @@ func (s *SwitchDef) Layout(gtx C) D {
 	}
 
 	// Draw track.
-	trackCorner := float32(trackHeight) / 2
-	trackRect := f32.Rectangle{Max: f32.Point{
-		X: float32(trackWidth),
-		Y: float32(trackHeight),
-	}}
-	t := op.Offset(f32.Point{Y: trackOff}).Push(gtx.Ops)
+	trackCorner := trackHeight / 2
+	trackRect := image.Rect(0, 0, trackWidth, trackHeight)
+	t := op.Offset(image.Point{Y: trackOff}).Push(gtx.Ops)
 	cl := clip.UniformRRect(trackRect, trackCorner).Push(gtx.Ops)
 	paint.ColorOp{Color: trackColor}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
@@ -80,29 +77,29 @@ func (s *SwitchDef) Layout(gtx C) D {
 	t.Pop()
 
 	// Compute thumb offset based on switch on/off state
-	ofs := float32(0)
+	ofs := 0
 	if *s.Value {
-		ofs = float32(trackWidth - thumbSize)
+		ofs = trackWidth - thumbSize
 	}
-	st := op.Offset(f32.Point{X: ofs}).Push(gtx.Ops)
+	st := op.Offset(image.Point{X: ofs}).Push(gtx.Ops)
 
 	// Draw hover/focused circle
-	hoverRadius := float32(2.4 * thumbRadius)
+	hoverRadius := 2 * thumbRadius
 	if s.Hovered() || s.Focused() {
 		paint.FillShape(gtx.Ops, MulAlpha(s.th.Primary, 88),
-			clip.Ellipse{f32.Point{}, f32.Point{X: hoverRadius, Y: hoverRadius}}.Op(gtx.Ops))
+			clip.Ellipse{image.Point{}, image.Point{X: hoverRadius, Y: hoverRadius}}.Op(gtx.Ops))
 	}
 
 	// Draw thumb shadow, a translucent disc slightly larger than the thumb itself.
 	for i := 6; i > 0; i-- {
-		s := op.Offset(f32.Point{Y: float32(i) * 0.4}).Push(gtx.Ops)
+		s := op.Offset(image.Point{Y: i / 2}).Push(gtx.Ops)
 		paint.FillShape(gtx.Ops, color.NRGBA{A: alpha[i]},
-			clip.Ellipse{f32.Point{}, f32.Point{X: hoverRadius, Y: hoverRadius}}.Op(gtx.Ops))
+			clip.Ellipse{image.Point{}, image.Point{X: hoverRadius, Y: hoverRadius}}.Op(gtx.Ops))
 		s.Pop()
 	}
 	// Draw thumb.
 	paint.FillShape(gtx.Ops, dotColor,
-		clip.Ellipse{f32.Point{}, f32.Point{X: hoverRadius, Y: hoverRadius}}.Op(gtx.Ops))
+		clip.Ellipse{image.Point{}, image.Point{X: hoverRadius, Y: hoverRadius}}.Op(gtx.Ops))
 
 	st.Pop()
 	// Set area for click and hover

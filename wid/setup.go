@@ -26,7 +26,6 @@ func makeNode(widgets []layout.Widget) node {
 
 // Col makes a column of widgets.
 func Col(widgets ...layout.Widget) layout.Widget {
-	//	children := makeChildren(true, nil, widgets...)
 	var children []layout.FlexChild
 	node := makeNode(widgets)
 	for i := 0; i < len(widgets); i++ {

@@ -18,9 +18,6 @@ var (
 	Black  = RGB(0x000000)
 )
 
-// Zv is a zero unit.Value. Just saving a few keystrokes
-var Zv = unit.Value{}
-
 // DeEmphasis will change a color to a less prominent color
 // In light mode, colors will be lighter, in dark mode, colors will be darker
 // The amount of darkening is greater than the amount of lightening
@@ -32,8 +29,8 @@ func DeEmphasis(c color.NRGBA, amount uint8) color.NRGBA {
 }
 
 // Pxr maps the value v to pixels, returning a float32
-func Pxr(c C, v unit.Value) float32 {
-	return float32(c.Metric.Px(v))
+func Pxr(c C, v unit.Dp) float32 {
+	return float32(c.Dp(v))
 }
 
 // Disabled blends color towards the luminance and multiplies alpha.

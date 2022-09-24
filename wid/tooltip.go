@@ -5,7 +5,6 @@ import (
 	"image/color"
 	"time"
 
-	"gioui.org/f32"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -27,16 +26,16 @@ const (
 type Tooltip struct {
 	VisibilityAnimation
 	// MaxWidth is the maximum width of the tool-tip box. Should be less than form width.
-	MaxWidth unit.Value
+	MaxWidth unit.Dp
 	// Text defines the content of the tooltip.
 	Text         LabelDef
-	position     f32.Point
+	position     image.Point
 	Hover        InvalidateDeadline
 	Press        InvalidateDeadline
 	LongPress    InvalidateDeadline
 	Fg           color.NRGBA
 	Bg           color.NRGBA
-	CornerRadius unit.Value
+	CornerRadius unit.Dp
 	init         bool
 	// HoverDelay is the delay between the cursor entering the tip area
 	// and the tooltip appearing.
@@ -60,7 +59,7 @@ func MobileTooltip(th *Theme, tips string) Tooltip {
 		Text: LabelDef{
 			Stringer:  func() string { return tips },
 			Font:      text.Font{Weight: text.Medium},
-			TextSize:  th.TextSize.Scale(0.9),
+			TextSize:  th.TextSize * 0.9,
 			shaper:    th.Shaper,
 			Alignment: text.Start},
 	}
@@ -76,7 +75,7 @@ func DesktopTooltip(th *Theme, tips string) Tooltip {
 		Text: LabelDef{
 			Stringer:  func() string { return tips },
 			Font:      text.Font{Weight: text.Medium},
-			TextSize:  th.TextSize.Scale(0.9),
+			TextSize:  th.TextSize * 0.9,
 			shaper:    th.Shaper,
 			Alignment: text.Start},
 	}
@@ -137,7 +136,8 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 			continue
 		}
 		if !t.Visible() {
-			t.position = e.Position
+			t.position.X = int(e.Position.X)
+			t.position.Y = int(e.Position.Y)
 		}
 		switch e.Type {
 		case pointer.Enter:
@@ -184,14 +184,14 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 				v := t.VisibilityAnimation.Revealed(gtx)
 				bg := WithAlpha(t.Bg, uint8(v*255))
 				t.Text.fgColor = WithAlpha(t.Fg, uint8(v*255))
-				gtx.Constraints.Max.X = gtx.Metric.Px(t.MaxWidth)
-				p := t.Text.TextSize.Scale(0.5)
+				gtx.Constraints.Max.X = gtx.Metric.Dp(t.MaxWidth)
+				p := unit.Dp(t.Text.TextSize * 0.5)
 				inset := layout.Inset{Top: p, Right: p, Bottom: p, Left: p}
 				dims := layout.Stack{}.Layout(
 					gtx,
 					layout.Expanded(func(gtx C) D {
-						rr := Pxr(gtx, t.CornerRadius)
-						outline := f32.Rectangle{Max: layout.FPt(gtx.Constraints.Min)}
+						rr := gtx.Dp(t.CornerRadius)
+						outline := image.Rectangle{Max: gtx.Constraints.Min}
 						paint.FillShape(gtx.Ops, bg, clip.RRect{
 							Rect: outline,
 							NW:   rr,
@@ -206,15 +206,15 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 						return inset.Layout(gtx, t.Text.Layout)
 					}),
 				)
-				if int(t.position.X)+dims.Size.X > maxx {
-					t.position.X = float32(maxx - dims.Size.X)
+				if t.position.X+dims.Size.X > maxx {
+					t.position.X = maxx - dims.Size.X
 				}
-				if int(t.position.Y)+dims.Size.Y > gtx.Constraints.Max.Y {
-					t.position.Y = float32(gtx.Constraints.Max.Y - dims.Size.Y)
+				if t.position.Y+dims.Size.Y > gtx.Constraints.Max.Y {
+					t.position.Y = gtx.Constraints.Max.Y - dims.Size.Y
 				}
 				call := macro.Stop()
 				macro = op.Record(gtx.Ops)
-				op.Offset(t.position.Add(f32.Pt(5, 5))).Add(gtx.Ops)
+				op.Offset(t.position.Add(image.Pt(5, 5))).Add(gtx.Ops)
 				call.Add(gtx.Ops)
 				call = macro.Stop()
 				op.Defer(gtx.Ops, call)

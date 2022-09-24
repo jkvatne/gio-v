@@ -8,6 +8,11 @@ import (
 	"gioui.org/layout"
 )
 
+var (
+	topLabel         = "Hello, Gio"
+	radioButtonValue string
+)
+
 func endKitchen() {
 	page = "KitchenX"
 	oldMode = "xx"
@@ -23,11 +28,11 @@ func kitchenV(th *wid.Theme) layout.Widget {
 		wid.Edit(th, wid.Hint("Value 1")),
 		wid.Edit(th, wid.Hint("Value 2")),
 		wid.Row(th, nil, []float32{35, 10, 20, 15, 20},
-			wid.Button(thb, "Click me!", wid.W(500), wid.Handler(onClick)),
-			wid.RoundButton(th, addIcon, wid.Hint("This is another dummy button")),
-			wid.Button(th, "Icon", wid.BtnIcon(checkIcon), wid.Color(wid.RGB(0xffff00))),
-			wid.Button(thb, "Blue", wid.Color(wid.Blue)),
-			wid.TextButton(th, "Show other", wid.Handler(endKitchen)),
+			wid.Button(thb, "Click me!", wid.W(500), wid.Handler(onClick)).Layout,
+			wid.RoundButton(th, addIcon, wid.Hint("This is another dummy button")).Layout,
+			wid.Button(th, "Icon", wid.BtnIcon(checkIcon), wid.Color(wid.RGB(0xffff00))).Layout,
+			wid.Button(thb, "Blue", wid.Color(wid.Blue)).Layout,
+			wid.TextButton(th, "Show other", wid.Handler(endKitchen)).Layout,
 		),
 		wid.Row(th, nil, nil,
 			wid.ProgressBar(th, &progress),

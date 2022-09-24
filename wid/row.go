@@ -5,8 +5,6 @@ package wid
 import (
 	"image"
 
-	"gioui.org/f32"
-
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -21,7 +19,7 @@ type rowDef struct {
 func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget) layout.Widget {
 	r := rowDef{}
 	if weights == nil {
-		weights = []float32{1, 1, 1, 1, 1, 1, 1, 1}
+		weights = []float32{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 	}
 	dims := make([]D, len(widgets))
 	call := make([]op.CallOp, len(widgets))
@@ -53,14 +51,14 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 			}
 		}
 		macro := op.Record(gtx.Ops)
-		pos := float32(0)
+		pos := 0
 		// Generate all the rendering commands for the children,
 		// translated to correct location.
 		for i := range widgets {
-			trans := op.Offset(f32.Pt(pos, 0)).Push(gtx.Ops)
+			trans := op.Offset(image.Pt(pos, 0)).Push(gtx.Ops)
 			call[i].Add(gtx.Ops)
 			trans.Pop()
-			pos += float32(dims[i].Size.X)
+			pos += dims[i].Size.X
 		}
 		// The row width is now the position after the last drawn widget.
 		dim := D{Size: image.Pt(int(pos), yMax)}

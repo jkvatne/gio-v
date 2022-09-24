@@ -3,7 +3,6 @@ package wid
 import (
 	"image"
 
-	"gioui.org/f32"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -60,9 +59,9 @@ func (b *DropDownStyle) Layout(gtx C) D {
 }
 
 func (b *DropDownStyle) layout(gtx C) D {
-	if b.width.V > 0 {
-		gtx.Constraints.Min.X = gtx.Px(b.width)
-		gtx.Constraints.Max.X = gtx.Px(b.width)
+	if b.width > 0 {
+		gtx.Constraints.Min.X = gtx.Dp(b.width)
+		gtx.Constraints.Max.X = gtx.Dp(b.width)
 	}
 
 	b.disabled = false
@@ -79,9 +78,9 @@ func (b *DropDownStyle) layout(gtx C) D {
 					gtx.Constraints.Min = min
 					gtx.Constraints.Max.X = min.X
 				}
-				if b.width.V > 0 {
-					gtx.Constraints.Max.X = gtx.Px(b.width)
-					gtx.Constraints.Min.X = gtx.Px(b.width)
+				if b.width > 0 {
+					gtx.Constraints.Max.X = gtx.Dp(b.width)
+					gtx.Constraints.Min.X = gtx.Dp(b.width)
 				}
 				return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start}.Layout(
 					gtx,
@@ -108,14 +107,14 @@ func (b *DropDownStyle) layout(gtx C) D {
 		gtx.Constraints.Max.Y = gtx.Constraints.Max.Y - dims.Size.Y - 5
 		macro := op.Record(gtx.Ops)
 		d := b.list(gtx)
-		listClipRect := f32.Rect(0, 0, float32(gtx.Constraints.Min.X), float32(d.Size.Y)) // gtx.Constraints.Min.Y))
+		listClipRect := image.Rect(0, 0, gtx.Constraints.Min.X, d.Size.Y)
 		call := macro.Stop()
 		macro = op.Record(gtx.Ops)
-		op.Offset(f32.Pt(0, float32(dims.Size.Y))).Add(gtx.Ops)
+		op.Offset(image.Pt(0, dims.Size.Y)).Add(gtx.Ops)
 		stack := clip.UniformRRect(listClipRect, 0).Push(gtx.Ops)
 		paint.Fill(gtx.Ops, b.th.Background)
 		// Draw a border around all options
-		paintBorder(gtx, listClipRect, b.th.OnBackground, b.th.BorderThickness, unit.Value{})
+		paintBorder(gtx, listClipRect, b.th.OnBackground, b.th.BorderThickness, 0)
 		call.Add(gtx.Ops)
 		stack.Pop()
 		call = macro.Stop()
@@ -124,7 +123,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 	} else {
 		b.setHovered()
 	}
-	pointer.CursorNameOp{Name: pointer.CursorPointer}.Add(gtx.Ops)
+	pointer.CursorPointer.Add(gtx.Ops)
 	return dims
 }
 
@@ -175,7 +174,7 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 		lblWidget := func(gtx C) D {
 			return aLabel{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, text.Font{}, th.TextSize, b.items[i])
 		}
-		dims := layout.Inset{Top: unit.Dp(2), Left: th.TextSize.Scale(0.4), Right: unit.Dp(0)}.Layout(gtx, lblWidget)
+		dims := layout.Inset{Top: unit.Dp(2), Left: unit.Dp(th.TextSize * 0.4), Right: unit.Dp(0)}.Layout(gtx, lblWidget)
 		defer clip.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Push(gtx.Ops).Pop()
 		pointer.InputOp{
 			Tag:   &b.items[i],
@@ -189,15 +188,15 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 func (b *DropDownStyle) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
 		if b.Focused() || b.Hovered() {
-			Shadow(b.th.CornerRadius, b.th.Elevation).Layout(gtx)
+			Shadow(gtx.Dp(b.th.CornerRadius), gtx.Dp(b.th.Elevation)).Layout(gtx)
 		}
-		rr := Pxr(gtx, b.th.CornerRadius)
-		if rr > float32(gtx.Constraints.Min.Y)/2.0 {
-			rr = float32(gtx.Constraints.Min.Y) / 2.0
+		rr := gtx.Dp(b.th.CornerRadius)
+		if rr > gtx.Constraints.Min.Y/2 {
+			rr = gtx.Constraints.Min.Y / 2
 		}
-		outline := f32.Rectangle{Max: f32.Point{
-			X: float32(gtx.Constraints.Min.X),
-			Y: float32(gtx.Constraints.Min.Y),
+		outline := image.Rectangle{Max: image.Point{
+			X: gtx.Constraints.Min.X,
+			Y: gtx.Constraints.Min.Y,
 		}}
 		paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
@@ -220,8 +219,8 @@ func (b *DropDownStyle) LayoutBackground() func(gtx C) D {
 // LayoutLabel draws the label
 func (b *DropDownStyle) LayoutLabel() layout.Widget {
 	return func(gtx C) D {
-		if gtx.Px(b.width) > gtx.Constraints.Min.X {
-			gtx.Constraints.Min.X = gtx.Px(b.width)
+		if gtx.Dp(b.width) > gtx.Constraints.Min.X {
+			gtx.Constraints.Min.X = gtx.Dp(b.width)
 		}
 		// A little trick to bring the label closer to the arrow, and avoid a big gap.
 		pad := b.th.DropDownPadding
@@ -242,7 +241,7 @@ func (b *DropDownStyle) LayoutLabel() layout.Widget {
 // LayoutIcon draws the icon
 func (b *DropDownStyle) LayoutIcon() layout.Widget {
 	return func(gtx C) D {
-		size := gtx.Px(b.th.TextSize.Scale(1.5))
+		size := gtx.Sp(b.th.TextSize * 1.5)
 		gtx.Constraints = layout.Exact(image.Pt(size, size))
 		return b.icon.Layout(gtx, b.th.OnBackground)
 	}

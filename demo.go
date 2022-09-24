@@ -17,10 +17,6 @@ import (
 	"runtime"
 	"time"
 
-	"gioui.org/widget"
-
-	"gioui.org/widget/material"
-
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
 	"gioui.org/app"
@@ -46,8 +42,8 @@ var progress float32
 var sliderValue1 float32
 var sliderValue2 float32
 var dummy bool
-var th *material.Theme
-var icon *widget.Icon
+var th *wid.Theme
+var icon *wid.Icon
 var addIcon *wid.Icon
 var homeIcon *wid.Icon
 var checkIcon *wid.Icon
@@ -57,7 +53,7 @@ var count float64
 var startTime time.Time
 
 func main() {
-	flag.StringVar(&mode, "mode", "default", "Select window as fullscreen, maximized, centered or default")
+	flag.StringVar(&mode, "mode", "windowed", "Select one of windowed, fullscreen, maximized, minimized")
 	flag.StringVar(&fontSize, "fontsize", "large", "Select font size medium,small,large")
 	flag.Parse()
 	addIcon, _ = wid.NewIcon(icons.ContentAdd)
@@ -66,7 +62,7 @@ func main() {
 	downIcon, _ = wid.NewIcon(icons.HardwareKeyboardArrowDown)
 	homeIcon, _ = wid.NewIcon(icons.ActionHome)
 	makePersons(100)
-	ic, err := widget.NewIcon(icons.ContentAdd)
+	ic, err := wid.NewIcon(icons.ContentAdd)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -79,9 +75,9 @@ func main() {
 		}
 	}()
 	go func() {
-		th = material.NewTheme(gofont.Collection())
+		th = wid.NewTheme(gofont.Collection(), 16, wid.Palette{})
 		currentTheme = wid.NewTheme(gofont.Collection(), 14, wid.MaterialDesignLight)
-		win = app.NewWindow(app.Title("Gio-v demo"), modeFromString(mode).Option(), app.Size(unit.Dp(900), unit.Dp(500)), app.Centered())
+		win = app.NewWindow(app.Title("Gio-v demo"), modeFromString(mode).Option(), app.Size(unit.Dp(900), unit.Dp(500)))
 		setup()
 		for {
 			select {
@@ -119,9 +115,9 @@ func update() {
 
 func onSwitchMode(v bool) {
 	darkMode = v
-	s := float32(24.0)
+	s := unit.Sp(16.0)
 	if currentTheme != nil {
-		s = currentTheme.TextSize.V
+		s = currentTheme.TextSize
 	}
 	if !darkMode {
 		currentTheme = wid.NewTheme(gofont.Collection(), s, wid.MaterialDesignLight)
@@ -143,12 +139,21 @@ func modeFromString(s string) app.WindowMode {
 	return app.Windowed
 }
 
-func onMaximize() {
-	win.Maximize()
+func onModeChange() {
+	switch mode {
+	case "windowed":
+		win.Option(app.Windowed.Option())
+	case "minimized":
+		win.Option(app.Minimized.Option())
+	case "fullscreen":
+		win.Option(app.Fullscreen.Option())
+	case "maximized":
+		win.Option(app.Maximized.Option())
+	}
 }
 
 func onCenter() {
-	win.Center()
+	// TODO win.Option(app.Centered())
 }
 
 func column1(th *wid.Theme) layout.Widget {
@@ -175,10 +180,11 @@ func column2(th *wid.Theme) layout.Widget {
 		wid.Edit(th, wid.Hint("Value 7")))
 }
 
+// Demo setup. Called from Setup(), only once - at start of showing it.
+// Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
 	thb = th
-	y := startTime.Year()
-	if y == 1 {
+	if startTime.IsZero() {
 		startTime = time.Now()
 		count = 0
 	}
@@ -194,10 +200,11 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.MakeList(th, wid.Occupy,
 				wid.Col(
 					wid.Row(th, nil, nil,
-						wid.RadioButton(th, &mode, "windowed", "windowed"),
-						wid.RadioButton(th, &mode, "fullscreen", "fullscreen"),
-						wid.OutlineButton(th, "Maximize", wid.Handler(onMaximize)),
-						wid.OutlineButton(th, "Center", wid.Handler(onCenter)),
+						wid.RadioButton(th, &mode, "Windowed", "windowed", wid.Do(onModeChange)),
+						wid.RadioButton(th, &mode, "Fullscreen", "windowed", wid.Do(onModeChange)),
+						wid.RadioButton(th, &mode, "Minimized", "windowed", wid.Do(onModeChange)),
+						wid.RadioButton(th, &mode, "Maximized", "windowed", wid.Do(onModeChange)),
+						wid.OutlineButton(th, "Center", wid.Handler(onCenter)).Layout,
 					),
 					wid.Row(th, nil, nil,
 						wid.RadioButton(th, &fontSize, "small", "small"),
@@ -210,10 +217,10 @@ func demo(th *wid.Theme) layout.Widget {
 					),
 					wid.Checkbox(th, "Checkbox to select dark mode", &darkMode, onSwitchMode),
 					// Three separators to test layout algorithm. Should give three thin lines
-					wid.Separator(th, unit.Px(5), wid.Color(wid.RGB(0xFF6666)), wid.Pads(5, 20, 5, 20)),
-					wid.Separator(th, unit.Px(1)),
-					wid.Separator(th, unit.Px(1), wid.Pads(1)),
-					wid.Separator(th, unit.Px(1)),
+					wid.Separator(th, unit.Dp(5), wid.Color(wid.RGB(0xFF6666)), wid.Pads(5, 20, 5, 20)),
+					wid.Separator(th, unit.Dp(1)),
+					wid.Separator(th, unit.Dp(1), wid.Pads(1)),
+					wid.Separator(th, unit.Dp(1)),
 					wid.Row(th, nil, []float32{0.3, 0.7},
 						wid.Label(th, "A slider that can be key operated:"),
 						wid.Slider(th, &sliderValue1, 0, 100).Layout,
@@ -223,22 +230,22 @@ func demo(th *wid.Theme) layout.Widget {
 						wid.Button(th, "WIDE CENTERED BUTTON",
 							wid.W(500),
 							wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts, breaking it into several lines"),
-						),
+						).Layout,
 					),
 					wid.Label(th, "Two widgets at the left side of the screen:"),
 					wid.Row(th, nil, []float32{0.05, 0.9},
 						wid.RoundButton(th, addIcon,
-							wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
+							wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")).Layout,
 						wid.RoundButton(th, checkIcon,
-							wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
+							wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")).Layout,
 					),
 				),
 				wid.Row(th, nil, nil,
-					wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Disable(&darkMode), wid.Color(wid.RGB(0x228822))),
-					wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Color(wid.RGB(0xffff00))),
-					wid.Button(thb, "Change color", wid.Handler(onClick), wid.W(150)),
-					wid.TextButton(th, "Text button"),
-					wid.OutlineButton(th, "Outline button"),
+					wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Disable(&darkMode), wid.Color(wid.RGB(0x228822))).Layout,
+					wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Color(wid.RGB(0xffff00))).Layout,
+					wid.Button(thb, "Change color", wid.Handler(onClick), wid.W(150)).Layout,
+					wid.TextButton(th, "Text button").Layout,
+					wid.OutlineButton(th, "Outline button").Layout,
 				),
 				// Fixed size in Dp
 				wid.Edit(th, wid.Hint("Value 1"), wid.W(300)),
@@ -344,7 +351,6 @@ func setup() {
 				wid.RadioButton(th, &page, "Grid3", "Grid3", wid.Do(update)),
 				wid.RadioButton(th, &page, "Buttons", "Buttons", wid.Do(update)),
 				wid.RadioButton(th, &page, "Layout", "DropDowns", wid.Do(update)),
-				wid.RadioButton(th, &page, "KitchenX", "KitchenX", wid.Do(update)),
 				wid.RadioButton(th, &page, "KitchenV", "KitchenV", wid.Do(update)),
 				wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode),
 			)),
@@ -358,11 +364,11 @@ func handleFrameEvents(e system.FrameEvent) {
 	if oldWindowSize.X != e.Size.X || oldWindowSize.Y != e.Size.Y || fontSize != oldFontSize || wid.Root == nil {
 		switch fontSize {
 		case "medium", "Medium":
-			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 80)
+			currentTheme.TextSize = unit.Sp(float32(e.Size.Y) / 80)
 		case "large", "Large":
-			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 60)
+			currentTheme.TextSize = unit.Sp(float32(e.Size.Y) / 60)
 		case "small", "Small":
-			currentTheme.TextSize = unit.Dp(float32(e.Size.Y) / 100)
+			currentTheme.TextSize = unit.Sp(float32(e.Size.Y) / 100)
 		}
 		oldFontSize = fontSize
 		oldWindowSize = e.Size
@@ -374,11 +380,11 @@ func handleFrameEvents(e system.FrameEvent) {
 	paint.Fill(gtx.Ops, currentTheme.Background)
 	// Traverse the widget tree and generate drawing operations
 	count++
-	if page == "KitchenX" {
-		kitchenX(gtx, th)
-	} else {
-		wid.Root(gtx)
-	}
+	//	if page == "KitchenX" {
+	//		kitchenX(gtx, th)
+	//	} else {
+	wid.Root(gtx)
+	//	}
 	// Apply the actual screen drawing
 	e.Frame(gtx.Ops)
 }
