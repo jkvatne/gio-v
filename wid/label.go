@@ -3,28 +3,12 @@
 package wid
 
 import (
-	"fmt"
-	"image"
-
-	"gioui.org/io/semantic"
-	"gioui.org/io/system"
 	"gioui.org/layout"
-	"gioui.org/op"
-	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
-
-	"golang.org/x/image/math/fixed"
+	"gioui.org/widget"
 )
-
-// Label is a widget for laying out and drawing text.
-type aLabel struct {
-	// Alignment specify the text alignment.
-	Alignment text.Alignment
-	// MaxLines limits the number of lines. Zero means no limit.
-	MaxLines int
-}
 
 // LabelDef is the setup for a label.
 type LabelDef struct {
@@ -112,7 +96,7 @@ func (e LabelOption) apply(cfg interface{}) {
 // Layout will draw the label
 func (l LabelDef) Layout(gtx C) D {
 	paint.ColorOp{Color: l.fgColor}.Add(gtx.Ops)
-	tl := aLabel{Alignment: l.Alignment, MaxLines: l.MaxLines}
+	tl := widget.Label{Alignment: l.Alignment, MaxLines: l.MaxLines}
 	return tl.Layout(gtx, l.shaper, l.Font, l.TextSize, l.Stringer())
 }
 
@@ -163,6 +147,7 @@ func Label(th *Theme, str string, options ...LabelOption) func(gtx C) D {
 	}
 }
 
+/*
 // screenPos describes a character position (in text line and column numbers,
 // not pixels): Y = line number, X = rune column.
 type screenPos image.Point
@@ -341,3 +326,4 @@ func align(align text.Alignment, dir system.TextDirection, width fixed.Int26_6, 
 		panic(fmt.Errorf("unknown alignment %v", align))
 	}
 }
+*/

@@ -4,6 +4,7 @@ package wid
 
 import (
 	"image"
+	"image/color"
 
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -11,26 +12,25 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
+	"gioui.org/widget"
 )
 
 // EditDef is the parameters for the text editor
 type EditDef struct {
-	Clickable
 	Widget
-	Editor
+	widget.Editor
 	shaper    text.Shaper
 	alignment layout.Alignment
 	CharLimit uint
 	font      text.Font
 	label     string
+	value     *string
 	LabelSize unit.Sp
 }
 
 // Edit will return a widget (layout function) for a text editor
 func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e := new(EditDef)
-	e.SetupTabs()
-	// Set up default values
 	e.th = th
 	e.shaper = th.Shaper
 	e.LabelSize = th.TextSize * 6
@@ -64,6 +64,12 @@ func Lbl(s string) EditOption {
 	}
 }
 
+func Var(s *string) EditOption {
+	return func(w *EditDef) {
+		w.value = s
+	}
+}
+
 func (e EditOption) apply(cfg interface{}) {
 	e(cfg.(*EditDef))
 }
@@ -88,19 +94,47 @@ func (e *EditDef) layoutEditBackground() func(gtx C) D {
 	}
 }
 
+func paintBorder(gtx C, outline image.Rectangle, col color.NRGBA, width unit.Dp, rr unit.Dp) {
+	paint.FillShape(gtx.Ops,
+		col,
+		clip.Stroke{
+			Path:  clip.UniformRRect(outline, gtx.Dp(rr)).Path(gtx.Ops),
+			Width: Pxr(gtx, width),
+		}.Op(),
+	)
+}
+
+// LayoutBorder will draw a border around the widget
+func LayoutBorder(e *EditDef, th *Theme) func(gtx C) D {
+	return func(gtx C) D {
+		outline := image.Rectangle{Max: image.Point{
+			X: gtx.Constraints.Min.X,
+			Y: gtx.Constraints.Min.Y,
+		}}
+		if e.Focused() {
+			paintBorder(gtx, outline, MulAlpha(th.Primary, 255), th.BorderThicknessActive, th.CornerRadius)
+			// TODO } else if e.Hovered() {
+			//	paintBorder(gtx, outline, MulAlpha(th.Primary, 140), th.BorderThickness, th.CornerRadius)
+		} else {
+			paintBorder(gtx, outline, MulAlpha(th.Primary, 50), th.BorderThickness, th.CornerRadius)
+		}
+		return D{}
+	}
+}
+
 func (e *EditDef) layEdit() layout.Widget {
 	return func(gtx C) D {
 		return e.padding.Layout(gtx, func(gtx C) D {
 			return layout.Stack{}.Layout(
 				gtx,
-				// layout.Expanded(e.layoutEditBackground()),
+				layout.Expanded(e.layoutEditBackground()),
 				layout.Expanded(func(gtx C) D {
 					gtx.Constraints.Min.X = 5000
 					return e.th.LabelPadding.Layout(gtx, func(gtx C) D {
 						return e.layoutEdit()(gtx)
 					})
 				}),
-				layout.Expanded(LayoutBorder(&e.Clickable, e.th)),
+				layout.Expanded(LayoutBorder(e, e.th)),
 			)
 		})
 	}
@@ -116,35 +150,9 @@ func (e *EditDef) layLabel() layout.Widget {
 			}
 			gtx.Constraints.Min.X = gtx.Sp(e.LabelSize)
 			paint.ColorOp{Color: e.th.OnBackground}.Add(gtx.Ops)
-			w := aLabel{Alignment: text.End}.Layout(gtx, e.shaper, e.font, e.th.TextSize, e.label)
+			w := widget.Label{Alignment: text.End}.Layout(gtx, e.shaper, e.font, e.th.TextSize, e.label)
 			return w
 		})
-	}
-}
-func (e *Editor) paintCaret(gtx layout.Context) {
-	if !e.caret.on {
-		return
-	}
-	carWidth2 := e.caretWidth(gtx)
-	caretPos, carAsc, carDesc := e.caretInfo()
-
-	carRect := image.Rectangle{
-		Min: caretPos.Sub(image.Pt(carWidth2, carAsc)),
-		Max: caretPos.Add(image.Pt(carWidth2, carDesc)),
-	}
-	cl := textPadding(e.lines)
-	// Account for caret width to each side.
-	if cl.Max.X < carWidth2 {
-		cl.Max.X = carWidth2
-	}
-	if cl.Min.X > -carWidth2 {
-		cl.Min.X = -carWidth2
-	}
-	cl.Max = cl.Max.Add(e.viewSize)
-	carRect = cl.Intersect(carRect)
-	if !carRect.Empty() {
-		defer clip.Rect(carRect).Push(gtx.Ops).Pop()
-		paint.PaintOp{}.Add(gtx.Ops)
 	}
 }
 
@@ -156,7 +164,7 @@ func (e *EditDef) layoutEdit() func(gtx C) D {
 		if e.Editor.SingleLine {
 			maxLines = 1
 		}
-		tl := aLabel{Alignment: e.Editor.Alignment, MaxLines: maxLines}
+		tl := widget.Label{Alignment: e.Editor.Alignment, MaxLines: maxLines}
 		dims := tl.Layout(gtx, e.shaper, e.font, e.th.TextSize, e.hint)
 		call := macro.Stop()
 		if w := dims.Size.X; gtx.Constraints.Min.X < w {
@@ -177,7 +185,7 @@ func (e *EditDef) layoutEdit() func(gtx C) D {
 		}
 		if !disabled && e.Editor.Len() > 0 {
 			paint.ColorOp{Color: e.th.OnBackground}.Add(gtx.Ops)
-			e.Editor.paintCaret(gtx)
+			e.Editor.PaintCaret(gtx)
 		}
 		return dims
 	}

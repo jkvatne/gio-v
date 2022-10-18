@@ -3,64 +3,50 @@
 package wid
 
 import (
-	"image"
-
-	"gioui.org/text"
-
+	"gioui.org/io/semantic"
 	"gioui.org/layout"
-	"gioui.org/op/clip"
-	"gioui.org/op/paint"
-	"gioui.org/unit"
+	"gioui.org/widget"
 )
 
 // RadioButtonStyle defines a radio button.
 type RadioButtonStyle struct {
-	Widget
-	Clickable
-	Key                string
-	Output             *string
-	Label              string
-	CheckedStateIcon   *Icon
-	UncheckedStateIcon *Icon
+	// Widget
+	checkable
+	Key     string
+	handler func(s string)
+	Group   *widget.Enum
 }
 
 // RadioButton returns a RadioButton with a label. The key specifies the initial value for the output
-func RadioButton(th *Theme, output *string, key string, label string, options ...Option) func(gtx C) D {
+func RadioButton(th *Theme, group *widget.Enum, key string, label string, options ...Option) func(gtx C) D {
 	r := RadioButtonStyle{
-		Label:              label,
-		Output:             output,
-		Key:                key,
-		CheckedStateIcon:   th.RadioChecked,
-		UncheckedStateIcon: th.RadioUnchecked,
+		checkable: checkable{
+			Label:              label,
+			TextColor:          th.OnSurface,
+			IconColor:          th.OnBackground,
+			TextSize:           th.TextSize * 14.0 / 16.0,
+			Size:               25,
+			shaper:             th.Shaper,
+			checkedStateIcon:   th.RadioChecked,
+			uncheckedStateIcon: th.RadioUnchecked,
+		},
+		Key:   key,
+		Group: group,
 	}
-	r.th = th
 	for _, option := range options {
 		option.apply(&r)
 	}
-	r.SetupTabs()
 	return func(gtx C) D {
-		isSelected := *r.Output == r.Key
-		dims := r.layout(gtx, isSelected)
-		gtx.Constraints.Min = dims.Size
-		for r.Clicked() {
-			if r.Output != nil {
-				*r.Output = r.Key
-			}
-			if r.handler != nil {
-				r.handler(true)
-			}
-		}
-		return dims
+		return r.Layout(gtx)
 	}
 }
 
 type RbOption func(style *RadioButtonStyle)
 
 // Do is an optional parameter to set a callback when the button is clicked
-func Do(f func()) RbOption {
-	foo := func(b bool) { f() }
+func Do(f func(s string)) RbOption {
 	return func(b *RadioButtonStyle) {
-		b.handler = foo
+		b.handler = func(s string) { f(b.Group.Value) }
 	}
 }
 
@@ -68,6 +54,21 @@ func (b RbOption) apply(cfg interface{}) {
 	b(cfg.(*RadioButtonStyle))
 }
 
+// Layout updates enum and displays the radio button.
+func (r RadioButtonStyle) Layout(gtx layout.Context) layout.Dimensions {
+	hovered, hovering := r.Group.Hovered()
+	focus, focused := r.Group.Focused()
+	return r.Group.Layout(gtx, r.Key, func(gtx layout.Context) layout.Dimensions {
+		semantic.RadioButton.Add(gtx.Ops)
+		highlight := hovering && hovered == r.Key || focused && focus == r.Key
+		if r.Group.Changed() {
+			r.handler(r.Group.Value)
+		}
+		return r.layout(gtx, r.Group.Value == r.Key, highlight)
+	})
+}
+
+/*
 func (r *RadioButtonStyle) layout(gtx C, checked bool) D {
 	icon := r.CheckedStateIcon
 	if !checked {
@@ -104,16 +105,16 @@ func (r *RadioButtonStyle) layout(gtx C, checked bool) D {
 				if lbl == "" {
 					lbl = r.Key
 				}
-				// return Label(r.th, lbl)(gtx) //  text.Start, 1.0
 				paint.ColorOp{Color: r.th.OnBackground}.Add(gtx.Ops)
-				tl := aLabel{Alignment: text.Start, MaxLines: 1}
+				tl := widget.Label{Alignment: text.Start, MaxLines: 1}
 				return tl.Layout(gtx, r.th.Shaper, text.Font{Weight: text.Medium, Style: text.Regular}, r.th.TextSize, lbl)
 			})
 		}),
 	)
 	gtx.Constraints.Min = dims.Size
-	r.LayoutClickable(gtx)
-	r.HandleClicks(gtx)
-	r.HandleKeys(gtx)
+	// r.LayoutClickable(gtx)
+	// r.HandleClicks(gtx)
+	// r.HandleKeys(gtx)
 	return dims
 }
+*/

@@ -2,6 +2,8 @@
 
 package wid
 
+/*
+
 import (
 	"bytes"
 	"fmt"
@@ -32,7 +34,8 @@ import (
 )
 
 // Editor implements an editable and scrollable text area.
-type Editor struct {
+type xEditor struct {
+	Clickable
 	Alignment text.Alignment
 	// SingleLine force the text to stay on a single line.
 	// SingleLine also sets the scrolling direction to
@@ -53,21 +56,20 @@ type Editor struct {
 	// all characters are allowed.
 	Filter string
 
-	eventKey     int
-	font         text.Font
-	shaper       text.Shaper
-	textSize     fixed.Int26_6
-	blinkStart   time.Time
-	focused      bool
-	rr           editBuffer
-	maskReader   maskReader
-	lastMask     rune
-	maxWidth     int
-	viewSize     image.Point
-	valid        bool
-	lines        []text.Line
-	dims         layout.Dimensions
-	requestFocus bool
+	eventKey   int
+	font       text.Font
+	shaper     text.Shaper
+	textSize   fixed.Int26_6
+	blinkStart time.Time
+	focused    bool
+	rr         editBuffer
+	maskReader maskReader
+	lastMask   rune
+	maxWidth   int
+	viewSize   image.Point
+	valid      bool
+	lines      []text.Line
+	dims       layout.Dimensions
 
 	// index tracks combined caret positions at regularly
 	// spaced intervals to speed up caret seeking.
@@ -508,11 +510,6 @@ func (e *Editor) command(gtx layout.Context, k key.Event) {
 			e.undo()
 		}
 	}
-}
-
-// Focus requests the input focus for the Editor.
-func (e *Editor) Focus() {
-	e.requestFocus = true
 }
 
 // Focused returns whether the editor is focused or not.
@@ -1553,37 +1550,6 @@ func (e *Editor) Read(p []byte) (int, error) {
 	return e.rr.Read(p)
 }
 
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func abs(n int) int {
-	if n < 0 {
-		return -n
-	}
-	return n
-}
-
-func sign(n int) int {
-	switch {
-	case n < 0:
-		return -1
-	case n > 0:
-		return 1
-	default:
-		return 0
-	}
-}
 
 func nullLayout(rr io.RuneReader) ([]text.Line, error) {
 	var rerr error
@@ -1618,3 +1584,4 @@ func nullLayout(rr io.RuneReader) ([]text.Line, error) {
 func (s ChangeEvent) isEditorEvent() {}
 func (s SubmitEvent) isEditorEvent() {}
 func (s SelectEvent) isEditorEvent() {}
+*/

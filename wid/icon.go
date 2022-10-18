@@ -2,6 +2,7 @@
 
 package wid
 
+/*
 import (
 	"image"
 	"image/color"
@@ -70,3 +71,4 @@ func (ic *Icon) image(sz int, c color.NRGBA) paint.ImageOp {
 	ic.imgColor = c
 	return ic.op
 }
+*/

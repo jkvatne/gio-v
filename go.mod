@@ -3,7 +3,7 @@ module gio-v
 go 1.19
 
 require (
-	gioui.org v0.0.0-20220103152337-787295a6e8de
+	gioui.org v0.0.0-20220924144830-24eb1a4fc5fd
 	golang.org/x/exp v0.0.0-20210916165020-5cb4fee858ee
 	golang.org/x/image v0.0.0-20220722155232-062f8c9fd539
 )
@@ -17,5 +17,3 @@ require (
 	golang.org/x/sys v0.0.0-20220825204002-c680a09ffe64 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
-
-replace gioui.org => c:/doc/gio

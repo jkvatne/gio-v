@@ -12,6 +12,7 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
+	"gioui.org/widget"
 )
 
 const (
@@ -28,7 +29,7 @@ type Tooltip struct {
 	// MaxWidth is the maximum width of the tool-tip box. Should be less than form width.
 	MaxWidth unit.Dp
 	// Text defines the content of the tooltip.
-	Text         LabelDef
+	Text         widget.Label
 	position     image.Point
 	Hover        InvalidateDeadline
 	Press        InvalidateDeadline
@@ -36,7 +37,11 @@ type Tooltip struct {
 	Fg           color.NRGBA
 	Bg           color.NRGBA
 	CornerRadius unit.Dp
+	TextSize     unit.Sp
 	init         bool
+	shaper       text.Shaper
+	font         text.Font
+
 	// HoverDelay is the delay between the cursor entering the tip area
 	// and the tooltip appearing.
 	HoverDelay time.Duration
@@ -54,14 +59,11 @@ type Tooltip struct {
 // MobileTooltip constructs a tooltip suitable for use on mobile devices.
 func MobileTooltip(th *Theme, tips string) Tooltip {
 	return Tooltip{
-		Fg: th.TooltipOnBackground,
-		Bg: th.TooltipBackground,
-		Text: LabelDef{
-			Stringer:  func() string { return tips },
-			Font:      text.Font{Weight: text.Medium},
-			TextSize:  th.TextSize * 0.9,
-			shaper:    th.Shaper,
-			Alignment: text.Start},
+		Fg:       th.TooltipOnBackground,
+		Bg:       th.TooltipBackground,
+		font:     text.Font{Weight: text.Medium},
+		shaper:   th.Shaper,
+		TextSize: th.TextSize * 0.9,
 	}
 }
 
@@ -72,12 +74,9 @@ func DesktopTooltip(th *Theme, tips string) Tooltip {
 		Bg:           th.TooltipBackground,
 		MaxWidth:     th.TooltipWidth,
 		CornerRadius: th.TooltipCornerRadius,
-		Text: LabelDef{
-			Stringer:  func() string { return tips },
-			Font:      text.Font{Weight: text.Medium},
-			TextSize:  th.TextSize * 0.9,
-			shaper:    th.Shaper,
-			Alignment: text.Start},
+		font:         text.Font{Weight: text.Medium},
+		shaper:       th.Shaper,
+		TextSize:     th.TextSize * 0.9,
 	}
 }
 
@@ -169,23 +168,24 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 	return layout.Stack{}.Layout(gtx,
 		layout.Stacked(w),
 		layout.Expanded(func(gtx C) D {
-			defer pointer.PassOp{}.Push(gtx.Ops).Pop()
+			p := pointer.PassOp{}.Push(gtx.Ops)
 			rect := image.Rectangle{Max: gtx.Constraints.Min}
-			defer clip.Rect(rect).Push(gtx.Ops).Pop()
+			r := clip.Rect(rect).Push(gtx.Ops)
 			pointer.InputOp{
 				Tag:   t,
 				Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave | pointer.Move,
 			}.Add(gtx.Ops)
-
+			p.Pop()
+			r.Pop()
 			gtx.Constraints.Min = image.Point{}
 			maxx := gtx.Constraints.Max.X
 			if t.Visible() {
 				macro := op.Record(gtx.Ops)
 				v := t.VisibilityAnimation.Revealed(gtx)
 				bg := WithAlpha(t.Bg, uint8(v*255))
-				t.Text.fgColor = WithAlpha(t.Fg, uint8(v*255))
+				t.Fg = WithAlpha(t.Fg, uint8(v*255))
 				gtx.Constraints.Max.X = gtx.Metric.Dp(t.MaxWidth)
-				p := unit.Dp(t.Text.TextSize * 0.5)
+				p := unit.Dp(t.TextSize * 0.5)
 				inset := layout.Inset{Top: p, Right: p, Bottom: p, Left: p}
 				dims := layout.Stack{}.Layout(
 					gtx,
@@ -199,11 +199,14 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 							SW:   rr,
 							SE:   rr,
 						}.Op(gtx.Ops))
-						paintBorder(gtx, outline, t.Text.fgColor, unit.Dp(1.0), t.CornerRadius)
+						// paintBorder(gtx, outline, t.Fg, unit.Dp(1.0), t.CornerRadius)
 						return D{}
 					}),
 					layout.Stacked(func(gtx C) D {
-						return inset.Layout(gtx, t.Text.Layout)
+						return inset.Layout(gtx, func(gtx C) D {
+							paint.ColorOp{Color: t.Fg}.Add(gtx.Ops)
+							return t.Text.Layout(gtx, t.shaper, t.font, t.TextSize, hint)
+						})
 					}),
 				)
 				if t.position.X+dims.Size.X > maxx {
@@ -211,6 +214,12 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 				}
 				if t.position.Y+dims.Size.Y > gtx.Constraints.Max.Y {
 					t.position.Y = gtx.Constraints.Max.Y - dims.Size.Y
+				}
+				if t.position.X < 0 {
+					t.position.X = 0
+				}
+				if t.position.Y < 0 {
+					t.position.Y = 0
 				}
 				call := macro.Stop()
 				macro = op.Record(gtx.Ops)

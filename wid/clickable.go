@@ -2,6 +2,7 @@
 
 package wid
 
+/*
 import (
 	"image"
 	"time"
@@ -345,7 +346,7 @@ func (c *Clickable) HandleClicks(gtx C) D {
 }
 
 // LayoutBorder will draw a border around the widget
-func LayoutBorder(e *Clickable, th *Theme) func(gtx C) D {
+func LayoutBorder(e *Widget, th *Theme) func(gtx C) D {
 	return func(gtx C) D {
 		outline := image.Rectangle{Max: image.Point{
 			X: gtx.Constraints.Min.X,
@@ -361,3 +362,4 @@ func LayoutBorder(e *Clickable, th *Theme) func(gtx C) D {
 		return D{}
 	}
 }
+*/

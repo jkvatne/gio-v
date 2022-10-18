@@ -5,6 +5,8 @@ package wid
 import (
 	"image"
 
+	"gioui.org/widget"
+
 	"gioui.org/gesture"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
@@ -17,13 +19,14 @@ import (
 // SliderStyle is the parameters for a slider
 type SliderStyle struct {
 	Widget
-	Clickable
+	widget.Clickable
 	axis     layout.Axis
 	drag     gesture.Drag
 	pos      float32 // position normalized to [0, 1]
 	length   float32
 	min, max float32
 	Value    *float32
+	index    *int
 }
 
 // Slider is for selecting a value in a range.
@@ -34,7 +37,6 @@ func Slider(th *Theme, value *float32, minV, maxV float32, options ...Option) *S
 	}
 	s.Value = value
 	s.th = th
-	s.SetupTabs()
 	s.width = unit.Dp(99999)
 	s.Apply(options...)
 	return &s
@@ -68,12 +70,14 @@ func (s *SliderStyle) Layout(gtx C) D {
 			de = &e
 		}
 	}
-	if s.HandleKeys(gtx) {
-		if s.index != nil {
-			s.pos = float32(*s.index) / 100.0
+	/*
+		if s.HandleKeys(gtx) {
+			if s.index != nil {
+				s.pos = float32(*s.index) / 100.0
+			}
+			*s.Value = s.min + (s.max-s.min)*s.pos
 		}
-		*s.Value = s.min + (s.max-s.min)*s.pos
-	}
+	*/
 	if de != nil {
 		xy := de.Position.X
 		if s.axis == layout.Vertical {
@@ -143,9 +147,8 @@ func (s *SliderStyle) Layout(gtx C) D {
 	lr := image.Pt(pt.X+r, pt.Y+r)
 	paint.FillShape(gtx.Ops, s.th.OnBackground, clip.Ellipse{ul, lr}.Op(gtx.Ops))
 
-	s.LayoutClickable(gtx)
-
-	s.HandleClicks(gtx)
+	// s.LayoutClickable(gtx)
+	// s.HandleClicks(gtx)
 
 	return layout.Dimensions{Size: size}
 }

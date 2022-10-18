@@ -5,6 +5,8 @@ package wid
 import (
 	"image"
 
+	"gioui.org/widget"
+
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -12,7 +14,7 @@ import (
 )
 
 type rowDef struct {
-	Clickable
+	widget.Clickable
 }
 
 // Row returns a widget grid row with selectable color.
@@ -68,9 +70,9 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 		paint.ColorOp{Color: bgColor}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
 		gtx.Constraints.Min = dim.Size
-		r.LayoutClickable(gtx)
-		r.HandleClicks(gtx)
-		r.HandleToggle(selected, nil)
+		// r.LayoutClickable(gtx)
+		// r.HandleClicks(gtx)
+		// r.HandleToggle(selected, nil)
 		// Then play the macro to draw all the children.
 		drawAll.Add(gtx.Ops)
 		return dim

@@ -5,6 +5,8 @@ package wid
 import (
 	"image/color"
 
+	"gioui.org/widget"
+
 	"gioui.org/layout"
 
 	"golang.org/x/exp/shiny/materialdesign/icons"
@@ -31,10 +33,10 @@ type Theme struct {
 	Shaper                text.Shaper
 	TextSize              unit.Sp
 	DefaultFont           text.Font
-	CheckBoxChecked       *Icon
-	CheckBoxUnchecked     *Icon
-	RadioChecked          *Icon
-	RadioUnchecked        *Icon
+	CheckBoxChecked       *widget.Icon
+	CheckBoxUnchecked     *widget.Icon
+	RadioChecked          *widget.Icon
+	RadioUnchecked        *widget.Icon
 	FingerSize            unit.Dp // FingerSize is the minimum touch target size.
 	HintColor             color.NRGBA
 	SelectionColor        color.NRGBA
@@ -77,7 +79,7 @@ type (
 var MaterialDesignLight = Palette{
 	Primary:      RGB(0x6200EE),
 	Background:   RGB(0xeeeeee),
-	Surface:      RGB(0xffffff),
+	Surface:      RGB(0xffffdd),
 	Error:        RGB(0xB00020),
 	OnPrimary:    RGB(0xFFFFFF),
 	OnBackground: RGB(0x000000),
@@ -105,10 +107,10 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, p Palette) *Them
 	t.TextSize = unit.Sp(fontSize)
 	v := unit.Dp(t.TextSize) * 0.4
 	// Icons
-	t.CheckBoxChecked = mustIcon(NewIcon(icons.ToggleCheckBox))
-	t.CheckBoxUnchecked = mustIcon(NewIcon(icons.ToggleCheckBoxOutlineBlank))
-	t.RadioChecked = mustIcon(NewIcon(icons.ToggleRadioButtonChecked))
-	t.RadioUnchecked = mustIcon(NewIcon(icons.ToggleRadioButtonUnchecked))
+	t.CheckBoxChecked = mustIcon(widget.NewIcon(icons.ToggleCheckBox))
+	t.CheckBoxUnchecked = mustIcon(widget.NewIcon(icons.ToggleCheckBoxOutlineBlank))
+	t.RadioChecked = mustIcon(widget.NewIcon(icons.ToggleRadioButtonChecked))
+	t.RadioUnchecked = mustIcon(widget.NewIcon(icons.ToggleRadioButtonUnchecked))
 	t.IconInset = layout.Inset{Top: v, Right: v, Bottom: v, Left: v}
 	t.FingerSize = unit.Dp(38)
 	// Borders
@@ -150,7 +152,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, p Palette) *Them
 	return t
 }
 
-func mustIcon(ic *Icon, err error) *Icon {
+func mustIcon(ic *widget.Icon, err error) *widget.Icon {
 	if err != nil {
 		panic(err)
 	}

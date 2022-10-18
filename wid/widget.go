@@ -103,6 +103,13 @@ func Color(c color.NRGBA) WidgetOption {
 	}
 }
 
+// Color is an option parameter to set widget color
+func Fg(c uint32) WidgetOption {
+	return func(w WidgetIf) {
+		w.setColor(RGB(c))
+	}
+}
+
 // Pads is an option parameter to set customized padding. Noe that 1,2,3 or 4 paddings can be specified.
 // If 1 is supplied, it is used for left,right,top,bottom, all with the same padding
 // If 2 is supplied, the first is used for top/bottom, and the second for left and riht padding

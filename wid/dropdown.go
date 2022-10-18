@@ -10,30 +10,33 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
+	"gioui.org/widget"
+
 	"golang.org/x/exp/shiny/materialdesign/icons"
 )
 
 // DropDownStyle is the struct for dropdown lists.
 type DropDownStyle struct {
 	Widget
-	Clickable
+	// Clickable
 	disabler   *bool
+	disabled   bool
 	Font       text.Font
 	shaper     text.Shaper
+	index      *int
 	items      []string
 	hovered    []bool
 	Visible    bool
 	wasVisible int
 	list       layout.Widget
 	Items      []layout.Widget
-	icon       *Icon
+	icon       *widget.Icon
 }
 
 // DropDown returns an initiated struct with drop-dow box setup info
 func DropDown(th *Theme, index *int, items []string, options ...Option) *DropDownStyle {
 	b := DropDownStyle{}
-	b.icon, _ = NewIcon(icons.NavigationArrowDropDown)
-	b.SetupTabs()
+	b.icon, _ = widget.NewIcon(icons.NavigationArrowDropDown)
 	b.th = th
 	b.Font = text.Font{Weight: text.Medium}
 	b.shaper = th.Shaper
@@ -92,13 +95,14 @@ func (b *DropDownStyle) layout(gtx C) D {
 	)
 
 	oldVisible := b.Visible
-	if !b.Focused() {
-		b.Visible = false
-	}
-	for b.Clicked() {
-		b.Visible = !b.Visible
-	}
-
+	/*
+		if !b.Focused() {
+			b.Visible = false
+		}
+		for b.Clicked() {
+			b.Visible = !b.Visible
+		}
+	*/
 	if b.Visible {
 		if !oldVisible {
 			b.setHovered()
@@ -114,7 +118,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 		stack := clip.UniformRRect(listClipRect, 0).Push(gtx.Ops)
 		paint.Fill(gtx.Ops, b.th.Background)
 		// Draw a border around all options
-		paintBorder(gtx, listClipRect, b.th.OnBackground, b.th.BorderThickness, 0)
+		// paintBorder(gtx, listClipRect, b.th.OnBackground, b.th.BorderThickness, 0)
 		call.Add(gtx.Ops)
 		stack.Pop()
 		call = macro.Stop()
@@ -172,7 +176,7 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 		}
 		paint.ColorOp{Color: th.OnBackground}.Add(gtx.Ops)
 		lblWidget := func(gtx C) D {
-			return aLabel{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, text.Font{}, th.TextSize, b.items[i])
+			return widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, text.Font{}, th.TextSize, b.items[i])
 		}
 		dims := layout.Inset{Top: unit.Dp(2), Left: unit.Dp(th.TextSize * 0.4), Right: unit.Dp(0)}.Layout(gtx, lblWidget)
 		defer clip.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Push(gtx.Ops).Pop()
@@ -187,9 +191,9 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 // LayoutBackground draws the background.
 func (b *DropDownStyle) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
-		if b.Focused() || b.Hovered() {
-			Shadow(gtx.Dp(b.th.CornerRadius), gtx.Dp(b.th.Elevation)).Layout(gtx)
-		}
+		// if b.Focused() || b.Hovered() {
+		//	Shadow(gtx.Dp(b.th.CornerRadius), gtx.Dp(b.th.Elevation)).Layout(gtx)
+		// }
 		rr := gtx.Dp(b.th.CornerRadius)
 		if rr > gtx.Constraints.Min.Y/2 {
 			rr = gtx.Constraints.Min.Y / 2
@@ -200,11 +204,11 @@ func (b *DropDownStyle) LayoutBackground() func(gtx C) D {
 		}}
 		paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
-		LayoutBorder(&b.Clickable, b.th)(gtx)
+		// LayoutBorder(&b.Clickable, b.th)(gtx)
 		oldIndex := *b.index
-		b.LayoutClickable(gtx)
-		b.HandleClicks(gtx)
-		b.HandleKeys(gtx)
+		// b.LayoutClickable(gtx)
+		// b.HandleClicks(gtx)
+		// b.HandleKeys(gtx)
 		if *b.index > len(b.hovered) {
 			*b.index = len(b.hovered) - 1
 		}
@@ -233,7 +237,7 @@ func (b *DropDownStyle) LayoutLabel() layout.Widget {
 			if *b.index >= len(b.items) {
 				*b.index = len(b.items) - 1
 			}
-			return aLabel{Alignment: text.Start, MaxLines: 1}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.items[*b.index])
+			return widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.items[*b.index])
 		})
 	}
 }

@@ -6,6 +6,8 @@ import (
 	"image"
 	"image/color"
 
+	"gioui.org/widget"
+
 	"gioui.org/io/pointer"
 
 	"gioui.org/layout"
@@ -17,27 +19,27 @@ import (
 
 // SwitchDef is the parameters for a slider
 type SwitchDef struct {
-	Clickable
+	widget.Clickable
 	th      *Theme
 	Value   *bool
 	changed bool
 	padding layout.Inset
+	handler func(b bool)
 }
 
 // Switch returns a widget for a switch
 func Switch(th *Theme, State *bool, handler func(b bool)) func(gtx C) D {
 	s := &SwitchDef{}
 	s.th = th
-	s.SetupTabs()
 	s.Value = State
 	s.handler = handler
 	s.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
 	return func(gtx C) D {
 		dims := s.padding.Layout(gtx, func(gtx C) D { return s.Layout(gtx) })
 		if handler != nil {
-			s.HandleToggle(s.Value, &s.changed)
+			// s.HandleToggle(s.Value, &s.changed)
 		} else {
-			s.HandleToggle(s.Value, &s.changed)
+			// s.HandleToggle(s.Value, &s.changed)
 		}
 		pointer.CursorPointer.Add(gtx.Ops)
 		return dims
@@ -105,8 +107,8 @@ func (s *SwitchDef) Layout(gtx C) D {
 	// Set area for click and hover
 	gtx.Constraints.Min = image.Pt(trackWidth, thumbSize)
 	// Handle clicks and keyboard
-	s.LayoutClickable(gtx)
-	s.HandleClicks(gtx)
-	s.HandleKeys(gtx)
+	// s.LayoutClickable(gtx)
+	// s.HandleClicks(gtx)
+	// s.HandleKeys(gtx)
 	return D{Size: image.Point{X: trackWidth, Y: thumbSize}}
 }

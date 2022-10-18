@@ -114,3 +114,37 @@ func Luminance(c color.NRGBA) byte {
 	)
 	return byte((r*int(c.R) + g*int(c.G) + b*int(c.B)) / t)
 }
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func abs(n int) int {
+	if n < 0 {
+		return -n
+	}
+	return n
+}
+
+func sign(n int) int {
+	switch {
+	case n < 0:
+		return -1
+	case n > 0:
+		return 1
+	default:
+		return 0
+	}
+}
+
+const inf = 1e6
