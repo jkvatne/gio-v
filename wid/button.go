@@ -99,6 +99,15 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *But
 	return &b
 }
 
+// HandleClick will call the callback function
+func (b *ButtonDef) HandleClick() {
+	for b.Button.Clicked() {
+		if b.handler != nil {
+			b.handler(true)
+		}
+	}
+}
+
 // Layout will draw a button defined in b.
 func (b *ButtonDef) Layout(gtx C) D {
 	if b.Style == Contained || b.Style == Round {
@@ -117,7 +126,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 		}
 	}
 	dims := b.layout(gtx)
-	// b.HandleClick()
+	b.HandleClick()
 	pointer.CursorPointer.Add(gtx.Ops)
 	return dims
 }
@@ -301,8 +310,8 @@ func (b *ButtonDef) layoutBackground() func(gtx C) D {
 			// Contained/round button, not disabled
 			paint.FillShape(gtx.Ops, b.bg, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		}
-		for _, c := range b.Button.History() {
-			drawInk(gtx, c)
+		for _, pressed := range b.Button.History() {
+			drawInk(gtx, pressed)
 		}
 		return D{Size: gtx.Constraints.Min}
 	}

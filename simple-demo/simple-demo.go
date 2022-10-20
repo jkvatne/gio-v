@@ -8,6 +8,7 @@ package main
 
 import (
 	"gio-v/wid"
+	"image/color"
 	"os"
 
 	"gioui.org/io/pointer"
@@ -93,9 +94,9 @@ func onSwitchMode(v bool) {
 func onClick() {
 	green = !green
 	if green {
-		// thb.Primary = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
+		currentTheme.Primary = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
 	} else {
-		// thb.Primary = color.NRGBA{A: 0xff, R: 0x00, G: 0x00, B: 0xff}
+		currentTheme.Primary = color.NRGBA{A: 0xff, R: 0x00, G: 0x00, B: 0xff}
 	}
 }
 
