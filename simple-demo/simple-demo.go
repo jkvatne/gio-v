@@ -10,6 +10,8 @@ import (
 	"gio-v/wid"
 	"os"
 
+	"gioui.org/io/pointer"
+
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
 	"gioui.org/widget"
@@ -33,6 +35,7 @@ var (
 	homeIcon     *widget.Icon
 	checkIcon    *widget.Icon
 	green        = false // the state variable for the button color
+	darkMode     = false
 )
 
 func main() {
@@ -63,10 +66,28 @@ func handleFrameEvents(e system.FrameEvent) {
 	gtx := layout.NewContext(&ops, e)
 	// Set background color
 	paint.Fill(gtx.Ops, currentTheme.Background)
+	// A hack to fetch mouse position and window size so we can avoid
+	// tooltips going outside the main window area
+	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
+	wid.UpdateMousePos(gtx, win, e.Size)
 	// Draw widgets
 	form(gtx)
 	// Apply the actual screen drawing
 	e.Frame(gtx.Ops)
+}
+
+func onSwitchMode(v bool) {
+	darkMode = v
+	s := unit.Sp(16.0)
+	if currentTheme != nil {
+		s = currentTheme.TextSize
+	}
+	if !darkMode {
+		currentTheme = wid.NewTheme(gofont.Collection(), s, wid.MaterialDesignLight)
+	} else {
+		currentTheme = wid.NewTheme(gofont.Collection(), s, wid.MaterialDesignDark)
+	}
+	form = demo(currentTheme)
 }
 
 func onClick() {
@@ -122,12 +143,17 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.RadioButton(th, group, "maximized", "Maximized", wid.Do(onModeChange)),
 		),
 		wid.Row(th, nil, nil,
+			wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode),
+			wid.Checkbox(th, "Checkbox2", &darkMode, onSwitchMode),
+			wid.Checkbox(th, "Checkbox3", &darkMode, onSwitchMode),
+		),
+		wid.Row(th, nil, nil,
 			wid.RoundButton(th, homeIcon, wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")).Layout,
 			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Fg(0x228822), wid.Hint("This is another hint")).Layout,
 			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Color(wid.RGB(0xffff00))).Layout,
 			wid.Button(th, "Change color", wid.Handler(onClick), wid.W(150)).Layout,
 			wid.TextButton(th, "Text button").Layout,
-			wid.OutlineButton(th, "Outline button").Layout,
+			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")).Layout,
 		),
 	)
 }

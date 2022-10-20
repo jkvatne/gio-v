@@ -135,7 +135,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, p Palette) *Them
 	// Tooltip
 	t.TooltipInset = layout.UniformInset(unit.Dp(10))
 	t.TooltipCornerRadius = unit.Dp(6.0)
-	t.TooltipWidth = v * 40
+	t.TooltipWidth = v * 50
 	t.TooltipBackground = Interpolate(t.OnSurface, t.Surface, 0.9)
 	t.TooltipOnBackground = t.OnSurface
 	// List

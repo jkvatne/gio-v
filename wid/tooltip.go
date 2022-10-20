@@ -5,6 +5,8 @@ import (
 	"image/color"
 	"time"
 
+	"gioui.org/app"
+
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -18,8 +20,17 @@ import (
 const (
 	tipAreaHoverDelay        = time.Millisecond * 1200
 	tipAreaLongPressDuration = time.Millisecond * 1200
-	tipAreaFadeDuration      = time.Millisecond * 250
+	tipAreaFadeDuration      = time.Millisecond * 500
 	longPressDelay           = time.Millisecond * 1200
+	CursorSizeX              = 10
+	CursorSizeY              = 32
+)
+
+var (
+	mouseX float32
+	mouseY float32
+	winX   int
+	winY   int
 )
 
 // Tooltip implements a material design tool tip as defined at:
@@ -134,10 +145,8 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 		if !ok {
 			continue
 		}
-		if !t.Visible() {
-			t.position.X = int(e.Position.X)
-			t.position.Y = int(e.Position.Y)
-		}
+		t.position.X = int(e.Position.X)
+		t.position.Y = int(e.Position.Y)
 		switch e.Type {
 		case pointer.Enter:
 			t.Hover.SetTarget(gtx.Now.Add(tipAreaHoverDelay))
@@ -168,17 +177,15 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 	return layout.Stack{}.Layout(gtx,
 		layout.Stacked(w),
 		layout.Expanded(func(gtx C) D {
-			p := pointer.PassOp{}.Push(gtx.Ops)
+			defer pointer.PassOp{}.Push(gtx.Ops).Pop()
 			rect := image.Rectangle{Max: gtx.Constraints.Min}
 			r := clip.Rect(rect).Push(gtx.Ops)
 			pointer.InputOp{
 				Tag:   t,
 				Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave | pointer.Move,
 			}.Add(gtx.Ops)
-			p.Pop()
 			r.Pop()
 			gtx.Constraints.Min = image.Point{}
-			maxx := gtx.Constraints.Max.X
 			if t.Visible() {
 				macro := op.Record(gtx.Ops)
 				v := t.VisibilityAnimation.Revealed(gtx)
@@ -199,7 +206,7 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 							SW:   rr,
 							SE:   rr,
 						}.Op(gtx.Ops))
-						// paintBorder(gtx, outline, t.Fg, unit.Dp(1.0), t.CornerRadius)
+						paintBorder(gtx, outline, MulAlpha(t.Fg, 128), unit.Dp(0.5), t.CornerRadius)
 						return D{}
 					}),
 					layout.Stacked(func(gtx C) D {
@@ -209,21 +216,17 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 						})
 					}),
 				)
-				if t.position.X+dims.Size.X > maxx {
-					t.position.X = maxx - dims.Size.X
+				dx := int(mouseX) + CursorSizeX + dims.Size.X - winX
+				if dx < 0 {
+					dx = 0
 				}
-				if t.position.Y+dims.Size.Y > gtx.Constraints.Max.Y {
-					t.position.Y = gtx.Constraints.Max.Y - dims.Size.Y
-				}
-				if t.position.X < 0 {
-					t.position.X = 0
-				}
-				if t.position.Y < 0 {
-					t.position.Y = 0
+				dy := int(mouseY) + CursorSizeY + dims.Size.Y - winY
+				if dy < 0 {
+					dy = 0
 				}
 				call := macro.Stop()
 				macro = op.Record(gtx.Ops)
-				op.Offset(t.position.Add(image.Pt(5, 5))).Add(gtx.Ops)
+				op.Offset(t.position.Add(image.Pt(-dx+CursorSizeX, -dy+CursorSizeY))).Add(gtx.Ops)
 				call.Add(gtx.Ops)
 				call = macro.Stop()
 				op.Defer(gtx.Ops, call)
@@ -231,4 +234,25 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 			return D{}
 		}),
 	)
+}
+
+// UpdateMousePos must be called from the main program in order to get mouse
+// position and window size. They are needed to avoid that the tooltip
+// is outside the window frame
+func UpdateMousePos(gtx C, win *app.Window, size image.Point) {
+	eventArea := clip.Rect(image.Rect(0, 0, 99999, 99999)).Push(gtx.Ops)
+	pointer.InputOp{
+		Types: pointer.Move,
+		Tag:   win,
+	}.Add(gtx.Ops)
+	eventArea.Pop()
+	for _, gtxEvent := range gtx.Events(win) {
+		switch e := gtxEvent.(type) {
+		case pointer.Event:
+			mouseX = e.Position.X
+			mouseY = e.Position.Y
+		}
+	}
+	winX = size.X
+	winY = size.Y
 }
