@@ -15,8 +15,10 @@ type Widget struct {
 	th      *Theme
 	hint    string
 	padding layout.Inset
+	handler func()
 	width   unit.Dp
 	fgColor color.NRGBA
+	bgColor color.NRGBA
 }
 
 // WidgetIf is the interface functions for widgets, used by options to set parameters
@@ -24,7 +26,9 @@ type WidgetIf interface {
 	setWidth(width float32)
 	setHint(hint string)
 	setPadding(padding layout.Inset)
-	setColor(c color.NRGBA)
+	setFgColor(c color.NRGBA)
+	setBgColor(c color.NRGBA)
+	setHandler(h func())
 }
 
 // WidgetOption is a type for optional parameters when creating widgets
@@ -59,13 +63,28 @@ func (wid *Widget) setPadding(padding layout.Inset) {
 	wid.padding = padding
 }
 
-func (wid *Widget) setColor(c color.NRGBA) {
+func (wid *Widget) setFgColor(c color.NRGBA) {
 	wid.fgColor = c
+}
+
+func (wid *Widget) setBgColor(c color.NRGBA) {
+	wid.bgColor = c
+}
+
+func (wid *Widget) setHandler(h func()) {
+	wid.handler = h
 }
 
 // Pad is used to set default widget paddings
 func (wid *Widget) Pad(t, r, b, l float32) {
 	wid.padding = layout.Inset{Top: unit.Dp(t), Bottom: unit.Dp(b), Left: unit.Dp(l), Right: unit.Dp(r)}
+}
+
+// Handler is an optional parameter to set a callback when widget state changes
+func Do(f func()) WidgetOption {
+	return func(w WidgetIf) {
+		w.setHandler(f)
+	}
 }
 
 // W is the option parameter for setting widget width
@@ -96,17 +115,17 @@ func Hint(hint string) WidgetOption {
 	}
 }
 
-// Color is an option parameter to set widget color
-func Color(c color.NRGBA) WidgetOption {
+// Fg is an option parameter to set widget foreground color
+func Fg(c color.NRGBA) WidgetOption {
 	return func(w WidgetIf) {
-		w.setColor(c)
+		w.setFgColor(c)
 	}
 }
 
-// Color is an option parameter to set widget color
-func Fg(c uint32) WidgetOption {
+// Bg is an option parameter to set widget background color
+func Bg(c uint32) WidgetOption {
 	return func(w WidgetIf) {
-		w.setColor(RGB(c))
+		w.setBgColor(RGB(c))
 	}
 }
 

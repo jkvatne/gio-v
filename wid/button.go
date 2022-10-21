@@ -149,14 +149,6 @@ func BtnIcon(i *widget.Icon) BtnOption {
 	}
 }
 
-// Handler is an optional parameter to set a callback when the button is clicked
-func Handler(f func()) BtnOption {
-	foo := func(b bool) { f() }
-	return func(b *ButtonDef) {
-		b.handler = foo
-	}
-}
-
 // Disable is an optional parameter to set a bool variable to disable the button
 func Disable(v *bool) BtnOption {
 	return func(b *ButtonDef) {

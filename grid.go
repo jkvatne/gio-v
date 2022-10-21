@@ -135,7 +135,7 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidth []fl
 		)
 		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5), wid.W(9999)))
 	}
-	return wid.MakeList(&thg, anchor, lines...)
+	return wid.List(&thg, anchor, lines...)
 }
 
 func onCheck(b bool) {

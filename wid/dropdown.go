@@ -48,7 +48,7 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) *DropDow
 		b.Items = append(b.Items, b.option(th, i))
 		b.hovered = append(b.hovered, false)
 	}
-	b.list = MakeList(th, Overlay, b.Items...)
+	b.list = List(th, Overlay, b.Items...)
 	b.padding = th.LabelPadding
 	for _, option := range options {
 		option.apply(&b)

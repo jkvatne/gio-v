@@ -11,11 +11,10 @@ import (
 
 // RadioButtonStyle defines a radio button.
 type RadioButtonStyle struct {
-	// Widget
+	Widget
 	checkable
-	Key     string
-	handler func(s string)
-	Group   *widget.Enum
+	Key   string
+	Group *widget.Enum
 }
 
 // RadioButton returns a RadioButton with a label. The key specifies the initial value for the output
@@ -42,19 +41,6 @@ func RadioButton(th *Theme, group *widget.Enum, key string, label string, option
 	}
 }
 
-type RbOption func(style *RadioButtonStyle)
-
-// Do is an optional parameter to set a callback when the button is clicked
-func Do(f func(s string)) RbOption {
-	return func(b *RadioButtonStyle) {
-		b.handler = func(s string) { f(b.Group.Value) }
-	}
-}
-
-func (b RbOption) apply(cfg interface{}) {
-	b(cfg.(*RadioButtonStyle))
-}
-
 // Layout updates enum and displays the radio button.
 func (r RadioButtonStyle) Layout(gtx layout.Context) layout.Dimensions {
 	hovered, hovering := r.Group.Hovered()
@@ -63,7 +49,9 @@ func (r RadioButtonStyle) Layout(gtx layout.Context) layout.Dimensions {
 		semantic.RadioButton.Add(gtx.Ops)
 		highlight := hovering && hovered == r.Key || focused && focus == r.Key
 		if r.Group.Changed() {
-			r.handler(r.Group.Value)
+			if r.handler != nil {
+				r.handler()
+			}
 		}
 		return r.layout(gtx, r.Group.Value == r.Key, highlight)
 	})

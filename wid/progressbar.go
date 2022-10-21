@@ -14,22 +14,21 @@ import (
 
 // ProgressBarStyle defines the progress bar
 type ProgressBarStyle struct {
-	Color        color.NRGBA
-	TrackColor   color.NRGBA
+	Widget
 	Progress     *float32
-	Width        unit.Dp
 	CornerRadius unit.Dp
 }
 
 // ProgressBar returns a widget for a progress bar
-func ProgressBar(th *Theme, progress *float32) func(gtx C) D {
+func ProgressBar(th *Theme, progress *float32, options ...Option) func(gtx C) D {
 	p := &ProgressBarStyle{
 		Progress:     progress,
-		Width:        unit.Dp(20),
 		CornerRadius: unit.Dp(10),
-		Color:        th.Primary,
-		TrackColor:   MulAlpha(th.OnBackground, 0x88),
 	}
+	p.fgColor = th.Primary
+	p.bgColor = MulAlpha(th.OnBackground, 0x88)
+	p.width = 10
+	p.Apply(options...)
 	return func(gtx C) D {
 		return p.layout(gtx)
 	}
@@ -37,9 +36,9 @@ func ProgressBar(th *Theme, progress *float32) func(gtx C) D {
 
 func (p ProgressBarStyle) layout(gtx C) D {
 	shader := func(width int, color color.NRGBA) D {
-		rr := rr(gtx, p.CornerRadius, gtx.Dp(p.Width))
-		d := image.Point{X: width, Y: gtx.Dp(p.Width)}
-		height := p.Width
+		rr := rr(gtx, p.CornerRadius, gtx.Dp(p.width))
+		d := image.Point{X: width, Y: gtx.Dp(p.width)}
+		height := p.width
 		defer clip.UniformRRect(image.Rectangle{Max: image.Pt(width, gtx.Dp(height))}, rr).Push(gtx.Ops).Pop()
 		paint.ColorOp{Color: color}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
@@ -49,17 +48,16 @@ func (p ProgressBarStyle) layout(gtx C) D {
 	return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
 		return layout.Stack{Alignment: layout.W}.Layout(gtx,
 			layout.Stacked(func(gtx C) D {
-				return shader(progressBarWidth, p.TrackColor)
+				return shader(progressBarWidth, p.bgColor)
 			}),
 			layout.Stacked(func(gtx C) D {
 				fillWidth := int(float32(progressBarWidth) * clamp1(*p.Progress))
-				fillColor := p.Color
+				fillColor := p.bgColor
 				if gtx.Queue == nil {
 					fillColor = Disabled(fillColor)
 				}
 				return shader(fillWidth, fillColor)
-			},
-			),
+			}),
 		)
 	},
 	)

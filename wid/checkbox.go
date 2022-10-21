@@ -10,16 +10,17 @@ import (
 )
 
 // CheckBoxDef defines a checkbox widget
-type CheckBoxStyle struct {
+type CheckBoxDef struct {
+	Widget
 	checkable
 	CheckBox *widget.Bool
 	handler  func(b bool)
+	State    *bool
 }
 
 // Checkbox returns a widget that can be checked, with label, initial state and handler function
-func Checkbox(th *Theme, label string, State *bool, handler func(b bool)) func(gtx C) D {
-	c := &CheckBoxStyle{
-		handler:  handler,
+func Checkbox(th *Theme, label string, options ...Option) func(gtx C) D {
+	c := &CheckBoxDef{
 		CheckBox: new(widget.Bool),
 		checkable: checkable{
 			Label:              label,
@@ -32,7 +33,9 @@ func Checkbox(th *Theme, label string, State *bool, handler func(b bool)) func(g
 			uncheckedStateIcon: th.CheckBoxUnchecked,
 		},
 	}
-	c.CheckBox.Value = *State
+	for _, option := range options {
+		option.apply(c)
+	}
 	return func(gtx C) D {
 		dims := c.Layout(gtx)
 		pointer.CursorPointer.Add(gtx.Ops)
@@ -41,8 +44,22 @@ func Checkbox(th *Theme, label string, State *bool, handler func(b bool)) func(g
 }
 
 // Layout updates the checkBox and displays it.
-func (c CheckBoxStyle) Layout(gtx layout.Context) layout.Dimensions {
+func (c CheckBoxDef) Layout(gtx layout.Context) layout.Dimensions {
 	return c.CheckBox.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		return c.layout(gtx, c.CheckBox.Value, c.CheckBox.Hovered() || c.CheckBox.Focused())
 	})
+}
+
+// CheckboxOption is options specific to Checkboxes
+type CheckboxOption func(w *CheckBoxDef)
+
+// Bool is an option parameter to set the variable uptdated
+func Bool(b *bool) CheckboxOption {
+	return func(c *CheckBoxDef) {
+		c.State = b
+	}
+}
+
+func (e CheckboxOption) apply(cfg interface{}) {
+	e(cfg.(*CheckBoxDef))
 }

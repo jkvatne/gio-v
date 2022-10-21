@@ -40,6 +40,7 @@ var (
 	dropDownValue1         = 1
 	dropDownValue2         = 1
 	progress       float32 = 0.33
+	sliderValue    float32 = 0.1
 )
 
 func main() {
@@ -84,8 +85,7 @@ func handleFrameEvents(e system.FrameEvent) {
 	e.Frame(gtx.Ops)
 }
 
-func onSwitchMode(v bool) {
-	darkMode = v
+func onSwitchMode() {
 	s := unit.Sp(16.0)
 	if currentTheme != nil {
 		s = currentTheme.TextSize
@@ -112,8 +112,8 @@ func swHandler(b bool) {
 	onClick()
 }
 
-func onModeChange(mode string) {
-	switch mode {
+func onWinChange() {
+	switch group.Value {
 	case "windowed":
 		win.Option(app.Windowed.Option())
 	case "minimized":
@@ -128,7 +128,7 @@ func onModeChange(mode string) {
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
-	return wid.Col(
+	return wid.List(th, wid.Occupy,
 		wid.Label(th, "Demo page", wid.Middle(), wid.Large(), wid.Bold()),
 		// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
 		wid.Row(th, nil, nil,
@@ -149,6 +149,7 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Row(th, nil, nil,
 			wid.Edit(th, wid.Hint("")),
 		),
+		wid.Slider(th, &sliderValue, 0, 100).Layout,
 		wid.Row(th, nil, nil,
 			wid.Label(th, "A switch"),
 			wid.Switch(th, &greenFlag, swHandler),
@@ -158,22 +159,22 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.Switch(th, &greenFlag, swHandler),
 		),
 		wid.Row(th, nil, nil,
-			wid.RadioButton(th, group, "windowed", "Windowed", wid.Do(onModeChange)),
-			wid.RadioButton(th, group, "fullscreen", "Fullscreen", wid.Do(onModeChange)),
-			wid.RadioButton(th, group, "minimized", "Minimized", wid.Do(onModeChange)),
-			wid.RadioButton(th, group, "maximized", "Maximized", wid.Do(onModeChange)),
+			wid.RadioButton(th, group, "windowed", "Windowed", wid.Do(onWinChange)),
+			wid.RadioButton(th, group, "fullscreen", "Fullscreen", wid.Do(onWinChange)),
+			wid.RadioButton(th, group, "minimized", "Minimized", wid.Do(onWinChange)),
+			wid.RadioButton(th, group, "maximized", "Maximized", wid.Do(onWinChange)),
 		),
 		wid.Row(th, nil, nil,
-			wid.Checkbox(th, "Dark mode", &darkMode, onSwitchMode),
-			wid.Checkbox(th, "Checkbox2", &darkMode, onSwitchMode),
-			wid.Checkbox(th, "Checkbox3", &darkMode, onSwitchMode),
+			wid.Checkbox(th, "Dark mode", wid.Bool(&darkMode), wid.Do(onSwitchMode)),
+			wid.Checkbox(th, "Checkbox2", wid.Bool(&darkMode), wid.Do(onSwitchMode)),
+			wid.Checkbox(th, "Checkbox3", wid.Bool(&darkMode), wid.Do(onSwitchMode)),
 		),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Row(th, nil, []float32{0.3, 1, 1, 1, 1, 1},
 			wid.RoundButton(th, homeIcon, wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")).Layout,
-			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Fg(0x228822), wid.Hint("This is another hint")).Layout,
-			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Color(wid.RGB(0xffff00))).Layout,
-			wid.Button(th, "Change color", wid.Handler(onClick), wid.W(150)).Layout,
+			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Fg(wid.RGB(0x228822)), wid.Hint("This is another hint")).Layout,
+			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Fg(wid.RGB(0xffff00))).Layout,
+			wid.Button(th, "Change color", wid.Do(onClick), wid.W(150)).Layout,
 			wid.TextButton(th, "Text button").Layout,
 			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")).Layout,
 		),
@@ -182,7 +183,8 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.DropDown(th, &dropDownValue1, []string{"Option 1 with very long text", "Option 2", "Option 3"}).Layout,
 			wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}).Layout,
 		),
-		wid.ProgressBar(th, &progress),
-		wid.ImageFromJpgFile("gopher.jpg", wid.Cover),
+		wid.ProgressBar(th, &progress, wid.Pads(5.0), wid.W(12.0)),
+		wid.Separator(th, 0, wid.Pads(5.0)),
+		wid.ImageFromJpgFile("gopher.jpg", wid.Contain),
 	)
 }
