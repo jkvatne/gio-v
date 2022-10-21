@@ -194,7 +194,7 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 // LayoutBackground draws the background.
 func (b *DropDownStyle) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
-		rr := rr(gtx, gtx.Constraints.Min, b.th)
+		rr := rr(gtx, b.th.BorderCornerRadius, gtx.Constraints.Min.Y)
 		if b.Focused() || b.Hovered() {
 			Shadow(rr, gtx.Dp(b.th.Elevation)).Layout(gtx)
 		}

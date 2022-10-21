@@ -35,10 +35,11 @@ var (
 	group          = new(widget.Enum)
 	homeIcon       *widget.Icon
 	checkIcon      *widget.Icon
-	greenFlag      = false // the state variable for the button color
-	darkMode       = false
-	dropDownValue1 = 1
-	dropDownValue2 = 1
+	greenFlag              = false // the state variable for the button color
+	darkMode               = false
+	dropDownValue1         = 1
+	dropDownValue2         = 1
+	progress       float32 = 0.33
 )
 
 func main() {
@@ -73,6 +74,10 @@ func handleFrameEvents(e system.FrameEvent) {
 	// tooltips going outside the main window area
 	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
 	wid.UpdateMousePos(gtx, win, e.Size)
+	progress = progress + 0.01
+	if progress > 1.0 {
+		progress = 0
+	}
 	// Draw widgets
 	form(gtx)
 	// Apply the actual screen drawing
@@ -177,5 +182,6 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.DropDown(th, &dropDownValue1, []string{"Option 1 with very long text", "Option 2", "Option 3"}).Layout,
 			wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}).Layout,
 		),
+		wid.ProgressBar(th, &progress),
 	)
 }

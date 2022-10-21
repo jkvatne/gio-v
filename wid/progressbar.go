@@ -25,8 +25,8 @@ type ProgressBarStyle struct {
 func ProgressBar(th *Theme, progress *float32) func(gtx C) D {
 	p := &ProgressBarStyle{
 		Progress:     progress,
-		Width:        unit.Dp(10),
-		CornerRadius: unit.Dp(5),
+		Width:        unit.Dp(20),
+		CornerRadius: unit.Dp(10),
 		Color:        th.Primary,
 		TrackColor:   MulAlpha(th.OnBackground, 0x88),
 	}
@@ -37,7 +37,7 @@ func ProgressBar(th *Theme, progress *float32) func(gtx C) D {
 
 func (p ProgressBarStyle) layout(gtx C) D {
 	shader := func(width int, color color.NRGBA) D {
-		rr := 2
+		rr := rr(gtx, p.CornerRadius, gtx.Dp(p.Width))
 		d := image.Point{X: width, Y: gtx.Dp(p.Width)}
 		height := p.Width
 		defer clip.UniformRRect(image.Rectangle{Max: image.Pt(width, gtx.Dp(height))}, rr).Push(gtx.Ops).Pop()
@@ -45,7 +45,7 @@ func (p ProgressBarStyle) layout(gtx C) D {
 		paint.PaintOp{}.Add(gtx.Ops)
 		return D{Size: d}
 	}
-	progressBarWidth := gtx.Constraints.Max.X
+	progressBarWidth := gtx.Constraints.Max.X - gtx.Dp(4)
 	return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
 		return layout.Stack{Alignment: layout.W}.Layout(gtx,
 			layout.Stacked(func(gtx C) D {

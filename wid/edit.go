@@ -82,10 +82,10 @@ func (e *EditDef) setLabel(s string) {
 	e.label = s
 }
 
-func rr(gtx C, rect image.Point, th *Theme) int {
-	rr := gtx.Dp(th.BorderCornerRadius)
-	if rr > (rect.Y-1)/2 {
-		return (rect.Y - 1) / 2
+func rr(gtx C, radius unit.Dp, height int) int {
+	rr := gtx.Dp(radius)
+	if rr > (height-1)/2 {
+		return (height - 1) / 2
 	}
 	return rr
 }
@@ -96,7 +96,7 @@ func (e *EditDef) layoutEditBackground() func(gtx C) D {
 			X: gtx.Constraints.Min.X,
 			Y: gtx.Constraints.Min.Y,
 		}}
-		rr := rr(gtx, outline.Max, e.th)
+		rr := rr(gtx, e.th.BorderCornerRadius, outline.Max.Y)
 		color := e.th.Surface
 		if e.Focused() {
 			color = e.th.Background
