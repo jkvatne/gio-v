@@ -14,7 +14,7 @@ import (
 
 // ProgressBarStyle defines the progress bar
 type ProgressBarStyle struct {
-	Widget
+	Base
 	Progress     *float32
 	CornerRadius unit.Dp
 }

@@ -20,7 +20,7 @@ import (
 
 // SwitchDef is the parameters for a slider
 type SwitchDef struct {
-	Widget
+	Base
 	sw       widget.Bool
 	th       *Theme
 	StatePtr *bool

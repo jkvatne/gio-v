@@ -11,7 +11,7 @@ import (
 
 // RadioButtonStyle defines a radio button.
 type RadioButtonStyle struct {
-	Widget
+	Base
 	checkable
 	Key   string
 	Group *widget.Enum

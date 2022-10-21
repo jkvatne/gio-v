@@ -19,7 +19,7 @@ import (
 
 // EditDef is the parameters for the text editor
 type EditDef struct {
-	Widget
+	Base
 	widget.Editor
 	shaper    text.Shaper
 	alignment layout.Alignment

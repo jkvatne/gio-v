@@ -108,8 +108,12 @@ func onClick() {
 }
 
 func swHandler(b bool) {
-	greenFlag = !b
-	onClick()
+	greenFlag = b
+	if greenFlag {
+		currentTheme.Primary = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
+	} else {
+		currentTheme.Primary = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
+	}
 }
 
 func onWinChange() {
@@ -171,17 +175,17 @@ func demo(th *wid.Theme) layout.Widget {
 		),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Row(th, nil, []float32{0.3, 1, 1, 1, 1, 1},
-			wid.RoundButton(th, homeIcon, wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")).Layout,
-			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Fg(wid.RGB(0x228822)), wid.Hint("This is another hint")).Layout,
-			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Fg(wid.RGB(0xffff00))).Layout,
-			wid.Button(th, "Change color", wid.Do(onClick), wid.W(150)).Layout,
-			wid.TextButton(th, "Text button").Layout,
-			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")).Layout,
+			wid.RoundButton(th, homeIcon, wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
+			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Fg(wid.RGB(0x228822)), wid.Hint("This is another hint")),
+			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Fg(wid.RGB(0xffff00))),
+			wid.Button(th, "Change color", wid.Do(onClick), wid.W(150)),
+			wid.TextButton(th, "Text button"),
+			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")),
 		),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Row(th, nil, nil,
-			wid.DropDown(th, &dropDownValue1, []string{"Option 1 with very long text", "Option 2", "Option 3"}).Layout,
-			wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}).Layout,
+			wid.DropDown(th, &dropDownValue1, []string{"Option 1 with very long text", "Option 2", "Option 3"}),
+			wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}),
 		),
 		wid.ProgressBar(th, &progress, wid.Pads(5.0), wid.W(12.0)),
 		wid.Separator(th, 0, wid.Pads(5.0)),

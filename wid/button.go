@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: Unlicense OR MIT
+
+// Package wid is an alternative implementation of gio's material widgets
 package wid
 
 import (
@@ -33,7 +35,7 @@ const (
 
 // ButtonDef is the struct for buttons
 type ButtonDef struct {
-	Widget
+	Base
 	Tooltip
 	Button       widget.Clickable
 	shadow       ShadowStyle
@@ -48,37 +50,36 @@ type ButtonDef struct {
 	fg           color.NRGBA
 	bg           color.NRGBA
 	align        layout.Alignment
-	handler      func(b bool)
 }
 
 // BtnOption is the options for buttons only
 type BtnOption func(*ButtonDef)
 
 // RoundButton is a shortcut to a round button
-func RoundButton(th *Theme, d *widget.Icon, options ...Option) *ButtonDef {
+func RoundButton(th *Theme, d *widget.Icon, options ...Option) layout.Widget {
 	options = append(options, BtnIcon(d), W(0))
-	return aButton(Round, th, "", options...)
+	return aButton(Round, th, "", options...).Layout
 }
 
 // TextButton is a shortcut to a text only button
-func TextButton(th *Theme, label string, options ...Option) *ButtonDef {
-	return aButton(Text, th, label, options...)
+func TextButton(th *Theme, label string, options ...Option) layout.Widget {
+	return aButton(Text, th, label, options...).Layout
 }
 
 // OutlineButton is a shortcut to an outlined button
-func OutlineButton(th *Theme, label string, options ...Option) *ButtonDef {
-	return aButton(Outlined, th, label, options...)
+func OutlineButton(th *Theme, label string, options ...Option) layout.Widget {
+	return aButton(Outlined, th, label, options...).Layout
 }
 
 // Button is the generic button selector
-func Button(th *Theme, label string, options ...Option) *ButtonDef {
-	return aButton(Contained, th, label, options...)
+func Button(th *Theme, label string, options ...Option) layout.Widget {
+	return aButton(Contained, th, label, options...).Layout
 }
 
 // HeaderButton is a shortcut to a text only button with left justified text and a given size
-func HeaderButton(th *Theme, label string, options ...Option) *ButtonDef {
+func HeaderButton(th *Theme, label string, options ...Option) layout.Widget {
 	options = append(options, AlignLeft())
-	return aButton(Text, th, label, options...)
+	return aButton(Text, th, label, options...).Layout
 }
 
 func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *ButtonDef {
@@ -103,7 +104,7 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *But
 func (b *ButtonDef) HandleClick() {
 	for b.Button.Clicked() {
 		if b.handler != nil {
-			b.handler(true)
+			b.handler()
 		}
 	}
 }
@@ -117,9 +118,9 @@ func (b *ButtonDef) Layout(gtx C) D {
 		b.fg = b.th.OnBackground
 		b.bg = color.NRGBA{}
 	}
-	if b.Widget.fgColor.A != 0 {
-		b.bg = b.Widget.fgColor
-		if Luminance(b.Widget.fgColor) > 127 {
+	if b.Base.fgColor.A != 0 {
+		b.bg = b.Base.fgColor
+		if Luminance(b.Base.fgColor) > 127 {
 			b.fg = RGB(0x000000)
 		} else {
 			b.fg = RGB(0xFFFFFF)
@@ -157,9 +158,8 @@ func Disable(v *bool) BtnOption {
 }
 
 func drawInk(gtx C, c widget.Press) {
-	// duration is the number of seconds for the
-	// completed animation: expand while fading in, then
-	// out.
+	// duration is the number of seconds for the completed animation:
+	// expand while fading in, then out.
 	const (
 		expandDuration = float32(0.5)
 		fadeDuration   = float32(0.9)
@@ -183,7 +183,7 @@ func drawInk(gtx C, c widget.Press) {
 		var haste float32
 		if c.Cancelled {
 			// If the press was cancelled before the inkwell
-			// was fully faded in, fast forward the animation
+			// was fully faded in, fast-forward the animation
 			// to match the fade-out.
 			if h := 0.5 - endt/fadeDuration; h > 0 {
 				haste = h

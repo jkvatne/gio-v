@@ -11,7 +11,7 @@ import (
 
 // CheckBoxDef defines a checkbox widget
 type CheckBoxDef struct {
-	Widget
+	Base
 	checkable
 	CheckBox *widget.Bool
 	handler  func(b bool)
@@ -53,7 +53,7 @@ func (c CheckBoxDef) Layout(gtx layout.Context) layout.Dimensions {
 // CheckboxOption is options specific to Checkboxes
 type CheckboxOption func(w *CheckBoxDef)
 
-// Bool is an option parameter to set the variable uptdated
+// Bool is an option parameter to set the variable updated
 func Bool(b *bool) CheckboxOption {
 	return func(c *CheckBoxDef) {
 		c.State = b

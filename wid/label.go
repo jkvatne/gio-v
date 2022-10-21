@@ -12,7 +12,7 @@ import (
 
 // LabelDef is the setup for a label.
 type LabelDef struct {
-	Widget
+	Base
 	// Face defines the text style.
 	Font text.Font
 	// Alignment specify the text alignment.

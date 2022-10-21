@@ -19,7 +19,7 @@ import (
 
 // DropDownStyle is the struct for dropdown lists.
 type DropDownStyle struct {
-	Widget
+	Base
 	widget.Clickable
 	disabler   *bool
 	disabled   bool
@@ -36,7 +36,7 @@ type DropDownStyle struct {
 }
 
 // DropDown returns an initiated struct with drop-dow box setup info
-func DropDown(th *Theme, index *int, items []string, options ...Option) *DropDownStyle {
+func DropDown(th *Theme, index *int, items []string, options ...Option) layout.Widget {
 	b := DropDownStyle{}
 	b.icon, _ = widget.NewIcon(icons.NavigationArrowDropDown)
 	b.th = th
@@ -53,7 +53,7 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) *DropDow
 	for _, option := range options {
 		option.apply(&b)
 	}
-	return &b
+	return b.Layout
 }
 
 // Layout adds padding to a dropdown box drawn with b.layout().

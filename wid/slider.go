@@ -20,7 +20,7 @@ import (
 
 // SliderStyle is the parameters for a slider
 type SliderStyle struct {
-	Widget
+	Base
 	focused  bool
 	hovered  bool
 	axis     layout.Axis
