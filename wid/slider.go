@@ -5,7 +5,9 @@ package wid
 import (
 	"image"
 
-	"gioui.org/widget"
+	"gioui.org/io/key"
+
+	"gioui.org/io/semantic"
 
 	"gioui.org/gesture"
 	"gioui.org/io/pointer"
@@ -19,7 +21,8 @@ import (
 // SliderStyle is the parameters for a slider
 type SliderStyle struct {
 	Widget
-	widget.Clickable
+	focused  bool
+	hovered  bool
 	axis     layout.Axis
 	drag     gesture.Drag
 	pos      float32 // position normalized to [0, 1]
@@ -27,23 +30,75 @@ type SliderStyle struct {
 	min, max float32
 	Value    *float32
 	index    *int
+	keyTag   struct{}
 }
 
 // Slider is for selecting a value in a range.
-func Slider(th *Theme, value *float32, minV, maxV float32, options ...Option) *SliderStyle {
+func Slider(th *Theme, value *float32, minV, maxV float32, options ...Option) layout.Widget {
 	s := SliderStyle{
-		min: minV,
-		max: maxV,
+		min:   minV,
+		max:   maxV,
+		Value: value,
 	}
-	s.Value = value
 	s.th = th
 	s.width = unit.Dp(99999)
 	s.Apply(options...)
-	return &s
+
+	return func(gtx C) D {
+		s.handleKeys(gtx)
+		m := op.Record(gtx.Ops)
+		dims := s.Layout(gtx)
+		c := m.Stop()
+		defer clip.Rect{Max: dims.Size}.Push(gtx.Ops).Pop()
+		disabled := gtx.Queue == nil
+		keys := key.Set("")
+		if !disabled {
+			keys = "[→,↓,←,↑,0,9]"
+			if !s.focused {
+				keys = ""
+			}
+			key.InputOp{Tag: &s.keyTag, Keys: keys}.Add(gtx.Ops)
+		} else {
+			s.focused = false
+		}
+		c.Add(gtx.Ops)
+		return dims
+	}
+}
+
+func (s *SliderStyle) handleKeys(gtx C) {
+	for _, ev := range gtx.Events(&s.keyTag) {
+		switch ke := ev.(type) {
+		case key.FocusEvent:
+			s.focused = ke.Focus
+		case key.Event:
+			if ke.State == key.Press {
+				switch ke.Name {
+				case "0":
+					s.pos = 0
+				case "9":
+					s.pos = 1.0
+				case key.NameUpArrow, key.NameLeftArrow:
+					s.pos = s.pos - 0.1
+					if s.pos < 0 {
+						s.pos = 0
+					}
+					*s.Value = s.min + (s.max-s.min)*s.pos
+				case key.NameDownArrow, key.NameRightArrow:
+					s.pos = s.pos + 0.1
+					if s.pos > 1.0 {
+						s.pos = 1.0
+					}
+					*s.Value = s.min + (s.max-s.min)*s.pos
+				}
+			}
+		}
+	}
 }
 
 // Layout will draw the slider
 func (s *SliderStyle) Layout(gtx C) D {
+
 	gtx.Constraints.Min = CalcMin(gtx, s.width)
 	thumbRadius := gtx.Sp(s.th.TextSize * 0.5)
 	trackWidth := gtx.Sp(s.th.TextSize * 0.5)
@@ -61,39 +116,34 @@ func (s *SliderStyle) Layout(gtx C) D {
 	op.Offset(o).Add(gtx.Ops)
 	gtx.Constraints.Min = s.axis.Convert(image.Pt(sizeMain-2*thumbRadius, sizeCross))
 
+	disabled := gtx.Queue == nil
+	semantic.DisabledOp(disabled).Add(gtx.Ops)
+	semantic.Switch.Add(gtx.Ops)
+
 	size = gtx.Constraints.Min
 	s.length = float32(s.axis.Convert(size).X)
 
 	var de *pointer.Event
 	for _, e := range s.drag.Events(gtx.Metric, gtx, gesture.Axis(s.axis)) {
-		if e.Type == pointer.Press || e.Type == pointer.Drag {
+		switch e.Type {
+		case pointer.Press, pointer.Drag:
+			key.FocusOp{Tag: &s.keyTag}.Add(gtx.Ops)
 			de = &e
+		case pointer.Leave, pointer.Cancel:
+			s.hovered = false
+		case pointer.Enter:
+			s.hovered = true
 		}
 	}
-	/*
-		if s.HandleKeys(gtx) {
-			if s.index != nil {
-				s.pos = float32(*s.index) / 100.0
-			}
-			*s.Value = s.min + (s.max-s.min)*s.pos
-		}
-	*/
 	if de != nil {
 		xy := de.Position.X
 		if s.axis == layout.Vertical {
 			xy = de.Position.Y
 		}
-		s.pos = (xy - float32(thumbRadius)) / s.length
-		*s.Value = s.min + (s.max-s.min)*s.pos
-	} else if s.min != s.max {
-		s.pos = (*s.Value - s.min) / (s.max - s.min)
+		s.pos = xy / (float32(thumbRadius) + s.length)
 	}
-	if s.index != nil {
-		*s.index = int(s.pos*100 + 0.5)
-	}
-	// Unconditionally call setValue in case min, max, or value changed.
-	s.setValue(*s.Value, s.min, s.max)
-	s.pos = clamp(s.pos, 0, 1)
+
+	s.setValue()
 
 	margin := s.axis.Convert(image.Pt(thumbRadius, 0))
 	rect := image.Rectangle{
@@ -101,11 +151,12 @@ func (s *SliderStyle) Layout(gtx C) D {
 		Max: size.Add(margin),
 	}
 	defer clip.Rect(rect).Push(gtx.Ops).Pop()
-	defer clip.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Push(gtx.Ops).Pop()
+
+	// defer clip.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Push(gtx.Ops).Pop()
 	s.drag.Add(gtx.Ops)
 
 	gtx.Constraints.Min = gtx.Constraints.Min.Add(s.axis.Convert(image.Pt(0, sizeCross)))
-	thumbPos := thumbRadius + int(s.pos*s.length)
+	thumbPos := thumbRadius + int(s.pos*(float32(sizeMain-thumbRadius*5)))
 
 	color := WithAlpha(s.th.OnBackground, 175)
 	if gtx.Queue == nil {
@@ -125,7 +176,7 @@ func (s *SliderStyle) Layout(gtx C) D {
 	// Draw track after thumb.
 	track = image.Rectangle{
 		Min: s.axis.Convert(image.Pt(thumbPos, s.axis.Convert(track.Min).Y)),
-		Max: s.axis.Convert(image.Pt(sizeMain-thumbRadius, s.axis.Convert(track.Max).Y)),
+		Max: s.axis.Convert(image.Pt(sizeMain-2*thumbRadius, s.axis.Convert(track.Max).Y)),
 	}
 	paint.FillShape(gtx.Ops, WithAlpha(color, 80), clip.RRect{
 		Rect: image.Rect(track.Min.X, track.Min.Y, track.Max.X, track.Max.Y),
@@ -134,7 +185,7 @@ func (s *SliderStyle) Layout(gtx C) D {
 
 	// Draw thumb.
 	pt := s.axis.Convert(image.Pt(thumbPos, sizeCross/2))
-	if s.Hovered() || s.Focused() {
+	if s.hovered || s.focused {
 		r := int(float32(thumbRadius) * 1.35)
 		ul := image.Pt(pt.X-r, pt.Y-r)
 		lr := image.Pt(pt.X+r, pt.Y+r)
@@ -153,19 +204,12 @@ func (s *SliderStyle) Layout(gtx C) D {
 	return layout.Dimensions{Size: size}
 }
 
-func (s *SliderStyle) setValue(value, min, max float32) {
-	if min > max {
-		min, max = max, min
+func (s *SliderStyle) setValue() {
+	if s.pos < 0 {
+		s.pos = 0
 	}
-	if value < min {
-		value = min
-	} else if value > max {
-		value = max
+	if s.pos > 1.0 {
+		s.pos = 1.0
 	}
-	if *s.Value != value {
-		*s.Value = value
-	}
-	if s.Value != nil {
-		*s.Value = value
-	}
+	*s.Value = s.pos*(s.max-s.min) + s.min
 }

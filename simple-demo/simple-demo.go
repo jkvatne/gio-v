@@ -149,7 +149,7 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Row(th, nil, nil,
 			wid.Edit(th, wid.Hint("")),
 		),
-		wid.Slider(th, &sliderValue, 0, 100).Layout,
+		wid.Slider(th, &sliderValue, 0, 100),
 		wid.Row(th, nil, nil,
 			wid.Label(th, "A switch"),
 			wid.Switch(th, &greenFlag, swHandler),
