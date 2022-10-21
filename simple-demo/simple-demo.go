@@ -183,5 +183,6 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}).Layout,
 		),
 		wid.ProgressBar(th, &progress),
+		wid.ImageFromJpgFile("gopher.jpg", wid.Cover),
 	)
 }

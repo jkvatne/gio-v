@@ -3,6 +3,7 @@
 package wid
 
 import (
+	"fmt"
 	"image"
 	_ "image/jpeg"
 	"os"
@@ -32,24 +33,21 @@ type ImageDef struct {
 	Scale float32
 }
 
-func ImageFromJpgFile(filename string) func(gtx C) D {
+func ImageFromJpgFile(filename string, fit Fit) func(gtx C) D {
 	f, err := os.Open(filename)
-	if err != nil {
-		// Handle error
-	}
 	defer f.Close()
 
 	pict, _, err := image.Decode(f)
 	if err != nil {
-		// Handle error
+		panic(fmt.Sprintf("Image '%s' not found", filename))
 	}
-	return Image(pict)
+	return Image(pict, fit)
 }
 
-func Image(img image.Image) func(gtx C) D {
+func Image(img image.Image, fit Fit) func(gtx C) D {
 	src := paint.NewImageOp(img)
 	im := ImageDef{}
-	im.Fit = Contain
+	im.Fit = fit
 	im.Src = src
 	return func(gtx C) D {
 		return im.Layout(gtx)
@@ -59,7 +57,7 @@ func Image(img image.Image) func(gtx C) D {
 func (im ImageDef) Layout(gtx layout.Context) layout.Dimensions {
 	scale := im.Scale
 	if scale == 0 {
-		scale = float32(160.0 / 72.0)
+		scale = gtx.Metric.PxPerDp
 	}
 
 	w := int(float32(im.Src.Size().X) * scale)
@@ -68,8 +66,7 @@ func (im ImageDef) Layout(gtx layout.Context) layout.Dimensions {
 	dims, trans := im.Fit.scale(gtx.Constraints, im.Position, layout.Dimensions{Size: image.Pt(w, h)})
 	defer clip.Rect{Max: dims.Size}.Push(gtx.Ops).Pop()
 
-	pixelScale := scale * gtx.Metric.PxPerDp
-	trans = trans.Mul(f32.Affine2D{}.Scale(f32.Point{}, f32.Pt(pixelScale, pixelScale)))
+	trans = trans.Mul(f32.Affine2D{}.Scale(f32.Point{}, f32.Pt(scale, scale)))
 	defer op.Affine(trans).Push(gtx.Ops).Pop()
 
 	im.Src.Add(gtx.Ops)

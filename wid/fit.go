@@ -36,7 +36,6 @@ func (fit Fit) scale(cs layout.Constraints, pos layout.Direction, dims layout.Di
 
 	if fit == Unscaled || dims.Size.X == 0 || dims.Size.Y == 0 {
 		dims.Size = cs.Constrain(dims.Size)
-
 		offset := pos.Position(widgetSize, dims.Size)
 		dims.Baseline += offset.Y
 		return dims, f32.Affine2D{}.Offset(layout.FPt(offset))
@@ -70,7 +69,6 @@ func (fit Fit) scale(cs layout.Constraints, pos layout.Direction, dims layout.Di
 		// The widget would need to be scaled up, no change needed.
 		if scale.X >= 1 {
 			dims.Size = cs.Constrain(dims.Size)
-
 			offset := pos.Position(widgetSize, dims.Size)
 			dims.Baseline += offset.Y
 			return dims, f32.Affine2D{}.Offset(layout.FPt(offset))
