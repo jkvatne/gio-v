@@ -12,13 +12,13 @@ import (
 
 // Base is tha base structure for widgets. It contains variables that (almost) all widgets share
 type Base struct {
-	th      *Theme
-	hint    string
-	padding layout.Inset
-	handler func()
-	width   unit.Dp
-	fgColor color.NRGBA
-	bgColor color.NRGBA
+	th       *Theme
+	hint     string
+	padding  layout.Inset
+	onChange func()
+	width    unit.Dp
+	fgColor  color.NRGBA
+	bgColor  color.NRGBA
 }
 
 // BaseIf is the interface functions for widgets, used by options to set parameters
@@ -72,7 +72,7 @@ func (wid *Base) setBgColor(c color.NRGBA) {
 }
 
 func (wid *Base) setHandler(h func()) {
-	wid.handler = h
+	wid.onChange = h
 }
 
 // Pad is used to set default widget paddings

@@ -49,8 +49,8 @@ func (r RadioButtonStyle) Layout(gtx layout.Context) layout.Dimensions {
 		semantic.RadioButton.Add(gtx.Ops)
 		highlight := hovering && hovered == r.Key || focused && focus == r.Key
 		if r.Group.Changed() {
-			if r.handler != nil {
-				r.handler()
+			if r.onChange != nil {
+				r.onChange()
 			}
 		}
 		return r.layout(gtx, r.Group.Value == r.Key, highlight)
