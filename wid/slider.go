@@ -53,7 +53,7 @@ func Slider(th *Theme, value *float32, minV, maxV float32, options ...Option) la
 		disabled := gtx.Queue == nil
 		keys := key.Set("")
 		if !disabled {
-			keys = "[→,↓,←,↑,0,9]"
+			keys = "(Ctrl)-[→,↓,←,↑,0,9,↓]"
 			if !s.focused {
 				keys = ""
 			}
@@ -73,24 +73,21 @@ func (s *SliderStyle) handleKeys(gtx C) {
 			s.focused = ke.Focus
 		case key.Event:
 			if ke.State == key.Press {
+				d := float32(0.01)
+				if ke.Modifiers.Contain(key.ModCtrl) {
+					d = 0.1
+				}
 				switch ke.Name {
 				case "0":
 					s.pos = 0
 				case "9":
 					s.pos = 1.0
 				case key.NameUpArrow, key.NameLeftArrow:
-					s.pos = s.pos - 0.1
-					if s.pos < 0 {
-						s.pos = 0
-					}
-					*s.Value = s.min + (s.max-s.min)*s.pos
+					s.pos -= d
 				case key.NameDownArrow, key.NameRightArrow:
-					s.pos = s.pos + 0.1
-					if s.pos > 1.0 {
-						s.pos = 1.0
-					}
-					*s.Value = s.min + (s.max-s.min)*s.pos
+					s.pos += d
 				}
+				s.setValue()
 			}
 		}
 	}
@@ -105,8 +102,7 @@ func (s *SliderStyle) Layout(gtx C) D {
 
 	// Keep a minimum length so that the track is always visible.
 	minLength := thumbRadius + 3*thumbRadius + thumbRadius
-	// Try to expand to finger size, but only if the constraints
-	// allow for it.
+	// Try to expand to finger size, but only if the constraints allow for it.
 	touchSizePx := min(gtx.Dp(s.th.FingerSize), s.axis.Convert(gtx.Constraints.Max).Y)
 	sizeMain := max(s.axis.Convert(gtx.Constraints.Min).X, minLength)
 	sizeCross := max(2*thumbRadius, touchSizePx)
@@ -151,8 +147,6 @@ func (s *SliderStyle) Layout(gtx C) D {
 		Max: size.Add(margin),
 	}
 	defer clip.Rect(rect).Push(gtx.Ops).Pop()
-
-	// defer clip.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Push(gtx.Ops).Pop()
 	s.drag.Add(gtx.Ops)
 
 	gtx.Constraints.Min = gtx.Constraints.Min.Add(s.axis.Convert(image.Pt(0, sizeCross)))
@@ -197,9 +191,6 @@ func (s *SliderStyle) Layout(gtx C) D {
 	ul := image.Pt(pt.X-r, pt.Y-r)
 	lr := image.Pt(pt.X+r, pt.Y+r)
 	paint.FillShape(gtx.Ops, s.th.OnBackground, clip.Ellipse{ul, lr}.Op(gtx.Ops))
-
-	// s.LayoutClickable(gtx)
-	// s.HandleClicks(gtx)
 
 	return layout.Dimensions{Size: size}
 }
