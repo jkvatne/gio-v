@@ -6,6 +6,8 @@ import (
 	"image"
 	"image/color"
 
+	"gioui.org/io/pointer"
+
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -26,6 +28,7 @@ type EditDef struct {
 	label     string
 	value     *string
 	LabelSize unit.Sp
+	hovered   bool
 }
 
 // Edit will return a widget (layout function) for a text editor
@@ -64,6 +67,7 @@ func Lbl(s string) EditOption {
 	}
 }
 
+// Var is an option parameter to set the variable uptdated
 func Var(s *string) EditOption {
 	return func(w *EditDef) {
 		w.value = s
@@ -78,13 +82,21 @@ func (e *EditDef) setLabel(s string) {
 	e.label = s
 }
 
+func rr(gtx C, rect image.Point, th *Theme) int {
+	rr := gtx.Dp(th.BorderCornerRadius)
+	if rr > (rect.Y-1)/2 {
+		return (rect.Y - 1) / 2
+	}
+	return rr
+}
+
 func (e *EditDef) layoutEditBackground() func(gtx C) D {
 	return func(gtx C) D {
 		outline := image.Rectangle{Max: image.Point{
 			X: gtx.Constraints.Min.X,
 			Y: gtx.Constraints.Min.Y,
 		}}
-		rr := gtx.Dp(e.th.CornerRadius)
+		rr := rr(gtx, outline.Max, e.th)
 		color := e.th.Surface
 		if e.Focused() {
 			color = e.th.Background
@@ -94,11 +106,11 @@ func (e *EditDef) layoutEditBackground() func(gtx C) D {
 	}
 }
 
-func paintBorder(gtx C, outline image.Rectangle, col color.NRGBA, width unit.Dp, rr unit.Dp) {
+func paintBorder(gtx C, outline image.Rectangle, col color.NRGBA, width unit.Dp, rr int) {
 	paint.FillShape(gtx.Ops,
 		col,
 		clip.Stroke{
-			Path:  clip.UniformRRect(outline, gtx.Dp(rr)).Path(gtx.Ops),
+			Path:  clip.UniformRRect(outline, rr).Path(gtx.Ops),
 			Width: Pxr(gtx, width),
 		}.Op(),
 	)
@@ -111,13 +123,34 @@ func LayoutBorder(e *EditDef, th *Theme) func(gtx C) D {
 			X: gtx.Constraints.Min.X,
 			Y: gtx.Constraints.Min.Y,
 		}}
-		if e.Focused() {
-			paintBorder(gtx, outline, MulAlpha(th.Primary, 255), th.BorderThicknessActive, th.CornerRadius)
-			// TODO } else if e.Hovered() {
-			//	paintBorder(gtx, outline, MulAlpha(th.Primary, 140), th.BorderThickness, th.CornerRadius)
-		} else {
-			paintBorder(gtx, outline, MulAlpha(th.Primary, 50), th.BorderThickness, th.CornerRadius)
+		r := gtx.Dp(th.BorderCornerRadius)
+		if r > outline.Max.Y/2 {
+			r = outline.Max.Y / 2
 		}
+		if e.Focused() {
+			paintBorder(gtx, outline, MulAlpha(th.Primary, 255), th.BorderThicknessActive, r)
+		} else if e.hovered {
+			paintBorder(gtx, outline, MulAlpha(th.Primary, 140), th.BorderThickness, r)
+		} else {
+			paintBorder(gtx, outline, MulAlpha(th.Primary, 50), th.BorderThickness, r)
+		}
+		eventArea := clip.Rect(outline).Push(gtx.Ops)
+		for _, ev := range gtx.Events(&e.hovered) {
+			if ev, ok := ev.(pointer.Event); ok {
+				switch ev.Type {
+				case pointer.Leave:
+					e.hovered = false
+				case pointer.Enter:
+					e.hovered = true
+				}
+			}
+		}
+		pointer.InputOp{
+			Tag:   &e.hovered,
+			Types: pointer.Enter | pointer.Leave,
+		}.Add(gtx.Ops)
+		eventArea.Pop()
+
 		return D{}
 	}
 }

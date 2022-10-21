@@ -15,12 +15,38 @@ import (
 	"gioui.org/unit"
 )
 
-// Palette is the basic colors (according to Material Design), from where most other collors are derived
+type Role int
+
+const (
+	Primary Role = iota
+	Secondary
+	Tertiary
+	Error
+	Neutral
+	NeutralVariant
+)
+
+type UiFunction uint8
+
+const (
+	Surface UiFunction = iota
+	OnSurface
+	Container
+	OnContainer
+	Outline
+	Scrim
+)
+
+// Palette is the basic colors (according to Google's Material Design)
 type Palette struct {
-	Primary      color.NRGBA
-	OnPrimary    color.NRGBA
+	// Primary is the color used for important buttons
+	Primary color.NRGBA
+	// OnPrimary is used to draw on the Priamry color and should contrast it
+	OnPrimary color.NRGBA
+	// Background is the normal background color of windows. Typically white or black
+	Background color.NRGBA
+	// OnBackground is the normal drawing color for text and icons on the background
 	OnBackground color.NRGBA
-	Background   color.NRGBA
 	Surface      color.NRGBA
 	OnSurface    color.NRGBA
 	Error        color.NRGBA
@@ -45,7 +71,7 @@ type Theme struct {
 	BorderColor           color.NRGBA
 	BorderColorHovered    color.NRGBA
 	BorderColorActive     color.NRGBA
-	CornerRadius          unit.Dp
+	BorderCornerRadius    unit.Dp
 	TooltipInset          layout.Inset
 	TooltipCornerRadius   unit.Dp
 	TooltipWidth          unit.Dp
@@ -58,6 +84,7 @@ type Theme struct {
 	ListInset             layout.Inset
 	ButtonPadding         layout.Inset
 	ButtonLabelPadding    layout.Inset
+	ButtonCornerRadius    unit.Dp
 	IconSize              unit.Dp
 	// Elevation is the shadow width
 	Elevation unit.Dp
@@ -114,12 +141,12 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, p Palette) *Them
 	t.IconInset = layout.Inset{Top: v, Right: v, Bottom: v, Left: v}
 	t.FingerSize = unit.Dp(38)
 	// Borders
-	t.BorderThickness = unit.Dp(t.TextSize) * 0.13
+	t.BorderThickness = unit.Dp(t.TextSize) * 0.09
 	t.BorderThicknessActive = unit.Dp(t.TextSize) * 0.18
 	t.BorderColor = WithAlpha(t.OnBackground, 200)
 	t.BorderColorHovered = WithAlpha(t.OnBackground, 231)
 	t.BorderColorActive = t.Primary
-	t.CornerRadius = unit.Dp(t.TextSize) * 0.2
+	t.BorderCornerRadius = unit.Dp(t.TextSize) * 0.2
 	// Shadow
 	t.Elevation = unit.Dp(t.TextSize) * 0.5
 	// Text
@@ -130,6 +157,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, p Palette) *Them
 	t.EditPadding = layout.Inset{Top: v * 2.0, Right: v * 2.0, Bottom: v, Left: v * 2.0}
 	// Buttons
 	t.ButtonPadding = t.LabelPadding
+	t.ButtonCornerRadius = unit.Dp(t.TextSize) * 10.5
 	t.ButtonLabelPadding = layout.Inset{Top: v, Right: v * 3.0, Bottom: v, Left: v * 3.0}
 	t.IconSize = v * 3
 	// Tooltip

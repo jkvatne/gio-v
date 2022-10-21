@@ -27,16 +27,18 @@ import (
 )
 
 var (
-	currentTheme *wid.Theme  // the theme selected
-	win          *app.Window // The main window
-	form         layout.Widget
-	name         string
-	address      string
-	group        = new(widget.Enum)
-	homeIcon     *widget.Icon
-	checkIcon    *widget.Icon
-	green        = false // the state variable for the button color
-	darkMode     = false
+	currentTheme   *wid.Theme  // the theme selected
+	win            *app.Window // The main window
+	form           layout.Widget
+	name           string
+	address        string
+	group          = new(widget.Enum)
+	homeIcon       *widget.Icon
+	checkIcon      *widget.Icon
+	greenFlag      = false // the state variable for the button color
+	darkMode       = false
+	dropDownValue1 = 1
+	dropDownValue2 = 1
 )
 
 func main() {
@@ -92,12 +94,17 @@ func onSwitchMode(v bool) {
 }
 
 func onClick() {
-	green = !green
-	if green {
+	greenFlag = !greenFlag
+	if greenFlag {
 		currentTheme.Primary = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
 	} else {
-		currentTheme.Primary = color.NRGBA{A: 0xff, R: 0x00, G: 0x00, B: 0xff}
+		currentTheme.Primary = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
 	}
+}
+
+func swHandler(b bool) {
+	greenFlag = !b
+	onClick()
 }
 
 func onModeChange(mode string) {
@@ -138,6 +145,14 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.Edit(th, wid.Hint("")),
 		),
 		wid.Row(th, nil, nil,
+			wid.Label(th, "A switch"),
+			wid.Switch(th, &greenFlag, swHandler),
+			wid.Label(th, " "),
+			wid.Label(th, " "),
+			wid.Label(th, "Another switch"),
+			wid.Switch(th, &greenFlag, swHandler),
+		),
+		wid.Row(th, nil, nil,
 			wid.RadioButton(th, group, "windowed", "Windowed", wid.Do(onModeChange)),
 			wid.RadioButton(th, group, "fullscreen", "Fullscreen", wid.Do(onModeChange)),
 			wid.RadioButton(th, group, "minimized", "Minimized", wid.Do(onModeChange)),
@@ -148,13 +163,19 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.Checkbox(th, "Checkbox2", &darkMode, onSwitchMode),
 			wid.Checkbox(th, "Checkbox3", &darkMode, onSwitchMode),
 		),
-		wid.Row(th, nil, nil,
+		wid.Separator(th, unit.Dp(1.0)),
+		wid.Row(th, nil, []float32{0.3, 1, 1, 1, 1, 1},
 			wid.RoundButton(th, homeIcon, wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")).Layout,
 			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Fg(0x228822), wid.Hint("This is another hint")).Layout,
 			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Color(wid.RGB(0xffff00))).Layout,
 			wid.Button(th, "Change color", wid.Handler(onClick), wid.W(150)).Layout,
 			wid.TextButton(th, "Text button").Layout,
 			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")).Layout,
+		),
+		wid.Separator(th, unit.Dp(1.0)),
+		wid.Row(th, nil, nil,
+			wid.DropDown(th, &dropDownValue1, []string{"Option 1 with very long text", "Option 2", "Option 3"}).Layout,
+			wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}).Layout,
 		),
 	)
 }

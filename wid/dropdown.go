@@ -3,6 +3,8 @@ package wid
 import (
 	"image"
 
+	"gioui.org/io/semantic"
+
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -18,7 +20,7 @@ import (
 // DropDownStyle is the struct for dropdown lists.
 type DropDownStyle struct {
 	Widget
-	// Clickable
+	widget.Clickable
 	disabler   *bool
 	disabled   bool
 	Font       text.Font
@@ -95,14 +97,12 @@ func (b *DropDownStyle) layout(gtx C) D {
 	)
 
 	oldVisible := b.Visible
-	/*
-		if !b.Focused() {
-			b.Visible = false
-		}
-		for b.Clicked() {
-			b.Visible = !b.Visible
-		}
-	*/
+	if !b.Focused() {
+		b.Visible = false
+	}
+	for b.Clicked() {
+		b.Visible = !b.Visible
+	}
 	if b.Visible {
 		if !oldVisible {
 			b.setHovered()
@@ -128,7 +128,10 @@ func (b *DropDownStyle) layout(gtx C) D {
 		b.setHovered()
 	}
 	pointer.CursorPointer.Add(gtx.Ops)
-	return dims
+	return b.Clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		semantic.Switch.Add(gtx.Ops)
+		return dims
+	})
 }
 
 func (b *DropDownStyle) setHovered() {
@@ -191,24 +194,18 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 // LayoutBackground draws the background.
 func (b *DropDownStyle) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
-		// if b.Focused() || b.Hovered() {
-		//	Shadow(gtx.Dp(b.th.CornerRadius), gtx.Dp(b.th.Elevation)).Layout(gtx)
-		// }
-		rr := gtx.Dp(b.th.CornerRadius)
-		if rr > gtx.Constraints.Min.Y/2 {
-			rr = gtx.Constraints.Min.Y / 2
+		rr := rr(gtx, gtx.Constraints.Min, b.th)
+		if b.Focused() || b.Hovered() {
+			Shadow(rr, gtx.Dp(b.th.Elevation)).Layout(gtx)
 		}
 		outline := image.Rectangle{Max: image.Point{
-			X: gtx.Constraints.Min.X,
-			Y: gtx.Constraints.Min.Y,
+			X: gtx.Constraints.Min.X - 2,
+			Y: gtx.Constraints.Min.Y - 2,
 		}}
 		paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
-		// LayoutBorder(&b.Clickable, b.th)(gtx)
+		paintBorder(gtx, outline, b.th.OnBackground, b.th.BorderThickness, rr)
 		oldIndex := *b.index
-		// b.LayoutClickable(gtx)
-		// b.HandleClicks(gtx)
-		// b.HandleKeys(gtx)
 		if *b.index > len(b.hovered) {
 			*b.index = len(b.hovered) - 1
 		}

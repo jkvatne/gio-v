@@ -265,7 +265,11 @@ func drawInk(gtx C, c widget.Press) {
 
 func (b *ButtonDef) layoutBackground() func(gtx C) D {
 	return func(gtx C) D {
-		rr := gtx.Dp(b.th.CornerRadius)
+		rr := gtx.Dp(b.th.ButtonCornerRadius)
+		if rr > gtx.Constraints.Min.Y/2 {
+			rr = gtx.Constraints.Min.Y / 2
+		}
+
 		if b.Style == Round {
 			rr = gtx.Constraints.Min.Y / 2
 		}
@@ -291,15 +295,15 @@ func (b *ButtonDef) layoutBackground() func(gtx C) D {
 		case b.Style == Outlined && gtx.Queue == nil:
 			// Disabled Outlined button. Text and outline is grey when disabled
 			paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			paintBorder(gtx, outline, Disabled(b.fg), b.th.BorderThickness, b.th.CornerRadius)
+			paintBorder(gtx, outline, Disabled(b.fg), b.th.BorderThickness, rr)
 		case b.Style == Outlined && (b.Button.Hovered() || b.Button.Focused()):
 			// Outline button, hovered/focused
 			paint.FillShape(gtx.Ops, Hovered(b.th.Background), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			paintBorder(gtx, outline, b.fg, b.th.BorderThickness, b.th.CornerRadius)
+			paintBorder(gtx, outline, b.fg, b.th.BorderThickness, rr)
 		case b.Style == Outlined:
 			// Outline button, not disabled
 			paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			paintBorder(gtx, outline, b.fg, b.th.BorderThickness, b.th.CornerRadius)
+			paintBorder(gtx, outline, b.fg, b.th.BorderThickness, rr)
 		case (b.Style == Contained || b.Style == Round) && gtx.Queue == nil:
 			// Disabled contained/round button.
 			paint.FillShape(gtx.Ops, Disabled(b.bg), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))

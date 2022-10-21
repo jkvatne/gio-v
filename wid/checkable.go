@@ -38,19 +38,16 @@ func (c *checkable) layout(gtx layout.Context, checked, hovered bool) layout.Dim
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 			return layout.Stack{Alignment: layout.Center}.Layout(gtx,
 				layout.Stacked(func(gtx layout.Context) layout.Dimensions {
-					size := gtx.Dp(c.Size) * 4 / 3
+					size := gtx.Dp(c.Size) * 6 / 7
 					dims := layout.Dimensions{
 						Size: image.Point{X: size, Y: size},
 					}
 					if !hovered {
 						return dims
 					}
-
 					background := MulAlpha(c.IconColor, 70)
-
 					b := image.Rectangle{Max: image.Pt(size, size)}
 					paint.FillShape(gtx.Ops, background, clip.Ellipse(b).Op(gtx.Ops))
-
 					return dims
 				}),
 				layout.Stacked(func(gtx layout.Context) layout.Dimensions {

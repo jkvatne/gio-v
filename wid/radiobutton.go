@@ -5,6 +5,7 @@ package wid
 import (
 	"gioui.org/io/semantic"
 	"gioui.org/layout"
+	"gioui.org/unit"
 	"gioui.org/widget"
 )
 
@@ -24,8 +25,8 @@ func RadioButton(th *Theme, group *widget.Enum, key string, label string, option
 			Label:              label,
 			TextColor:          th.OnSurface,
 			IconColor:          th.OnBackground,
-			TextSize:           th.TextSize * 14.0 / 16.0,
-			Size:               25,
+			TextSize:           th.TextSize,
+			Size:               unit.Dp(th.TextSize) * 1.5,
 			shaper:             th.Shaper,
 			checkedStateIcon:   th.RadioChecked,
 			uncheckedStateIcon: th.RadioUnchecked,
