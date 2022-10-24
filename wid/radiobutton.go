@@ -22,8 +22,6 @@ func RadioButton(th *Theme, group *widget.Enum, key string, label string, option
 	r := RadioButtonStyle{
 		checkable: checkable{
 			Label:              label,
-			TextColor:          th.OnSurface,
-			IconColor:          th.OnBackground,
 			TextSize:           th.TextSize,
 			Size:               unit.Dp(th.TextSize) * 1.5,
 			shaper:             th.Shaper,
@@ -33,6 +31,7 @@ func RadioButton(th *Theme, group *widget.Enum, key string, label string, option
 		Key:   key,
 		Group: group,
 	}
+	r.fgColor = th.Fg(Surface)
 	for _, option := range options {
 		option.apply(&r)
 	}

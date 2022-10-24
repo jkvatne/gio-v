@@ -10,15 +10,30 @@ import (
 	"gioui.org/unit"
 )
 
+type UiState uint8
+
+const (
+	DisabledState UiState = iota
+	EnabledState
+	HoveredState
+	FocusedState
+	PressedState
+)
+
 // Base is tha base structure for widgets. It contains variables that (almost) all widgets share
 type Base struct {
-	th       *Theme
-	hint     string
-	padding  layout.Inset
-	onChange func()
-	width    unit.Dp
-	fgColor  color.NRGBA
-	bgColor  color.NRGBA
+	th           *Theme
+	state        UiState
+	hint         string
+	padding      layout.Inset
+	onChange     func()
+	disabled     bool
+	disabler     *bool
+	width        unit.Dp
+	role         UIRole
+	cornerRadius unit.Dp
+	fgColor      color.NRGBA
+	bgColor      color.NRGBA
 }
 
 // BaseIf is the interface functions for widgets, used by options to set parameters
@@ -26,9 +41,11 @@ type BaseIf interface {
 	setWidth(width float32)
 	setHint(hint string)
 	setPadding(padding layout.Inset)
-	setFgColor(c color.NRGBA)
+	setRole(role UIRole)
 	setBgColor(c color.NRGBA)
+	setFgColor(c color.NRGBA)
 	setHandler(h func())
+	getTheme() *Theme
 }
 
 // BaseOption is a type for optional parameters when creating widgets
@@ -51,12 +68,20 @@ func (wid BaseOption) apply(cfg interface{}) {
 	wid(cc)
 }
 
+func (wid *Base) getTheme() *Theme {
+	return wid.th
+}
+
 func (wid *Base) setWidth(width float32) {
 	wid.width = unit.Dp(width)
 }
 
 func (wid *Base) setHint(hint string) {
 	wid.hint = hint
+}
+
+func (wid *Base) setRole(role UIRole) {
+	wid.role = role
 }
 
 func (wid *Base) setPadding(padding layout.Inset) {
@@ -123,9 +148,17 @@ func Fg(c color.NRGBA) BaseOption {
 }
 
 // Bg is an option parameter to set widget background color
-func Bg(c uint32) BaseOption {
+func Bg(c color.NRGBA) BaseOption {
 	return func(w BaseIf) {
-		w.setBgColor(RGB(c))
+		w.setBgColor(c)
+	}
+}
+
+func Role(r UIRole) BaseOption {
+	return func(w BaseIf) {
+		w.setBgColor(w.getTheme().Bg(r))
+		w.setFgColor(w.getTheme().Fg(r))
+		w.setRole(r)
 	}
 }
 

@@ -11,7 +11,6 @@ import (
 
 // CheckBoxDef defines a checkbox widget
 type CheckBoxDef struct {
-	Base
 	checkable
 	CheckBox *widget.Bool
 	handler  func(b bool)
@@ -24,8 +23,6 @@ func Checkbox(th *Theme, label string, options ...Option) func(gtx C) D {
 		CheckBox: new(widget.Bool),
 		checkable: checkable{
 			Label:              label,
-			TextColor:          th.Palette.OnBackground,
-			IconColor:          th.Palette.OnBackground,
 			TextSize:           th.TextSize,
 			Size:               unit.Dp(th.TextSize) * 1.5,
 			shaper:             th.Shaper,

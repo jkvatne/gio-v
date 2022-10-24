@@ -152,7 +152,7 @@ func (s *SliderStyle) Layout(gtx C) D {
 	gtx.Constraints.Min = gtx.Constraints.Min.Add(s.axis.Convert(image.Pt(0, sizeCross)))
 	thumbPos := thumbRadius + int(s.pos*(float32(sizeMain-thumbRadius*5)))
 
-	color := WithAlpha(s.th.OnBackground, 175)
+	color := WithAlpha(s.th.Fg(Canvas), 175)
 	if gtx.Queue == nil {
 		color = Disabled(color)
 	}
@@ -183,14 +183,14 @@ func (s *SliderStyle) Layout(gtx C) D {
 		r := int(float32(thumbRadius) * 1.35)
 		ul := image.Pt(pt.X-r, pt.Y-r)
 		lr := image.Pt(pt.X+r, pt.Y+r)
-		paint.FillShape(gtx.Ops, MulAlpha(s.th.OnBackground, 88), clip.Ellipse{Min: ul, Max: lr}.Op(gtx.Ops))
+		paint.FillShape(gtx.Ops, MulAlpha(s.th.Fg(Canvas), 88), clip.Ellipse{Min: ul, Max: lr}.Op(gtx.Ops))
 	} else {
-		color = s.th.OnBackground
+		color = s.th.Fg(Canvas)
 	}
 	r := thumbRadius
 	ul := image.Pt(pt.X-r, pt.Y-r)
 	lr := image.Pt(pt.X+r, pt.Y+r)
-	paint.FillShape(gtx.Ops, s.th.OnBackground, clip.Ellipse{ul, lr}.Op(gtx.Ops))
+	paint.FillShape(gtx.Ops, s.th.Fg(Canvas), clip.Ellipse{ul, lr}.Op(gtx.Ops))
 
 	return layout.Dimensions{Size: size}
 }

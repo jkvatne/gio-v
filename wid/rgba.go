@@ -3,7 +3,9 @@
 package wid
 
 import (
+	"fmt"
 	"image/color"
+	"math"
 
 	"gioui.org/unit"
 )
@@ -17,6 +19,8 @@ var (
 	White  = RGB(0xFFFFFF)
 	Black  = RGB(0x000000)
 )
+
+const inf = 1e6
 
 // DeEmphasis will change a color to a less prominent color
 // In light mode, colors will be lighter, in dark mode, colors will be darker
@@ -66,7 +70,7 @@ func Hovered(c color.NRGBA) (d color.NRGBA) {
 	}
 }
 
-// Interpolate returns a color in between given colors a and b, depending on progress
+// Interpolate returns a color in between given colors a and b, depending on progress from 0.0 to 1.0
 func Interpolate(a, b color.NRGBA, progress float32) color.NRGBA {
 	var out color.NRGBA
 	out.R = uint8(int16(a.R) - int16(float32(int16(a.R)-int16(b.R))*progress))
@@ -147,4 +151,102 @@ func sign(n int) int {
 	}
 }
 
-const inf = 1e6
+// Internal implementation converting RGB to HSL, HSV, or HSI.
+// Basically a direct implementation of this: https://en.wikipedia.org/wiki/HSL_and_HSV#General_approach
+func Rgb2hsl(c color.NRGBA) (float64, float64, float64) {
+	var h, s, lvi float64
+	var huePrime float64
+	r := float64(c.R) / 256.0
+	g := float64(c.G) / 256.0
+	b := float64(c.B) / 256.0
+	max := math.Max(math.Max(r, g), b)
+	min := math.Min(math.Min(r, g), b)
+	chroma := (max - min)
+	if chroma == 0 {
+		h = 0
+	} else {
+		if r == max {
+			huePrime = math.Mod(((g - b) / chroma), 6)
+		} else if g == max {
+			huePrime = ((b - r) / chroma) + 2
+
+		} else if b == max {
+			huePrime = ((r - g) / chroma) + 4
+
+		}
+
+		h = huePrime * 60
+	}
+	if r == g && g == b {
+		lvi = r
+	} else {
+		lvi = (max + min) / 2
+	}
+	if lvi == 1 {
+		s = 0
+	} else {
+		s = (chroma / (1 - math.Abs(2*lvi-1)))
+	}
+
+	if math.IsNaN(s) {
+		s = 0
+	}
+
+	if h < 0 {
+		h = 360 + h
+	}
+
+	return h, s, lvi
+}
+
+// Internal HSV->RGB function for doing conversions using float inputs (saturation, value) and
+// outputs (for R, G, and B).
+// Basically a direct implementation of this: https://en.wikipedia.org/wiki/HSL_and_HSV#Converting_to_RGB
+func Hsl2rgb(hueDegrees float64, saturation float64, light float64) color.NRGBA {
+	var r, g, b float64
+	hueDegrees = math.Mod(hueDegrees, 360)
+	if saturation == 0 {
+		r = light
+		g = light
+		b = light
+	} else {
+		var chroma float64
+		var m float64
+		chroma = (1 - math.Abs((2*light)-1)) * saturation
+		hueSector := hueDegrees / 60
+		intermediate := chroma * (1 - math.Abs(math.Mod(hueSector, 2)-1))
+		switch {
+		case hueSector >= 0 && hueSector <= 1:
+			r = chroma
+			g = intermediate
+			b = 0
+		case hueSector > 1 && hueSector <= 2:
+			r = intermediate
+			g = chroma
+			b = 0
+		case hueSector > 2 && hueSector <= 3:
+			r = 0
+			g = chroma
+			b = intermediate
+		case hueSector > 3 && hueSector <= 4:
+			r = 0
+			g = intermediate
+			b = chroma
+		case hueSector > 4 && hueSector <= 5:
+			r = intermediate
+			g = 0
+			b = chroma
+		case hueSector > 5 && hueSector <= 6:
+			r = chroma
+			g = 0
+			b = intermediate
+		default:
+			panic(fmt.Errorf("hue input %v yielded sector %v", hueDegrees, hueSector))
+		}
+		m = light - (chroma / 2)
+		r += m
+		g += m
+		b += m
+	}
+	return color.NRGBA{R: uint8(r*255 + 0.4), G: uint8(g*255 + 0.4), B: uint8(b*255 + 0.4), A: 255}
+}

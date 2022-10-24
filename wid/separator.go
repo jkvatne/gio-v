@@ -21,7 +21,7 @@ type SeparatorStyle struct {
 func Separator(th *Theme, thickness unit.Dp, options ...Option) layout.Widget {
 	s := SeparatorStyle{}
 	s.thickness = thickness
-	s.fgColor = th.OnBackground
+	s.fgColor = th.Fg(Canvas)
 	s.Apply(options...)
 
 	return func(gtx C) D {

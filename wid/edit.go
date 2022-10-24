@@ -21,14 +21,16 @@ import (
 type EditDef struct {
 	Base
 	widget.Editor
-	shaper    text.Shaper
-	alignment layout.Alignment
-	CharLimit uint
-	font      text.Font
-	label     string
-	value     *string
-	LabelSize unit.Sp
-	hovered   bool
+	shaper         text.Shaper
+	alignment      layout.Alignment
+	outlineColor   color.NRGBA
+	selectionColor color.NRGBA
+	CharLimit      uint
+	font           text.Font
+	label          string
+	value          *string
+	LabelSize      unit.Sp
+	hovered        bool
 }
 
 // Edit will return a widget (layout function) for a text editor
@@ -40,6 +42,10 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e.SingleLine = true
 	e.width = unit.Dp(5000) // Default to max width that is possible
 	e.padding = th.EditPadding
+	e.outlineColor = th.Fg(Outline)
+	e.selectionColor = MulAlpha(th.Bg(Primary), 60)
+	e.fgColor = th.Fg(Canvas)
+	e.bgColor = th.Bg(Canvas)
 	// Read in options to change from default values to something else.
 	for _, option := range options {
 		option.apply(e)
@@ -97,9 +103,9 @@ func (e *EditDef) layoutEditBackground() func(gtx C) D {
 			Y: gtx.Constraints.Min.Y,
 		}}
 		rr := rr(gtx, e.th.BorderCornerRadius, outline.Max.Y)
-		color := e.th.Surface
+		color := MulAlpha(e.fgColor, 200)
 		if e.Focused() {
-			color = e.th.Background
+			color = e.bgColor
 		}
 		paint.FillShape(gtx.Ops, color, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		return D{}
@@ -128,11 +134,11 @@ func LayoutBorder(e *EditDef, th *Theme) func(gtx C) D {
 			r = outline.Max.Y / 2
 		}
 		if e.Focused() {
-			paintBorder(gtx, outline, MulAlpha(th.Primary, 255), th.BorderThicknessActive, r)
+			paintBorder(gtx, outline, e.outlineColor, th.BorderThicknessActive, r)
 		} else if e.hovered {
-			paintBorder(gtx, outline, MulAlpha(th.Primary, 140), th.BorderThickness, r)
+			paintBorder(gtx, outline, e.outlineColor, (th.BorderThickness+th.BorderThicknessActive)/2, r)
 		} else {
-			paintBorder(gtx, outline, MulAlpha(th.Primary, 50), th.BorderThickness, r)
+			paintBorder(gtx, outline, e.outlineColor, th.BorderThickness, r)
 		}
 		eventArea := clip.Rect(outline).Push(gtx.Ops)
 		for _, ev := range gtx.Events(&e.hovered) {
@@ -182,7 +188,7 @@ func (e *EditDef) layLabel() layout.Widget {
 				return D{}
 			}
 			gtx.Constraints.Min.X = gtx.Sp(e.LabelSize)
-			paint.ColorOp{Color: e.th.OnBackground}.Add(gtx.Ops)
+			paint.ColorOp{Color: e.th.Fg(Canvas)}.Add(gtx.Ops)
 			w := widget.Label{Alignment: text.End}.Layout(gtx, e.shaper, e.font, e.th.TextSize, e.label)
 			return w
 		})
@@ -209,15 +215,15 @@ func (e *EditDef) layoutEdit() func(gtx C) D {
 		dims = e.Editor.Layout(gtx, e.shaper, e.font, e.th.TextSize, nil)
 		disabled := gtx.Queue == nil
 		if e.Editor.Len() > 0 {
-			paint.ColorOp{Color: e.th.SelectionColor}.Add(gtx.Ops)
+			paint.ColorOp{Color: e.selectionColor}.Add(gtx.Ops)
 			e.Editor.PaintSelection(gtx)
-			paint.ColorOp{Color: e.th.OnBackground}.Add(gtx.Ops)
+			paint.ColorOp{Color: e.fgColor}.Add(gtx.Ops)
 			e.Editor.PaintText(gtx)
 		} else {
 			call.Add(gtx.Ops)
 		}
 		if !disabled && e.Editor.Len() > 0 {
-			paint.ColorOp{Color: e.th.OnBackground}.Add(gtx.Ops)
+			paint.ColorOp{Color: e.fgColor}.Add(gtx.Ops)
 			e.Editor.PaintCaret(gtx)
 		}
 		return dims

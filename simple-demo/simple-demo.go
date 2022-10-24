@@ -7,6 +7,7 @@ package main
 // gio-v is maintained by Jan Kåre Vatne (jkvatne@online.no)
 
 import (
+	"fmt"
 	"gio-v/wid"
 	"image/color"
 	"os"
@@ -44,11 +45,14 @@ var (
 )
 
 func main() {
+	c := wid.RGB(0x123456)
+	d := wid.Hsl2rgb(wid.Rgb2hsl(c))
+	fmt.Printf("D=%d", d)
 	checkIcon, _ = widget.NewIcon(icons.ActionCheckCircle)
 	homeIcon, _ = widget.NewIcon(icons.ActionHome)
 
 	go func() {
-		currentTheme = wid.NewTheme(gofont.Collection(), 14, wid.MaterialDesignLight)
+		currentTheme = wid.NewTheme(gofont.Collection(), 14)
 		win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
 		form = demo(currentTheme)
 		for {
@@ -70,7 +74,8 @@ func handleFrameEvents(e system.FrameEvent) {
 	var ops op.Ops
 	gtx := layout.NewContext(&ops, e)
 	// Set background color
-	paint.Fill(gtx.Ops, currentTheme.Background)
+	c := currentTheme.Bg(wid.Canvas)
+	paint.Fill(gtx.Ops, c)
 	// A hack to fetch mouse position and window size so we can avoid
 	// tooltips going outside the main window area
 	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
@@ -86,33 +91,24 @@ func handleFrameEvents(e system.FrameEvent) {
 }
 
 func onSwitchMode() {
-	s := unit.Sp(16.0)
-	if currentTheme != nil {
-		s = currentTheme.TextSize
-	}
-	if !darkMode {
-		currentTheme = wid.NewTheme(gofont.Collection(), s, wid.MaterialDesignLight)
-	} else {
-		currentTheme = wid.NewTheme(gofont.Collection(), s, wid.MaterialDesignDark)
-	}
+	currentTheme.DarkMode = darkMode
 	form = demo(currentTheme)
 }
 
 func onClick() {
 	greenFlag = !greenFlag
 	if greenFlag {
-		currentTheme.Primary = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
+		currentTheme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
 	} else {
-		currentTheme.Primary = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
+		currentTheme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
 	}
 }
 
-func swHandler(b bool) {
-	greenFlag = b
+func swColor() {
 	if greenFlag {
-		currentTheme.Primary = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
+		currentTheme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
 	} else {
-		currentTheme.Primary = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
+		currentTheme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
 	}
 }
 
@@ -134,6 +130,30 @@ func onWinChange() {
 func demo(th *wid.Theme) layout.Widget {
 	return wid.List(th, wid.Occupy,
 		wid.Label(th, "Demo page", wid.Middle(), wid.Large(), wid.Bold()),
+		wid.Label(th, "Primary", wid.Large(), wid.Role(wid.Primary)),
+		wid.Label(th, "Secondary", wid.Large(), wid.Role(wid.Secondary)),
+		wid.Label(th, "Tertiary", wid.Large(), wid.Role(wid.Tertiary)),
+		wid.Label(th, "Canvas", wid.Large(), wid.Role(wid.Canvas)),
+		wid.Label(th, "Error", wid.Large(), wid.Role(wid.Error)),
+		wid.Label(th, "Surface", wid.Large(), wid.Role(wid.Surface)),
+		wid.Label(th, "PrimaryContainer", wid.Large(), wid.Role(wid.PrimaryContainer)),
+		wid.Label(th, "SecondaryContainer", wid.Large(), wid.Role(wid.SecondaryContainer)),
+		wid.Label(th, "ErrorContainer", wid.Large(), wid.Role(wid.ErrorContainer)),
+		wid.Row(th, nil, nil,
+			wid.Label(th, "00", wid.Large(), wid.Fg(wid.White), wid.Bg(wid.Tone(th.PrimaryColor, 00))),
+			wid.Label(th, "10", wid.Large(), wid.Fg(wid.White), wid.Bg(wid.Tone(th.PrimaryColor, 10))),
+			wid.Label(th, "20", wid.Large(), wid.Fg(wid.White), wid.Bg(wid.Tone(th.PrimaryColor, 20))),
+			wid.Label(th, "30", wid.Large(), wid.Fg(wid.White), wid.Bg(wid.Tone(th.PrimaryColor, 30))),
+			wid.Label(th, "40", wid.Large(), wid.Fg(wid.White), wid.Bg(wid.Tone(th.PrimaryColor, 40))),
+			wid.Label(th, "50", wid.Large(), wid.Fg(wid.White), wid.Bg(wid.Tone(th.PrimaryColor, 50))),
+			wid.Label(th, "60", wid.Large(), wid.Fg(wid.White), wid.Bg(wid.Tone(th.PrimaryColor, 60))),
+			wid.Label(th, "70", wid.Large(), wid.Fg(wid.Black), wid.Bg(wid.Tone(th.PrimaryColor, 70))),
+			wid.Label(th, "80", wid.Large(), wid.Fg(wid.Black), wid.Bg(wid.Tone(th.PrimaryColor, 80))),
+			wid.Label(th, "90", wid.Large(), wid.Fg(wid.Black), wid.Bg(wid.Tone(th.PrimaryColor, 90))),
+			wid.Label(th, "95", wid.Large(), wid.Fg(wid.Black), wid.Bg(wid.Tone(th.PrimaryColor, 95))),
+			wid.Label(th, "99", wid.Large(), wid.Fg(wid.Black), wid.Bg(wid.Tone(th.PrimaryColor, 99))),
+			wid.Label(th, "100", wid.Large(), wid.Fg(wid.Black), wid.Bg(wid.Tone(th.PrimaryColor, 100))),
+		),
 		// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
 		wid.Row(th, nil, nil,
 			wid.Edit(th, wid.Hint("Value 3")),
@@ -156,11 +176,11 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Slider(th, &sliderValue, 0, 100),
 		wid.Row(th, nil, nil,
 			wid.Label(th, "A switch"),
-			wid.Switch(th, &greenFlag, swHandler),
+			wid.Switch(th, &greenFlag, wid.Do(swColor)),
 			wid.Label(th, " "),
 			wid.Label(th, " "),
 			wid.Label(th, "Another switch"),
-			wid.Switch(th, &greenFlag, swHandler),
+			wid.Switch(th, &greenFlag, wid.Do(swColor)),
 		),
 		wid.Row(th, nil, nil,
 			wid.RadioButton(th, group, "windowed", "Windowed", wid.Do(onWinChange)),

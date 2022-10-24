@@ -3,7 +3,11 @@
 package wid
 
 import (
-	"gioui.org/layout"
+	"image"
+
+	"gioui.org/op"
+
+	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
@@ -20,25 +24,12 @@ type LabelDef struct {
 	// MaxLines limits the number of lines. Zero means no limit.
 	MaxLines int
 	TextSize unit.Sp
-	padding  layout.Inset
 	shaper   text.Shaper
 	Stringer func() string
 }
 
 // LabelOption is options specific to Edits.
 type LabelOption func(w *LabelDef)
-
-func Str(s string) LabelOption {
-	return func(d *LabelDef) {
-		d.Stringer = func() string { return s }
-	}
-}
-
-func Val(s func() string) LabelOption {
-	return func(d *LabelDef) {
-		d.Stringer = s
-	}
-}
 
 // Bold is an option parameter to set the widget hint (tooltip).
 func Bold() LabelOption {
@@ -97,10 +88,11 @@ func (e LabelOption) apply(cfg interface{}) {
 func (l LabelDef) Layout(gtx C) D {
 	paint.ColorOp{Color: l.fgColor}.Add(gtx.Ops)
 	tl := widget.Label{Alignment: l.Alignment, MaxLines: l.MaxLines}
-	return tl.Layout(gtx, l.shaper, l.Font, l.TextSize, l.Stringer())
+	dims := tl.Layout(gtx, l.shaper, l.Font, l.TextSize, l.Stringer())
+	return dims
 }
 
-// Label  returns a widget for a label.
+// Value returns a widget for a value given by stringer function
 func Value(th *Theme, s func() string, options ...Option) func(gtx C) D {
 	w := LabelDef{
 		Stringer:  s,
@@ -108,222 +100,31 @@ func Value(th *Theme, s func() string, options ...Option) func(gtx C) D {
 		shaper:    th.Shaper,
 		Alignment: text.Start,
 		Font:      text.Font{Weight: text.Medium, Style: text.Regular},
-		padding:   th.LabelPadding,
 		MaxLines:  1,
 	}
+	w.padding = th.LabelPadding
 	w.th = th
-	w.fgColor = th.OnBackground
+	w.fgColor = th.Fg(Canvas)
+	w.bgColor = th.Bg(Canvas)
 	for _, option := range options {
 		option.apply(&w)
 	}
 
 	return func(gtx C) D {
-		return w.padding.Layout(gtx, func(gtx C) D {
+		macro := op.Record(gtx.Ops)
+		dims := w.padding.Layout(gtx, func(gtx C) D {
 			return w.Layout(gtx)
 		})
-	}
-}
-
-// Label  returns a widget for a label.
-func Label(th *Theme, str string, options ...LabelOption) func(gtx C) D {
-	w := LabelDef{
-		Stringer:  func() string { return str },
-		TextSize:  th.TextSize,
-		shaper:    th.Shaper,
-		Alignment: text.Start,
-		Font:      text.Font{Weight: text.Medium, Style: text.Regular},
-		padding:   th.LabelPadding,
-		MaxLines:  1,
-	}
-	w.th = th
-	w.fgColor = th.OnBackground
-	for _, option := range options {
-		option.apply(&w)
-	}
-	return func(gtx C) D {
-		return w.padding.Layout(gtx, func(gtx C) D {
-			return w.Layout(gtx)
-		})
-	}
-}
-
-/*
-// screenPos describes a character position (in text line and column numbers,
-// not pixels): Y = line number, X = rune column.
-type screenPos image.Point
-
-const inf = 1e6
-
-func posIsAbove(lines []text.Line, pos combinedPos, y int) bool {
-	line := lines[pos.lineCol.Y]
-	return pos.y+line.Bounds.Max.Y.Ceil() < y
-}
-
-func posIsBelow(lines []text.Line, pos combinedPos, y int) bool {
-	line := lines[pos.lineCol.Y]
-	return pos.y+line.Bounds.Min.Y.Floor() > y
-}
-
-func clipLine(lines []text.Line, alignment text.Alignment, width int, clip image.Rectangle, linePos combinedPos) (start combinedPos, end combinedPos) {
-	// Seek to first (potentially) visible column.
-	lineIdx := linePos.lineCol.Y
-	line := lines[lineIdx]
-	// runeWidth is the width of the widest rune in line.
-	runeWidth := (line.Bounds.Max.X - line.Width).Ceil()
-	lineStart := fixed.I(clip.Min.X - runeWidth)
-	lineEnd := fixed.I(clip.Max.X + runeWidth)
-
-	flip := line.Layout.Direction.Progression() == system.TowardOrigin
-	if flip {
-		lineStart, lineEnd = lineEnd, lineStart
-	}
-	q := combinedPos{y: start.y, x: lineStart}
-	start, _ = seekPosition(lines, alignment, width, linePos, q, 0)
-	// Seek to first invisible column after start.
-	q = combinedPos{y: start.y, x: lineEnd}
-	end, _ = seekPosition(lines, alignment, width, start, q, 0)
-	if flip {
-		start, end = end, start
-	}
-
-	return start, end
-}
-
-func subLayout(line text.Line, start, end combinedPos) text.Layout {
-	if start.lineCol.X == line.Layout.Runes.Count {
-		return text.Layout{}
-	}
-
-	startCluster := clusterIndexFor(line, start.lineCol.X, start.clusterIndex)
-	endCluster := clusterIndexFor(line, end.lineCol.X, end.clusterIndex)
-	if startCluster > endCluster {
-		startCluster, endCluster = endCluster, startCluster
-	}
-	return line.Layout.Slice(startCluster, endCluster)
-}
-
-func firstPos(line text.Line, alignment text.Alignment, width int) combinedPos {
-	p := combinedPos{
-		x: align(alignment, line.Layout.Direction, line.Width, width),
-		y: line.Ascent.Ceil(),
-	}
-
-	if line.Layout.Direction.Progression() == system.TowardOrigin {
-		p.x += line.Width
-	}
-	return p
-}
-
-func (p1 screenPos) Less(p2 screenPos) bool {
-	return p1.Y < p2.Y || (p1.Y == p2.Y && p1.X < p2.X)
-}
-
-func (l aLabel) Layout(gtx layout.Context, s text.Shaper, font text.Font, size unit.Sp, txt string) layout.Dimensions {
-	cs := gtx.Constraints
-	textSize := fixed.I(gtx.Sp(size))
-	lines := s.LayoutString(font, textSize, cs.Max.X, gtx.Locale, txt)
-	if max := l.MaxLines; max > 0 && len(lines) > max {
-		lines = lines[:max]
-	}
-	dims := linesDimens(lines)
-	dims.Size = cs.Constrain(dims.Size)
-	if len(lines) == 0 {
+		call := macro.Stop()
+		defer clip.Rect(image.Rectangle{Max: dims.Size}).Push(gtx.Ops).Pop()
+		paint.Fill(gtx.Ops, w.bgColor)
+		call.Add(gtx.Ops)
 		return dims
 	}
-	cl := textPadding(lines)
-	cl.Max = cl.Max.Add(dims.Size)
-	defer clip.Rect(cl).Push(gtx.Ops).Pop()
-	semantic.LabelOp(txt).Add(gtx.Ops)
-	pos := firstPos(lines[0], l.Alignment, dims.Size.X)
-	for !posIsBelow(lines, pos, cl.Max.Y) {
-		start, end := clipLine(lines, l.Alignment, dims.Size.X, cl, pos)
-		line := lines[start.lineCol.Y]
-		lt := subLayout(line, start, end)
-
-		off := image.Point{X: start.x.Floor(), Y: start.y}
-		t := op.Offset(off).Push(gtx.Ops)
-		op := clip.Outline{Path: s.Shape(font, textSize, lt)}.Op().Push(gtx.Ops)
-		paint.PaintOp{}.Add(gtx.Ops)
-		op.Pop()
-		t.Pop()
-
-		if pos.lineCol.Y == len(lines)-1 {
-			break
-		}
-		pos, _ = seekPosition(lines, l.Alignment, dims.Size.X, pos, combinedPos{lineCol: screenPos{Y: pos.lineCol.Y + 1}}, 0)
-	}
-	return dims
 }
 
-func textPadding(lines []text.Line) (padding image.Rectangle) {
-	if len(lines) == 0 {
-		return
-	}
-	first := lines[0]
-	if d := first.Ascent + first.Bounds.Min.Y; d < 0 {
-		padding.Min.Y = d.Ceil()
-	}
-	last := lines[len(lines)-1]
-	if d := last.Bounds.Max.Y - last.Descent; d > 0 {
-		padding.Max.Y = d.Ceil()
-	}
-	if d := first.Bounds.Min.X; d < 0 {
-		padding.Min.X = d.Ceil()
-	}
-	if d := first.Bounds.Max.X - first.Width; d > 0 {
-		padding.Max.X = d.Ceil()
-	}
-	return
+// Label returns a widget for a label showing a string
+func Label(th *Theme, str string, options ...Option) func(gtx C) D {
+	s := func() string { return str }
+	return Value(th, s, options...)
 }
-
-func linesDimens(lines []text.Line) layout.Dimensions {
-	var width fixed.Int26_6
-	var h int
-	var baseline int
-	if len(lines) > 0 {
-		baseline = lines[0].Ascent.Ceil()
-		var prevDesc fixed.Int26_6
-		for _, l := range lines {
-			h += (prevDesc + l.Ascent).Ceil()
-			prevDesc = l.Descent
-			if l.Width > width {
-				width = l.Width
-			}
-		}
-		h += lines[len(lines)-1].Descent.Ceil()
-	}
-	w := width.Ceil()
-	return layout.Dimensions{
-		Size: image.Point{
-			X: w,
-			Y: h,
-		},
-		Baseline: h - baseline,
-	}
-}
-
-// align returns the x offset that should be applied to text with width so that it
-// appears correctly aligned within a space of size maxWidth and with the primary
-// text direction dir.
-func align(align text.Alignment, dir system.TextDirection, width fixed.Int26_6, maxWidth int) fixed.Int26_6 {
-	mw := fixed.I(maxWidth)
-	if dir.Progression() == system.TowardOrigin {
-		switch align {
-		case text.Start:
-			align = text.End
-		case text.End:
-			align = text.Start
-		}
-	}
-	switch align {
-	case text.Middle:
-		return fixed.I(((mw - width) / 2).Floor())
-	case text.End:
-		return fixed.I((mw - width).Floor())
-	case text.Start:
-		return 0
-	default:
-		panic(fmt.Errorf("unknown alignment %v", align))
-	}
-}
-*/

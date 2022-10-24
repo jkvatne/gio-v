@@ -80,7 +80,7 @@ type ScrollbarStyle struct {
 // MakeScrollbarStyle configures the presentation of a scrollbar using the provided
 // theme and state.
 func MakeScrollbarStyle(th *Theme) ScrollbarStyle {
-	lightFg := th.OnBackground
+	lightFg := th.Fg(Canvas)
 	lightFg.A = 150
 	darkFg := lightFg
 	darkFg.A = 200

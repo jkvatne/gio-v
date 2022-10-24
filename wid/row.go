@@ -27,11 +27,11 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 	call := make([]op.CallOp, len(widgets))
 	widths := make([]int, len(widgets))
 	return func(gtx C) D {
-		bgColor := th.Background
+		bgColor := th.Bg(Canvas)
 		if r.Hovered() {
-			bgColor = Interpolate(th.Background, th.Primary, 0.05)
+			// TODO bgColor = Interpolate(th.Bg(Primary), th.Fg(Primary), 0.05)
 		} else if selected != nil && *selected {
-			bgColor = Interpolate(th.Background, th.Primary, 0.1)
+			// TODO bgColor = Interpolate(th.Bg(Canvas), th.Fg(Primary), 0.1)
 		}
 		calcWidths(gtx, th.TextSize, weights[:len(widgets)], widths)
 		// Check child sizes and make macros for each widget in a row

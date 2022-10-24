@@ -4,7 +4,6 @@ package wid
 
 import (
 	"image"
-	"image/color"
 
 	"gioui.org/layout"
 	"gioui.org/op/clip"
@@ -15,11 +14,10 @@ import (
 )
 
 type checkable struct {
+	Base
 	Label              string
-	TextColor          color.NRGBA
 	Font               text.Font
 	TextSize           unit.Sp
-	IconColor          color.NRGBA
 	Size               unit.Dp
 	shaper             text.Shaper
 	checkedStateIcon   *widget.Icon
@@ -45,7 +43,7 @@ func (c *checkable) layout(gtx layout.Context, checked, hovered bool) layout.Dim
 					if !hovered {
 						return dims
 					}
-					background := MulAlpha(c.IconColor, 70)
+					background := MulAlpha(c.fgColor, 70)
 					b := image.Rectangle{Max: image.Pt(size, size)}
 					paint.FillShape(gtx.Ops, background, clip.Ellipse(b).Op(gtx.Ops))
 					return dims
@@ -53,7 +51,7 @@ func (c *checkable) layout(gtx layout.Context, checked, hovered bool) layout.Dim
 				layout.Stacked(func(gtx layout.Context) layout.Dimensions {
 					return layout.UniformInset(2).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 						size := gtx.Dp(c.Size)
-						col := c.IconColor
+						col := c.fgColor
 						if gtx.Queue == nil {
 							col = Disabled(col)
 						}
@@ -69,7 +67,7 @@ func (c *checkable) layout(gtx layout.Context, checked, hovered bool) layout.Dim
 
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 			return layout.UniformInset(2).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-				paint.ColorOp{Color: c.TextColor}.Add(gtx.Ops)
+				paint.ColorOp{Color: c.fgColor}.Add(gtx.Ops)
 				return widget.Label{}.Layout(gtx, c.shaper, c.Font, c.TextSize, c.Label)
 			})
 		}),

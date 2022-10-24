@@ -39,16 +39,12 @@ type ButtonDef struct {
 	Tooltip
 	Button       widget.Clickable
 	shadow       ShadowStyle
-	disabled     bool
-	disabler     *bool
 	Text         string
 	ToolTipWidth unit.Dp
 	Font         text.Font
 	shaper       text.Shaper
 	Icon         *widget.Icon
 	Style        ButtonStyle
-	fg           color.NRGBA
-	bg           color.NRGBA
 	align        layout.Alignment
 }
 
@@ -111,21 +107,6 @@ func (b *ButtonDef) HandleClick() {
 
 // Layout will draw a button defined in b.
 func (b *ButtonDef) Layout(gtx C) D {
-	if b.Style == Contained || b.Style == Round {
-		b.fg = b.th.OnPrimary
-		b.bg = b.th.Primary
-	} else {
-		b.fg = b.th.OnBackground
-		b.bg = color.NRGBA{}
-	}
-	if b.Base.fgColor.A != 0 {
-		b.bg = b.Base.fgColor
-		if Luminance(b.Base.fgColor) > 127 {
-			b.fg = RGB(0x000000)
-		} else {
-			b.fg = RGB(0xFFFFFF)
-		}
-	}
 	dims := b.layout(gtx)
 	b.HandleClick()
 	pointer.CursorPointer.Add(gtx.Ops)
@@ -278,33 +259,33 @@ func (b *ButtonDef) layoutBackground() func(gtx C) D {
 		switch {
 		case b.Style == Text && gtx.Queue == nil:
 			// Disabled Outlined button. Text and outline is grey when disabled
-			paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			paint.FillShape(gtx.Ops, b.Bg, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		case b.Style == Text && (b.Button.Hovered() || b.Button.Focused()):
 			// Outline button, hovered/focused
-			paint.FillShape(gtx.Ops, Hovered(b.th.Background), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			paint.FillShape(gtx.Ops, Hovered(b.bgColor), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		case b.Style == Text:
 			// Outline button, not disabled, keep transparent.
 		case b.Style == Outlined && gtx.Queue == nil:
 			// Disabled Outlined button. Text and outline is grey when disabled
-			paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			paintBorder(gtx, outline, Disabled(b.fg), b.th.BorderThickness, rr)
+			paint.FillShape(gtx.Ops, b.bgColor, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			paintBorder(gtx, outline, Disabled(b.fgColor), b.th.BorderThickness, rr)
 		case b.Style == Outlined && (b.Button.Hovered() || b.Button.Focused()):
 			// Outline button, hovered/focused
-			paint.FillShape(gtx.Ops, Hovered(b.th.Background), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			paintBorder(gtx, outline, b.fg, b.th.BorderThickness, rr)
+			paint.FillShape(gtx.Ops, Hovered(b.bgColor), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			paintBorder(gtx, outline, b.fgColor, b.th.BorderThickness, rr)
 		case b.Style == Outlined:
 			// Outline button, not disabled
-			paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			paintBorder(gtx, outline, b.fg, b.th.BorderThickness, rr)
+			paint.FillShape(gtx.Ops, b.bgColor, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			paintBorder(gtx, outline, b.fgColor, b.th.BorderThickness, rr)
 		case (b.Style == Contained || b.Style == Round) && gtx.Queue == nil:
 			// Disabled contained/round button.
-			paint.FillShape(gtx.Ops, Disabled(b.bg), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			paint.FillShape(gtx.Ops, Disabled(b.bgColor), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		case (b.Style == Contained || b.Style == Round) && (b.Button.Hovered() || b.Button.Focused()):
 			// Hovered or focused contained/round button.
-			paint.FillShape(gtx.Ops, Hovered(b.bg), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			paint.FillShape(gtx.Ops, Hovered(b.bgColor), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		case b.Style == Contained || b.Style == Round:
 			// Contained/round button, not disabled
-			paint.FillShape(gtx.Ops, b.bg, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+			paint.FillShape(gtx.Ops, b.bgColor, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		}
 		for _, pressed := range b.Button.History() {
 			drawInk(gtx, pressed)
@@ -321,9 +302,9 @@ func layLabel(b *ButtonDef) layout.Widget {
 		return b.th.ButtonLabelPadding.Layout(gtx, func(gtx C) D {
 			switch {
 			case (b.Style == Text || b.Style == Outlined) && gtx.Queue == nil:
-				paint.ColorOp{Color: Disabled(b.fg)}.Add(gtx.Ops)
+				paint.ColorOp{Color: Disabled(b.fgColor)}.Add(gtx.Ops)
 			default:
-				paint.ColorOp{Color: b.fg}.Add(gtx.Ops)
+				paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
 			}
 			return widget.Label{Alignment: text.Middle}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.Text)
 		})
@@ -341,7 +322,7 @@ func layIcon(b *ButtonDef) layout.Widget {
 			return inset.Layout(gtx, func(gtx C) D {
 				size := gtx.Dp(b.th.IconSize)
 				gtx.Constraints = layout.Exact(image.Pt(size, size))
-				return b.Icon.Layout(gtx, b.fg)
+				return b.Icon.Layout(gtx, b.fgColor)
 			})
 		}
 	}

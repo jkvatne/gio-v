@@ -15,18 +15,17 @@ import (
 // ProgressBarStyle defines the progress bar
 type ProgressBarStyle struct {
 	Base
-	Progress     *float32
-	CornerRadius unit.Dp
+	Progress *float32
 }
 
 // ProgressBar returns a widget for a progress bar
 func ProgressBar(th *Theme, progress *float32, options ...Option) func(gtx C) D {
 	p := &ProgressBarStyle{
-		Progress:     progress,
-		CornerRadius: unit.Dp(10),
+		Progress: progress,
 	}
-	p.fgColor = th.Primary
-	p.bgColor = MulAlpha(th.OnBackground, 0x88)
+	p.cornerRadius = unit.Dp(10)
+	p.fgColor = th.Fg(Primary)
+	p.bgColor = MulAlpha(th.Fg(Primary), 0x88)
 	p.width = 10
 	p.Apply(options...)
 	return func(gtx C) D {
@@ -36,7 +35,7 @@ func ProgressBar(th *Theme, progress *float32, options ...Option) func(gtx C) D 
 
 func (p ProgressBarStyle) layout(gtx C) D {
 	shader := func(width int, color color.NRGBA) D {
-		rr := rr(gtx, p.CornerRadius, gtx.Dp(p.width))
+		rr := rr(gtx, p.cornerRadius, gtx.Dp(p.width))
 		d := image.Point{X: width, Y: gtx.Dp(p.width)}
 		height := p.width
 		defer clip.UniformRRect(image.Rectangle{Max: image.Pt(width, gtx.Dp(height))}, rr).Push(gtx.Ops).Pop()

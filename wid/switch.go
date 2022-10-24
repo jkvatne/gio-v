@@ -4,6 +4,7 @@ package wid
 
 import (
 	"image"
+	"image/color"
 
 	"gioui.org/io/semantic"
 
@@ -21,27 +22,44 @@ import (
 // SwitchDef is the parameters for a slider
 type SwitchDef struct {
 	Base
-	sw       widget.Bool
-	th       *Theme
-	StatePtr *bool
-	padding  layout.Inset
-	handler  func(b bool)
+	sw            widget.Bool
+	StatePtr      *bool
+	trackColorOn  color.NRGBA
+	trackColorOff color.NRGBA
+	trackOutline  color.NRGBA
+	thumbColorOn  color.NRGBA
+	thumbColorOff color.NRGBA
+	hoverShadow   color.NRGBA
+	trackWidth    unit.Dp
+	trackStroke   unit.Dp
+	trackLength   unit.Dp
+	btnOnSize     unit.Dp
+	btnOffSize    unit.Dp
 }
 
 // Switch returns a widget for a switch
-func Switch(th *Theme, statePtr *bool, handler func(b bool)) func(gtx C) D {
+func Switch(th *Theme, statePtr *bool, options ...Option) func(gtx C) D {
 	s := &SwitchDef{}
 	s.th = th
 	s.StatePtr = statePtr
-	s.handler = handler
 	s.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
+	// Calculate sizes
+	s.trackWidth = unit.Dp(s.th.TextSize) * 1.8
+	s.trackLength = s.trackWidth * 13 / 8
+	s.btnOnSize = s.trackWidth * 3 / 4
+	s.btnOffSize = s.trackWidth / 2
+	s.trackColorOn = s.th.Bg(Primary)
+	s.trackColorOff = s.th.Bg(SurfaceVariant)
+	s.trackOutline = s.th.Fg(Outline)
+	s.thumbColorOn = s.th.Fg(Primary)
+	s.thumbColorOff = s.th.Fg(Outline)
+	s.trackStroke = s.th.BorderThickness
+	s.hoverShadow = MulAlpha(Gray(s.fgColor), 88)
 	return func(gtx C) D {
-		// semantic.Switch.Add(gtx.Ops)
-		// semantic.SelectedOp(*s.Value).Add(gtx.Ops)
-		// semantic.DisabledOp(gtx.Queue == nil).Add(gtx.Ops)
+		semantic.Switch.Add(gtx.Ops)
 		dims := s.padding.Layout(gtx, func(gtx C) D { return s.Layout(gtx) })
-		if handler != nil {
-			s.handler(s.sw.Value)
+		if s.onChange != nil {
+			s.onChange()
 		}
 		pointer.CursorPointer.Add(gtx.Ops)
 		return dims
@@ -51,65 +69,54 @@ func Switch(th *Theme, statePtr *bool, handler func(b bool)) func(gtx C) D {
 // Layout updates the switch and displays it.
 func (s *SwitchDef) Layout(gtx C) D {
 
-	// Calculate sizes
-	trackWidth := gtx.Sp(s.th.TextSize * 2.3)
-	trackHeight := gtx.Sp(s.th.TextSize * 1.2)
-	thumbSize := gtx.Sp(s.th.TextSize * 1.3)
-	trackOff := (thumbSize - trackHeight) / 2
-
-	// Find colors
-	trackColor := MulAlpha(s.th.Primary, 0x80)
-	dotColor := s.th.Primary
-	ofs := trackWidth - thumbSize
 	if s.sw.Changed() {
 		*s.StatePtr = s.sw.Value
 	} else {
 		s.sw.Value = *s.StatePtr
 	}
-	if !*s.StatePtr {
-		trackColor = Gray(trackColor)
-		dotColor = s.th.Background
-		ofs = 0
-	}
-	if gtx.Queue == nil {
-		dotColor = Disabled(dotColor)
-		trackColor = Disabled(trackColor)
-	}
 
-	// Draw track.
-	trackCorner := trackHeight / 2
-	trackRect := image.Rect(0, 0, trackWidth, trackHeight)
-	t := op.Offset(image.Point{Y: trackOff}).Push(gtx.Ops)
-	cl := clip.UniformRRect(trackRect, trackCorner).Push(gtx.Ops)
-	paint.ColorOp{Color: trackColor}.Add(gtx.Ops)
-	paint.PaintOp{}.Add(gtx.Ops)
-	cl.Pop()
-	t.Pop()
+	length := gtx.Dp(s.trackLength)
+	width := gtx.Dp(s.trackWidth)
+	offSize := gtx.Dp(s.btnOffSize)
+	onSize := gtx.Dp(s.btnOnSize)
+	stroke := float32(gtx.Dp(s.trackStroke))
+	r := gtx.Dp(s.trackWidth / 4)
+	trackRect := image.Rect(0, 0, length, width)
+	if *s.StatePtr {
+		// Draw track in on position, filled rounded
+		paint.FillShape(gtx.Ops, s.trackColorOn, clip.UniformRRect(trackRect, width/2).Op(gtx.Ops))
+		// Draw thumb,
+		paint.FillShape(gtx.Ops, s.thumbColorOn,
+			clip.Ellipse{image.Point{X: 3 * r, Y: r / 2}, image.Point{X: onSize + 3*r, Y: onSize + r/2}}.Op(gtx.Ops))
 
-	st := op.Offset(image.Point{X: ofs}).Push(gtx.Ops)
-	// Draw hover.
-	if s.sw.Hovered() || s.sw.Focused() {
-		r := thumbSize / 4
-		o := op.Offset(image.Point{X: -r / 2, Y: -r / 2}).Push(gtx.Ops)
-		paint.FillShape(gtx.Ops, MulAlpha(s.th.Primary, 88),
-			clip.Ellipse{image.Point{}, image.Point{X: thumbSize + r, Y: thumbSize + r}}.Op(gtx.Ops))
-		o.Pop()
+		if s.sw.Hovered() || s.sw.Focused() {
+			// Hover is a transparent big circle over the thumb
+			paint.FillShape(gtx.Ops, s.hoverShadow,
+				clip.Ellipse{Min: image.Point{X: -r, Y: -r}, Max: image.Point{X: offSize + r, Y: offSize + r}}.Op(gtx.Ops))
+		}
+		// TODO: Draw icon
+	} else if !*s.StatePtr {
+		// First draw track in OFF position, outlined
+		paint.FillShape(gtx.Ops, s.trackColorOff, clip.UniformRRect(trackRect, width/2).Op(gtx.Ops))
+		paint.FillShape(gtx.Ops, s.trackOutline,
+			clip.Stroke{Path: clip.UniformRRect(trackRect, width/2).Path(gtx.Ops), Width: stroke}.Op())
+		// Draw thumb
+		paint.FillShape(gtx.Ops, s.thumbColorOff,
+			clip.Ellipse{image.Point{X: +r, Y: +r}, image.Point{X: offSize + r, Y: offSize + r}}.Op(gtx.Ops))
+		// Draw hover.
+		if s.sw.Hovered() || s.sw.Focused() {
+			// st := op.Offset(image.Point{X: -r, Y: -r}).Push(gtx.Ops)
+			paint.FillShape(gtx.Ops, MulAlpha(s.bgColor, 88),
+				clip.Ellipse{image.Point{X: -r, Y: -r}, image.Point{X: +r, Y: offSize + r}}.Op(gtx.Ops))
+		}
+
+		// TODO: Draw icon
 	}
-	// Draw thumb outline
-	paint.FillShape(gtx.Ops, s.th.OnBackground,
-		clip.Ellipse{image.Point{}, image.Point{X: thumbSize, Y: thumbSize}}.Op(gtx.Ops))
-	// Draw thumb inside
-	o := op.Offset(image.Point{X: 2, Y: 2}).Push(gtx.Ops)
-	paint.FillShape(gtx.Ops, dotColor,
-		clip.Ellipse{image.Point{}, image.Point{X: thumbSize - 4, Y: thumbSize - 4}}.Op(gtx.Ops))
-	o.Pop()
-	st.Pop()
-
 	// Set up click area.
-	clickSize := gtx.Dp(40)
+	clickSize := gtx.Dp(s.th.FingerSize)
 	clickOff := image.Point{
-		X: (thumbSize - clickSize) / 2,
-		Y: (trackHeight-clickSize)/2 + trackOff,
+		X: (width - clickSize) / 2,
+		Y: (width - clickSize) / 2,
 	}
 	defer op.Offset(clickOff).Push(gtx.Ops).Pop()
 	sz := image.Pt(clickSize, clickSize)
@@ -119,6 +126,5 @@ func (s *SwitchDef) Layout(gtx C) D {
 		return layout.Dimensions{Size: sz}
 	})
 
-	dims := image.Point{X: trackWidth, Y: thumbSize}
-	return layout.Dimensions{Size: dims}
+	return layout.Dimensions{Size: image.Point{X: length, Y: width}}
 }

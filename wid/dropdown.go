@@ -116,7 +116,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 		macro = op.Record(gtx.Ops)
 		op.Offset(image.Pt(0, dims.Size.Y)).Add(gtx.Ops)
 		stack := clip.UniformRRect(listClipRect, 0).Push(gtx.Ops)
-		paint.Fill(gtx.Ops, b.th.Background)
+		paint.Fill(gtx.Ops, b.bgColor)
 		// Draw a border around all options
 		// paintBorder(gtx, listClipRect, b.th.OnBackground, b.th.BorderThickness, 0)
 		call.Add(gtx.Ops)
@@ -170,14 +170,14 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 			}
 		}
 		if b.hovered[i] {
-			c := MulAlpha(b.th.OnBackground, 48)
-			if Luminance(b.th.OnBackground) > 28 {
-				c = MulAlpha(b.th.OnBackground, 16)
+			c := MulAlpha(b.fgColor, 48)
+			if Luminance(b.bgColor) > 28 {
+				c = MulAlpha(b.fgColor, 16)
 			}
 			paint.ColorOp{Color: c}.Add(gtx.Ops)
 			paint.PaintOp{}.Add(gtx.Ops)
 		}
-		paint.ColorOp{Color: th.OnBackground}.Add(gtx.Ops)
+		paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
 		lblWidget := func(gtx C) D {
 			return widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, text.Font{}, th.TextSize, b.items[i])
 		}
@@ -202,9 +202,9 @@ func (b *DropDownStyle) LayoutBackground() func(gtx C) D {
 			X: gtx.Constraints.Min.X - 2,
 			Y: gtx.Constraints.Min.Y - 2,
 		}}
-		paint.FillShape(gtx.Ops, b.th.Background, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
+		paint.FillShape(gtx.Ops, b.bgColor, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
-		paintBorder(gtx, outline, b.th.OnBackground, b.th.BorderThickness, rr)
+		paintBorder(gtx, outline, b.fgColor, b.th.BorderThickness, rr)
 		oldIndex := *b.index
 		if *b.index > len(b.hovered) {
 			*b.index = len(b.hovered) - 1
@@ -227,7 +227,7 @@ func (b *DropDownStyle) LayoutLabel() layout.Widget {
 		pad := b.th.DropDownPadding
 		pad.Right = unit.Dp(-5)
 		return pad.Layout(gtx, func(gtx C) D {
-			paint.ColorOp{Color: b.th.OnBackground}.Add(gtx.Ops)
+			paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
 			if *b.index < 0 {
 				*b.index = 0
 			}
@@ -244,6 +244,6 @@ func (b *DropDownStyle) LayoutIcon() layout.Widget {
 	return func(gtx C) D {
 		size := gtx.Sp(b.th.TextSize * 1.5)
 		gtx.Constraints = layout.Exact(image.Pt(size, size))
-		return b.icon.Layout(gtx, b.th.OnBackground)
+		return b.icon.Layout(gtx, b.fgColor)
 	}
 }
