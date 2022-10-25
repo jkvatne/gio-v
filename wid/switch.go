@@ -115,7 +115,6 @@ func (s *SwitchDef) Layout(gtx C) D {
 		// Draw hover/focus shade.
 		paint.FillShape(gtx.Ops, s.hoverShadow,
 			clip.Ellipse{Min: image.Point{X: -r / 2, Y: -r / 2}, Max: image.Point{X: 9 * r / 2, Y: 9 * r / 2}}.Op(gtx.Ops))
-
 		// TODO: Draw icon
 	}
 	// Set up click area.

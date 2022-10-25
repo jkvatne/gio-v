@@ -297,7 +297,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	// Text
 	t.LabelPadding = layout.Inset{Top: v, Right: v * 2.0, Bottom: v, Left: v * 2.0}
 	t.DropDownPadding = t.LabelPadding
-	t.HintColor = DeEmphasis(t.Bg(Surface), 45)
+	t.HintColor = DeEmphasis(t.Fg(Surface), 45)
 	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
 	t.EditPadding = layout.Inset{Top: v * 2.0, Right: v * 2.0, Bottom: v, Left: v * 2.0}
 	// Buttons
