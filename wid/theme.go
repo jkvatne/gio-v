@@ -73,7 +73,7 @@ func Tone(c color.NRGBA, tone int) color.NRGBA {
 	case tone < 96:
 		return Hsl2rgb(h, s, 0.85)
 	case tone < 100:
-		return Hsl2rgb(h, s, 0.95)
+		return Hsl2rgb(h, s, 0.97)
 	}
 	return White
 }
@@ -259,7 +259,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.PrimaryColor = RGB(0x45682A)
 	t.SecondaryColor = RGB(0x57624E)
 	t.TertiaryColor = RGB(0x336669)
-	t.ErrorColor = RGB(0xA53328)
+	t.ErrorColor = RGB(0xAF2525)
 	t.NeutralColor = RGB(0x5D5F5A)
 	t.NeutralVariantColor = RGB(0x5C6057)
 	if len(colors) >= 1 {

@@ -99,8 +99,8 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *But
 // HandleClick will call the callback function
 func (b *ButtonDef) HandleClick() {
 	for b.Button.Clicked() {
-		if b.onChange != nil {
-			b.onChange()
+		if b.onUserChange != nil {
+			b.onUserChange()
 		}
 	}
 }

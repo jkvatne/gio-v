@@ -26,7 +26,7 @@ type Base struct {
 	state        UiState
 	hint         string
 	padding      layout.Inset
-	onChange     func()
+	onUserChange func()
 	disabled     bool
 	disabler     *bool
 	width        unit.Dp
@@ -34,6 +34,7 @@ type Base struct {
 	cornerRadius unit.Dp
 	fgColor      color.NRGBA
 	bgColor      color.NRGBA
+	description  string
 }
 
 // BaseIf is the interface functions for widgets, used by options to set parameters
@@ -97,7 +98,7 @@ func (wid *Base) setBgColor(c color.NRGBA) {
 }
 
 func (wid *Base) setHandler(h func()) {
-	wid.onChange = h
+	wid.onUserChange = h
 }
 
 // Pad is used to set default widget paddings
