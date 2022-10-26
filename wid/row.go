@@ -19,8 +19,11 @@ type rowDef struct {
 	widget.Clickable
 }
 
+// SpaceClose is a shortcut for specifying that the row elements are placed close together, left to right
 var SpaceClose = []float32{}
-var SpaceDistribute []float32 = nil
+
+// SpaceDistribute should disribute the widgets on a row evenly, with equal space for each
+var SpaceDistribute []float32
 
 // Calculate widths
 func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
@@ -83,13 +86,16 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 		pos := make([]int, len(widgets)+1)
 		for i, child := range widgets {
 			if len(widths) > i {
-				c.Constraints.Max.X = inf // widths[i]
+				c.Constraints.Max.X = widths[i]
 				if widths[i] == 0 {
 					c.Constraints.Max.X = inf
 				}
 				c.Constraints.Min.X = widths[i]
 			} else {
-				c.Constraints.Max.X = inf
+				if widths[i] == 0 {
+					c.Constraints.Max.X = inf
+				}
+				c.Constraints.Max.X = widths[i]
 				c.Constraints.Min.X = 0
 			}
 			macro := op.Record(c.Ops)
@@ -99,7 +105,6 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 			} else {
 				pos[i+1] = pos[i] + widths[i]
 			}
-
 			call[i] = macro.Stop()
 			if yMax < dims[i].Size.Y {
 				yMax = dims[i].Size.Y
