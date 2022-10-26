@@ -143,7 +143,7 @@ func (v VisibilityAnimationState) String() string {
 // Widgets map async UI events to state changes: stop, forward, reverse.
 // Widgets then interpolate visual data based on progress value.
 //
-// Update method must be called every tick to update the progress value.
+// Update method must be called every tick to HandleEvents the progress value.
 type Progress struct {
 	progress  float32
 	duration  time.Duration
@@ -152,7 +152,7 @@ type Progress struct {
 	active    bool
 }
 
-// ProgressDirection specifies how to update progress every tick.
+// ProgressDirection specifies how to HandleEvents progress every tick.
 type ProgressDirection int
 
 const (
@@ -218,7 +218,7 @@ func (p *Progress) Stop() {
 	p.active = false
 }
 
-// Update will do update now
+// Update will do HandleEvents now
 func (p *Progress) Update(now time.Time) {
 	if !p.Started() || p.Finished() {
 		p.Stop()

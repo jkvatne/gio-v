@@ -37,7 +37,7 @@ const (
 type ButtonDef struct {
 	Base
 	Tooltip
-	Button       widget.Clickable
+	Clickable
 	shadow       ShadowStyle
 	Text         string
 	ToolTipWidth unit.Dp
@@ -79,7 +79,7 @@ func HeaderButton(th *Theme, label string, options ...Option) layout.Widget {
 }
 
 func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *ButtonDef {
-	b := ButtonDef{} // b.SetupTabs()
+	b := ButtonDef{}
 	// Setup default values
 	b.th = th
 	b.Text = label
@@ -87,10 +87,21 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *But
 	b.shaper = th.Shaper
 	b.Style = style
 	b.align = layout.Middle
+	b.role = Undefined
 	// Apply standard padding on the outside of the button. Can be overridden by option function
 	b.padding = th.ButtonPadding
 	for _, option := range options {
 		option.apply(&b)
+	}
+	if b.Style == Outlined || b.Style == Text {
+		b.fgColor = th.Fg(b.role)
+		b.bgColor = color.NRGBA{}
+	} else if (b.fgColor == color.NRGBA{}) && (b.bgColor == color.NRGBA{}) {
+		if (b.role == Undefined) && (b.fgColor == color.NRGBA{}) {
+			b.role = Primary
+		}
+		b.fgColor = th.Fg(b.role)
+		b.bgColor = th.Bg(b.role)
 	}
 	b.Tooltip = PlatformTooltip(th, b.hint)
 	return &b
@@ -98,7 +109,7 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *But
 
 // HandleClick will call the callback function
 func (b *ButtonDef) HandleClick() {
-	for b.Button.Clicked() {
+	for b.Clickable.Clicked() {
 		if b.onUserChange != nil {
 			b.onUserChange()
 		}
@@ -107,10 +118,82 @@ func (b *ButtonDef) HandleClick() {
 
 // Layout will draw a button defined in b.
 func (b *ButtonDef) Layout(gtx C) D {
-	dims := b.layout(gtx)
+	// Add an outer padding outside the button
+	dims := b.padding.Layout(gtx, func(gtx C) D {
+		// Handle clickable pointer/keyboard inputs
+		b.HandleEvents(gtx)
+		dims := b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
+			return b.layout(gtx)
+		})
+		b.SetupEventHandlers(gtx, dims.Size)
+		return dims
+	})
 	b.HandleClick()
 	pointer.CursorPointer.Add(gtx.Ops)
 	return dims
+}
+
+func (b *ButtonDef) layout(gtx C) D {
+	// Render text to find button width
+	macro := op.Record(gtx.Ops)
+	cgtx := gtx
+	cgtx.Constraints.Min.X = 0
+	dims := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, b.Font, b.th.TextSize, b.Text)
+	call := macro.Stop()
+	height := 2 * dims.Size.Y
+	width := height + dims.Size.X
+
+	rr := gtx.Dp(b.th.ButtonCornerRadius)
+	if rr > height/2 {
+		rr = height / 2
+	}
+	dx := height / 2
+	dy := dx / 2
+	if b.Style == Round {
+		rr = height / 2
+		width = height
+		dx = height / 4
+		dy = height / 4
+	}
+
+	outline := image.Rect(0, 0, width, height)
+
+	if b.Icon != nil && b.Text != "" {
+		outline.Max.X += dims.Size.Y * 2
+	}
+	// Draw shadow if pressed. Must be done before cliping
+	// because the shadow is outside the button
+	if b.Clickable.Focused() {
+		DrawShadow(gtx, outline, rr, 20)
+	}
+	defer clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
+
+	if b.Style == Outlined {
+		paintBorder(gtx, outline, b.th.Fg(Outline), b.th.BorderThickness, rr)
+	} else if b.Style != Text {
+		paint.Fill(gtx.Ops, b.bgColor)
+	}
+	if b.Clickable.Focused() && b.Clickable.Hovered() {
+		paint.Fill(gtx.Ops, MulAlpha(b.fgColor, 30))
+	} else if b.Clickable.Focused() {
+		paint.Fill(gtx.Ops, MulAlpha(b.fgColor, 20))
+	} else if b.Clickable.Hovered() {
+		paint.Fill(gtx.Ops, MulAlpha(b.fgColor, 15))
+	}
+	cgtx.Constraints.Min = image.Point{X: height / 2, Y: height / 2}
+	for _, pressed := range b.Clickable.History() {
+		drawInk(cgtx, pressed)
+	}
+
+	defer op.Offset(image.Pt(dx, dy)).Push(gtx.Ops).Pop()
+	if b.Icon != nil {
+		im := b.Icon.Layout(cgtx, b.fgColor)
+		defer op.Offset(image.Pt(height/4+im.Size.X, 0)).Push(gtx.Ops).Pop()
+		width += im.Size.X + height*2
+	}
+	paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
+	call.Add(gtx.Ops)
+	return D{Size: outline.Max}
 }
 
 func (b BtnOption) apply(cfg interface{}) {
@@ -138,56 +221,46 @@ func Disable(v *bool) BtnOption {
 	}
 }
 
-func drawInk(gtx C, c widget.Press) {
+func drawInk(gtx C, c Press) {
 	// duration is the number of seconds for the completed animation:
 	// expand while fading in, then out.
 	const (
 		expandDuration = float32(0.5)
 		fadeDuration   = float32(0.9)
 	)
-
 	now := gtx.Now
-
 	t := float32(now.Sub(c.Start).Seconds())
-
 	end := c.End
 	if end.IsZero() {
 		// If the press hasn't ended, don't fade-out.
 		end = now
 	}
-
 	endt := float32(end.Sub(c.Start).Seconds())
-
 	// Compute the fade-in/out position in [0;1].
 	var alphat float32
-	{
-		var haste float32
-		if c.Cancelled {
-			// If the press was cancelled before the inkwell
-			// was fully faded in, fast-forward the animation
-			// to match the fade-out.
-			if h := 0.5 - endt/fadeDuration; h > 0 {
-				haste = h
-			}
+	var haste float32
+	if c.Cancelled {
+		// If the press was cancelled before the inkwell
+		// was fully faded in, fast-forward the animation
+		// to match the fade-out.
+		if h := 0.5 - endt/fadeDuration; h > 0 {
+			haste = h
 		}
-		// Fade in.
-		half1 := t/fadeDuration + haste
-		if half1 > 0.5 {
-			half1 = 0.5
-		}
-
-		// Fade out.
-		half2 := float32(now.Sub(end).Seconds())
-		half2 /= fadeDuration
-		half2 += haste
-		if half2 > 0.5 {
-			// Too old.
-			return
-		}
-
-		alphat = half1 + half2
 	}
-
+	// Fade in.
+	half1 := t/fadeDuration + haste
+	if half1 > 0.5 {
+		half1 = 0.5
+	}
+	// Fade out.
+	half2 := float32(now.Sub(end).Seconds())
+	half2 /= fadeDuration
+	half2 += haste
+	if half2 > 0.5 {
+		// Too old.
+		return
+	}
+	alphat = half1 + half2
 	// Compute the expand position in [0;1].
 	sizet := t
 	if c.Cancelled {
@@ -195,12 +268,10 @@ func drawInk(gtx C, c widget.Press) {
 		sizet = endt
 	}
 	sizet /= expandDuration
-
 	// Animate only ended presses, and presses that are fading in.
 	if !c.End.IsZero() || sizet <= 1.0 {
 		op.InvalidateOp{}.Add(gtx.Ops)
 	}
-
 	if sizet > 1.0 {
 		sizet = 1.0
 	}
@@ -218,9 +289,7 @@ func drawInk(gtx C, c widget.Press) {
 	if h := gtx.Constraints.Min.Y; h > size {
 		size = h
 	}
-	// Cover the entire constraints min rectangle and
-	// apply curve values to size and color.
-	size = int(float32(size) * 2 * float32(math.Sqrt(2)) * sizeBezier)
+	size = 10 * int(float32(size)*2*float32(math.Sqrt(2))*sizeBezier)
 	alpha := 0.7 * alphaBezier
 	const col = 0.8
 	ba, bc := byte(alpha*0xff), byte(col*0xff)
@@ -228,137 +297,7 @@ func drawInk(gtx C, c widget.Press) {
 	ink := paint.ColorOp{Color: rgba}
 	ink.Add(gtx.Ops)
 	rr := size / 2
-	defer op.Offset(c.Position.Add(image.Point{
-		X: -rr,
-		Y: -rr,
-	})).Push(gtx.Ops).Pop()
+	defer op.Offset(c.Position.Add(image.Point{X: -rr, Y: -rr})).Push(gtx.Ops).Pop()
 	defer clip.UniformRRect(image.Rectangle{Max: image.Pt(size, size)}, rr).Push(gtx.Ops).Pop()
 	paint.PaintOp{}.Add(gtx.Ops)
-}
-
-func (b *ButtonDef) layoutBackground() func(gtx C) D {
-	return func(gtx C) D {
-		rr := gtx.Dp(b.th.ButtonCornerRadius)
-		if rr > gtx.Constraints.Min.Y/2 {
-			rr = gtx.Constraints.Min.Y / 2
-		}
-
-		if b.Style == Round {
-			rr = gtx.Constraints.Min.Y / 2
-		}
-		if b.Button.Focused() || b.Button.Hovered() {
-			e := b.th.Elevation
-			Shadow(rr, gtx.Dp(e)).Layout(gtx)
-		}
-		outline := image.Rectangle{Max: image.Point{
-			X: gtx.Constraints.Min.X,
-			Y: gtx.Constraints.Min.Y,
-		}}
-		defer clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
-
-		switch {
-		case b.Style == Text && gtx.Queue == nil:
-			// Disabled Outlined button. Text and outline is grey when disabled
-			paint.FillShape(gtx.Ops, b.Bg, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-		case b.Style == Text && (b.Button.Hovered() || b.Button.Focused()):
-			// Outline button, hovered/focused
-			paint.FillShape(gtx.Ops, Hovered(b.bgColor), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-		case b.Style == Text:
-			// Outline button, not disabled, keep transparent.
-		case b.Style == Outlined && gtx.Queue == nil:
-			// Disabled Outlined button. Text and outline is grey when disabled
-			paint.FillShape(gtx.Ops, b.bgColor, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			paintBorder(gtx, outline, Disabled(b.fgColor), b.th.BorderThickness, rr)
-		case b.Style == Outlined && (b.Button.Hovered() || b.Button.Focused()):
-			// Outline button, hovered/focused
-			paint.FillShape(gtx.Ops, Hovered(b.bgColor), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			paintBorder(gtx, outline, b.fgColor, b.th.BorderThickness, rr)
-		case b.Style == Outlined:
-			// Outline button, not disabled
-			paint.FillShape(gtx.Ops, b.bgColor, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-			paintBorder(gtx, outline, b.fgColor, b.th.BorderThickness, rr)
-		case (b.Style == Contained || b.Style == Round) && gtx.Queue == nil:
-			// Disabled contained/round button.
-			paint.FillShape(gtx.Ops, Disabled(b.bgColor), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-		case (b.Style == Contained || b.Style == Round) && (b.Button.Hovered() || b.Button.Focused()):
-			// Hovered or focused contained/round button.
-			paint.FillShape(gtx.Ops, Hovered(b.bgColor), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-		case b.Style == Contained || b.Style == Round:
-			// Contained/round button, not disabled
-			paint.FillShape(gtx.Ops, b.bgColor, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-		}
-		for _, pressed := range b.Button.History() {
-			drawInk(gtx, pressed)
-		}
-		return D{Size: gtx.Constraints.Min}
-	}
-}
-
-func layLabel(b *ButtonDef) layout.Widget {
-	if b.Text == "" {
-		return func(gtx C) D { return D{} }
-	}
-	return func(gtx C) D {
-		return b.th.ButtonLabelPadding.Layout(gtx, func(gtx C) D {
-			switch {
-			case (b.Style == Text || b.Style == Outlined) && gtx.Queue == nil:
-				paint.ColorOp{Color: Disabled(b.fgColor)}.Add(gtx.Ops)
-			default:
-				paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
-			}
-			return widget.Label{Alignment: text.Middle}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.Text)
-		})
-	}
-}
-
-func layIcon(b *ButtonDef) layout.Widget {
-	if b.Icon != nil {
-		return func(gtx C) D {
-			inset := b.th.IconInset
-			if b.Icon != nil && b.Text != "" {
-				// Avoid large gap between icon and text when both are present
-				inset.Right = unit.Dp(0)
-			}
-			return inset.Layout(gtx, func(gtx C) D {
-				size := gtx.Dp(b.th.IconSize)
-				gtx.Constraints = layout.Exact(image.Pt(size, size))
-				return b.Icon.Layout(gtx, b.fgColor)
-			})
-		}
-	}
-	return func(gtx C) D { return D{} }
-}
-
-func (b *ButtonDef) layout(gtx C) D {
-	return b.padding.Layout(gtx, func(gtx C) D {
-		return b.Button.Layout(gtx,
-			func(gtx C) D {
-				return b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
-					b.disabled = false
-					if b.disabler != nil && *b.disabler {
-						gtx = gtx.Disabled()
-						b.disabled = true
-					}
-					min := CalcMin(gtx, b.width)
-					return layout.Stack{Alignment: layout.Center}.Layout(gtx,
-						layout.Expanded(b.layoutBackground()),
-						layout.Stacked(
-							func(gtx C) D {
-								gtx.Constraints.Min = min
-								if gtx.Constraints.Max.X < min.X {
-									gtx.Constraints.Max.X = min.X
-								}
-								if b.Icon != nil {
-									return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceEnd}.Layout(
-										gtx,
-										layout.Rigid(layIcon(b)),
-										layout.Rigid(layLabel(b)),
-									)
-								}
-								return layLabel(b)(gtx)
-							}),
-					)
-				})
-			})
-	})
 }

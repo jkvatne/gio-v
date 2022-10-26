@@ -238,8 +238,10 @@ type ListStyle struct {
 
 // Calculate widths
 func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
-	if weights == nil {
-		return
+	if weights == nil || len(weights) == 0 {
+		for i, _ := range widths {
+			widths[i] = gtx.Constraints.Max.X
+		}
 	}
 	fracSum := float32(0.0)
 	fixSum := float32(0.0)

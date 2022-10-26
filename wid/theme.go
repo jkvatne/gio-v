@@ -44,9 +44,14 @@ const (
 	Error
 	// ErrorContainer is usualy light red
 	ErrorContainer
+	// Outline is used for frames and buttons
 	Outline
+	// Undefined can be used to detect missing initializations
+	Undefined
 )
 
+// Tone is the google material tone implementation
+// See: https://m3.material.io/styles/color/the-color-system/key-colors-tones
 func Tone(c color.NRGBA, tone int) color.NRGBA {
 	h, s, _ := Rgb2hsl(c)
 	switch {
@@ -106,6 +111,8 @@ func (th *Theme) Fg(kind UIRole) color.NRGBA {
 			return Tone(th.Pallet.TertiaryColor, 10)
 		case ErrorContainer:
 			return Tone(th.Pallet.ErrorColor, 10)
+		default:
+			return Tone(th.Pallet.NeutralColor, 10)
 		}
 	} else {
 		switch kind {
@@ -133,6 +140,8 @@ func (th *Theme) Fg(kind UIRole) color.NRGBA {
 			return Tone(th.Pallet.TertiaryColor, 90)
 		case ErrorContainer:
 			return Tone(th.Pallet.TertiaryColor, 90)
+		default:
+			return Tone(th.Pallet.NeutralColor, 90)
 		}
 	}
 	return RGB(0x000000)
@@ -164,6 +173,8 @@ func (th *Theme) Bg(kind UIRole) color.NRGBA {
 			return Tone(th.Pallet.TertiaryColor, 90)
 		case ErrorContainer:
 			return Tone(th.Pallet.ErrorColor, 90)
+		default:
+			return Tone(th.Pallet.NeutralColor, 99)
 		}
 	} else {
 		switch kind {
@@ -189,11 +200,14 @@ func (th *Theme) Bg(kind UIRole) color.NRGBA {
 			return Tone(th.Pallet.TertiaryColor, 30)
 		case ErrorContainer:
 			return Tone(th.Pallet.TertiaryColor, 30)
+		default:
+			return Tone(th.Pallet.NeutralColor, 10)
 		}
 	}
 	return RGB(0xFFFFFFFF)
 }
 
+// Pallet is the key colors. All other colors are derived from them
 type Pallet struct {
 	PrimaryColor        color.NRGBA
 	SecondaryColor      color.NRGBA
@@ -286,7 +300,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.IconInset = layout.Inset{Top: v, Right: v, Bottom: v, Left: v}
 	t.FingerSize = unit.Dp(38)
 	// Borders around edit fields
-	t.BorderThickness = unit.Dp(t.TextSize) * 0.09
+	t.BorderThickness = unit.Dp(t.TextSize) * 0.12
 	t.BorderThicknessActive = unit.Dp(t.TextSize) * 0.18
 	t.BorderColor = t.Fg(Outline)
 	t.BorderColorHovered = t.Fg(Primary)
@@ -302,9 +316,9 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.EditPadding = layout.Inset{Top: v * 2.0, Right: v * 2.0, Bottom: v, Left: v * 2.0}
 	// Buttons
 	t.ButtonPadding = t.LabelPadding
-	t.ButtonCornerRadius = unit.Dp(t.TextSize) * 10.5
-	t.ButtonLabelPadding = layout.Inset{Top: v, Right: v * 3.0, Bottom: v, Left: v * 3.0}
-	t.IconSize = v * 3
+	t.ButtonCornerRadius = unit.Dp(t.TextSize) * 999 // Force rounded buttons
+	t.ButtonLabelPadding = layout.Inset{Top: 4, Right: 4, Bottom: 4, Left: 4}
+	t.IconSize = unit.Dp(t.TextSize) * 1.5
 	// Tooltip
 	t.TooltipInset = layout.UniformInset(unit.Dp(10))
 	t.TooltipCornerRadius = unit.Dp(6.0)

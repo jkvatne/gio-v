@@ -33,14 +33,14 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 		} else if selected != nil && *selected {
 			// TODO bgColor = Interpolate(th.Bg(Canvas), th.Fg(Primary), 0.1)
 		}
-		calcWidths(gtx, th.TextSize, weights[:len(widgets)], widths)
+		calcWidths(gtx, th.TextSize, weights, widths)
 		// Check child sizes and make macros for each widget in a row
 		yMax := 0
 		c := gtx
 		for i, child := range widgets {
 			if len(widths) > i {
 				c.Constraints.Max.X = widths[i]
-				c.Constraints.Min.X = c.Constraints.Max.X
+				c.Constraints.Min.X = 0
 			} else {
 				c.Constraints.Max.X = inf
 				c.Constraints.Min.X = 0
