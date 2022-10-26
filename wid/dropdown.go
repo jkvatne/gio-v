@@ -3,8 +3,6 @@ package wid
 import (
 	"image"
 
-	"gioui.org/io/semantic"
-
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -20,12 +18,11 @@ import (
 // DropDownStyle is the struct for dropdown lists.
 type DropDownStyle struct {
 	Base
-	widget.Clickable
+	Clickable
 	disabler   *bool
 	disabled   bool
 	Font       text.Font
 	shaper     text.Shaper
-	index      *int
 	items      []string
 	hovered    []bool
 	Visible    bool
@@ -40,6 +37,8 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 	b := DropDownStyle{}
 	b.icon, _ = widget.NewIcon(icons.NavigationArrowDropDown)
 	b.th = th
+	b.fgColor = th.Fg(Canvas)
+	b.bgColor = th.Bg(Canvas)
 	b.Font = text.Font{Weight: text.Medium}
 	b.shaper = th.Shaper
 	b.index = index
@@ -118,7 +117,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 		stack := clip.UniformRRect(listClipRect, 0).Push(gtx.Ops)
 		paint.Fill(gtx.Ops, b.bgColor)
 		// Draw a border around all options
-		// paintBorder(gtx, listClipRect, b.th.OnBackground, b.th.BorderThickness, 0)
+		paintBorder(gtx, listClipRect, b.th.Fg(Outline), b.th.BorderThickness, 0)
 		call.Add(gtx.Ops)
 		stack.Pop()
 		call = macro.Stop()
@@ -128,10 +127,8 @@ func (b *DropDownStyle) layout(gtx C) D {
 		b.setHovered()
 	}
 	pointer.CursorPointer.Add(gtx.Ops)
-	return b.Clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-		semantic.Switch.Add(gtx.Ops)
-		return dims
-	})
+	b.SetupEventHandlers(gtx, dims.Size)
+	return dims
 }
 
 func (b *DropDownStyle) setHovered() {
@@ -169,20 +166,20 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 				}
 			}
 		}
-		if b.hovered[i] {
-			c := MulAlpha(b.fgColor, 48)
-			if Luminance(b.bgColor) > 28 {
-				c = MulAlpha(b.fgColor, 16)
-			}
-			paint.ColorOp{Color: c}.Add(gtx.Ops)
-			paint.PaintOp{}.Add(gtx.Ops)
-		}
 		paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
 		lblWidget := func(gtx C) D {
 			return widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, text.Font{}, th.TextSize, b.items[i])
 		}
-		dims := layout.Inset{Top: unit.Dp(2), Left: unit.Dp(th.TextSize * 0.4), Right: unit.Dp(0)}.Layout(gtx, lblWidget)
+		dims := layout.Inset{Top: unit.Dp(4), Left: unit.Dp(th.TextSize * 0.4), Right: unit.Dp(0)}.Layout(gtx, lblWidget)
 		defer clip.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Push(gtx.Ops).Pop()
+		if b.hovered[i] {
+			c := MulAlpha(b.fgColor, 48)
+			if Luminance(b.bgColor) > 28 {
+				c = MulAlpha(b.fgColor, 160)
+			}
+			paint.ColorOp{Color: c}.Add(gtx.Ops)
+			paint.PaintOp{}.Add(gtx.Ops)
+		}
 		pointer.InputOp{
 			Tag:   &b.items[i],
 			Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave,
@@ -195,17 +192,18 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 func (b *DropDownStyle) LayoutBackground() func(gtx C) D {
 	return func(gtx C) D {
 		rr := rr(gtx, b.th.BorderCornerRadius, gtx.Constraints.Min.Y)
-		if b.Focused() || b.Hovered() {
-			Shadow(rr, gtx.Dp(b.th.Elevation)).Layout(gtx)
-		}
 		outline := image.Rectangle{Max: image.Point{
 			X: gtx.Constraints.Min.X - 2,
 			Y: gtx.Constraints.Min.Y - 2,
 		}}
+		if b.Focused() || b.Hovered() {
+			DrawShadow(gtx, outline, gtx.Dp(b.th.BorderCornerRadius), 11)
+		}
 		paint.FillShape(gtx.Ops, b.bgColor, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
 		paintBorder(gtx, outline, b.fgColor, b.th.BorderThickness, rr)
 		oldIndex := *b.index
+		b.HandleEvents(gtx)
 		if *b.index > len(b.hovered) {
 			*b.index = len(b.hovered) - 1
 		}

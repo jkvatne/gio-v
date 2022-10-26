@@ -24,6 +24,7 @@ type Clickable struct {
 	keyTag     struct{}
 	focused    bool
 	pressed    bool
+	index      *int
 }
 
 // Click represents a click.
@@ -104,7 +105,7 @@ func (b *Clickable) SetupEventHandlers(gtx C, size image.Point) {
 	if !disabled {
 		keys := key.Set("")
 		if b.focused {
-			keys = key.Set("⏎|Space")
+			keys = key.Set("⏎|Space|←|→|↑|↓")
 		}
 		key.InputOp{Tag: &b.keyTag, Keys: keys}.Add(gtx.Ops)
 	} else {
@@ -159,7 +160,7 @@ func (b *Clickable) HandleEvents(gtx layout.Context) {
 		case key.FocusEvent:
 			b.focused = e.Focus
 		case key.Event:
-			if b.focused {
+			if (e.Name == key.NameSpace || e.Name == key.NameReturn) && b.focused {
 				if e.State == key.Press && !b.pressed {
 					b.history = append(b.history, Press{
 						Position: image.Point{0, 0},
@@ -172,6 +173,14 @@ func (b *Clickable) HandleEvents(gtx layout.Context) {
 					if l := len(b.history); l > 0 {
 						b.history[l-1].End = gtx.Now
 					}
+				}
+			} else if e.Name == key.NameDownArrow || e.Name == key.NameLeftArrow {
+				if b.index != nil && e.State == key.Release {
+					*b.index++
+				}
+			} else if e.Name == key.NameUpArrow || e.Name == key.NameRightArrow {
+				if b.index != nil && e.State == key.Release {
+					*b.index--
 				}
 			}
 		}

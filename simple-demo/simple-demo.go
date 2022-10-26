@@ -148,6 +148,7 @@ func tones(th *wid.Theme, c color.NRGBA) layout.Widget {
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
 	return wid.List(th, wid.Occupy,
+		wid.Label(th, "Demo page", wid.Middle(), wid.Large(), wid.Bold()),
 		wid.Row(th, nil, []float32{},
 			wid.RoundButton(th, homeIcon,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
@@ -158,8 +159,12 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.TextButton(th, "Text button"),
 			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")),
 		),
+		wid.Row(th, nil, []float32{1, 1},
+			wid.DropDown(th, &dropDownValue1, []string{"Option 1 with very long text", "Option 2", "Option 3"}),
+			wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}),
+		),
+
 		/*
-			wid.Label(th, "Demo page", wid.Middle(), wid.Large(), wid.Bold()),
 			wid.Row(th, nil, nil,
 				wid.Label(th, "A switch"),
 				wid.Switch(th, &greenFlag, wid.Do(swColor)),

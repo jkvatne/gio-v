@@ -36,7 +36,6 @@ func DrawShadow(gtx C, outline image.Rectangle, rr int, elevation int) {
 		ofs := elevation * i / 10
 		rr := rr + ofs/2
 		a := alpha[i]
-		// r := image.Rect(Outline.Min.X-ofs/2, Outline.Min.Y-ofs/4, Outline.Max.X+ofs/2, Outline.Max.Y+ofs)
 		paint.FillShape(gtx.Ops, color.NRGBA{A: a}, RrOp(clip.UniformRRect(outline, rr), ofs, gtx.Ops))
 	}
 }
@@ -62,7 +61,8 @@ func FRect(r image.Rectangle) Rectangle {
 	}
 }
 
-// Path returns the PathSpec for the rounded rectangle.
+// ShadowPath returns the PathSpec for the shadow
+// This is a border around a rounded rectangle with width d
 func ShadowPath(rr clip.RRect, d int, ops *op.Ops) clip.PathSpec {
 	var p clip.Path
 	p.Begin(ops)

@@ -300,7 +300,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.IconInset = layout.Inset{Top: v, Right: v, Bottom: v, Left: v}
 	t.FingerSize = unit.Dp(38)
 	// Borders around edit fields
-	t.BorderThickness = unit.Dp(t.TextSize) * 0.12
+	t.BorderThickness = unit.Dp(t.TextSize) * 0.08
 	t.BorderThicknessActive = unit.Dp(t.TextSize) * 0.18
 	t.BorderColor = t.Fg(Outline)
 	t.BorderColorHovered = t.Fg(Primary)

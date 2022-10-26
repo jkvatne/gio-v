@@ -254,15 +254,17 @@ func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
 	}
 	fixWidth := gtx.Sp(textSize * unit.Sp(fixSum) / 2)
 	scale := float32(gtx.Constraints.Max.X-fixWidth) / fracSum
-	for i := range weights {
-		if weights != nil {
-			if weights[i] <= 1.0 {
-				widths[i] = int(weights[i] * scale)
+	for i := range widths {
+		if i < len(widths) && i < len(weights) {
+			if weights != nil {
+				if weights[i] <= 1.0 {
+					widths[i] = int(weights[i] * scale)
+				} else {
+					widths[i] = gtx.Sp(textSize * unit.Sp(weights[i]) / 2)
+				}
 			} else {
-				widths[i] = gtx.Sp(textSize * unit.Sp(weights[i]) / 2)
+				widths[i] = gtx.Constraints.Max.X / len(weights)
 			}
-		} else {
-			widths[i] = gtx.Constraints.Max.X / len(weights)
 		}
 	}
 }
