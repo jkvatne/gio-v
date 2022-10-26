@@ -116,10 +116,10 @@ func (b *ButtonDef) Layout(gtx C) D {
 		func(gtx C) D {
 			// Handle clickable pointer/keyboard inputs
 			b.HandleEvents(gtx)
-			dims := b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
-				return D{}
+			dims := b.layout(gtx)
+			dims = b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
+				return dims
 			})
-			dims = b.layout(gtx)
 			b.SetupEventHandlers(gtx, dims.Size)
 			return dims
 		})
