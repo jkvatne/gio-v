@@ -156,10 +156,7 @@ func demo(th *wid.Theme) layout.Widget {
 				wid.Checkbox(th, "Checkbox3", wid.Bool(&darkMode), wid.Do(onSwitchMode)),
 			),
 		*/
-		// []float32{1, 1, 1, 1, 1, 1} gives buttons equally spaced over the row
-		// []float32{0, 0, 0, 0, 0, 0} gives buttons with natural width placed end to end
-		// nil gives buttons equally spaced over the row
-		// []float32{} gives buttons with natural width placed end to end
+		wid.Label(th, "Button spaced closely, left adjusted"),
 		wid.Row(th, nil, wid.SpaceClose,
 			wid.RoundButton(th, homeIcon,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
@@ -170,6 +167,7 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.TextButton(th, "Text button"),
 			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")),
 		),
+		wid.Label(th, "Buttons distributed, equal space to each button"),
 		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.RoundButton(th, homeIcon,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
@@ -180,6 +178,7 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.TextButton(th, "Text button"),
 			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")),
 		),
+		wid.Label(th, "Buttons with fixed spaceing given by em sizes 7,20,20,20,20,20,"),
 		wid.Row(th, nil, []float32{7, 20, 20, 20, 20, 20},
 			wid.RoundButton(th, homeIcon,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
@@ -190,6 +189,7 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.TextButton(th, "Text button"),
 			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")),
 		),
+		wid.Label(th, "Buttons with relative spacing given by wieghts 0.2, 0.4, 0.4, 0.4, 0.4, 0.4"),
 		wid.Row(th, nil, []float32{0.2, .4, .4, .4, .4, .4},
 			wid.RoundButton(th, homeIcon,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),

@@ -83,7 +83,7 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 		pos := make([]int, len(widgets)+1)
 		for i, child := range widgets {
 			if len(widths) > i {
-				c.Constraints.Max.X = widths[i]
+				c.Constraints.Max.X = inf // widths[i]
 				if widths[i] == 0 {
 					c.Constraints.Max.X = inf
 				}
@@ -92,9 +92,14 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 				c.Constraints.Max.X = inf
 				c.Constraints.Min.X = 0
 			}
-			pos[i+1] = pos[i] + widths[i]
 			macro := op.Record(c.Ops)
 			dims[i] = child(c)
+			if widths[i] < dims[i].Size.X {
+				pos[i+1] = pos[i] + dims[i].Size.X
+			} else {
+				pos[i+1] = pos[i] + widths[i]
+			}
+
 			call[i] = macro.Stop()
 			if yMax < dims[i].Size.Y {
 				yMax = dims[i].Size.Y
