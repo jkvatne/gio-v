@@ -175,9 +175,9 @@ func (b *Clickable) HandleEvents(gtx layout.Context) {
 					}
 				}
 			} else if b.index != nil && e.State == key.Release {
-				if e.Name == key.NameDownArrow || e.Name == key.NameLeftArrow {
+				if e.Name == key.NameDownArrow || e.Name == key.NameRightArrow {
 					*b.index++
-				} else if e.Name == key.NameDownArrow || e.Name == key.NameLeftArrow {
+				} else if e.Name == key.NameUpArrow || e.Name == key.NameLeftArrow {
 					*b.index--
 				}
 			}
