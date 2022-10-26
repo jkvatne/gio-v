@@ -44,27 +44,6 @@ func Weight(weight text.Weight) LabelOption {
 	}
 }
 
-// Large makes text 50% larger.
-func Large() LabelOption {
-	return func(d *LabelDef) {
-		d.TextSize = d.th.TextSize * 1.5
-	}
-}
-
-// Small makes text 20% smaller.
-func Small() LabelOption {
-	return func(d *LabelDef) {
-		d.TextSize = d.th.TextSize * 0.8
-	}
-}
-
-// Size set the relative font size (1.0 gives normal text).
-func Size(size float32) LabelOption {
-	return func(d *LabelDef) {
-		d.TextSize = d.th.TextSize * unit.Sp(size)
-	}
-}
-
 // Middle will align text in the middle.
 func Middle() LabelOption {
 	return func(d *LabelDef) {
@@ -87,7 +66,7 @@ func (e LabelOption) apply(cfg interface{}) {
 func (l LabelDef) Layout(gtx C) D {
 	paint.ColorOp{Color: l.fgColor}.Add(gtx.Ops)
 	tl := widget.Label{Alignment: l.Alignment, MaxLines: l.MaxLines}
-	dims := tl.Layout(gtx, l.th.Shaper, l.Font, l.TextSize, l.Stringer())
+	dims := tl.Layout(gtx, l.th.Shaper, l.Font, l.TextSize*unit.Sp(l.FontSize), l.Stringer())
 	return dims
 }
 
@@ -104,6 +83,7 @@ func Value(th *Theme, s func() string, options ...Option) func(gtx C) D {
 	w.th = th
 	w.fgColor = th.Fg(Canvas)
 	w.bgColor = th.Bg(Canvas)
+	w.FontSize = 1.0
 	for _, option := range options {
 		option.apply(&w)
 	}

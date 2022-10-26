@@ -38,6 +38,7 @@ type Base struct {
 	bgColor      color.NRGBA
 	description  string
 	Font         *text.Font
+	FontSize     float32
 }
 
 // BaseIf is the interface functions for widgets, used by options to set parameters
@@ -51,6 +52,7 @@ type BaseIf interface {
 	setHandler(h func())
 	setFont(f *text.Font)
 	getTheme() *Theme
+	setFontSize(f float32)
 }
 
 // BaseOption is a type for optional parameters when creating widgets
@@ -109,7 +111,11 @@ func (wid *Base) setHandler(h func()) {
 	wid.onUserChange = h
 }
 
-// Pad is used to set default widget paddings
+func (wid *Base) setFontSize(h float32) {
+	wid.FontSize = h
+}
+
+// Pad is used to set default widget paddings (outside of widget)
 func (wid *Base) Pad(t, r, b, l float32) {
 	wid.padding = layout.Inset{Top: unit.Dp(t), Bottom: unit.Dp(b), Left: unit.Dp(l), Right: unit.Dp(r)}
 }
@@ -168,6 +174,33 @@ func Role(r UIRole) BaseOption {
 		w.setBgColor(w.getTheme().Bg(r))
 		w.setFgColor(w.getTheme().Fg(r))
 		w.setRole(r)
+	}
+}
+
+func FontSize(v float32) BaseOption {
+	return func(w BaseIf) {
+		w.setFontSize(v)
+	}
+}
+
+// Heading makes text 75% larger.
+func Heading() BaseOption {
+	return func(w BaseIf) {
+		w.setFontSize(1.8)
+	}
+}
+
+// Large makes text 40% larger.
+func Large() BaseOption {
+	return func(w BaseIf) {
+		w.setFontSize(1.3)
+	}
+}
+
+// Small makes text 20% smaller.
+func Small() BaseOption {
+	return func(w BaseIf) {
+		w.setFontSize(0.8)
 	}
 }
 

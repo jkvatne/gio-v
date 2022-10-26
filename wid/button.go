@@ -8,6 +8,8 @@ import (
 	"image/color"
 	"math"
 
+	"gioui.org/unit"
+
 	"gioui.org/io/pointer"
 
 	"gioui.org/layout"
@@ -83,6 +85,7 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *But
 	b.role = Undefined
 	// Apply standard padding on the outside of the button. Can be overridden by option function
 	b.padding = th.ButtonPadding
+	b.FontSize = 1.0
 	for _, option := range options {
 		option.apply(&b)
 	}
@@ -133,28 +136,32 @@ func (b *ButtonDef) layout(gtx C) D {
 	macro := op.Record(gtx.Ops)
 	cgtx := gtx
 	cgtx.Constraints.Min.X = 0
-	dims := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize, b.Text)
+	dims := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontSize), b.Text)
 	call := macro.Stop()
-	height := 2 * dims.Size.Y
-	width := height + dims.Size.X
-
+	height := 3 * dims.Size.Y / 2
+	width := height*6/5 + dims.Size.X
+	dx := 0
+	if width < gtx.Dp(b.width) {
+		dx = (gtx.Dp(b.width) - width) / 2
+		width = gtx.Dp(b.width)
+	}
 	rr := gtx.Dp(b.th.ButtonCornerRadius)
 	if rr > height/2 {
 		rr = height / 2
 	}
-	dx := height / 2
-	dy := dx / 2
+	dy := (height - dims.Size.Y) / 2
+	if dy < 0 {
+		dy = 0
+	}
 	if b.Style == Round {
 		rr = height / 2
 		width = height
-		dx = height / 4
-		dy = height / 4
 	}
 
 	outline := image.Rect(0, 0, width, height)
 
 	if b.Icon != nil && b.Text != "" {
-		outline.Max.X += dims.Size.Y * 2
+		outline.Max.X += dims.Size.Y
 	}
 	// Draw shadow if pressed. Must be done before cliping
 	// because the shadow is outside the button
@@ -175,16 +182,27 @@ func (b *ButtonDef) layout(gtx C) D {
 	} else if b.Clickable.Hovered() {
 		paint.Fill(gtx.Ops, MulAlpha(b.fgColor, 15))
 	}
-	cgtx.Constraints.Min = image.Point{X: height / 2, Y: height / 2}
+
+	cgtx.Constraints.Min = image.Point{X: width, Y: height}
 	for _, pressed := range b.Clickable.History() {
 		drawInk(cgtx, pressed)
 	}
-
-	defer op.Offset(image.Pt(dx, dy)).Push(gtx.Ops).Pop()
-	if b.Icon != nil {
+	// Icon size
+	cgtx.Constraints.Min = image.Point{X: dims.Size.Y, Y: dims.Size.Y}
+	defer op.Offset(image.Pt(dx, 0)).Push(gtx.Ops).Pop()
+	if b.Icon != nil && b.Text != "" {
+		// Icon and text
+		defer op.Offset(image.Pt(height/4, dy)).Push(gtx.Ops).Pop()
 		im := b.Icon.Layout(cgtx, b.fgColor)
 		defer op.Offset(image.Pt(height/4+im.Size.X, 0)).Push(gtx.Ops).Pop()
-		width += im.Size.X + height*2
+		width += im.Size.X
+	} else if b.Icon != nil {
+		// Icon only
+		defer op.Offset(image.Pt(dy, dy)).Push(gtx.Ops).Pop()
+		_ = b.Icon.Layout(cgtx, b.fgColor)
+	} else {
+		// Text only
+		defer op.Offset(image.Pt(height*3/5, dy)).Push(gtx.Ops).Pop()
 	}
 	paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
 	call.Add(gtx.Ops)

@@ -329,7 +329,8 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
 	t.EditPadding = layout.Inset{Top: v * 2.0, Right: v * 2.0, Bottom: v, Left: v * 2.0}
 	// Buttons
-	t.ButtonPadding = t.LabelPadding
+	// ButtonPadding is the margin outside a button, giving distance to other elements
+	t.ButtonPadding = layout.Inset{Top: 4, Right: 4, Bottom: 4, Left: 4}
 	t.ButtonCornerRadius = unit.Dp(t.TextSize) * 999 // Force rounded buttons
 	t.ButtonLabelPadding = layout.Inset{Top: 4, Right: 4, Bottom: 4, Left: 4}
 	t.IconSize = unit.Dp(t.TextSize) * 1.5
