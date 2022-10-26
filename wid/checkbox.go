@@ -45,7 +45,7 @@ func Checkbox(th *Theme, label string, options ...Option) func(gtx C) D {
 // Layout updates the checkBox and displays it.
 func (c CheckBoxDef) Layout(gtx layout.Context) layout.Dimensions {
 	return c.CheckBox.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-		return c.layout(gtx, c.CheckBox.Value, c.CheckBox.Hovered() || c.CheckBox.Focused())
+		return c.layout(gtx, c.CheckBox.Value, c.CheckBox.Hovered(), c.CheckBox.Focused())
 	})
 }
 

@@ -4,6 +4,7 @@ package wid
 
 import (
 	"image"
+	"image/color"
 
 	"gioui.org/layout"
 	"gioui.org/op/clip"
@@ -21,7 +22,7 @@ type Checkable struct {
 	uncheckedStateIcon *widget.Icon
 }
 
-func (c *Checkable) layout(gtx layout.Context, checked, hovered bool) layout.Dimensions {
+func (c *Checkable) layout(gtx layout.Context, checked, hovered bool, focused bool) layout.Dimensions {
 	var icon *widget.Icon
 	if checked {
 		icon = c.checkedStateIcon
@@ -37,11 +38,15 @@ func (c *Checkable) layout(gtx layout.Context, checked, hovered bool) layout.Dim
 					dims := layout.Dimensions{
 						Size: image.Point{X: size, Y: size},
 					}
-					if !hovered {
-						return dims
+					b := image.Rectangle{Min: image.Pt(-size/4, -size/4), Max: image.Pt(size*5/4, size*5/4)}
+					background := color.NRGBA{}
+					if focused && hovered {
+						background = MulAlpha(c.fgColor, 70)
+					} else if focused {
+						background = MulAlpha(c.fgColor, 45)
+					} else if hovered {
+						background = MulAlpha(c.fgColor, 35)
 					}
-					background := MulAlpha(c.fgColor, 70)
-					b := image.Rectangle{Max: image.Pt(size, size)}
 					paint.FillShape(gtx.Ops, background, clip.Ellipse(b).Op(gtx.Ops))
 					return dims
 				}),

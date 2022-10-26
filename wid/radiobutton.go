@@ -42,16 +42,16 @@ func RadioButton(th *Theme, group *widget.Enum, key string, label string, option
 
 // Layout updates enum and displays the radio button.
 func (r RadioButtonStyle) Layout(gtx layout.Context) layout.Dimensions {
-	hovered, hovering := r.Group.Hovered()
-	focus, focused := r.Group.Focused()
+	_, hovering := r.Group.Hovered()
+	_, focused := r.Group.Focused()
 	return r.Group.Layout(gtx, r.Key, func(gtx layout.Context) layout.Dimensions {
 		semantic.RadioButton.Add(gtx.Ops)
-		highlight := hovering && hovered == r.Key || focused && focus == r.Key
+		// highlight := hovering && hovered == r.Key || focused && focus == r.Key
 		if r.Group.Changed() {
 			if r.onUserChange != nil {
 				r.onUserChange()
 			}
 		}
-		return r.layout(gtx, r.Group.Value == r.Key, highlight)
+		return r.layout(gtx, r.Group.Value == r.Key, hovering, focused)
 	})
 }
