@@ -8,23 +8,20 @@ import (
 	"gioui.org/layout"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
 )
 
-type checkable struct {
+type Checkable struct {
 	Base
 	Label              string
-	Font               text.Font
 	TextSize           unit.Sp
 	Size               unit.Dp
-	shaper             text.Shaper
 	checkedStateIcon   *widget.Icon
 	uncheckedStateIcon *widget.Icon
 }
 
-func (c *checkable) layout(gtx layout.Context, checked, hovered bool) layout.Dimensions {
+func (c *Checkable) layout(gtx layout.Context, checked, hovered bool) layout.Dimensions {
 	var icon *widget.Icon
 	if checked {
 		icon = c.checkedStateIcon
@@ -68,7 +65,7 @@ func (c *checkable) layout(gtx layout.Context, checked, hovered bool) layout.Dim
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 			return layout.UniformInset(2).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 				paint.ColorOp{Color: c.fgColor}.Add(gtx.Ops)
-				return widget.Label{}.Layout(gtx, c.shaper, c.Font, c.TextSize, c.Label)
+				return widget.Label{}.Layout(gtx, c.th.Shaper, *c.Font, c.TextSize, c.Label)
 			})
 		}),
 	)

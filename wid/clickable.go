@@ -174,12 +174,10 @@ func (b *Clickable) HandleEvents(gtx layout.Context) {
 						b.history[l-1].End = gtx.Now
 					}
 				}
-			} else if e.Name == key.NameDownArrow || e.Name == key.NameLeftArrow {
-				if b.index != nil && e.State == key.Release {
+			} else if b.index != nil && e.State == key.Release {
+				if e.Name == key.NameDownArrow || e.Name == key.NameLeftArrow {
 					*b.index++
-				}
-			} else if e.Name == key.NameUpArrow || e.Name == key.NameRightArrow {
-				if b.index != nil && e.State == key.Release {
+				} else if e.Name == key.NameDownArrow || e.Name == key.NameLeftArrow {
 					*b.index--
 				}
 			}

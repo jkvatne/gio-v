@@ -15,7 +15,6 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
-	"gioui.org/unit"
 	"gioui.org/widget"
 )
 
@@ -38,14 +37,9 @@ type ButtonDef struct {
 	Base
 	Tooltip
 	Clickable
-	shadow       ShadowStyle
-	Text         string
-	ToolTipWidth unit.Dp
-	Font         text.Font
-	shaper       text.Shaper
-	Icon         *widget.Icon
-	Style        ButtonStyle
-	align        layout.Alignment
+	Text  string
+	Icon  *widget.Icon
+	Style ButtonStyle
 }
 
 // BtnOption is the options for buttons only
@@ -74,7 +68,7 @@ func Button(th *Theme, label string, options ...Option) layout.Widget {
 
 // HeaderButton is a shortcut to a text only button with left justified text and a given size
 func HeaderButton(th *Theme, label string, options ...Option) layout.Widget {
-	options = append(options, AlignLeft())
+	options = append(options)
 	return aButton(Text, th, label, options...).Layout
 }
 
@@ -83,10 +77,9 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *But
 	// Setup default values
 	b.th = th
 	b.Text = label
-	b.Font = text.Font{Weight: text.Medium}
+	b.Font = &th.DefaultFont
 	b.shaper = th.Shaper
 	b.Style = style
-	b.align = layout.Middle
 	b.role = Undefined
 	// Apply standard padding on the outside of the button. Can be overridden by option function
 	b.padding = th.ButtonPadding
@@ -103,7 +96,7 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *But
 		b.fgColor = th.Fg(b.role)
 		b.bgColor = th.Bg(b.role)
 	}
-	b.Tooltip = PlatformTooltip(th, b.hint)
+	b.Tooltip = PlatformTooltip(th)
 	return &b
 }
 
@@ -119,15 +112,17 @@ func (b *ButtonDef) HandleClick() {
 // Layout will draw a button defined in b.
 func (b *ButtonDef) Layout(gtx C) D {
 	// Add an outer padding outside the button
-	dims := b.padding.Layout(gtx, func(gtx C) D {
-		// Handle clickable pointer/keyboard inputs
-		b.HandleEvents(gtx)
-		dims := b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
-			return b.layout(gtx)
+	dims := b.padding.Layout(gtx,
+		func(gtx C) D {
+			// Handle clickable pointer/keyboard inputs
+			b.HandleEvents(gtx)
+			dims := b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
+				return D{}
+			})
+			dims = b.layout(gtx)
+			b.SetupEventHandlers(gtx, dims.Size)
+			return dims
 		})
-		b.SetupEventHandlers(gtx, dims.Size)
-		return dims
-	})
 	b.HandleClick()
 	pointer.CursorPointer.Add(gtx.Ops)
 	return dims
@@ -138,7 +133,7 @@ func (b *ButtonDef) layout(gtx C) D {
 	macro := op.Record(gtx.Ops)
 	cgtx := gtx
 	cgtx.Constraints.Min.X = 0
-	dims := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, b.Font, b.th.TextSize, b.Text)
+	dims := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize, b.Text)
 	call := macro.Stop()
 	height := 2 * dims.Size.Y
 	width := height + dims.Size.X
@@ -198,13 +193,6 @@ func (b *ButtonDef) layout(gtx C) D {
 
 func (b BtnOption) apply(cfg interface{}) {
 	b(cfg.(*ButtonDef))
-}
-
-// AlignLeft will align text to the left. Used for Text buttons.
-func AlignLeft() BtnOption {
-	return func(b *ButtonDef) {
-		b.align = layout.Start
-	}
 }
 
 // BtnIcon sets button icon

@@ -6,6 +6,8 @@ import (
 	"image"
 	"image/color"
 
+	"gioui.org/text"
+
 	"gioui.org/layout"
 	"gioui.org/unit"
 )
@@ -35,6 +37,7 @@ type Base struct {
 	fgColor      color.NRGBA
 	bgColor      color.NRGBA
 	description  string
+	Font         *text.Font
 }
 
 // BaseIf is the interface functions for widgets, used by options to set parameters
@@ -46,6 +49,7 @@ type BaseIf interface {
 	setBgColor(c color.NRGBA)
 	setFgColor(c color.NRGBA)
 	setHandler(h func())
+	setFont(f *text.Font)
 	getTheme() *Theme
 }
 
@@ -83,6 +87,10 @@ func (wid *Base) setHint(hint string) {
 
 func (wid *Base) setRole(role UIRole) {
 	wid.role = role
+}
+
+func (wid *Base) setFont(font *text.Font) {
+	wid.Font = font
 }
 
 func (wid *Base) setPadding(padding layout.Inset) {

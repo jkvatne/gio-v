@@ -11,8 +11,7 @@ import (
 
 // RadioButtonStyle defines a radio button.
 type RadioButtonStyle struct {
-	Base
-	checkable
+	Checkable
 	Key   string
 	Group *widget.Enum
 }
@@ -20,18 +19,19 @@ type RadioButtonStyle struct {
 // RadioButton returns a RadioButton with a label. The key specifies the initial value for the output
 func RadioButton(th *Theme, group *widget.Enum, key string, label string, options ...Option) func(gtx C) D {
 	r := RadioButtonStyle{
-		checkable: checkable{
+		Checkable: Checkable{
 			Label:              label,
 			TextSize:           th.TextSize,
 			Size:               unit.Dp(th.TextSize) * 1.5,
-			shaper:             th.Shaper,
 			checkedStateIcon:   th.RadioChecked,
 			uncheckedStateIcon: th.RadioUnchecked,
 		},
 		Key:   key,
 		Group: group,
 	}
+	r.th = th
 	r.fgColor = th.Fg(Surface)
+	r.Font = &th.DefaultFont
 	for _, option := range options {
 		option.apply(&r)
 	}

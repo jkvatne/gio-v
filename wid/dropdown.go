@@ -19,33 +19,29 @@ import (
 type DropDownStyle struct {
 	Base
 	Clickable
-	disabler   *bool
-	disabled   bool
-	Font       text.Font
-	shaper     text.Shaper
-	items      []string
-	hovered    []bool
-	Visible    bool
-	wasVisible int
-	list       layout.Widget
-	Items      []layout.Widget
-	icon       *widget.Icon
+	disabler    *bool
+	disabled    bool
+	items       []string
+	itemHovered []bool
+	listVisible bool
+	list        layout.Widget
+	Items       []layout.Widget
 }
+
+var icon *widget.Icon
 
 // DropDown returns an initiated struct with drop-dow box setup info
 func DropDown(th *Theme, index *int, items []string, options ...Option) layout.Widget {
 	b := DropDownStyle{}
-	b.icon, _ = widget.NewIcon(icons.NavigationArrowDropDown)
 	b.th = th
 	b.fgColor = th.Fg(Canvas)
 	b.bgColor = th.Bg(Canvas)
-	b.Font = text.Font{Weight: text.Medium}
-	b.shaper = th.Shaper
+	b.Font = &th.DefaultFont
 	b.index = index
 	b.items = items
 	for i := range items {
 		b.Items = append(b.Items, b.option(th, i))
-		b.hovered = append(b.hovered, false)
+		b.itemHovered = append(b.itemHovered, false)
 	}
 	b.list = List(th, Overlay, b.Items...)
 	b.padding = th.LabelPadding
@@ -95,14 +91,14 @@ func (b *DropDownStyle) layout(gtx C) D {
 		),
 	)
 
-	oldVisible := b.Visible
+	oldVisible := b.listVisible
 	if !b.Focused() {
-		b.Visible = false
+		b.listVisible = false
 	}
 	for b.Clicked() {
-		b.Visible = !b.Visible
+		b.listVisible = !b.listVisible
 	}
-	if b.Visible {
+	if b.listVisible {
 		if !oldVisible {
 			b.setHovered()
 		}
@@ -132,16 +128,16 @@ func (b *DropDownStyle) layout(gtx C) D {
 }
 
 func (b *DropDownStyle) setHovered() {
-	if *b.index >= len(b.hovered) {
-		*b.index = len(b.hovered) - 1
+	if *b.index >= len(b.itemHovered) {
+		*b.index = len(b.itemHovered) - 1
 	}
 	if *b.index < 0 {
 		*b.index = 0
 	}
-	for i := 0; i < len(b.hovered); i++ {
-		b.hovered[i] = false
+	for i := 0; i < len(b.itemHovered); i++ {
+		b.itemHovered[i] = false
 	}
-	b.hovered[*b.index] = true
+	b.itemHovered[*b.index] = true
 }
 
 func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
@@ -151,16 +147,15 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 				switch e.Type {
 				case pointer.Release:
 					*b.index = i
-					b.Visible = false
-					b.wasVisible = 0
-					b.hovered[i] = false
+					b.listVisible = false
+					b.itemHovered[i] = false
 				case pointer.Enter:
-					for j := 0; j < len(b.hovered); j++ {
-						b.hovered[j] = false
+					for j := 0; j < len(b.itemHovered); j++ {
+						b.itemHovered[j] = false
 					}
-					b.hovered[i] = true
+					b.itemHovered[i] = true
 				case pointer.Leave:
-					b.hovered[i] = false
+					b.itemHovered[i] = false
 				case pointer.Cancel:
 					b.setHovered()
 				}
@@ -168,11 +163,11 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 		}
 		paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
 		lblWidget := func(gtx C) D {
-			return widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, text.Font{}, th.TextSize, b.items[i])
+			return widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, *b.Font, th.TextSize, b.items[i])
 		}
 		dims := layout.Inset{Top: unit.Dp(4), Left: unit.Dp(th.TextSize * 0.4), Right: unit.Dp(0)}.Layout(gtx, lblWidget)
 		defer clip.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Push(gtx.Ops).Pop()
-		if b.hovered[i] {
+		if b.itemHovered[i] {
 			c := MulAlpha(b.fgColor, 48)
 			if Luminance(b.bgColor) > 28 {
 				c = MulAlpha(b.fgColor, 160)
@@ -204,8 +199,8 @@ func (b *DropDownStyle) LayoutBackground() func(gtx C) D {
 		paintBorder(gtx, outline, b.fgColor, b.th.BorderThickness, rr)
 		oldIndex := *b.index
 		b.HandleEvents(gtx)
-		if *b.index > len(b.hovered) {
-			*b.index = len(b.hovered) - 1
+		if *b.index > len(b.itemHovered) {
+			*b.index = len(b.itemHovered) - 1
 		}
 		if *b.index != oldIndex {
 			b.setHovered()
@@ -232,7 +227,7 @@ func (b *DropDownStyle) LayoutLabel() layout.Widget {
 			if *b.index >= len(b.items) {
 				*b.index = len(b.items) - 1
 			}
-			return widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, b.shaper, b.Font, b.th.TextSize, b.items[*b.index])
+			return widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, b.th.Shaper, *b.Font, b.th.TextSize, b.items[*b.index])
 		})
 	}
 }
@@ -240,8 +235,12 @@ func (b *DropDownStyle) LayoutLabel() layout.Widget {
 // LayoutIcon draws the icon
 func (b *DropDownStyle) LayoutIcon() layout.Widget {
 	return func(gtx C) D {
-		size := gtx.Sp(b.th.TextSize * 1.5)
+		size := gtx.Sp(b.th.TextSize * 2)
 		gtx.Constraints = layout.Exact(image.Pt(size, size))
-		return b.icon.Layout(gtx, b.fgColor)
+		return icon.Layout(gtx, b.fgColor)
 	}
+}
+
+func init() {
+	icon, _ = widget.NewIcon(icons.NavigationArrowDropDown)
 }

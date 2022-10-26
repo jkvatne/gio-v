@@ -52,23 +52,10 @@ type Tooltip struct {
 	init         bool
 	shaper       text.Shaper
 	font         text.Font
-
-	// HoverDelay is the delay between the cursor entering the tip area
-	// and the tooltip appearing.
-	HoverDelay time.Duration
-	// LongPressDelay is the required duration of a press in the area for
-	// it to count as a long press.
-	LongPressDelay time.Duration
-	// LongPressDuration is the amount of time the tooltip should be displayed
-	// after being triggered by a long press.
-	LongPressDuration time.Duration
-	// FadeDuration is the amount of time it takes the tooltip to fade in
-	// and out.
-	FadeDuration time.Duration
 }
 
 // MobileTooltip constructs a tooltip suitable for use on mobile devices.
-func MobileTooltip(th *Theme, tips string) Tooltip {
+func MobileTooltip(th *Theme) Tooltip {
 	return Tooltip{
 		Fg:       th.TooltipOnBackground,
 		Bg:       th.TooltipBackground,
@@ -79,7 +66,7 @@ func MobileTooltip(th *Theme, tips string) Tooltip {
 }
 
 // DesktopTooltip constructs a tooltip suitable for use on desktop devices.
-func DesktopTooltip(th *Theme, tips string) Tooltip {
+func DesktopTooltip(th *Theme) Tooltip {
 	return Tooltip{
 		Fg:           th.TooltipOnBackground,
 		Bg:           th.TooltipBackground,
@@ -199,13 +186,7 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 					layout.Expanded(func(gtx C) D {
 						rr := gtx.Dp(t.CornerRadius)
 						outline := image.Rectangle{Max: gtx.Constraints.Min}
-						paint.FillShape(gtx.Ops, bg, clip.RRect{
-							Rect: outline,
-							NW:   rr,
-							NE:   rr,
-							SW:   rr,
-							SE:   rr,
-						}.Op(gtx.Ops))
+						paint.FillShape(gtx.Ops, bg, clip.UniformRRect(outline, rr).Op(gtx.Ops))
 						paintBorder(gtx, outline, MulAlpha(t.Fg, 128), unit.Dp(0.5), gtx.Dp(t.CornerRadius))
 						return D{}
 					}),

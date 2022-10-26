@@ -21,23 +21,21 @@ import (
 type EditDef struct {
 	Base
 	widget.Editor
-	shaper         text.Shaper
+	hovered        bool
 	alignment      layout.Alignment
 	outlineColor   color.NRGBA
 	selectionColor color.NRGBA
 	CharLimit      uint
-	font           text.Font
 	label          string
 	value          *string
 	LabelSize      unit.Sp
-	hovered        bool
 }
 
 // Edit will return a widget (layout function) for a text editor
 func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e := new(EditDef)
 	e.th = th
-	e.shaper = th.Shaper
+	e.Font = &th.DefaultFont
 	e.LabelSize = th.TextSize * 6
 	e.SingleLine = true
 	e.width = unit.Dp(5000) // Default to max width that is possible
@@ -189,7 +187,7 @@ func (e *EditDef) layLabel() layout.Widget {
 			}
 			gtx.Constraints.Min.X = gtx.Sp(e.LabelSize)
 			paint.ColorOp{Color: e.th.Fg(Canvas)}.Add(gtx.Ops)
-			w := widget.Label{Alignment: text.End}.Layout(gtx, e.shaper, e.font, e.th.TextSize, e.label)
+			w := widget.Label{Alignment: text.End}.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, e.label)
 			return w
 		})
 	}
@@ -204,7 +202,7 @@ func (e *EditDef) layoutEdit() func(gtx C) D {
 			maxLines = 1
 		}
 		tl := widget.Label{Alignment: e.Editor.Alignment, MaxLines: maxLines}
-		dims := tl.Layout(gtx, e.shaper, e.font, e.th.TextSize, e.hint)
+		dims := tl.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, e.hint)
 		call := macro.Stop()
 		if w := dims.Size.X; gtx.Constraints.Min.X < w {
 			gtx.Constraints.Min.X = w
@@ -212,7 +210,7 @@ func (e *EditDef) layoutEdit() func(gtx C) D {
 		if h := dims.Size.Y; gtx.Constraints.Min.Y < h {
 			gtx.Constraints.Min.Y = h
 		}
-		dims = e.Editor.Layout(gtx, e.shaper, e.font, e.th.TextSize, nil)
+		dims = e.Editor.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, nil)
 		disabled := gtx.Queue == nil
 		if e.Editor.Len() > 0 {
 			paint.ColorOp{Color: e.selectionColor}.Add(gtx.Ops)

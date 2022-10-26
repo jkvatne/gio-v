@@ -24,7 +24,6 @@ type LabelDef struct {
 	// MaxLines limits the number of lines. Zero means no limit.
 	MaxLines int
 	TextSize unit.Sp
-	shaper   text.Shaper
 	Stringer func() string
 }
 
@@ -88,7 +87,7 @@ func (e LabelOption) apply(cfg interface{}) {
 func (l LabelDef) Layout(gtx C) D {
 	paint.ColorOp{Color: l.fgColor}.Add(gtx.Ops)
 	tl := widget.Label{Alignment: l.Alignment, MaxLines: l.MaxLines}
-	dims := tl.Layout(gtx, l.shaper, l.Font, l.TextSize, l.Stringer())
+	dims := tl.Layout(gtx, l.th.Shaper, l.Font, l.TextSize, l.Stringer())
 	return dims
 }
 
@@ -97,7 +96,6 @@ func Value(th *Theme, s func() string, options ...Option) func(gtx C) D {
 	w := LabelDef{
 		Stringer:  s,
 		TextSize:  th.TextSize,
-		shaper:    th.Shaper,
 		Alignment: text.Start,
 		Font:      text.Font{Weight: text.Medium, Style: text.Regular},
 		MaxLines:  1,

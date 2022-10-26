@@ -4,6 +4,7 @@ package wid
 
 import (
 	"image/color"
+	"time"
 
 	"gioui.org/widget"
 
@@ -258,6 +259,19 @@ type Theme struct {
 	SashWidth  unit.Dp
 	TrackColor color.NRGBA
 	DotColor   color.NRGBA
+	// Tooltip settings
+	// HoverDelay is the delay between the cursor entering the tip area
+	// and the tooltip appearing.
+	HoverDelay time.Duration
+	// LongPressDelay is the required duration of a press in the area for
+	// it to count as a long press.
+	LongPressDelay time.Duration
+	// LongPressDuration is the amount of time the tooltip should be displayed
+	// after being triggered by a long press.
+	LongPressDuration time.Duration
+	// FadeDuration is the amount of time it takes the tooltip to fade in
+	// and out.
+	FadeDuration time.Duration
 }
 
 type (

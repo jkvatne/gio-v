@@ -236,39 +236,6 @@ type ListStyle struct {
 	AnchorStrategy
 }
 
-// Calculate widths
-func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
-	if weights == nil || len(weights) == 0 {
-		for i, _ := range widths {
-			widths[i] = gtx.Constraints.Max.X
-		}
-	}
-	fracSum := float32(0.0)
-	fixSum := float32(0.0)
-	for _, w := range weights {
-		if w <= 1.0 {
-			fracSum += w
-		} else {
-			fixSum += w
-		}
-	}
-	fixWidth := gtx.Sp(textSize * unit.Sp(fixSum) / 2)
-	scale := float32(gtx.Constraints.Max.X-fixWidth) / fracSum
-	for i := range widths {
-		if i < len(widths) && i < len(weights) {
-			if weights != nil {
-				if weights[i] <= 1.0 {
-					widths[i] = int(weights[i] * scale)
-				} else {
-					widths[i] = gtx.Sp(textSize * unit.Sp(weights[i]) / 2)
-				}
-			} else {
-				widths[i] = gtx.Constraints.Max.X / len(weights)
-			}
-		}
-	}
-}
-
 // List makes a vertical list
 func List(th *Theme, a AnchorStrategy, widgets ...layout.Widget) layout.Widget {
 	node := makeNode(widgets)
