@@ -7,7 +7,6 @@ package main
 // gio-v is maintained by Jan Kåre Vatne (jkvatne@online.no)
 
 import (
-	"fmt"
 	"gio-v/wid"
 	"image/color"
 	"os"
@@ -45,9 +44,6 @@ var (
 )
 
 func main() {
-	c := wid.RGB(0x123456)
-	d := wid.Hsl2rgb(wid.Rgb2hsl(c))
-	fmt.Printf("D=%d", d)
 	checkIcon, _ = widget.NewIcon(icons.NavigationCheck)
 	homeIcon, _ = widget.NewIcon(icons.ActionHome)
 
@@ -126,35 +122,12 @@ func onWinChange() {
 	}
 }
 
-func showTones(th *wid.Theme, c color.NRGBA) layout.Widget {
-	return wid.Row(th, nil, nil,
-		wid.Label(th, "00", wid.Large(), wid.Fg(wid.White), wid.Bg(wid.Tone(c, 00))),
-		wid.Label(th, "10", wid.Large(), wid.Fg(wid.White), wid.Bg(wid.Tone(c, 10))),
-		wid.Label(th, "20", wid.Large(), wid.Fg(wid.White), wid.Bg(wid.Tone(c, 20))),
-		wid.Label(th, "30", wid.Large(), wid.Fg(wid.White), wid.Bg(wid.Tone(c, 30))),
-		wid.Label(th, "40", wid.Large(), wid.Fg(wid.White), wid.Bg(wid.Tone(c, 40))),
-		wid.Label(th, "50", wid.Large(), wid.Fg(wid.White), wid.Bg(wid.Tone(c, 50))),
-		wid.Label(th, "60", wid.Large(), wid.Fg(wid.White), wid.Bg(wid.Tone(c, 60))),
-		wid.Label(th, "70", wid.Large(), wid.Fg(wid.Black), wid.Bg(wid.Tone(c, 70))),
-		wid.Label(th, "80", wid.Large(), wid.Fg(wid.Black), wid.Bg(wid.Tone(c, 80))),
-		wid.Label(th, "90", wid.Large(), wid.Fg(wid.Black), wid.Bg(wid.Tone(c, 90))),
-		wid.Label(th, "95", wid.Large(), wid.Fg(wid.Black), wid.Bg(wid.Tone(c, 95))),
-		wid.Label(th, "99", wid.Large(), wid.Fg(wid.Black), wid.Bg(wid.Tone(c, 99))),
-		wid.Label(th, "100", wid.Large(), wid.Fg(wid.Black), wid.Bg(wid.Tone(c, 100))),
-	)
-}
-
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
 	return wid.List(th, wid.Overlay,
 
 		wid.Label(th, "Demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Row(th, nil, []float32{1},
-			wid.Edit(th, wid.Hint("Delivery address")),
-		),
-
-		wid.Edit(th, wid.Hint("Delivery address")),
 
 		wid.Row(th, nil, []float32{1, 1, 1},
 			wid.Checkbox(th, "Dark mode", wid.Bool(&darkMode), wid.Do(onSwitchMode)),
@@ -162,10 +135,10 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.Checkbox(th, "Checkbox3", wid.Bool(&darkMode), wid.Do(onSwitchMode)),
 		),
 
-		wid.Label(th, "Buttons with fixed length and large font"),
-		wid.Button(th, "Change color", wid.Do(onClick), wid.W(450), wid.Large()),
-		wid.Label(th, "Buttons with large font using primary container"),
-		wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.FontSize(1.4), wid.Role(wid.PrimaryContainer)),
+		wid.Label(th, "Buttons with fixed length and large font, with and without icon"),
+		wid.Row(th, nil, nil,
+			wid.Button(th, "Change color", wid.Do(onClick), wid.W(450), wid.Large()),
+			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.FontSize(1.4), wid.Role(wid.PrimaryContainer))),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Button spaced closely, left adjusted"),
 		wid.Row(th, nil, wid.SpaceClose,
@@ -177,51 +150,6 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.Button(th, "Change color", wid.Do(onClick)),
 			wid.TextButton(th, "Text button"),
 			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")),
-		),
-		wid.Separator(th, unit.Dp(1.0)),
-		wid.Label(th, "Buttons distributed, equal space to each button"),
-		wid.Row(th, nil, wid.SpaceDistribute,
-			wid.RoundButton(th, homeIcon,
-				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(wid.RGB(0xF288F2)), wid.Fg(wid.RGB(0x0902200)),
-				wid.Hint("This is another hint")),
-			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.Role(wid.Secondary)),
-			wid.Button(th, "Change color", wid.Do(onClick)),
-			wid.TextButton(th, "Text button"),
-			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")),
-		),
-		wid.Separator(th, unit.Dp(1.0)),
-		wid.Label(th, "Buttons with fixed spacing given by em sizes 7,20,20,20,20,20,"),
-		wid.Row(th, nil, []float32{7, 20, 20, 20, 20, 20},
-			wid.RoundButton(th, homeIcon,
-				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(wid.RGB(0xF288F2)), wid.Fg(wid.RGB(0x0902200)),
-				wid.Hint("This is another hint")),
-			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Role(wid.Secondary)),
-			wid.Button(th, "Change color", wid.Do(onClick), wid.W(150)),
-			wid.TextButton(th, "Text button"),
-			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")),
-		),
-		wid.Separator(th, unit.Dp(1.0)),
-
-		wid.Label(th, "Buttons with relative spacing given by wieghts 0.2, 0.4, 0.4, 0.4, 0.4, 0.4"),
-		wid.Row(th, nil, []float32{0.2, .4, .4, .4, .4, .4},
-			wid.RoundButton(th, homeIcon,
-				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(wid.RGB(0xF288F2)), wid.Fg(wid.RGB(0x0902200)),
-				wid.Hint("This is another hint")),
-			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Role(wid.Secondary)),
-			wid.Button(th, "Change color", wid.Do(onClick), wid.W(150)),
-			wid.TextButton(th, "Text button"),
-			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")),
-		),
-
-		wid.Row(th, nil, []float32{1, 1},
-			wid.DropDown(th, &dropDownValue1, []string{"Option 1 with very long text", "Option 2", "Option 3"}),
-			wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}),
-		),
-		wid.Row(th, nil, []float32{1},
-			wid.Edit(th, wid.Hint("Delivery address")),
 		),
 		wid.Separator(th, unit.Dp(1.0)),
 
@@ -242,21 +170,6 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.RadioButton(th, group, "maximized", "Maximized", wid.Do(onWinChange)),
 		),
 
-		wid.Label(th, "Primary", wid.Large(), wid.Role(wid.Primary)),
-		wid.Label(th, "PrimaryContainer", wid.Large(), wid.Role(wid.PrimaryContainer)),
-		showTones(th, th.PrimaryColor),
-		wid.Label(th, "Secondary", wid.Large(), wid.Role(wid.Secondary)),
-		wid.Label(th, "SecondaryContainer", wid.Large(), wid.Role(wid.SecondaryContainer)),
-		showTones(th, th.SecondaryColor),
-		wid.Label(th, "Tertiary", wid.Large(), wid.Role(wid.Tertiary)),
-		wid.Label(th, "TertiaryContainer", wid.Large(), wid.Role(wid.TertiaryContainer)),
-		showTones(th, th.TertiaryColor),
-		wid.Label(th, "Error", wid.Large(), wid.Role(wid.Error)),
-		wid.Label(th, "ErrorContainer", wid.Large(), wid.Role(wid.ErrorContainer)),
-		showTones(th, th.ErrorColor),
-		wid.Label(th, "Surface", wid.Large(), wid.Role(wid.Surface)),
-		wid.Label(th, "Canvas", wid.Large(), wid.Role(wid.Canvas)),
-		showTones(th, th.NeutralColor),
 		// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
 		wid.Row(th, nil, nil,
 			wid.Edit(th, wid.Hint("Value 3")),
