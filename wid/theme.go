@@ -272,6 +272,8 @@ type Theme struct {
 	// FadeDuration is the amount of time it takes the tooltip to fade in
 	// and out.
 	FadeDuration time.Duration
+	RowPadTop    unit.Sp
+	RowPadBtm    unit.Sp
 }
 
 type (
@@ -353,7 +355,8 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	// Switch
 	t.TrackColor = WithAlpha(t.Fg(Primary), 0x40)
 	t.DotColor = t.Fg(Primary)
-
+	t.RowPadTop = t.TextSize * 0.3
+	t.RowPadBtm = t.TextSize * 0.2
 	return t
 }
 

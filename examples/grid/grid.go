@@ -63,7 +63,7 @@ func main() {
 	makePersons(100)
 
 	go func() {
-		currentTheme = wid.NewTheme(gofont.Collection(), 14)
+		currentTheme = wid.NewTheme(gofont.Collection(), 24)
 		win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
 		setup()
 		for {
@@ -98,7 +98,7 @@ func handleFrameEvents(e system.FrameEvent) {
 }
 
 // Column widths are given in units of approximately one average character width (en).
-var largeColWidth = []float32{2, 40, 40, 40, 40}
+var largeColWidth = []float32{2, 40, 40, 10, 10}
 var smallColWidth = []float32{2, 20, 0.9, 6, 15}
 var fracColWidth = []float32{2, 20.3, 0.3, 6, 0.14}
 
@@ -110,7 +110,7 @@ func setup() {
 	} else if page == "Grid3" {
 		form = Grid(currentTheme, wid.Overlay, data[:5], fracColWidth)
 	} else {
-		form = Grid(currentTheme, wid.Overlay, data, largeColWidth)
+		form = Grid(currentTheme, wid.Occupy, data, smallColWidth)
 	}
 }
 
@@ -183,31 +183,39 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 	thh := *th
 	// thh.OnBackground = wid.WithAlpha(th.Primary, 210)
 	// thh.Background = th.Surface
-	thh.LabelPadding = layout.UniformInset(unit.Dp(th.TextSize * 0.4))
+	thh.LabelPadding = layout.UniformInset(unit.Dp(th.TextSize * 0.05))
 	// Setup theme for grid labels.
 	thg := *th
 	// thg.Background = th.Surface
-	thg.LabelPadding = layout.UniformInset(unit.Dp(th.TextSize * 0.35))
+	thg.LabelPadding = layout.Inset{0, 0, 0, 0}
+	thg.DropDownPadding = layout.Inset{0, 0, 0, 0}
 	// Configure a row with headings.
-	heading := wid.Row(th, &selectAll, colWidths,
+	c := th.Bg(wid.Primary)
+	heading := wid.Row(th, &c, &selectAll, colWidths,
 		wid.Checkbox(th, "X", wid.Bool(&selectAll)),
 		wid.HeaderButton(th, "Name", wid.Do(onNameClick), wid.W(9999), wid.BtnIcon(nameIcon)),
 		wid.HeaderButton(th, "Address", wid.Do(onAddressClick), wid.W(9999), wid.BtnIcon(addressIcon)),
 		wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.W(9999), wid.BtnIcon(ageIcon)),
-		wid.Label(th, "Gender", wid.Bold()),
+		// wid.Label(th, "Gender", wid.Bold()),
 	)
 	var lines []layout.Widget
+
 	lines = append(lines, heading)
 	lines = append(lines, wid.Separator(th, unit.Dp(2.0), wid.W(9999)))
 	for i := 0; i < len(data); i++ {
-		w := wid.Row(&thg, &data[i].Selected, colWidths,
+		col := wid.MulAlpha(wid.Blue, 20)
+		if i%2 == 0 {
+			col = wid.MulAlpha(wid.Red, 20)
+		}
+		w := wid.Row(&thg, &col, &data[i].Selected, colWidths,
 			wid.Checkbox(&thg, "", wid.Bool(&data[i].Selected)),
+			wid.Label(&thg, "Åg"),
 			wid.Label(&thg, data[i].Name),
 			wid.Label(&thg, data[i].Address),
 			wid.Label(&thg, fmt.Sprintf("%d", data[i].Age)),
-			wid.DropDown(&thg, &data[i].Status, []string{"Male", "Female", "Other"}),
+			// wid.DropDown(&thg, &data[i].Status, []string{"Male", "Female", "Other"}),
 		)
-		lines = append(lines, w, wid.Separator(th, unit.Dp(0.5), wid.W(9999)))
+		lines = append(lines, w, wid.Separator(th, unit.Dp(0.7), wid.W(9999)))
 	}
 	return wid.List(&thg, anchor, lines...)
 }

@@ -22,9 +22,10 @@ func Checkbox(th *Theme, label string, options ...Option) func(gtx C) D {
 	c := &CheckBoxDef{
 		CheckBox: new(widget.Bool),
 		Checkable: Checkable{
-			Label:              label,
-			TextSize:           th.TextSize,
-			Size:               unit.Dp(th.TextSize) * 1.5,
+			Label:    label,
+			TextSize: th.TextSize * 1.0,
+			// Scale up size so it will be as big as the letters including descenders
+			Size:               unit.Dp(th.TextSize) * 1.25,
 			checkedStateIcon:   th.CheckBoxChecked,
 			uncheckedStateIcon: th.CheckBoxUnchecked,
 		},

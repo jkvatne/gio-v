@@ -40,18 +40,18 @@ type Tooltip struct {
 	// MaxWidth is the maximum width of the tool-tip box. Should be less than form width.
 	MaxWidth unit.Dp
 	// Text defines the content of the tooltip.
-	Text         widget.Label
-	position     image.Point
-	Hover        InvalidateDeadline
-	Press        InvalidateDeadline
-	LongPress    InvalidateDeadline
-	Fg           color.NRGBA
-	Bg           color.NRGBA
-	CornerRadius unit.Dp
-	TextSize     unit.Sp
-	init         bool
-	shaper       text.Shaper
-	font         text.Font
+	Text      widget.Label
+	position  image.Point
+	Hover     InvalidateDeadline
+	Press     InvalidateDeadline
+	LongPress InvalidateDeadline
+	Fg        color.NRGBA
+	Bg        color.NRGBA
+	TooltipRR unit.Dp
+	TextSize  unit.Sp
+	init      bool
+	shaper    text.Shaper
+	font      text.Font
 }
 
 // MobileTooltip constructs a tooltip suitable for use on mobile devices.
@@ -68,13 +68,13 @@ func MobileTooltip(th *Theme) Tooltip {
 // DesktopTooltip constructs a tooltip suitable for use on desktop devices.
 func DesktopTooltip(th *Theme) Tooltip {
 	return Tooltip{
-		Fg:           th.TooltipOnBackground,
-		Bg:           th.TooltipBackground,
-		MaxWidth:     th.TooltipWidth,
-		CornerRadius: th.TooltipCornerRadius,
-		font:         text.Font{Weight: text.Medium},
-		shaper:       th.Shaper,
-		TextSize:     th.TextSize * 0.9,
+		Fg:        th.TooltipOnBackground,
+		Bg:        th.TooltipBackground,
+		MaxWidth:  th.TooltipWidth,
+		TooltipRR: th.TooltipCornerRadius,
+		font:      text.Font{Weight: text.Medium},
+		shaper:    th.Shaper,
+		TextSize:  th.TextSize * 0.9,
 	}
 }
 
@@ -184,10 +184,10 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 				dims := layout.Stack{}.Layout(
 					gtx,
 					layout.Expanded(func(gtx C) D {
-						rr := gtx.Dp(t.CornerRadius)
+						rr := gtx.Dp(t.TooltipRR)
 						outline := image.Rectangle{Max: gtx.Constraints.Min}
 						paint.FillShape(gtx.Ops, bg, clip.UniformRRect(outline, rr).Op(gtx.Ops))
-						paintBorder(gtx, outline, MulAlpha(t.Fg, 128), unit.Dp(0.5), gtx.Dp(t.CornerRadius))
+						paintBorder(gtx, outline, MulAlpha(t.Fg, 128), unit.Dp(0.5), gtx.Dp(t.TooltipRR))
 						return D{}
 					}),
 					layout.Stacked(func(gtx C) D {

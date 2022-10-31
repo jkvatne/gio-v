@@ -20,7 +20,6 @@ type DropDownStyle struct {
 	Base
 	Clickable
 	disabler    *bool
-	disabled    bool
 	items       []string
 	itemHovered []bool
 	listVisible bool
@@ -44,7 +43,7 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 		b.itemHovered = append(b.itemHovered, false)
 	}
 	b.list = List(th, Overlay, b.Items...)
-	b.padding = th.LabelPadding
+	b.padding = layout.Inset{} // th.LabelPadding
 	for _, option := range options {
 		option.apply(&b)
 	}
@@ -64,33 +63,46 @@ func (b *DropDownStyle) layout(gtx C) D {
 		gtx.Constraints.Max.X = gtx.Dp(b.width)
 	}
 
-	b.disabled = false
 	if b.disabler != nil && *b.disabler {
 		gtx = gtx.Disabled()
-		b.disabled = true
 	}
-	min := CalcMin(gtx, b.width)
-	dims := layout.Stack{Alignment: layout.Center}.Layout(gtx,
-		layout.Expanded(b.LayoutBackground()),
-		layout.Stacked(
-			func(gtx C) D {
-				if min.X > 0 {
-					gtx.Constraints.Min = min
-					gtx.Constraints.Max.X = min.X
-				}
-				if b.width > 0 {
-					gtx.Constraints.Max.X = gtx.Dp(b.width)
-					gtx.Constraints.Min.X = gtx.Dp(b.width)
-				}
-				return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start}.Layout(
-					gtx,
-					layout.Flexed(1.0, b.LayoutLabel()),
-					layout.Rigid(b.LayoutIcon()),
-				)
-			},
-		),
-	)
 
+	dims := widget.Label{Alignment: text.Start, MaxLines: 1}.
+		Layout(gtx, b.th.Shaper, *b.Font, b.th.TextSize, b.items[*b.index])
+
+	gtx.Constraints.Min.X = dims.Size.Y + gtx.Sp(b.th.TextSize)/3
+	op.Offset(image.Pt(gtx.Constraints.Max.X-dims.Size.Y, 0)).Add(gtx.Ops)
+
+	sz := gtx.Constraints.Min.X
+	size := gtx.Constraints.Constrain(image.Pt(sz, sz))
+	defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
+	paint.Fill(gtx.Ops, Red)
+
+	icon.Layout(gtx, b.fgColor)
+
+	/*
+		min := CalcMin(gtx, b.width)
+		dims := layout.Stack{Alignment: layout.Center}.Layout(gtx,
+			layout.Expanded(b.LayoutBackground()),
+			layout.Stacked(
+				func(gtx C) D {
+					if min.X > 0 {
+						gtx.Constraints.Min = min
+						gtx.Constraints.Max.X = min.X
+					}
+					if b.width > 0 {
+						gtx.Constraints.Max.X = gtx.Dp(b.width)
+						gtx.Constraints.Min.X = gtx.Dp(b.width)
+					}
+					return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start}.Layout(
+						gtx,
+						layout.Flexed(1.0, b.LayoutLabel()),
+						layout.Rigid(b.LayoutIcon()),
+					)
+				},
+			),
+		)
+	*/
 	oldVisible := b.listVisible
 	if !b.Focused() {
 		b.listVisible = false
@@ -235,7 +247,7 @@ func (b *DropDownStyle) LayoutLabel() layout.Widget {
 // LayoutIcon draws the icon
 func (b *DropDownStyle) LayoutIcon() layout.Widget {
 	return func(gtx C) D {
-		size := gtx.Sp(b.th.TextSize * 2)
+		size := gtx.Sp(b.th.TextSize * 1)
 		gtx.Constraints = layout.Exact(image.Pt(size, size))
 		return icon.Layout(gtx, b.fgColor)
 	}

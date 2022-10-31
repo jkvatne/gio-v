@@ -129,19 +129,19 @@ func demo(th *wid.Theme) layout.Widget {
 
 		wid.Label(th, "Demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 
-		wid.Row(th, nil, []float32{1, 1, 1},
+		wid.Row(th, &wid.White, nil, []float32{1, 1, 1},
 			wid.Checkbox(th, "Dark mode", wid.Bool(&darkMode), wid.Do(onSwitchMode)),
 			wid.Checkbox(th, "Checkbox2", wid.Bool(&darkMode), wid.Do(onSwitchMode)),
 			wid.Checkbox(th, "Checkbox3", wid.Bool(&darkMode), wid.Do(onSwitchMode)),
 		),
 
 		wid.Label(th, "Buttons with fixed length and large font, with and without icon"),
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, nil, nil,
 			wid.Button(th, "Change color", wid.Do(onClick), wid.W(450), wid.Large()),
 			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.FontSize(1.4), wid.Role(wid.PrimaryContainer))),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Button spaced closely, left adjusted"),
-		wid.Row(th, nil, wid.SpaceClose,
+		wid.Row(th, nil, nil, wid.SpaceClose,
 			wid.RoundButton(th, homeIcon,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(wid.RGB(0xF288F2)), wid.Fg(wid.RGB(0x0902200)),
@@ -153,7 +153,7 @@ func demo(th *wid.Theme) layout.Widget {
 		),
 		wid.Separator(th, unit.Dp(1.0)),
 
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, nil, nil,
 			wid.Label(th, "A switch"),
 			wid.Switch(th, &greenFlag, wid.Do(swColor)),
 			wid.Label(th, " "),
@@ -163,7 +163,7 @@ func demo(th *wid.Theme) layout.Widget {
 		),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Slider(th, &sliderValue, 0, 100),
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, nil, nil,
 			wid.RadioButton(th, group, "windowed", "Windowed", wid.Do(onWinChange)),
 			wid.RadioButton(th, group, "fullscreen", "Fullscreen", wid.Do(onWinChange)),
 			wid.RadioButton(th, group, "minimized", "Minimized", wid.Do(onWinChange)),
@@ -171,12 +171,12 @@ func demo(th *wid.Theme) layout.Widget {
 		),
 
 		// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, nil, nil,
 			wid.Edit(th, wid.Hint("Value 3")),
 			wid.Edit(th, wid.Hint("Value 4")),
 			wid.Edit(th, wid.Hint("Value 5")),
 		),
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, nil, nil,
 			wid.Col(
 				wid.Edit(th, wid.Hint("Value 6"), wid.Lbl("Value 76")),
 				wid.Edit(th, wid.Hint("Value 7"), wid.Lbl("Value 7")),
@@ -187,7 +187,7 @@ func demo(th *wid.Theme) layout.Widget {
 			),
 		),
 
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, nil, nil,
 			wid.DropDown(th, &dropDownValue1, []string{"Option 1 with very long text", "Option 2", "Option 3"}),
 			wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}),
 		),

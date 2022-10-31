@@ -4,6 +4,7 @@ package wid
 
 import (
 	"image"
+	"image/color"
 
 	"gioui.org/unit"
 
@@ -17,6 +18,8 @@ import (
 
 type rowDef struct {
 	widget.Clickable
+	padTop unit.Sp
+	padBtm unit.Sp
 }
 
 // SpaceClose is a shortcut for specifying that the row elements are placed close together, left to right
@@ -67,13 +70,18 @@ func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
 }
 
 // Row returns a widget grid row with selectable color.
-func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget) layout.Widget {
+func Row(th *Theme, pbgColor *color.NRGBA, selected *bool, weights []float32, widgets ...layout.Widget) layout.Widget {
 	r := rowDef{}
+	bgColor := th.Bg(Canvas)
+	if (pbgColor != nil) && (*pbgColor != color.NRGBA{}) {
+		bgColor = *pbgColor
+	}
+	r.padTop = th.RowPadTop
+	r.padBtm = th.RowPadBtm
 	dims := make([]D, len(widgets))
 	call := make([]op.CallOp, len(widgets))
 	widths := make([]int, len(widgets))
 	return func(gtx C) D {
-		bgColor := th.Bg(Canvas)
 		if r.Hovered() {
 			// TODO bgColor = Interpolate(th.Bg(Primary), th.Fg(Primary), 0.05)
 		} else if selected != nil && *selected {
@@ -84,6 +92,7 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 		yMax := 0
 		c := gtx
 		pos := make([]int, len(widgets)+1)
+		// For each column in the row
 		for i, child := range widgets {
 			if len(widths) > i {
 				c.Constraints.Max.X = widths[i]
@@ -119,6 +128,7 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 			trans.Pop()
 		}
 		// The row width is now the position after the last drawn widget.
+		yMax += gtx.Sp(r.padBtm + r.padTop)
 		dim := D{Size: image.Pt(pos[len(widgets)], yMax)}
 		drawAll := macro.Stop()
 		// Draw background.
@@ -126,11 +136,11 @@ func Row(th *Theme, selected *bool, weights []float32, widgets ...layout.Widget)
 		paint.ColorOp{Color: bgColor}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
 		gtx.Constraints.Min = dim.Size
-		// r.LayoutClickable(gtx)
-		// r.HandleClicks(gtx)
-		// r.HandleToggle(selected, nil)
+		defer op.Offset(image.Pt(0, gtx.Sp(r.padTop))).Push(gtx.Ops).Pop()
 		// Then play the macro to draw all the children.
 		drawAll.Add(gtx.Ops)
+		paint.ColorOp{Color: bgColor}.Add(gtx.Ops)
+		paint.PaintOp{}.Add(gtx.Ops)
 		return dim
 	}
 }

@@ -70,8 +70,10 @@ func Button(th *Theme, label string, options ...Option) layout.Widget {
 
 // HeaderButton is a shortcut to a text only button with left justified text and a given size
 func HeaderButton(th *Theme, label string, options ...Option) layout.Widget {
-	options = append(options)
-	return aButton(Text, th, label, options...).Layout
+	b := aButton(Text, th, label, options...)
+	b.cornerRadius = 0
+	b.padding = layout.Inset{}
+	return b.Layout
 }
 
 func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *ButtonDef {
@@ -89,14 +91,13 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *But
 	for _, option := range options {
 		option.apply(&b)
 	}
+	if b.role == Undefined {
+		b.role = Canvas
+	}
+	b.fgColor = th.Fg(b.role)
 	if b.Style == Outlined || b.Style == Text {
-		b.fgColor = th.Fg(b.role)
 		b.bgColor = color.NRGBA{}
 	} else if (b.fgColor == color.NRGBA{}) && (b.bgColor == color.NRGBA{}) {
-		if (b.role == Undefined) && (b.fgColor == color.NRGBA{}) {
-			b.role = Primary
-		}
-		b.fgColor = th.Fg(b.role)
 		b.bgColor = th.Bg(b.role)
 	}
 	b.Tooltip = PlatformTooltip(th)
@@ -145,7 +146,7 @@ func (b *ButtonDef) layout(gtx C) D {
 		dx = (gtx.Dp(b.width) - width) / 2
 		width = gtx.Dp(b.width)
 	}
-	rr := gtx.Dp(b.th.ButtonCornerRadius)
+	rr := gtx.Dp(b.cornerRadius)
 	if rr > height/2 {
 		rr = height / 2
 	}
@@ -217,6 +218,12 @@ func (b BtnOption) apply(cfg interface{}) {
 func BtnIcon(i *widget.Icon) BtnOption {
 	return func(b *ButtonDef) {
 		b.Icon = i
+	}
+}
+
+func RR(rr unit.Dp) BtnOption {
+	return func(b *ButtonDef) {
+		b.cornerRadius = rr
 	}
 }
 
