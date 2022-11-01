@@ -6,7 +6,6 @@ package main
 // It scrolls verticaly and horizontaly and implements highlighting of rows.
 
 import (
-	"fmt"
 	"gio-v/wid"
 	"os"
 	"sort"
@@ -18,7 +17,6 @@ import (
 	"gioui.org/app"
 	"gioui.org/font/gofont"
 	"gioui.org/io/system"
-	"gioui.org/widget"
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
 	"gioui.org/layout"
@@ -26,8 +24,9 @@ import (
 )
 
 var (
-	upIcon       *widget.Icon
-	downIcon     *widget.Icon
+	// upIcon       *wid.Icon
+	// downIcon     *wid.Icon
+	// sortIcon     *wid.Icon
 	currentTheme *wid.Theme  // the theme selected
 	win          *app.Window // The main window
 	form         layout.Widget
@@ -58,8 +57,9 @@ var data = []person{
 }
 
 func main() {
-	upIcon, _ = widget.NewIcon(icons.HardwareKeyboardArrowUp)
-	downIcon, _ = widget.NewIcon(icons.HardwareKeyboardArrowDown)
+	// upIcon, _ = wid.NewIcon(icons.HardwareKeyboardArrowUp)
+	// downIcon, _ = wid.NewIcon(icons.HardwareKeyboardArrowDown)
+	// sortIcon, _ = wid.NewIcon(icons.ContentSort)
 	makePersons(100)
 
 	go func() {
@@ -98,9 +98,9 @@ func handleFrameEvents(e system.FrameEvent) {
 }
 
 // Column widths are given in units of approximately one average character width (en).
-var largeColWidth = []float32{2, 40, 40, 10, 10}
-var smallColWidth = []float32{2, 20, 0.9, 6, 15}
-var fracColWidth = []float32{2, 20.3, 0.3, 6, 0.14}
+var largeColWidth = []float32{20, 40, 40, 10, 10}
+var smallColWidth = []float32{20, 20, 0.9, 6, 15}
+var fracColWidth = []float32{20, 20.3, 0.3, 6, 0.14}
 
 func setup() {
 	if page == "Grid1" {
@@ -130,9 +130,13 @@ var sortCol int
 func onNameClick() {
 	if dir {
 		sort.Slice(data, func(i, j int) bool { return data[i].Name < data[j].Name })
+		nameIcon.Update(icons.HardwareKeyboardArrowDown)
 	} else {
 		sort.Slice(data, func(i, j int) bool { return data[i].Name >= data[j].Name })
+		nameIcon.Update(icons.HardwareKeyboardArrowUp)
 	}
+	addressIcon.Update(icons.ContentSort)
+	ageIcon.Update(icons.ContentSort)
 	dir = !dir
 	sortCol = 1
 }
@@ -140,9 +144,13 @@ func onNameClick() {
 func onAddressClick() {
 	if dir {
 		sort.Slice(data, func(i, j int) bool { return data[i].Address < data[j].Address })
+		addressIcon.Update(icons.HardwareKeyboardArrowDown)
 	} else {
 		sort.Slice(data, func(i, j int) bool { return data[i].Address >= data[j].Address })
+		addressIcon.Update(icons.HardwareKeyboardArrowUp)
 	}
+	nameIcon.Update(icons.ContentSort)
+	ageIcon.Update(icons.ContentSort)
 	dir = !dir
 	sortCol = 2
 }
@@ -150,9 +158,13 @@ func onAddressClick() {
 func onAgeClick() {
 	if dir {
 		sort.Slice(data, func(i, j int) bool { return data[i].Age < data[j].Age })
+		ageIcon.Update(icons.HardwareKeyboardArrowDown)
 	} else {
 		sort.Slice(data, func(i, j int) bool { return data[i].Age >= data[j].Age })
+		ageIcon.Update(icons.HardwareKeyboardArrowUp)
 	}
+	nameIcon.Update(icons.ContentSort)
+	addressIcon.Update(icons.ContentSort)
 	dir = !dir
 	sortCol = 3
 }
@@ -160,42 +172,25 @@ func onAgeClick() {
 // selectAll is not used, but is controlled from the heading checkbox.
 // It could be used to check/uncheck all boxes in the table
 var selectAll bool
-var nameIcon *widget.Icon
-var addressIcon *widget.Icon
-var ageIcon *widget.Icon
-
-func getIcon(colNo int) *widget.Icon {
-	if sortCol == colNo {
-		if dir {
-			return upIcon
-		}
-		return downIcon
-	}
-	return nil
-}
+var nameIcon *wid.Icon
+var addressIcon *wid.Icon
+var ageIcon *wid.Icon
 
 // Grid is a widget that lays out the grid. This is all that is needed.
 func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []float32) layout.Widget {
-	nameIcon = getIcon(1)
-	addressIcon = getIcon(2)
-	ageIcon = getIcon(3)
+	nameIcon, _ = wid.NewIcon(icons.ContentSort)
+	addressIcon, _ = wid.NewIcon(icons.ContentSort)
+	ageIcon, _ = wid.NewIcon(icons.ContentSort)
 	// Setup theme for heading.
 	thh := *th
-	// thh.OnBackground = wid.WithAlpha(th.Primary, 210)
-	// thh.Background = th.Surface
-	thh.LabelPadding = layout.UniformInset(unit.Dp(th.TextSize * 0.05))
-	// Setup theme for grid labels.
 	thg := *th
-	// thg.Background = th.Surface
-	thg.LabelPadding = layout.Inset{0, 0, 0, 0}
-	thg.DropDownPadding = layout.Inset{0, 0, 0, 0}
 	// Configure a row with headings.
-	c := th.Bg(wid.Primary)
-	heading := wid.Row(th, &c, &selectAll, colWidths,
-		wid.Checkbox(th, "X", wid.Bool(&selectAll)),
-		wid.HeaderButton(th, "Name", wid.Do(onNameClick), wid.W(9999), wid.BtnIcon(nameIcon)),
-		wid.HeaderButton(th, "Address", wid.Do(onAddressClick), wid.W(9999), wid.BtnIcon(addressIcon)),
-		wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.W(9999), wid.BtnIcon(ageIcon)),
+	bgColor := th.Bg(wid.Primary)
+	heading := wid.Row(&thh, &bgColor, colWidths,
+		wid.Checkbox(th, "", wid.Bool(&selectAll), wid.Role(wid.Primary)),
+		wid.HeaderButton(&thh, "Name", wid.Do(onNameClick), wid.BtnIcon(nameIcon), wid.P()),
+		wid.HeaderButton(&thh, "Address", wid.Do(onAddressClick), wid.BtnIcon(addressIcon), wid.P()),
+		wid.HeaderButton(&thh, "Age", wid.Do(onAgeClick), wid.BtnIcon(ageIcon), wid.P()),
 		// wid.Label(th, "Gender", wid.Bold()),
 	)
 	var lines []layout.Widget
@@ -203,17 +198,16 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 	lines = append(lines, heading)
 	lines = append(lines, wid.Separator(th, unit.Dp(2.0), wid.W(9999)))
 	for i := 0; i < len(data); i++ {
-		col := wid.MulAlpha(wid.Blue, 20)
+		bgColor := wid.MulAlpha(wid.Blue, 20)
 		if i%2 == 0 {
-			col = wid.MulAlpha(wid.Red, 20)
+			bgColor = wid.MulAlpha(wid.Red, 20)
 		}
-		w := wid.Row(&thg, &col, &data[i].Selected, colWidths,
+		w := wid.Row(&thg, &bgColor, colWidths,
 			wid.Checkbox(&thg, "", wid.Bool(&data[i].Selected)),
-			wid.Label(&thg, "Åg"),
-			wid.Label(&thg, data[i].Name),
-			wid.Label(&thg, data[i].Address),
-			wid.Label(&thg, fmt.Sprintf("%d", data[i].Age)),
-			// wid.DropDown(&thg, &data[i].Status, []string{"Male", "Female", "Other"}),
+			wid.Label(&thg, &data[i].Name),
+			wid.Label(&thg, &data[i].Address),
+			// wid.Label(&thg, fmt.Sprintf("%d", data[i].Age)),
+			wid.DropDown(&thg, &data[i].Status, []string{"Male", "Female", "Other"}),
 		)
 		lines = append(lines, w, wid.Separator(th, unit.Dp(0.7), wid.W(9999)))
 	}

@@ -24,8 +24,8 @@ var (
 	radioButtonValue bool
 	thb              *wid.Theme
 	th               *wid.Theme
-	addIcon          *widget.Icon
-	checkIcon        *widget.Icon
+	addIcon          *wid.Icon
+	checkIcon        *wid.Icon
 	group                        = new(widget.Enum)
 	sliderValue      float32     = 0.1
 	win              *app.Window // The main window

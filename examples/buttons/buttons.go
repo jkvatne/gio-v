@@ -33,8 +33,8 @@ var (
 	name           string
 	address        string
 	group          = new(widget.Enum)
-	homeIcon       *widget.Icon
-	checkIcon      *widget.Icon
+	homeIcon       *wid.Icon
+	checkIcon      *wid.Icon
 	greenFlag              = false // the state variable for the button color
 	darkMode               = false
 	dropDownValue1         = 1
@@ -44,8 +44,8 @@ var (
 )
 
 func main() {
-	checkIcon, _ = widget.NewIcon(icons.NavigationCheck)
-	homeIcon, _ = widget.NewIcon(icons.ActionHome)
+	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
+	homeIcon, _ = wid.NewIcon(icons.ActionHome)
 	go func() {
 		currentTheme = wid.NewTheme(gofont.Collection(), 14)
 		win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))

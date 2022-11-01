@@ -20,12 +20,12 @@ type Checkable struct {
 	Label              string
 	TextSize           unit.Sp
 	Size               unit.Dp
-	checkedStateIcon   *widget.Icon
-	uncheckedStateIcon *widget.Icon
+	checkedStateIcon   *Icon
+	uncheckedStateIcon *Icon
 }
 
 func (c *Checkable) layout(gtx layout.Context, checked, hovered bool, focused bool) layout.Dimensions {
-	var icon *widget.Icon
+	var icon *Icon
 	if checked {
 		icon = c.checkedStateIcon
 	} else {

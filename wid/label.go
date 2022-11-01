@@ -4,6 +4,7 @@ package wid
 
 import (
 	"image"
+	"image/color"
 
 	"gioui.org/op"
 
@@ -81,8 +82,10 @@ func Value(th *Theme, s func() string, options ...Option) func(gtx C) D {
 	}
 	w.padding = th.LabelPadding
 	w.th = th
+	// Default to Canvas role (typically black for LightMode and white for DarkMode
 	w.fgColor = th.Fg(Canvas)
-	w.bgColor = th.Bg(Canvas)
+	// Default to transparent background
+	w.bgColor = color.NRGBA{}
 	w.FontSize = 1.0
 	for _, option := range options {
 		option.apply(&w)
@@ -102,7 +105,7 @@ func Value(th *Theme, s func() string, options ...Option) func(gtx C) D {
 }
 
 // Label returns a widget for a label showing a string
-func Label(th *Theme, str string, options ...Option) func(gtx C) D {
-	s := func() string { return str }
+func Label(th *Theme, str *string, options ...Option) func(gtx C) D {
+	s := func() string { return *str }
 	return Value(th, s, options...)
 }

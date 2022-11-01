@@ -27,7 +27,7 @@ type DropDownStyle struct {
 	Items       []layout.Widget
 }
 
-var icon *widget.Icon
+var icon *Icon
 
 // DropDown returns an initiated struct with drop-dow box setup info
 func DropDown(th *Theme, index *int, items []string, options ...Option) layout.Widget {
@@ -254,5 +254,5 @@ func (b *DropDownStyle) LayoutIcon() layout.Widget {
 }
 
 func init() {
-	icon, _ = widget.NewIcon(icons.NavigationArrowDropDown)
+	icon, _ = NewIcon(icons.NavigationArrowDropDown)
 }

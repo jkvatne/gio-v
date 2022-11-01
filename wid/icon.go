@@ -2,7 +2,6 @@
 
 package wid
 
-/*
 import (
 	"image"
 	"image/color"
@@ -43,10 +42,22 @@ func (ic *Icon) Layout(gtx C, color color.NRGBA) D {
 	}
 	size := gtx.Constraints.Constrain(image.Pt(sz, sz))
 	defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
+
 	ico := ic.image(size.X, color)
 	ico.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
 	return D{Size: ico.Size()}
+}
+
+func (ic *Icon) Update(data []byte) error {
+	_, err := iconvg.DecodeMetadata(data)
+	if err != nil {
+		return err
+	}
+	ic.src = data
+	ic.imgSize = 0
+	ic.imgColor = color.NRGBA{}
+	return nil
 }
 
 func (ic *Icon) image(sz int, c color.NRGBA) paint.ImageOp {
@@ -71,4 +82,3 @@ func (ic *Icon) image(sz int, c color.NRGBA) paint.ImageOp {
 	ic.imgColor = c
 	return ic.op
 }
-*/

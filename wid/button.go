@@ -39,17 +39,18 @@ type ButtonDef struct {
 	Base
 	Tooltip
 	Clickable
-	Text  string
-	Icon  *widget.Icon
-	Style ButtonStyle
+	Text       string
+	Icon       *Icon
+	Style      ButtonStyle
+	internPadX unit.Dp
 }
 
 // BtnOption is the options for buttons only
 type BtnOption func(*ButtonDef)
 
 // RoundButton is a shortcut to a round button
-func RoundButton(th *Theme, d *widget.Icon, options ...Option) layout.Widget {
-	options = append(options, BtnIcon(d), W(0))
+func RoundButton(th *Theme, d *Icon, options ...Option) layout.Widget {
+	options = append(options, BtnIcon(d), W(0), RR(99999))
 	return aButton(Round, th, "", options...).Layout
 }
 
@@ -72,7 +73,7 @@ func Button(th *Theme, label string, options ...Option) layout.Widget {
 func HeaderButton(th *Theme, label string, options ...Option) layout.Widget {
 	b := aButton(Text, th, label, options...)
 	b.cornerRadius = 0
-	b.padding = layout.Inset{}
+	b.internPadX = th.LabelPadding.Left
 	return b.Layout
 }
 
@@ -139,32 +140,26 @@ func (b *ButtonDef) layout(gtx C) D {
 	cgtx.Constraints.Min.X = 0
 	dims := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontSize), b.Text)
 	call := macro.Stop()
-	height := 3 * dims.Size.Y / 2
-	width := height*6/5 + dims.Size.X
-	dx := 0
-	if width < gtx.Dp(b.width) {
-		dx = (gtx.Dp(b.width) - width) / 2
-		width = gtx.Dp(b.width)
+	// Icon size is equal to label height
+	iconSize := 0
+	if b.Icon != nil {
+		iconSize = dims.Size.Y
 	}
-	rr := gtx.Dp(b.cornerRadius)
-	if rr > height/2 {
-		rr = height / 2
+	// Default button height is 1.5 * text height, limited by constraints
+	height := min(3*dims.Size.Y/2, gtx.Constraints.Max.Y)
+	// Default button width when width is not given has padding=1.2 char heights.
+	contentWidth := dims.Size.X + iconSize*3/2
+	width := min(gtx.Constraints.Max.X, max(contentWidth+dims.Size.Y, gtx.Dp(b.width)))
+	dx := max(0, (width-contentWidth)/2)
+	if b.internPadX < 0 {
+		dx = 0
 	}
-	dy := (height - dims.Size.Y) / 2
-	if dy < 0 {
-		dy = 0
-	}
-	if b.Style == Round {
-		rr = height / 2
-		width = height
-	}
+	// Limit corner radius
+	rr := min(gtx.Dp(b.cornerRadius), height/2)
 
 	outline := image.Rect(0, 0, width, height)
 
-	if b.Icon != nil && b.Text != "" {
-		outline.Max.X += dims.Size.Y
-	}
-	// Draw shadow if pressed. Must be done before cliping
+	// Draw shadow if pressed. Must be done before clipping
 	// because the shadow is outside the button
 	if b.Clickable.Focused() {
 		DrawShadow(gtx, outline, rr, 20)
@@ -189,24 +184,26 @@ func (b *ButtonDef) layout(gtx C) D {
 		drawInk(cgtx, pressed)
 	}
 	// Icon size
-	cgtx.Constraints.Min = image.Point{X: dims.Size.Y, Y: dims.Size.Y}
-	defer op.Offset(image.Pt(dx, 0)).Push(gtx.Ops).Pop()
+	cgtx.Constraints.Min = image.Point{X: iconSize, Y: iconSize}
+
+	// Calculate internal paddings and move
+	dy := max(0, (height-dims.Size.Y)/2)
+	defer op.Offset(image.Pt(dx, dy)).Push(gtx.Ops).Pop()
+
 	if b.Icon != nil && b.Text != "" {
 		// Icon and text
-		defer op.Offset(image.Pt(height/4, dy)).Push(gtx.Ops).Pop()
-		im := b.Icon.Layout(cgtx, b.fgColor)
-		defer op.Offset(image.Pt(height/4+im.Size.X, 0)).Push(gtx.Ops).Pop()
-		width += im.Size.X
+		_ = b.Icon.Layout(cgtx, b.fgColor)
+		defer op.Offset(image.Pt(height/4+iconSize, 0)).Push(gtx.Ops).Pop()
+		paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
+		call.Add(gtx.Ops)
 	} else if b.Icon != nil {
 		// Icon only
-		defer op.Offset(image.Pt(dy, dy)).Push(gtx.Ops).Pop()
 		_ = b.Icon.Layout(cgtx, b.fgColor)
 	} else {
 		// Text only
-		defer op.Offset(image.Pt(height*3/5, dy)).Push(gtx.Ops).Pop()
+		paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
+		call.Add(gtx.Ops)
 	}
-	paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
-	call.Add(gtx.Ops)
 	return D{Size: outline.Max}
 }
 
@@ -215,12 +212,13 @@ func (b BtnOption) apply(cfg interface{}) {
 }
 
 // BtnIcon sets button icon
-func BtnIcon(i *widget.Icon) BtnOption {
+func BtnIcon(i *Icon) BtnOption {
 	return func(b *ButtonDef) {
 		b.Icon = i
 	}
 }
 
+// RR is the corner radius
 func RR(rr unit.Dp) BtnOption {
 	return func(b *ButtonDef) {
 		b.cornerRadius = rr

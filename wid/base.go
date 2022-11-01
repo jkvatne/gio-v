@@ -12,10 +12,12 @@ import (
 	"gioui.org/unit"
 )
 
-type UiState uint8
+// UIState is the hovered/focusted etc. state
+type UIState uint8
 
+// constants for the state of the widget. It usually determines shading
 const (
-	DisabledState UiState = iota
+	DisabledState UIState = iota
 	EnabledState
 	HoveredState
 	FocusedState
@@ -25,7 +27,7 @@ const (
 // Base is tha base structure for widgets. It contains variables that (almost) all widgets share
 type Base struct {
 	th           *Theme
-	state        UiState
+	state        UIState
 	hint         string
 	padding      layout.Inset
 	onUserChange func()
@@ -169,6 +171,7 @@ func Bg(c color.NRGBA) BaseOption {
 	}
 }
 
+// Role set the theme role for the widget (Primary, Secondary etc)
 func Role(r UIRole) BaseOption {
 	return func(w BaseIf) {
 		w.setBgColor(w.getTheme().Bg(r))
@@ -177,6 +180,35 @@ func Role(r UIRole) BaseOption {
 	}
 }
 
+// P is a shortcut to set role=Primary
+func P() BaseOption {
+	return func(w BaseIf) {
+		w.setRole(Primary)
+	}
+}
+
+// PC is a shortcut to set role=Primary
+func PC() BaseOption {
+	return func(w BaseIf) {
+		w.setRole(PrimaryContainer)
+	}
+}
+
+// S is a shortcut to set role=Secondary
+func S() BaseOption {
+	return func(w BaseIf) {
+		w.setRole(Secondary)
+	}
+}
+
+// SC is a shortcut to set role=SecondaryContainer
+func SC() BaseOption {
+	return func(w BaseIf) {
+		w.setRole(SecondaryContainer)
+	}
+}
+
+// FontSize set the font size for text in the widget
 func FontSize(v float32) BaseOption {
 	return func(w BaseIf) {
 		w.setFontSize(v)
@@ -226,7 +258,7 @@ func Pads(pads ...float32) BaseOption {
 	}
 }
 
-// CalcMin will calculate the minimum size of widget
+// CalcMin will calculate the minimum size of widget.
 func CalcMin(gtx C, width unit.Dp) image.Point {
 	min := gtx.Constraints.Min
 	if width <= 1.0 {
