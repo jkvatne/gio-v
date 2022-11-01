@@ -136,20 +136,6 @@ func W(width float32) BaseOption {
 	}
 }
 
-// Max is an option parameter to set the widget width to fill all available space
-func Max() BaseOption {
-	return func(w BaseIf) {
-		w.setWidth(10000)
-	}
-}
-
-// Min is an option parameter to set the widget to its minimum width (i.e. length of text)
-func Min() BaseOption {
-	return func(w BaseIf) {
-		w.setWidth(0)
-	}
-}
-
 // Hint is an option parameter to set the widget hint (tooltip)
 func Hint(hint string) BaseOption {
 	return func(w BaseIf) {

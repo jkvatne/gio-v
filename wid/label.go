@@ -3,16 +3,17 @@
 package wid
 
 import (
-	"image"
-	"image/color"
-
+	"fmt"
 	"gioui.org/op"
-
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
+	"golang.org/x/exp/constraints"
+	"image"
+	"image/color"
+	"strconv"
 )
 
 // LabelDef is the setup for a label.
@@ -25,7 +26,8 @@ type LabelDef struct {
 	// MaxLines limits the number of lines. Zero means no limit.
 	MaxLines int
 	TextSize unit.Sp
-	Stringer func() string
+	Stringer func(dp int) string
+	dp       int
 }
 
 // LabelOption is options specific to Edits.
@@ -53,9 +55,15 @@ func Middle() LabelOption {
 }
 
 // End will align text to the end.
-func End() LabelOption {
+func Right() LabelOption {
 	return func(d *LabelDef) {
 		d.Alignment = text.End
+	}
+}
+
+func Dp(n int) LabelOption {
+	return func(d *LabelDef) {
+		d.dp = n
 	}
 }
 
@@ -67,12 +75,12 @@ func (e LabelOption) apply(cfg interface{}) {
 func (l LabelDef) Layout(gtx C) D {
 	paint.ColorOp{Color: l.fgColor}.Add(gtx.Ops)
 	tl := widget.Label{Alignment: l.Alignment, MaxLines: l.MaxLines}
-	dims := tl.Layout(gtx, l.th.Shaper, l.Font, l.TextSize*unit.Sp(l.FontSize), l.Stringer())
+	dims := tl.Layout(gtx, l.th.Shaper, l.Font, l.TextSize*unit.Sp(l.FontSize), l.Stringer(l.dp))
 	return dims
 }
 
 // Value returns a widget for a value given by stringer function
-func Value(th *Theme, s func() string, options ...Option) func(gtx C) D {
+func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx C) D {
 	w := LabelDef{
 		Stringer:  s,
 		TextSize:  th.TextSize,
@@ -104,8 +112,50 @@ func Value(th *Theme, s func() string, options ...Option) func(gtx C) D {
 	}
 }
 
+type Value interface {
+	int | float64 | float32 | string | *int | *float64 | *string
+}
+
 // Label returns a widget for a label showing a string
-func Label(th *Theme, str *string, options ...Option) func(gtx C) D {
-	s := func() string { return *str }
-	return Value(th, s, options...)
+func Label[V Value](th *Theme, x V, options ...Option) func(gtx C) D {
+	if x, ok := any(x).(int); ok {
+		s := func(dp int) string { return fmt.Sprintf("%d", x) }
+		return StringerValue(th, s, options...)
+	}
+	if x, ok := any(x).(*int); ok {
+		s := func(dp int) string { return fmt.Sprintf("%d", *x) }
+		return StringerValue(th, s, options...)
+	}
+	if x, ok := any(x).(float64); ok {
+		s := func(dp int) string { return strconv.FormatFloat(float64(x), 'f', dp, 32) }
+		return StringerValue(th, s, options...)
+	}
+	if x, ok := any(x).(*float64); ok {
+		s := func(dp int) string { return strconv.FormatFloat(float64(*x), 'f', dp, 32) }
+		return StringerValue(th, s, options...)
+	}
+	if x, ok := any(x).(string); ok {
+		s := func(dp int) string { return x }
+		return StringerValue(th, s, options...)
+	}
+	if x, ok := any(x).(*string); ok {
+		s := func(dp int) string { return *x }
+		return StringerValue(th, s, options...)
+	}
+	s := func(dp int) string { return fmt.Sprintf("%v", x) }
+	return StringerValue(th, s, options...)
+}
+
+func Min[T constraints.Ordered](x, y T) T {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+func Max[T constraints.Ordered](x, y T) T {
+	if x >= y {
+		return x
+	}
+	return y
 }

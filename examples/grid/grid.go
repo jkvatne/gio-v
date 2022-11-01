@@ -36,15 +36,15 @@ var (
 type person struct {
 	Selected bool
 	Name     string
-	Age      int
+	Age      float64
 	Address  string
 	Status   int
 }
 
 var data = []person{
-	{Name: "Ole Karlsen", Age: 21, Address: "Storgata 3", Status: 1},
-	{Name: "Per Pedersen", Age: 22, Address: "Svenskveien 33", Selected: true, Status: 1},
-	{Name: "Nils Aure", Age: 23, Address: "Brogata 34"},
+	{Name: "Ole Karlsen", Age: 21.333333, Address: "Storgata 3", Status: 1},
+	{Name: "Per Pedersen", Age: 22.111111111, Address: "Svenskveien 33", Selected: true, Status: 1},
+	{Name: "Nils Aure", Age: 23.4, Address: "Brogata 34"},
 	{Name: "Kai Oppdal", Age: 28, Address: "Soleieveien 12"},
 	{Name: "Gro Arneberg", Age: 29, Address: "Blomsterveien 22"},
 	{Name: "Ole Kolås", Age: 21, Address: "Blåklokkevikua 33"},
@@ -98,9 +98,9 @@ func handleFrameEvents(e system.FrameEvent) {
 }
 
 // Column widths are given in units of approximately one average character width (en).
-var largeColWidth = []float32{20, 40, 40, 10, 10}
-var smallColWidth = []float32{20, 20, 0.9, 6, 15}
-var fracColWidth = []float32{20, 20.3, 0.3, 6, 0.14}
+var largeColWidth = []float32{2, 40, 40, 20, 10}
+var smallColWidth = []float32{2, 20, 0.9, 12, 15}
+var fracColWidth = []float32{2, 20.3, 0.3, 6, 0.14}
 
 func setup() {
 	if page == "Grid1" {
@@ -118,7 +118,7 @@ func setup() {
 func makePersons(n int) {
 	m := n - len(data)
 	for i := 1; i < m; i++ {
-		data[0].Age = i
+		data[0].Age = data[0].Age + float64(i)
 		data = append(data, data[0])
 	}
 	data = data[0:n]
@@ -129,10 +129,10 @@ var sortCol int
 
 func onNameClick() {
 	if dir {
-		sort.Slice(data, func(i, j int) bool { return data[i].Name < data[j].Name })
+		sort.Slice(data, func(i, j int) bool { return data[i].Name >= data[j].Name })
 		nameIcon.Update(icons.HardwareKeyboardArrowDown)
 	} else {
-		sort.Slice(data, func(i, j int) bool { return data[i].Name >= data[j].Name })
+		sort.Slice(data, func(i, j int) bool { return data[i].Name < data[j].Name })
 		nameIcon.Update(icons.HardwareKeyboardArrowUp)
 	}
 	addressIcon.Update(icons.ContentSort)
@@ -143,10 +143,10 @@ func onNameClick() {
 
 func onAddressClick() {
 	if dir {
-		sort.Slice(data, func(i, j int) bool { return data[i].Address < data[j].Address })
+		sort.Slice(data, func(i, j int) bool { return data[i].Address >= data[j].Address })
 		addressIcon.Update(icons.HardwareKeyboardArrowDown)
 	} else {
-		sort.Slice(data, func(i, j int) bool { return data[i].Address >= data[j].Address })
+		sort.Slice(data, func(i, j int) bool { return data[i].Address < data[j].Address })
 		addressIcon.Update(icons.HardwareKeyboardArrowUp)
 	}
 	nameIcon.Update(icons.ContentSort)
@@ -157,10 +157,10 @@ func onAddressClick() {
 
 func onAgeClick() {
 	if dir {
-		sort.Slice(data, func(i, j int) bool { return data[i].Age < data[j].Age })
+		sort.Slice(data, func(i, j int) bool { return data[i].Age >= data[j].Age })
 		ageIcon.Update(icons.HardwareKeyboardArrowDown)
 	} else {
-		sort.Slice(data, func(i, j int) bool { return data[i].Age >= data[j].Age })
+		sort.Slice(data, func(i, j int) bool { return data[i].Age < data[j].Age })
 		ageIcon.Update(icons.HardwareKeyboardArrowUp)
 	}
 	nameIcon.Update(icons.ContentSort)
@@ -206,8 +206,8 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 			wid.Checkbox(&thg, "", wid.Bool(&data[i].Selected)),
 			wid.Label(&thg, &data[i].Name),
 			wid.Label(&thg, &data[i].Address),
-			// wid.Label(&thg, fmt.Sprintf("%d", data[i].Age)),
-			wid.DropDown(&thg, &data[i].Status, []string{"Male", "Female", "Other"}),
+			wid.Label(&thg, &data[i].Age, wid.Dp(2), wid.Right()),
+			// wid.DropDown(&thg, &data[i].Status, []string{"Male", "Female", "Other"}),
 		)
 		lines = append(lines, w, wid.Separator(th, unit.Dp(0.7), wid.W(9999)))
 	}
