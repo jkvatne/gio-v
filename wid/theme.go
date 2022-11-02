@@ -91,7 +91,7 @@ func (th *Theme) Fg(kind UIRole) color.NRGBA {
 		case Surface:
 			return Tone(th.Pallet.NeutralColor, 10)
 		case SurfaceVariant:
-			return Tone(th.Pallet.NeutralVariantColor, 20)
+			return Tone(th.Pallet.NeutralVariantColor, 30)
 		case Outline:
 			return Tone(th.Pallet.NeutralColor, 50)
 		case Primary:
@@ -155,7 +155,7 @@ func (th *Theme) Bg(kind UIRole) color.NRGBA {
 		case Surface:
 			return Tone(th.Pallet.NeutralColor, 99)
 		case SurfaceVariant:
-			return Tone(th.Pallet.NeutralVariantColor, 99)
+			return Tone(th.Pallet.NeutralVariantColor, 90)
 		case Primary:
 			return Tone(th.Pallet.PrimaryColor, 40)
 		case Secondary:
@@ -182,7 +182,7 @@ func (th *Theme) Bg(kind UIRole) color.NRGBA {
 		case Surface:
 			return Tone(th.Pallet.NeutralColor, 10)
 		case SurfaceVariant:
-			return Tone(th.Pallet.NeutralVariantColor, 10)
+			return Tone(th.Pallet.NeutralVariantColor, 30)
 		case Primary:
 			return Tone(th.Pallet.PrimaryColor, 80)
 		case Secondary:
@@ -228,7 +228,6 @@ type Theme struct {
 	RadioChecked          *Icon
 	RadioUnchecked        *Icon
 	FingerSize            unit.Dp // FingerSize is the minimum touch target size.
-	HintColor             color.NRGBA
 	SelectionColor        color.NRGBA
 	BorderThicknessActive unit.Dp
 	BorderThickness       unit.Dp
@@ -329,7 +328,6 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 		Bottom: unit.Dp(t.TextSize) * 0.2,
 		Left:   unit.Dp(t.TextSize) * 0.2}
 	t.DropDownPadding = t.LabelPadding
-	t.HintColor = DeEmphasis(t.Fg(Surface), 45)
 	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
 	t.EditPadding = layout.Inset{Top: v * 2.0, Right: v * 2.0, Bottom: v, Left: v * 2.0}
 	// Buttons

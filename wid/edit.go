@@ -195,7 +195,7 @@ func (e *EditDef) layLabel() layout.Widget {
 func (e *EditDef) layoutEdit() func(gtx C) D {
 	return func(gtx C) D {
 		macro := op.Record(gtx.Ops)
-		paint.ColorOp{Color: e.th.HintColor}.Add(gtx.Ops)
+		paint.ColorOp{Color: MulAlpha(e.fgColor, 110)}.Add(gtx.Ops)
 		var maxLines int
 		if e.Editor.SingleLine {
 			maxLines = 1
