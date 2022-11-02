@@ -20,25 +20,24 @@ import (
 )
 
 var (
-	topLabel         = "Hello, Gio"
-	radioButtonValue bool
-	thb              *wid.Theme
-	th               *wid.Theme
-	addIcon          *wid.Icon
-	checkIcon        *wid.Icon
-	group                        = new(widget.Enum)
-	sliderValue      float32     = 0.1
-	win              *app.Window // The main window
-	form             layout.Widget
-	progress         float32
+	topLabel    = "Hello, Gio"
+	thb         *wid.Theme
+	th          *wid.Theme
+	addIcon     *wid.Icon
+	checkIcon   *wid.Icon
+	group                   = new(widget.Enum)
+	sliderValue float32     = 0.1
+	win         *app.Window // The main window
+	form        layout.Widget
+	progress    float32
 )
 
 func main() {
 	c := wid.RGB(0x123456)
 	d := wid.Hsl2rgb(wid.Rgb2hsl(c))
 	fmt.Printf("D=%d", d)
-	checkIcon, _ = widget.NewIcon(icons.NavigationCheck)
-	addIcon, _ = widget.NewIcon(icons.ContentAdd)
+	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
+	addIcon, _ = wid.NewIcon(icons.ContentAdd)
 
 	go func() {
 		th = wid.NewTheme(gofont.Collection(), 14)
@@ -90,10 +89,10 @@ func kitchen(th *wid.Theme) layout.Widget {
 		wid.Edit(th, wid.Hint("Value 1")),
 		wid.Edit(th, wid.Hint("Value 2")),
 		wid.Row(th, nil, []float32{25, 10, 20, 15, 20},
-			wid.Button(thb, "Click me!", wid.W(100), wid.Do(onClick)),
-			wid.RoundButton(th, addIcon, wid.Hint("This is another dummy button")),
-			wid.Button(th, "Icon", wid.BtnIcon(checkIcon), wid.Fg(wid.RGB(0x00ffff))),
-			wid.Button(thb, "Blue", wid.Role(wid.Primary), wid.Bg(wid.RGB(0x0000ff))),
+			wid.Button(thb, "Click me!", wid.W(200), wid.Do(onClick), wid.Role(wid.Secondary)),
+			wid.RoundButton(th, addIcon, wid.Hint("This is another dummy button"), wid.Role(wid.Primary)),
+			wid.Button(th, "Icon", wid.BtnIcon(checkIcon), wid.Role(wid.Primary)),
+			wid.Button(thb, "Blue", wid.Role(wid.Primary)),
 		),
 		// TODO wid.Row(th, nil, nil,
 		// wid.ProgressBar(th, &progress),
@@ -107,7 +106,6 @@ func kitchen(th *wid.Theme) layout.Widget {
 		),
 		wid.Row(th, nil, []float32{0.9, 0.1},
 			wid.Slider(th, &sliderValue, 0, 100),
-			wid.Value(th, func() string { return fmt.Sprintf("  %0.2f", sliderValue) }),
-		),
+			wid.Label(th, sliderValue)),
 	)
 }

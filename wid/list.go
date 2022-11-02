@@ -180,7 +180,7 @@ func (s ScrollbarStyle) layout(gtx C, axis layout.Axis, viewportStart, viewportE
 				trackLen := gtx.Constraints.Min.X
 				viewStart := int(math.Round(float64(viewportStart) * float64(trackLen)))
 				viewEnd := int(math.Round(float64(viewportEnd) * float64(trackLen)))
-				indicatorLen := max(viewEnd-viewStart, gtx.Dp(s.Indicator.MajorMinLen))
+				indicatorLen := Max(viewEnd-viewStart, gtx.Dp(s.Indicator.MajorMinLen))
 				if viewStart+indicatorLen > trackLen {
 					viewStart = trackLen - indicatorLen
 				}

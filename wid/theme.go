@@ -323,7 +323,11 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	// Shadow
 	t.Elevation = unit.Dp(t.TextSize) * 0.5
 	// Text
-	t.LabelPadding = layout.Inset{Top: v, Right: v * 2.0, Bottom: v, Left: v * 2.0}
+	t.LabelPadding = layout.Inset{
+		Top:    unit.Dp(t.TextSize) * 0.2,
+		Right:  unit.Dp(t.TextSize) * 0.1,
+		Bottom: unit.Dp(t.TextSize) * 0.2,
+		Left:   unit.Dp(t.TextSize) * 0.2}
 	t.DropDownPadding = t.LabelPadding
 	t.HintColor = DeEmphasis(t.Fg(Surface), 45)
 	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
@@ -353,8 +357,8 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	// Switch
 	t.TrackColor = WithAlpha(t.Fg(Primary), 0x40)
 	t.DotColor = t.Fg(Primary)
-	t.RowPadTop = t.TextSize * 0.3
-	t.RowPadBtm = t.TextSize * 0.2
+	t.RowPadTop = t.TextSize * 0.0
+	t.RowPadBtm = t.TextSize * 0.0
 	return t
 }
 

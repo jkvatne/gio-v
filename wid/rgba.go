@@ -119,38 +119,6 @@ func Luminance(c color.NRGBA) byte {
 	return byte((r*int(c.R) + g*int(c.G) + b*int(c.B)) / t)
 }
 
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func abs(n int) int {
-	if n < 0 {
-		return -n
-	}
-	return n
-}
-
-func sign(n int) int {
-	switch {
-	case n < 0:
-		return -1
-	case n > 0:
-		return 1
-	default:
-		return 0
-	}
-}
-
 // Internal implementation converting RGB to HSL, HSV, or HSI.
 // Basically a direct implementation of this: https://en.wikipedia.org/wiki/HSL_and_HSV#General_approach
 func Rgb2hsl(c color.NRGBA) (float64, float64, float64) {

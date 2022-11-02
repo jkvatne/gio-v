@@ -26,12 +26,11 @@ const (
 
 // Base is tha base structure for widgets. It contains variables that (almost) all widgets share
 type Base struct {
-	th           *Theme
-	state        UIState
+	th *Theme
+	// state        UIState
 	hint         string
 	padding      layout.Inset
 	onUserChange func()
-	disabled     bool
 	disabler     *bool
 	width        unit.Dp
 	role         UIRole

@@ -2,6 +2,7 @@ package wid
 
 import (
 	"image"
+	"image/color"
 
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -14,7 +15,16 @@ import (
 type SeparatorStyle struct {
 	Base
 	thickness unit.Dp
-	length    int
+}
+
+// Space will create an open space, like separator but without any line drawn
+func Space(size unit.Dp) layout.Widget {
+	s := SeparatorStyle{}
+	s.thickness = size
+	s.fgColor = color.NRGBA{}
+	return func(gtx C) D {
+		return layout.Dimensions{Size: image.Pt(gtx.Constraints.Max.X, gtx.Dp(s.thickness))}
+	}
 }
 
 // Separator creates a material separator widget

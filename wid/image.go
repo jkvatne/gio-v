@@ -35,11 +35,18 @@ type ImageDef struct {
 
 func ImageFromJpgFile(filename string, fit Fit) func(gtx C) D {
 	f, err := os.Open(filename)
-	defer f.Close()
-
-	pict, _, err := image.Decode(f)
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			panic("Jpg file close failed")
+		}
+	}()
 	if err != nil {
 		panic(fmt.Sprintf("Image '%s' not found", filename))
+	}
+	pict, _, err := image.Decode(f)
+	if err != nil {
+		panic(fmt.Sprintf("Image '%s' has unknown format", filename))
 	}
 	return Image(pict, fit)
 }

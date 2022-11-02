@@ -29,7 +29,6 @@ type SliderStyle struct {
 	length   float32
 	min, max float32
 	Value    *float32
-	index    *int
 	keyTag   struct{}
 }
 
@@ -103,10 +102,10 @@ func (s *SliderStyle) Layout(gtx C) D {
 	// Keep a minimum length so that the track is always visible.
 	minLength := thumbRadius + 3*thumbRadius + thumbRadius
 	// Try to expand to finger size, but only if the constraints allow for it.
-	touchSizePx := min(gtx.Dp(s.th.FingerSize), s.axis.Convert(gtx.Constraints.Max).Y)
-	sizeMain := max(s.axis.Convert(gtx.Constraints.Min).X, minLength)
-	sizeCross := max(2*thumbRadius, touchSizePx)
-	size := s.axis.Convert(image.Pt(sizeMain, sizeCross))
+	touchSizePx := Min(gtx.Dp(s.th.FingerSize), s.axis.Convert(gtx.Constraints.Max).Y)
+	sizeMain := Max(s.axis.Convert(gtx.Constraints.Min).X, minLength)
+	sizeCross := Max(2*thumbRadius, touchSizePx)
+	// size := s.axis.Convert(image.Pt(sizeMain, sizeCross))
 
 	o := s.axis.Convert(image.Pt(thumbRadius, 0))
 	op.Offset(o).Add(gtx.Ops)
@@ -116,7 +115,7 @@ func (s *SliderStyle) Layout(gtx C) D {
 	semantic.DisabledOp(disabled).Add(gtx.Ops)
 	semantic.Switch.Add(gtx.Ops)
 
-	size = gtx.Constraints.Min
+	size := gtx.Constraints.Min
 	s.length = float32(s.axis.Convert(size).X)
 
 	var de *pointer.Event
@@ -184,8 +183,6 @@ func (s *SliderStyle) Layout(gtx C) D {
 		ul := image.Pt(pt.X-r, pt.Y-r)
 		lr := image.Pt(pt.X+r, pt.Y+r)
 		paint.FillShape(gtx.Ops, MulAlpha(s.th.Fg(Canvas), 88), clip.Ellipse{Min: ul, Max: lr}.Op(gtx.Ops))
-	} else {
-		color = s.th.Fg(Canvas)
 	}
 	r := thumbRadius
 	ul := image.Pt(pt.X-r, pt.Y-r)

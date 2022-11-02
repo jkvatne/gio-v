@@ -27,20 +27,16 @@ import (
 )
 
 var (
-	currentTheme   *wid.Theme  // the theme selected
-	win            *app.Window // The main window
-	form           layout.Widget
-	name           string
-	address        string
-	group          = new(widget.Enum)
-	homeIcon       *wid.Icon
-	checkIcon      *wid.Icon
-	greenFlag              = false // the state variable for the button color
-	darkMode               = false
-	dropDownValue1         = 1
-	dropDownValue2         = 1
-	progress       float32 = 0.33
-	sliderValue    float32 = 0.1
+	currentTheme *wid.Theme  // the theme selected
+	win          *app.Window // The main window
+	form         layout.Widget
+	name         string
+	group        = new(widget.Enum)
+	homeIcon     *wid.Icon
+	checkIcon    *wid.Icon
+	greenFlag            = false // the state variable for the button color
+	darkMode             = false
+	progress     float32 = 0.33
 )
 
 func main() {
@@ -125,7 +121,6 @@ func onWinChange() {
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
 	return wid.List(th, wid.Overlay,
-
 		wid.Label(th, "Buttons demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Label(th, "Buttons with fixed length and large font"),
 		wid.Button(th, "Change color", wid.Do(onClick), wid.W(450), wid.Large()),

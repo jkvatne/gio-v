@@ -146,16 +146,16 @@ func (b *ButtonDef) layout(gtx C) D {
 		iconSize = dims.Size.Y
 	}
 	// Default button height is 1.5 * text height, limited by constraints
-	height := min(3*dims.Size.Y/2, gtx.Constraints.Max.Y)
+	height := Min(3*dims.Size.Y/2, gtx.Constraints.Max.Y)
 	// Default button width when width is not given has padding=1.2 char heights.
 	contentWidth := dims.Size.X + iconSize*3/2
-	width := min(gtx.Constraints.Max.X, max(contentWidth+dims.Size.Y, gtx.Dp(b.width)))
-	dx := max(0, (width-contentWidth)/2)
+	width := Min(gtx.Constraints.Max.X, Max(contentWidth+dims.Size.Y, gtx.Dp(b.width)))
+	dx := Max(0, (width-contentWidth)/2)
 	if b.internPadX < 0 {
 		dx = 0
 	}
 	// Limit corner radius
-	rr := min(gtx.Dp(b.cornerRadius), height/2)
+	rr := Min(gtx.Dp(b.cornerRadius), height/2)
 
 	outline := image.Rect(0, 0, width, height)
 
@@ -187,7 +187,7 @@ func (b *ButtonDef) layout(gtx C) D {
 	cgtx.Constraints.Min = image.Point{X: iconSize, Y: iconSize}
 
 	// Calculate internal paddings and move
-	dy := max(0, (height-dims.Size.Y)/2)
+	dy := Max(0, (height-dims.Size.Y)/2)
 	defer op.Offset(image.Pt(dx, dy)).Push(gtx.Ops).Pop()
 
 	if b.Icon != nil && b.Text != "" {

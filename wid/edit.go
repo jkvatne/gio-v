@@ -22,7 +22,6 @@ type EditDef struct {
 	Base
 	widget.Editor
 	hovered        bool
-	alignment      layout.Alignment
 	outlineColor   color.NRGBA
 	selectionColor color.NRGBA
 	CharLimit      uint
