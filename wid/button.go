@@ -39,10 +39,10 @@ type ButtonDef struct {
 	Base
 	Tooltip
 	Clickable
-	Text       string
-	Icon       *Icon
-	Style      ButtonStyle
-	internPadX unit.Dp
+	Text      string
+	Icon      *Icon
+	Style     ButtonStyle
+	internPad layout.Inset
 }
 
 // BtnOption is the options for buttons only
@@ -73,7 +73,8 @@ func Button(th *Theme, label string, options ...Option) layout.Widget {
 func HeaderButton(th *Theme, label string, options ...Option) layout.Widget {
 	b := aButton(Text, th, label, options...)
 	b.cornerRadius = 0
-	b.internPadX = th.LabelPadding.Left
+	b.internPad = th.LabelPadding
+	b.padding = layout.Inset{}
 	return b.Layout
 }
 
@@ -86,6 +87,9 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *But
 	b.shaper = th.Shaper
 	b.Style = style
 	b.role = Undefined
+	b.internPad = th.LabelPadding
+	b.internPad.Left = 5
+	b.internPad.Right = 5
 	// Apply standard padding on the outside of the button. Can be overridden by option function
 	b.padding = th.ButtonPadding
 	b.FontSize = 1.0
@@ -95,11 +99,14 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *But
 	if b.role == Undefined {
 		b.role = Canvas
 	}
-	b.fgColor = th.Fg(b.role)
+	if (b.fgColor == color.NRGBA{}) {
+		b.fgColor = th.Fg(b.role)
+	}
+	if (b.bgColor == color.NRGBA{}) {
+		b.bgColor = th.Bg(b.role)
+	}
 	if b.Style == Outlined || b.Style == Text {
 		b.bgColor = color.NRGBA{}
-	} else if (b.fgColor == color.NRGBA{}) && (b.bgColor == color.NRGBA{}) {
-		b.bgColor = th.Bg(b.role)
 	}
 	b.Tooltip = PlatformTooltip(th)
 	return &b
@@ -145,14 +152,18 @@ func (b *ButtonDef) layout(gtx C) D {
 	if b.Icon != nil {
 		iconSize = dims.Size.Y
 	}
-	// Default button height is 1.5 * text height, limited by constraints
-	height := Min(3*dims.Size.Y/2, gtx.Constraints.Max.Y)
+	height := Min(dims.Size.Y+gtx.Dp(b.internPad.Top)+gtx.Dp(b.internPad.Bottom), gtx.Constraints.Max.Y)
 	// Default button width when width is not given has padding=1.2 char heights.
 	contentWidth := dims.Size.X + iconSize*3/2
 	width := Min(gtx.Constraints.Max.X, Max(contentWidth+dims.Size.Y, gtx.Dp(b.width)))
 	dx := Max(0, (width-contentWidth)/2)
-	if b.internPadX < 0 {
-		dx = 0
+	if b.internPad.Left > 0 && dx < gtx.Dp(b.internPad.Left) {
+		dx = gtx.Dp(b.internPad.Left)
+	}
+	if b.Style == Round {
+		width = iconSize * 3 / 2
+		height = iconSize * 3 / 2
+		dx = (iconSize + 2) / 4
 	}
 	// Limit corner radius
 	rr := Min(gtx.Dp(b.cornerRadius), height/2)

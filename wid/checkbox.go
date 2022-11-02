@@ -89,15 +89,16 @@ func (c *CheckBoxDef) Layout(gtx layout.Context) layout.Dimensions {
 		c.Checked = !c.Checked
 		if c.BoolValue != nil {
 			*c.BoolValue = c.Checked
-		}
-		if c.StrValue != nil {
+		} else if c.StrValue != nil {
 			*c.StrValue = c.Key
 		}
 		if c.onUserChange != nil {
 			c.onUserChange()
 		}
 	}
-	if c.StrValue != nil {
+	if c.BoolValue != nil {
+		c.Checked = *c.BoolValue
+	} else if c.StrValue != nil {
 		c.Checked = *c.StrValue == c.Key
 	}
 	semantic.DisabledOp(gtx.Queue == nil).Add(gtx.Ops)
@@ -115,7 +116,7 @@ func (c *CheckBoxDef) Layout(gtx layout.Context) layout.Dimensions {
 	dy := gtx.Dp(c.padding.Top + 1)
 	defer op.Offset(image.Pt(dx, dy)).Push(gtx.Ops).Pop()
 	// The hover/focus shadow extends outside the checkbox by 25%
-	b := image.Rectangle{Min: image.Pt(-dx, -dx), Max: image.Pt(dx, dx)}
+	b := image.Rectangle{Min: image.Pt(-dx, -dx), Max: image.Pt(labelDim.Size.Y+dx, labelDim.Size.Y+dx)}
 	background := color.NRGBA{}
 	if c.Focused() && c.Hovered() {
 		background = MulAlpha(c.fgColor, 70)

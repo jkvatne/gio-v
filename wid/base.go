@@ -166,28 +166,28 @@ func Role(r UIRole) BaseOption {
 }
 
 // P is a shortcut to set role=Primary
-func P() BaseOption {
+func Prim() BaseOption {
 	return func(w BaseIf) {
 		w.setRole(Primary)
 	}
 }
 
-// PC is a shortcut to set role=Primary
-func PC() BaseOption {
+// PC is a shortcut to set role=PrimaryContainer
+func PrimCont() BaseOption {
 	return func(w BaseIf) {
 		w.setRole(PrimaryContainer)
 	}
 }
 
 // S is a shortcut to set role=Secondary
-func S() BaseOption {
+func Sec() BaseOption {
 	return func(w BaseIf) {
 		w.setRole(Secondary)
 	}
 }
 
 // SC is a shortcut to set role=SecondaryContainer
-func SC() BaseOption {
+func SecCont() BaseOption {
 	return func(w BaseIf) {
 		w.setRole(SecondaryContainer)
 	}

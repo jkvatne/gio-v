@@ -15,8 +15,6 @@ import (
 
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
-	"gioui.org/widget"
-
 	"gioui.org/app"
 	"gioui.org/font/gofont"
 	"gioui.org/io/system"
@@ -32,15 +30,14 @@ var (
 	form           layout.Widget
 	name           string
 	address        string
-	group          = new(widget.Enum)
 	homeIcon       *wid.Icon
 	checkIcon      *wid.Icon
 	greenFlag              = false // the state variable for the button color
-	darkMode               = false
 	dropDownValue1         = 1
 	dropDownValue2         = 1
 	progress       float32 = 0.33
 	sliderValue    float32 = 0.1
+	WindowMode     string
 )
 
 func main() {
@@ -87,7 +84,6 @@ func handleFrameEvents(e system.FrameEvent) {
 }
 
 func onSwitchMode() {
-	currentTheme.DarkMode = darkMode
 	form = demo(currentTheme)
 }
 
@@ -110,7 +106,7 @@ func swColor() {
 }
 
 func onWinChange() {
-	switch group.Value {
+	switch WindowMode {
 	case "windowed":
 		win.Option(app.Windowed.Option())
 	case "minimized":
@@ -129,20 +125,28 @@ func demo(th *wid.Theme) layout.Widget {
 
 		wid.Label(th, "Demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 
-		wid.Row(th, &wid.White, []float32{1, 1, 1},
-			wid.Checkbox(th, "Dark mode", wid.Bool(&darkMode), wid.Do(onSwitchMode)),
-			wid.Checkbox(th, "Checkbox2", wid.Bool(&darkMode), wid.Do(onSwitchMode)),
-			wid.Checkbox(th, "Checkbox3", wid.Bool(&darkMode), wid.Do(onSwitchMode)),
+		wid.Row(th, nil, nil, wid.RoundButton(th, homeIcon, wid.Prim())),
+		// wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(wid.RGB(0xF288F2)), wid.Fg(wid.RGB(0x0902200))),
+
+		wid.Label(th, "Checkbox to change between dark mode and light mode, changing the theme variable DarkMode"),
+		wid.Row(th, nil, []float32{.9, .5, .5, .5, .5},
+			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onSwitchMode)),
+			wid.RadioButton(th, &WindowMode, "windowed", "Windowed", wid.Do(onWinChange)),
+			wid.RadioButton(th, &WindowMode, "fullscreen", "Fullscreen", wid.Do(onWinChange)),
+			wid.RadioButton(th, &WindowMode, "minimized", "Minimized", wid.Do(onWinChange)),
+			wid.RadioButton(th, &WindowMode, "maximized", "Maximized", wid.Do(onWinChange)),
 		),
 
+		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Buttons with fixed length and large font, with and without icon"),
 		wid.Row(th, nil, nil,
-			wid.Button(th, "Change color", wid.Do(onClick), wid.W(450), wid.Large()),
-			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.FontSize(1.4), wid.Role(wid.PrimaryContainer))),
+			wid.Button(th, "Change palette", wid.Do(onClick), wid.SecCont(), wid.W(450), wid.Large()),
+			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.FontSize(1.4), wid.Sec()),
+		),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Button spaced closely, left adjusted"),
 		wid.Row(th, nil, nil,
-			wid.RoundButton(th, homeIcon,
+			wid.RoundButton(th, homeIcon, wid.Prim(),
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(wid.RGB(0xF288F2)), wid.Fg(wid.RGB(0x0902200)),
 				wid.Hint("This is another hint")),
@@ -163,13 +167,6 @@ func demo(th *wid.Theme) layout.Widget {
 		),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Slider(th, &sliderValue, 0, 100),
-		wid.Row(th, nil, nil,
-			wid.RadioButton(th, group, "windowed", "Windowed", wid.Do(onWinChange)),
-			wid.RadioButton(th, group, "fullscreen", "Fullscreen", wid.Do(onWinChange)),
-			wid.RadioButton(th, group, "minimized", "Minimized", wid.Do(onWinChange)),
-			wid.RadioButton(th, group, "maximized", "Maximized", wid.Do(onWinChange)),
-		),
-
 		// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
 		wid.Row(th, nil, nil,
 			wid.Edit(th, wid.Hint("Value 3")),
@@ -193,7 +190,7 @@ func demo(th *wid.Theme) layout.Widget {
 		),
 		wid.ProgressBar(th, &progress, wid.Pads(5.0), wid.W(12.0)),
 		wid.Separator(th, 0, wid.Pads(5.0)),
-		wid.ImageFromJpgFile("gopher.jpg", wid.Contain),
+		// wid.ImageFromJpgFile("gopher.jpg", wid.Contain),
 		/* */
 	)
 }

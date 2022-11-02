@@ -144,10 +144,21 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dims []D, bgColor color.NRGB
 		trans := op.Offset(image.Pt(pos[i], 0)).Push(gtx.Ops)
 		// Draw a vertical separator
 		if r.gridLineWidth > 0 {
-			cl := clip.Rect{Min: image.Pt(0, -gtx.Sp(r.padTop)), Max: image.Pt(gtx.Dp(r.gridLineWidth), yMax)}.Push(gtx.Ops)
-			paint.ColorOp{Color: Black}.Add(gtx.Ops)
-			paint.PaintOp{}.Add(gtx.Ops)
-			cl.Pop()
+			outline := image.Rect(0, 0, pos[i+1]-pos[i], dims[i].Size.Y)
+			paint.FillShape(gtx.Ops,
+				Black,
+				clip.Stroke{
+					Path:  clip.Rect(outline).Path(),
+					Width: float32(gtx.Dp(r.gridLineWidth)),
+				}.Op(),
+			)
+			/*
+						cl := clip.Rect{
+							Min: image.Pt(0, -gtx.Sp(r.padTop)),
+							Max: image.Pt(gtx.Dp(r.gridLineWidth), yMax)}.Push(gtx.Ops)
+						paint.ColorOp{Color: Black}.Add(gtx.Ops)
+						paint.PaintOp{}.Add(gtx.Ops)
+			  			cl.Pop() */
 		}
 		call[i].Add(gtx.Ops)
 		trans.Pop()

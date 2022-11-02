@@ -32,8 +32,8 @@ var (
 	Alternative  string
 	// Column widths are given in units of approximately one average character width (en).
 	largeColWidth = []float32{2, 40, 40, 20}
-	smallColWidth = []float32{2, 20, 0.9, 12}
-	fracColWidth  = []float32{.2, 0.3, 0.3, .2}
+	smallColWidth = []float32{0, 9, 0.9, 12}
+	fracColWidth  = []float32{.001, 0.3, 0.3, .2}
 	selectAll     bool
 	nameIcon      *wid.Icon
 	addressIcon   *wid.Icon
@@ -195,16 +195,15 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 			),
 			wid.Space(20),
 		)
-
 		lines = append(lines, heading)
-		lines = append(lines, wid.Separator(th, unit.Dp(2.0), wid.W(9999)))
+		// lines = append(lines, wid.Separator(th, unit.Dp(2.0), wid.W(9999)))
 		for i := 0; i < len(data); i++ {
 			bgColor := wid.MulAlpha(wid.Blue, 20)
 			if i%2 == 0 {
 				bgColor = wid.MulAlpha(wid.Red, 20)
 			}
 			lines = append(lines,
-				wid.GridRow(th, &bgColor, 1.0, colWidths,
+				wid.GridRow(th, &bgColor, 1.5, colWidths,
 					wid.Checkbox(th, "", wid.Bool(&data[i].Selected)),
 					wid.Label(th, &data[i].Name),
 					wid.Label(th, &data[i].Address),
