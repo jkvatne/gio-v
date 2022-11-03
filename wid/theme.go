@@ -326,10 +326,10 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 		Top:    unit.Dp(t.TextSize) * 0.2,
 		Right:  unit.Dp(t.TextSize) * 0.1,
 		Bottom: unit.Dp(t.TextSize) * 0.2,
-		Left:   unit.Dp(t.TextSize) * 0.2}
+		Left:   unit.Dp(t.TextSize) * 0.3}
 	t.DropDownPadding = t.LabelPadding
 	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
-	t.EditPadding = layout.Inset{Top: v * 2.0, Right: v * 2.0, Bottom: v, Left: v * 2.0}
+	t.EditPadding = t.LabelPadding
 	// Buttons
 	// ButtonPadding is the margin outside a button, giving distance to other elements
 	t.ButtonPadding = layout.Inset{Top: 4, Right: 4, Bottom: 4, Left: 4}

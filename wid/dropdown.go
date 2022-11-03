@@ -2,6 +2,7 @@ package wid
 
 import (
 	"image"
+	"image/color"
 
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
@@ -19,12 +20,13 @@ import (
 type DropDownStyle struct {
 	Base
 	Clickable
-	disabler    *bool
-	items       []string
-	itemHovered []bool
-	listVisible bool
-	list        layout.Widget
-	Items       []layout.Widget
+	disabler     *bool
+	items        []string
+	itemHovered  []bool
+	outlineColor color.NRGBA
+	listVisible  bool
+	list         layout.Widget
+	Items        []layout.Widget
 }
 
 var icon *Icon
@@ -33,8 +35,8 @@ var icon *Icon
 func DropDown(th *Theme, index *int, items []string, options ...Option) layout.Widget {
 	b := DropDownStyle{}
 	b.th = th
-	b.fgColor = th.Fg(Canvas)
-	b.bgColor = th.Bg(Canvas)
+	b.role = Canvas
+	b.outlineColor = th.Fg(Outline)
 	b.Font = &th.DefaultFont
 	b.index = index
 	b.items = items
@@ -43,66 +45,83 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 		b.itemHovered = append(b.itemHovered, false)
 	}
 	b.list = List(th, Overlay, b.Items...)
-	b.padding = layout.Inset{} // th.LabelPadding
+	b.cornerRadius = th.BorderCornerRadius
+	b.padding = th.DropDownPadding
 	for _, option := range options {
 		option.apply(&b)
+	}
+	if (b.fgColor == color.NRGBA{}) {
+		b.fgColor = th.Fg(b.role)
+	}
+	if (b.bgColor == color.NRGBA{}) {
+		b.bgColor = th.Bg(b.role)
 	}
 	return b.Layout
 }
 
 // Layout adds padding to a dropdown box drawn with b.layout().
 func (b *DropDownStyle) Layout(gtx C) D {
-	return b.padding.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-		return b.layout(gtx)
-	})
+	return b.layout(gtx)
 }
 
 func (b *DropDownStyle) layout(gtx C) D {
-	if b.width > 0 {
-		gtx.Constraints.Min.X = gtx.Dp(b.width)
-		gtx.Constraints.Max.X = gtx.Dp(b.width)
+
+	b.HandleEvents(gtx)
+	// Check for index range, because tha HandleEvents() function does not know the limits.
+	if *b.index < 0 {
+		*b.index = 0
+	}
+	if *b.index >= len(b.items) {
+		*b.index = len(b.items) - 1
 	}
 
 	if b.disabler != nil && *b.disabler {
 		gtx = gtx.Disabled()
 	}
 
-	dims := widget.Label{Alignment: text.Start, MaxLines: 1}.
-		Layout(gtx, b.th.Shaper, *b.Font, b.th.TextSize, b.items[*b.index])
+	// Use all awailable x space, unless a width is given, and it is within constraints.
+	w := gtx.Dp(b.width)
+	if w > gtx.Constraints.Min.X && w < gtx.Constraints.Max.X {
+		gtx.Constraints.Min.X = w
+		gtx.Constraints.Max.X = w
+	}
 
-	gtx.Constraints.Min.X = dims.Size.Y + gtx.Sp(b.th.TextSize)/3
-	op.Offset(image.Pt(gtx.Constraints.Max.X-dims.Size.Y, 0)).Add(gtx.Ops)
+	// Add outside padding
+	defer op.Offset(image.Pt(gtx.Dp(b.padding.Left), gtx.Dp(b.padding.Top))).Push(gtx.Ops).Pop()
 
-	sz := gtx.Constraints.Min.X
-	size := gtx.Constraints.Constrain(image.Pt(sz, sz))
-	defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
-	paint.Fill(gtx.Ops, Red)
+	// Draw text with top/left padding offset
+	o := op.Offset(image.Pt(gtx.Dp(b.th.LabelPadding.Left), gtx.Dp(b.th.LabelPadding.Top))).Push(gtx.Ops)
+	paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
+	dims := widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, b.th.Shaper, *b.Font, b.th.TextSize, b.items[*b.index])
+	o.Pop()
 
-	icon.Layout(gtx, b.fgColor)
+	// Calculate widget size based on text size and LabelPadding, using all available x space
+	dims.Size.X = gtx.Constraints.Max.X
+	dims.Size.Y = dims.Size.Y + gtx.Dp(b.th.LabelPadding.Top+b.th.LabelPadding.Bottom+b.padding.Top+b.padding.Bottom)
 
-	/*
-		min := CalcMin(gtx, b.width)
-		dims := layout.Stack{Alignment: layout.Center}.Layout(gtx,
-			layout.Expanded(b.LayoutBackground()),
-			layout.Stacked(
-				func(gtx C) D {
-					if min.X > 0 {
-						gtx.Constraints.Min = min
-						gtx.Constraints.Max.X = min.X
-					}
-					if b.width > 0 {
-						gtx.Constraints.Max.X = gtx.Dp(b.width)
-						gtx.Constraints.Min.X = gtx.Dp(b.width)
-					}
-					return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start}.Layout(
-						gtx,
-						layout.Flexed(1.0, b.LayoutLabel()),
-						layout.Rigid(b.LayoutIcon()),
-					)
-				},
-			),
-		)
-	*/
+	border := image.Rectangle{Max: image.Pt(
+		dims.Size.X-gtx.Dp(b.padding.Left+b.padding.Right),
+		dims.Size.Y-gtx.Dp(b.padding.Top+b.padding.Bottom))}
+
+	// Draw border. Need to undo previous top padding offset first
+	r := gtx.Dp(b.cornerRadius)
+	if b.Focused() {
+		paintBorder(gtx, border, b.outlineColor, b.th.BorderThicknessActive, r)
+	} else if b.Hovered() {
+		paintBorder(gtx, border, b.outlineColor, (b.th.BorderThickness+b.th.BorderThicknessActive)/2, r)
+	} else {
+		paintBorder(gtx, border, b.fgColor, b.th.BorderThickness, r)
+	}
+
+	// Draw icon using forground color
+	o = op.Offset(image.Pt(border.Max.X-border.Max.Y, 0)).Push(gtx.Ops)
+	iconSize := image.Pt(border.Max.Y, border.Max.Y)
+	c := gtx
+	c.Constraints.Max = iconSize
+	// defer clip.Rect{Max: iconSize}.Push(gtx.Ops).Pop()
+	icon.Layout(c, b.fgColor)
+	o.Pop()
+
 	oldVisible := b.listVisible
 	if !b.Focused() {
 		b.listVisible = false
@@ -192,55 +211,6 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 			Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave,
 		}.Add(gtx.Ops)
 		return dims
-	}
-}
-
-// LayoutBackground draws the background.
-func (b *DropDownStyle) LayoutBackground() func(gtx C) D {
-	return func(gtx C) D {
-		rr := rr(gtx, b.th.BorderCornerRadius, gtx.Constraints.Min.Y)
-		outline := image.Rectangle{Max: image.Point{
-			X: gtx.Constraints.Min.X - 2,
-			Y: gtx.Constraints.Min.Y - 2,
-		}}
-		if b.Focused() || b.Hovered() {
-			DrawShadow(gtx, outline, gtx.Dp(b.th.BorderCornerRadius), 11)
-		}
-		paint.FillShape(gtx.Ops, b.bgColor, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-		clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
-		paintBorder(gtx, outline, b.fgColor, b.th.BorderThickness, rr)
-		oldIndex := *b.index
-		b.HandleEvents(gtx)
-		if *b.index > len(b.itemHovered) {
-			*b.index = len(b.itemHovered) - 1
-		}
-		if *b.index != oldIndex {
-			b.setHovered()
-
-		}
-		return D{Size: gtx.Constraints.Min}
-	}
-}
-
-// LayoutLabel draws the label
-func (b *DropDownStyle) LayoutLabel() layout.Widget {
-	return func(gtx C) D {
-		if gtx.Dp(b.width) > gtx.Constraints.Min.X {
-			gtx.Constraints.Min.X = gtx.Dp(b.width)
-		}
-		// A little trick to bring the label closer to the arrow, and avoid a big gap.
-		pad := b.th.DropDownPadding
-		pad.Right = unit.Dp(-5)
-		return pad.Layout(gtx, func(gtx C) D {
-			paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
-			if *b.index < 0 {
-				*b.index = 0
-			}
-			if *b.index >= len(b.items) {
-				*b.index = len(b.items) - 1
-			}
-			return widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, b.th.Shaper, *b.Font, b.th.TextSize, b.items[*b.index])
-		})
 	}
 }
 

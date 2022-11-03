@@ -137,7 +137,7 @@ func (c *CheckBoxDef) Layout(gtx layout.Context) layout.Dimensions {
 		Size: image.Point{X: labelDim.Size.Y + 5, Y: labelDim.Size.Y + gtx.Dp(c.padding.Top+c.padding.Bottom)},
 	}
 	defer op.Offset(image.Pt(dims.Size.X, 0)).Push(gtx.Ops).Pop()
-	paint.ColorOp{Color: c.fgColor}.Add(gtx.Ops)
+	paint.ColorOp{Color: col}.Add(gtx.Ops)
 	drawLabel.Add(gtx.Ops)
 	return dims
 }
