@@ -45,17 +45,13 @@ func RadioButton(th *Theme, value *string, key string, label string, options ...
 	}
 	r.th = th
 	r.fgColor = th.Fg(Surface)
-	r.padding = th.LabelPadding // layout.Inset{d, d, d, d}
+	r.padding = th.LabelPadding
 	r.Font = &th.DefaultFont
 	for _, option := range options {
 		option.apply(&r)
 	}
 	return func(gtx C) D {
-		r.HandleEvents(gtx)
-		dims := r.Layout(gtx)
-		r.SetupEventHandlers(gtx, dims.Size)
-		pointer.CursorPointer.Add(gtx.Ops)
-		return dims
+		return r.Layout(gtx)
 	}
 }
 
@@ -67,24 +63,21 @@ func Checkbox(th *Theme, label string, options ...Option) func(gtx C) D {
 		checkedStateIcon:   th.CheckBoxChecked,
 		uncheckedStateIcon: th.CheckBoxUnchecked,
 	}
-	c.Font = &th.DefaultFont
 	c.th = th
 	c.fgColor = th.Fg(Surface)
 	c.padding = th.LabelPadding
+	c.Font = &th.DefaultFont
 	for _, option := range options {
 		option.apply(c)
 	}
 	return func(gtx C) D {
-		c.HandleEvents(gtx)
-		dims := c.Layout(gtx)
-		c.SetupEventHandlers(gtx, dims.Size)
-		pointer.CursorPointer.Add(gtx.Ops)
-		return dims
+		return c.Layout(gtx)
 	}
 }
 
 // Layout updates the checkBox and displays it.
 func (c *CheckBoxDef) Layout(gtx layout.Context) layout.Dimensions {
+	c.HandleEvents(gtx)
 	for c.Clicked() {
 		c.Checked = !c.Checked
 		if c.BoolValue != nil {
@@ -110,6 +103,7 @@ func (c *CheckBoxDef) Layout(gtx layout.Context) layout.Dimensions {
 
 	macro := op.Record(gtx.Ops)
 	gtx.Constraints.Min.Y = 0
+	gtx.Constraints.Min.X = 0
 	labelDim := widget.Label{}.Layout(gtx, c.th.Shaper, *c.Font, c.TextSize, c.Label)
 	drawLabel := macro.Stop()
 	dx := labelDim.Size.Y / 6
@@ -134,11 +128,19 @@ func (c *CheckBoxDef) Layout(gtx layout.Context) layout.Dimensions {
 	gtx.Constraints.Min = image.Point{X: labelDim.Size.Y}
 	icon.Layout(gtx, col)
 	dims := layout.Dimensions{
-		Size: image.Point{X: labelDim.Size.Y + 5, Y: labelDim.Size.Y + gtx.Dp(c.padding.Top+c.padding.Bottom)},
+		Size: image.Point{
+			X: labelDim.Size.Y + gtx.Dp(c.padding.Left+c.padding.Right),
+			Y: labelDim.Size.Y + gtx.Dp(c.padding.Top+c.padding.Bottom)},
 	}
-	defer op.Offset(image.Pt(dims.Size.X, 0)).Push(gtx.Ops).Pop()
+	of := op.Offset(image.Pt(labelDim.Size.Y+gtx.Dp(c.padding.Left), 0)).Push(gtx.Ops)
 	paint.ColorOp{Color: col}.Add(gtx.Ops)
 	drawLabel.Add(gtx.Ops)
+	if labelDim.Size.X > 0 {
+		dims.Size.X += labelDim.Size.X + gtx.Dp(c.padding.Right)
+	}
+	of.Pop()
+	c.SetupEventHandlers(gtx, dims.Size)
+	pointer.CursorPointer.Add(gtx.Ops)
 	return dims
 }
 

@@ -104,6 +104,18 @@ func Row(th *Theme, pbgColor *color.NRGBA, weights []float32, widgets ...layout.
 func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dims []D, bgColor color.NRGBA, weights []float32, widgets ...layout.Widget) D {
 	call := make([]op.CallOp, len(widgets))
 	widths := make([]int, len(widgets))
+	// Fill in size where width is given as zero
+	for i, child := range widgets {
+		if i < len(weights) && weights[i] == 0 {
+			c := gtx
+			macro := op.Record(c.Ops)
+			c.Constraints.Max.X = inf
+			c.Constraints.Min.X = 0
+			dim := child(c)
+			weights[i] = 2 * float32(dim.Size.X) / float32(gtx.Sp(textSize))
+			_ = macro.Stop()
+		}
+	}
 	calcWidths(gtx, textSize, weights, widths)
 	// Check child sizes and make macros for each widget in a row
 	yMax := 0
@@ -152,13 +164,6 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dims []D, bgColor color.NRGB
 					Width: float32(gtx.Dp(r.gridLineWidth)),
 				}.Op(),
 			)
-			/*
-						cl := clip.Rect{
-							Min: image.Pt(0, -gtx.Sp(r.padTop)),
-							Max: image.Pt(gtx.Dp(r.gridLineWidth), yMax)}.Push(gtx.Ops)
-						paint.ColorOp{Color: Black}.Add(gtx.Ops)
-						paint.PaintOp{}.Add(gtx.Ops)
-			  			cl.Pop() */
 		}
 		call[i].Add(gtx.Ops)
 		trans.Pop()

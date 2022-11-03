@@ -31,9 +31,9 @@ var (
 	form         layout.Widget
 	Alternative  string
 	// Column widths are given in units of approximately one average character width (en).
-	largeColWidth = []float32{2, 40, 40, 20}
+	largeColWidth = []float32{0, 40, 40, 20}
 	smallColWidth = []float32{0, 9, 0.9, 12}
-	fracColWidth  = []float32{.001, 0.3, 0.3, .2}
+	fracColWidth  = []float32{0, 0.3, 0.3, .2}
 	selectAll     bool
 	nameIcon      *wid.Icon
 	addressIcon   *wid.Icon
@@ -177,25 +177,36 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 		addressIcon, _ = wid.NewIcon(icons.ContentSort)
 		ageIcon, _ = wid.NewIcon(icons.ContentSort)
 
-		// Configure a row with headings.
-		bgColor := th.Bg(wid.Primary)
-		heading := wid.GridRow(th, &bgColor, 1.0, colWidths,
-			wid.Checkbox(th, "", wid.Bool(&selectAll), wid.Do(onCheck), wid.P()),
-			wid.HeaderButton(th, "Name", wid.Do(onNameClick), wid.P()),       // , wid.BtnIcon(nameIcon)),
-			wid.HeaderButton(th, "Address", wid.Do(onAddressClick), wid.P()), // , wid.BtnIcon(addressIcon)),
-			wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.P()),         // , wid.BtnIcon(ageIcon)),
-			// wid.Label(th, "Gender", wid.Bold()),
-		)
 		var lines []layout.Widget
+
 		lines = append(lines,
-			wid.Row(th, nil, nil,
+			wid.GridRow(th, nil, 1.5, []float32{0, 9, 0.9, 8},
+				wid.Checkbox(th, "", wid.Bool(&data[1].Selected)),
+				wid.Label(th, &data[1].Address),
+				wid.Label(th, &data[1].Name),
+				wid.Label(th, &data[1].Age, wid.Dp(3), wid.Right())),
+			// wid.DropDown(&thg, &data[i].Status, []string{"Male", "Female", "Other"}),
+		)
+
+		lines = append(lines,
+			wid.GridRow(th, nil, 1.5, []float32{0, 0, 0},
 				wid.RadioButton(th, &Alternative, "LargeColumns", "LargeColumns", wid.Do(onWinChange)),
 				wid.RadioButton(th, &Alternative, "SmallColumns", "SmallColumns", wid.Do(onWinChange)),
 				wid.RadioButton(th, &Alternative, "FractionalColumns", "FractionalColumns", wid.Do(onWinChange)),
 			),
-			wid.Space(20),
+			wid.Space(40),
+		)
+		// Configure a row with headings.
+		bgColor := th.Bg(wid.Primary)
+		heading := wid.GridRow(th, &bgColor, 1.0, colWidths,
+			wid.Checkbox(th, "", wid.Bool(&selectAll), wid.Do(onCheck), wid.Prim()),
+			wid.HeaderButton(th, "Name", wid.Do(onNameClick), wid.Prim(), wid.BtnIcon(nameIcon)),
+			wid.HeaderButton(th, "Address", wid.Do(onAddressClick), wid.Prim(), wid.BtnIcon(addressIcon)),
+			wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.Prim(), wid.BtnIcon(ageIcon)),
+			// wid.Label(th, "Gender", wid.Bold()),
 		)
 		lines = append(lines, heading)
+
 		// lines = append(lines, wid.Separator(th, unit.Dp(2.0), wid.W(9999)))
 		for i := 0; i < len(data); i++ {
 			bgColor := wid.MulAlpha(wid.Blue, 20)

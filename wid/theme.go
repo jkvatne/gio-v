@@ -324,7 +324,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	// Text
 	t.LabelPadding = layout.Inset{
 		Top:    unit.Dp(t.TextSize) * 0.3,
-		Right:  unit.Dp(t.TextSize) * 0.1,
+		Right:  unit.Dp(t.TextSize) * 0.2,
 		Bottom: unit.Dp(t.TextSize) * 0.3,
 		Left:   unit.Dp(t.TextSize) * 0.3}
 	t.DropDownPadding = t.LabelPadding

@@ -50,30 +50,34 @@ type BtnOption func(*ButtonDef)
 
 // RoundButton is a shortcut to a round button
 func RoundButton(th *Theme, d *Icon, options ...Option) layout.Widget {
-	options = append(options, BtnIcon(d), W(0), RR(99999))
+	options = append([]Option{Role(Primary), BtnIcon(d), W(0), RR(99999)}, options...)
 	return aButton(Round, th, "", options...).Layout
 }
 
 // TextButton is a shortcut to a text only button
 func TextButton(th *Theme, label string, options ...Option) layout.Widget {
+	options = append([]Option{Role(Canvas)}, options...)
 	return aButton(Text, th, label, options...).Layout
 }
 
 // OutlineButton is a shortcut to an outlined button
 func OutlineButton(th *Theme, label string, options ...Option) layout.Widget {
+	options = append([]Option{Role(Canvas)}, options...)
 	return aButton(Outlined, th, label, options...).Layout
 }
 
-// Button is the generic button selector
+// Button is the generic button selector. Defaults to primary
 func Button(th *Theme, label string, options ...Option) layout.Widget {
 	return aButton(Contained, th, label, options...).Layout
 }
 
 // HeaderButton is a shortcut to a text only button with left justified text and a given size
 func HeaderButton(th *Theme, label string, options ...Option) layout.Widget {
+	options = append([]Option{Role(Canvas)}, options...)
 	b := aButton(Text, th, label, options...)
 	b.cornerRadius = 0
 	b.internPad = th.LabelPadding
+	b.role = Canvas
 	b.padding = layout.Inset{}
 	return b.Layout
 }
@@ -82,11 +86,11 @@ func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *But
 	b := ButtonDef{}
 	// Setup default values
 	b.th = th
+	b.role = Primary
 	b.Text = label
 	b.Font = &th.DefaultFont
 	b.shaper = th.Shaper
 	b.Style = style
-	b.role = Undefined
 	b.internPad = th.LabelPadding
 	b.internPad.Left = 5
 	b.internPad.Right = 5
