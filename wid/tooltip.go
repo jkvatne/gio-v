@@ -5,8 +5,6 @@ import (
 	"image/color"
 	"time"
 
-	"gioui.org/app"
-
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -24,13 +22,6 @@ const (
 	longPressDelay           = time.Millisecond * 1200
 	CursorSizeX              = 10
 	CursorSizeY              = 32
-)
-
-var (
-	mouseX float32
-	mouseY float32
-	winX   int
-	winY   int
 )
 
 // Tooltip implements a material design tool tip as defined at:
@@ -215,25 +206,4 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 			return D{}
 		}),
 	)
-}
-
-// UpdateMousePos must be called from the main program in order to get mouse
-// position and window size. They are needed to avoid that the tooltip
-// is outside the window frame
-func UpdateMousePos(gtx C, win *app.Window, size image.Point) {
-	eventArea := clip.Rect(image.Rect(0, 0, 99999, 99999)).Push(gtx.Ops)
-	pointer.InputOp{
-		Types: pointer.Move,
-		Tag:   win,
-	}.Add(gtx.Ops)
-	eventArea.Pop()
-	for _, gtxEvent := range gtx.Events(win) {
-		switch e := gtxEvent.(type) {
-		case pointer.Event:
-			mouseX = e.Position.X
-			mouseY = e.Position.Y
-		}
-	}
-	winX = size.X
-	winY = size.Y
 }

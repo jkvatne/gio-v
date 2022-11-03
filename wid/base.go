@@ -6,6 +6,10 @@ import (
 	"image"
 	"image/color"
 
+	"gioui.org/app"
+	"gioui.org/io/pointer"
+	"gioui.org/op/clip"
+
 	"gioui.org/text"
 
 	"gioui.org/layout"
@@ -22,6 +26,13 @@ const (
 	HoveredState
 	FocusedState
 	PressedState
+)
+
+var (
+	mouseX float32
+	mouseY float32
+	winX   int
+	winY   int
 )
 
 // Base is tha base structure for widgets. It contains variables that (almost) all widgets share
@@ -255,4 +266,25 @@ func CalcMin(gtx C, width unit.Dp) image.Point {
 		min.X = gtx.Constraints.Max.X
 	}
 	return min
+}
+
+// UpdateMousePos must be called from the main program in order to get mouse
+// position and window size. They are needed to avoid that the tooltip
+// is outside the window frame
+func UpdateMousePos(gtx C, win *app.Window, size image.Point) {
+	eventArea := clip.Rect(image.Rect(0, 0, 99999, 99999)).Push(gtx.Ops)
+	pointer.InputOp{
+		Types: pointer.Move,
+		Tag:   win,
+	}.Add(gtx.Ops)
+	eventArea.Pop()
+	for _, gtxEvent := range gtx.Events(win) {
+		switch e := gtxEvent.(type) {
+		case pointer.Event:
+			mouseX = e.Position.X
+			mouseY = e.Position.Y
+		}
+	}
+	winX = size.X
+	winY = size.Y
 }

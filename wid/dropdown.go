@@ -27,6 +27,7 @@ type DropDownStyle struct {
 	listVisible  bool
 	list         layout.Widget
 	Items        []layout.Widget
+	above        bool
 }
 
 var icon *Icon
@@ -129,22 +130,37 @@ func (b *DropDownStyle) layout(gtx C) D {
 	for b.Clicked() {
 		b.listVisible = !b.listVisible
 	}
+	ok := false
+	for i := 0; i < len(b.items); i++ {
+		ok = ok || b.itemHovered[i]
+	}
+	if !ok {
+		b.listVisible = false
+	}
 	if b.listVisible {
-		if !oldVisible {
-			b.setHovered()
-		}
 		gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
 		gtx.Constraints.Max.Y = gtx.Constraints.Max.Y - dims.Size.Y - 5
+
 		macro := op.Record(gtx.Ops)
 		d := b.list(gtx)
 		listClipRect := image.Rect(0, 0, gtx.Constraints.Min.X, d.Size.Y)
 		call := macro.Stop()
+
+		if !oldVisible {
+			b.setHovered()
+			b.above = int(mouseY) > (winY - d.Size.Y)
+		}
+
 		macro = op.Record(gtx.Ops)
-		op.Offset(image.Pt(0, dims.Size.Y)).Add(gtx.Ops)
+		dy := dims.Size.Y
+		if b.above {
+			dy = -d.Size.Y
+		}
+		op.Offset(image.Pt(0, dy)).Add(gtx.Ops)
 		stack := clip.UniformRRect(listClipRect, 0).Push(gtx.Ops)
 		paint.Fill(gtx.Ops, b.bgColor)
 		// Draw a border around all options
-		paintBorder(gtx, listClipRect, b.th.Fg(Outline), b.th.BorderThickness, 0)
+		paintBorder(gtx, listClipRect, b.th.Fg(Outline), b.th.BorderThickness*2, 0)
 		call.Add(gtx.Ops)
 		stack.Pop()
 		call = macro.Stop()
