@@ -35,7 +35,7 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e := new(EditDef)
 	e.th = th
 	e.Font = &th.DefaultFont
-	e.LabelSize = th.TextSize * 6
+	e.LabelSize = th.TextSize * 8
 	e.SingleLine = true
 	e.width = unit.Dp(5000) // Default to max width that is possible
 	e.padding = th.EditPadding
@@ -63,13 +63,6 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 // EditOption is options specific to Edits
 type EditOption func(w *EditDef)
 
-// Lbl is an option parameter to set the widget label
-func Lbl(s string) EditOption {
-	return func(w *EditDef) {
-		w.setLabel(s)
-	}
-}
-
 // Var is an option parameter to set the variable uptdated
 func Var(s *string) EditOption {
 	return func(w *EditDef) {
@@ -78,7 +71,9 @@ func Var(s *string) EditOption {
 }
 
 func (e EditOption) apply(cfg interface{}) {
-	e(cfg.(*EditDef))
+	if o, ok := cfg.(*EditDef); ok {
+		e(o)
+	}
 }
 
 func (e *EditDef) setLabel(s string) {

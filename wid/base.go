@@ -176,6 +176,18 @@ func Role(r UIRole) BaseOption {
 	}
 }
 
+// Lbl is an option parameter to set the widget label
+func Lbl(s string) BaseOption {
+	return func(w BaseIf) {
+		if o, ok := w.(*EditDef); ok {
+			o.setLabel(s)
+		}
+		if o, ok := w.(*DropDownStyle); ok {
+			o.setLabel(s)
+		}
+	}
+}
+
 // P is a shortcut to set role=Primary
 func Prim() BaseOption {
 	return func(w BaseIf) {

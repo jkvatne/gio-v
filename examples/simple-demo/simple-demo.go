@@ -175,7 +175,7 @@ func demo(th *wid.Theme) layout.Widget {
 		),
 		wid.Row(th, nil, nil,
 			wid.Col(
-				wid.Edit(th, wid.Hint("Value 6"), wid.Lbl("Value 76")),
+				wid.Edit(th, wid.Hint("Value 6")),
 				wid.Edit(th, wid.Hint("Value 7"), wid.Lbl("Value 7")),
 			),
 			wid.Col(
@@ -185,8 +185,8 @@ func demo(th *wid.Theme) layout.Widget {
 		),
 
 		wid.Row(th, nil, nil,
-			wid.DropDown(th, &dropDownValue1, []string{"Option 1 with very long text", "Option 2", "Option 3"}),
-			wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}),
+			wid.DropDown(th, &dropDownValue1, []string{"Option 1 with very long text", "Option 2", "Option 3"}, wid.Lbl("Dropdown 1")),
+			wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}, wid.Lbl("Dropdown 2")),
 		),
 		wid.ProgressBar(th, &progress, wid.Pads(5.0), wid.W(12.0)),
 		wid.Separator(th, 0, wid.Pads(5.0)),
