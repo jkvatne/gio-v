@@ -159,7 +159,7 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dims []D, bgColor color.NRGB
 		// Draw a vertical separator
 		if r.gridLineWidth > 0 {
 			gw := gtx.Dp(r.gridLineWidth)
-			outline := image.Rect(gw/2, gw/2, pos[i+1]-pos[i]+gw/2, yMax)
+			outline := image.Rect(gw/2, gw/2, pos[i+1]-pos[i]-gw/2, yMax)
 			paint.FillShape(gtx.Ops,
 				Black,
 				clip.Stroke{

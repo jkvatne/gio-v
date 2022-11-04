@@ -33,7 +33,7 @@ var (
 	// Column widths are given in units of approximately one average character width (en).
 	// A witdth of zero means the widget's natural size should be used (f.ex. checkboxes)
 	largeColWidth = []float32{0, 40, 40, 20, 20}
-	smallColWidth = []float32{0, 19, 0.9, 12, 12}
+	smallColWidth = []float32{0, 13, 13, 12, 12}
 	fracColWidth  = []float32{0, 0.3, 0.3, .2, .2}
 	selectAll     bool
 	nameIcon      *wid.Icon
@@ -111,9 +111,9 @@ func onWinChange() {
 	if Alternative == "LargeColumns" {
 		form = Grid(currentTheme, wid.Occupy, data, largeColWidth)
 	} else if Alternative == "SmallColumns" {
-		form = Grid(currentTheme, wid.Overlay, data, smallColWidth)
+		form = Grid(currentTheme, wid.Overlay, data[:5], smallColWidth)
 	} else if Alternative == "FractionalColumns" {
-		form = Grid(currentTheme, wid.Overlay, data[:5], fracColWidth)
+		form = Grid(currentTheme, wid.Overlay, data, fracColWidth)
 	} else if Alternative == "Zero" {
 		form = Grid(currentTheme, wid.Occupy, data, []float32{0, 0, 0, 0, 0, 0, 0})
 	} else {
@@ -145,10 +145,10 @@ func makePersons(n int) {
 func onNameClick() {
 	if dir {
 		sort.Slice(data, func(i, j int) bool { return data[i].Name >= data[j].Name })
-		_ = nameIcon.Update(icons.NavigationArrowUpward)
+		_ = nameIcon.Update(icons.NavigationArrowDownward)
 	} else {
 		sort.Slice(data, func(i, j int) bool { return data[i].Name < data[j].Name })
-		_ = nameIcon.Update(icons.NavigationArrowDownward)
+		_ = nameIcon.Update(icons.NavigationArrowUpward)
 	}
 	_ = addressIcon.Update(icons.NavigationUnfoldMore)
 	_ = ageIcon.Update(icons.NavigationUnfoldMore)
@@ -158,10 +158,10 @@ func onNameClick() {
 func onAddressClick() {
 	if dir {
 		sort.Slice(data, func(i, j int) bool { return data[i].Address >= data[j].Address })
-		_ = addressIcon.Update(icons.NavigationArrowUpward)
+		_ = addressIcon.Update(icons.NavigationArrowDownward)
 	} else {
 		sort.Slice(data, func(i, j int) bool { return data[i].Address < data[j].Address })
-		_ = addressIcon.Update(icons.NavigationArrowDownward)
+		_ = addressIcon.Update(icons.NavigationArrowUpward)
 	}
 	_ = nameIcon.Update(icons.NavigationUnfoldMore)
 	_ = ageIcon.Update(icons.NavigationUnfoldMore)
@@ -171,10 +171,10 @@ func onAddressClick() {
 func onAgeClick() {
 	if dir {
 		sort.Slice(data, func(i, j int) bool { return data[i].Age >= data[j].Age })
-		_ = ageIcon.Update(icons.NavigationArrowUpward)
+		_ = ageIcon.Update(icons.NavigationArrowDownward)
 	} else {
 		sort.Slice(data, func(i, j int) bool { return data[i].Age < data[j].Age })
-		_ = ageIcon.Update(icons.NavigationArrowDownward)
+		_ = ageIcon.Update(icons.NavigationArrowUpward)
 	}
 	_ = nameIcon.Update(icons.NavigationUnfoldMore)
 	_ = addressIcon.Update(icons.NavigationUnfoldMore)
@@ -224,7 +224,9 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 			),
 			wid.Space(5),
 			wid.Label(th, "Select font size"),
-			wid.Row(th, nil, []float32{0, 0, 0},
+			wid.Row(th, nil, nil,
+				wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onWinChange)),
+				wid.Label(th, ""),
 				wid.RadioButton(th, &fontSize, "Large", "Large", wid.Do(onFontChange)),
 				wid.RadioButton(th, &fontSize, "Medium", "Medium", wid.Do(onFontChange)),
 				wid.RadioButton(th, &fontSize, "Small", "Small", wid.Do(onFontChange)),
