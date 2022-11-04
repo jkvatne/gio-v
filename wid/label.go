@@ -75,7 +75,13 @@ func (e LabelOption) apply(cfg interface{}) {
 func (l LabelDef) Layout(gtx C) D {
 	paint.ColorOp{Color: l.fgColor}.Add(gtx.Ops)
 	tl := widget.Label{Alignment: l.Alignment, MaxLines: l.MaxLines}
-	dims := tl.Layout(gtx, l.th.Shaper, l.Font, l.TextSize*unit.Sp(l.FontSize), l.Stringer(l.dp))
+	c := gtx
+	if l.MaxLines == 1 {
+		// This is a hack to avoid splitting the line when only one line is allowed
+		c.Constraints.Max.X = inf
+	}
+	dims := tl.Layout(c, l.th.Shaper, l.Font, l.TextSize*unit.Sp(l.FontSize), l.Stringer(l.dp))
+	dims.Size.X = gtx.Constraints.Min.X
 	return dims
 }
 
@@ -86,7 +92,7 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		TextSize:  th.TextSize,
 		Alignment: text.Start,
 		Font:      text.Font{Weight: text.Medium, Style: text.Regular},
-		MaxLines:  1,
+		MaxLines:  0,
 	}
 	w.padding = th.LabelPadding
 	w.th = th

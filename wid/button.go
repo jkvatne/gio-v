@@ -32,6 +32,8 @@ const (
 	Outlined
 	// Round is a round button, usually with icon only
 	Round
+	// Header
+	Header
 )
 
 // ButtonDef is the struct for buttons
@@ -78,6 +80,7 @@ func HeaderButton(th *Theme, label string, options ...Option) layout.Widget {
 	b.cornerRadius = 0
 	b.internPad = th.LabelPadding
 	b.role = Canvas
+	b.Style = Header
 	b.padding = layout.Inset{}
 	return b.Layout
 }
@@ -160,6 +163,9 @@ func (b *ButtonDef) layout(gtx C) D {
 	// Default button width when width is not given has padding=1.2 char heights.
 	contentWidth := dims.Size.X + iconSize*3/2
 	width := Min(gtx.Constraints.Max.X, Max(contentWidth+dims.Size.Y, gtx.Dp(b.width)))
+	if b.Style == Header {
+		width = gtx.Constraints.Max.X
+	}
 	dx := Max(0, (width-contentWidth)/2)
 	if b.internPad.Left > 0 && dx < gtx.Dp(b.internPad.Left) {
 		dx = gtx.Dp(b.internPad.Left)
@@ -203,6 +209,9 @@ func (b *ButtonDef) layout(gtx C) D {
 
 	// Calculate internal paddings and move
 	dy := Max(0, (height-dims.Size.Y)/2)
+	if b.Style == Header {
+		dx = gtx.Dp(b.internPad.Left)
+	}
 	defer op.Offset(image.Pt(dx, dy)).Push(gtx.Ops).Pop()
 
 	if b.Icon != nil && b.Text != "" {

@@ -23,23 +23,30 @@ import (
 	"gioui.org/unit"
 )
 
-const test = false
+const test = 0
 
 var (
 	currentTheme *wid.Theme  // the theme selected
 	win          *app.Window // The main window
 	form         layout.Widget
-	Alternative  string
+	Alternative  = "SmallColumns"
 	// Column widths are given in units of approximately one average character width (en).
-	largeColWidth = []float32{0, 40, 40, 20}
-	smallColWidth = []float32{0, 9, 0.9, 12}
-	fracColWidth  = []float32{0, 0.3, 0.3, .2}
+	// A witdth of zero means the widget's natural size should be used (f.ex. checkboxes)
+	largeColWidth = []float32{0, 40, 40, 20, 20}
+	smallColWidth = []float32{0, 19, 0.9, 12, 12}
+	fracColWidth  = []float32{0, 0.3, 0.3, .2, .2}
 	selectAll     bool
 	nameIcon      *wid.Icon
 	addressIcon   *wid.Icon
 	ageIcon       *wid.Icon
 	dir           bool
+	fontSize      = "Large"
 )
+var TriangleUp = []byte{
+	0x89, 0x49, 0x56, 0x47, 0x02, 0x0a, 0x00, 0x50, 0x50, 0xb0, 0xb0, 0xc0, 0x80, 0x8d, 0x77, 0x00,
+	0xc9, 0x8c, 0x98, 0xe6, 0x39, 0x73, 0x00, 0x80, 0x8d, 0x77, 0xe2, 0x80, 0x60, 0x00, 0x58, 0xa0,
+	0xe7, 0xd0, 0x00, 0x80, 0x60, 0xe1,
+}
 
 type person struct {
 	Selected bool
@@ -65,7 +72,7 @@ var data = []person{
 }
 
 func main() {
-	makePersons(100)
+	makePersons(20)
 	go func() {
 		currentTheme = wid.NewTheme(gofont.Collection(), 24)
 		win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
@@ -107,9 +114,22 @@ func onWinChange() {
 		form = Grid(currentTheme, wid.Overlay, data, smallColWidth)
 	} else if Alternative == "FractionalColumns" {
 		form = Grid(currentTheme, wid.Overlay, data[:5], fracColWidth)
+	} else if Alternative == "Zero" {
+		form = Grid(currentTheme, wid.Occupy, data, []float32{0, 0, 0, 0, 0, 0, 0})
 	} else {
-		form = Grid(currentTheme, wid.Occupy, data, smallColWidth)
+		form = Grid(currentTheme, wid.Occupy, data, nil)
 	}
+}
+
+func onFontChange() {
+	if fontSize == "Large" {
+		currentTheme = wid.NewTheme(gofont.Collection(), 24)
+	} else if fontSize == "Small" {
+		currentTheme = wid.NewTheme(gofont.Collection(), 10)
+	} else if fontSize == "Medium" {
+		currentTheme = wid.NewTheme(gofont.Collection(), 14)
+	}
+	onWinChange()
 }
 
 // makePersons will create a list of n persons.
@@ -119,45 +139,45 @@ func makePersons(n int) {
 		data[0].Age = data[0].Age + float64(i)
 		data = append(data, data[0])
 	}
-	data = data[0:n]
+	// data = data[0:n]
 }
 
 func onNameClick() {
 	if dir {
 		sort.Slice(data, func(i, j int) bool { return data[i].Name >= data[j].Name })
-		_ = nameIcon.Update(icons.HardwareKeyboardArrowDown)
+		_ = nameIcon.Update(icons.NavigationArrowUpward)
 	} else {
 		sort.Slice(data, func(i, j int) bool { return data[i].Name < data[j].Name })
-		_ = nameIcon.Update(icons.HardwareKeyboardArrowUp)
+		_ = nameIcon.Update(icons.NavigationArrowDownward)
 	}
-	_ = addressIcon.Update(icons.ContentSort)
-	_ = ageIcon.Update(icons.ContentSort)
+	_ = addressIcon.Update(icons.NavigationUnfoldMore)
+	_ = ageIcon.Update(icons.NavigationUnfoldMore)
 	dir = !dir
 }
 
 func onAddressClick() {
 	if dir {
 		sort.Slice(data, func(i, j int) bool { return data[i].Address >= data[j].Address })
-		_ = addressIcon.Update(icons.HardwareKeyboardArrowDown)
+		_ = addressIcon.Update(icons.NavigationArrowUpward)
 	} else {
 		sort.Slice(data, func(i, j int) bool { return data[i].Address < data[j].Address })
-		_ = addressIcon.Update(icons.HardwareKeyboardArrowUp)
+		_ = addressIcon.Update(icons.NavigationArrowDownward)
 	}
-	_ = nameIcon.Update(icons.ContentSort)
-	_ = ageIcon.Update(icons.ContentSort)
+	_ = nameIcon.Update(icons.NavigationUnfoldMore)
+	_ = ageIcon.Update(icons.NavigationUnfoldMore)
 	dir = !dir
 }
 
 func onAgeClick() {
 	if dir {
 		sort.Slice(data, func(i, j int) bool { return data[i].Age >= data[j].Age })
-		_ = ageIcon.Update(icons.HardwareKeyboardArrowDown)
+		_ = ageIcon.Update(icons.NavigationArrowUpward)
 	} else {
 		sort.Slice(data, func(i, j int) bool { return data[i].Age < data[j].Age })
-		_ = ageIcon.Update(icons.HardwareKeyboardArrowUp)
+		_ = ageIcon.Update(icons.NavigationArrowDownward)
 	}
-	_ = nameIcon.Update(icons.ContentSort)
-	_ = addressIcon.Update(icons.ContentSort)
+	_ = nameIcon.Update(icons.NavigationUnfoldMore)
+	_ = addressIcon.Update(icons.NavigationUnfoldMore)
 	dir = !dir
 }
 
@@ -168,58 +188,72 @@ func onCheck() {
 	}
 }
 
+const gw = 2.0 / 1.75
+
 // Grid is a widget that lays out the grid. This is all that is needed.
 func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []float32) layout.Widget {
-	if test {
+	if test == 1 {
+		return wid.GridRow(th, nil, gw, []float32{0, 0.9},
+			wid.Checkbox(th, "", wid.Bool(&data[1].Selected)),
+			wid.Label(th, &data[1].Name))
+	} else if test == 2 {
+		return wid.GridRow(th, nil, gw, []float32{0, 9, 0.9, 8},
+			wid.Checkbox(th, "", wid.Bool(&data[1].Selected)),
+			wid.Label(th, &data[1].Address),
+			wid.Label(th, &data[1].Name),
+			wid.Label(th, &data[1].Age, wid.Dp(3), wid.Right()))
+
+	} else if test == 3 {
 		return wid.RadioButton(th, &Alternative, "LargeColumns", "LargeColumns", wid.Do(onWinChange))
 	} else {
-		nameIcon, _ = wid.NewIcon(icons.ContentSort)
-		addressIcon, _ = wid.NewIcon(icons.ContentSort)
-		ageIcon, _ = wid.NewIcon(icons.ContentSort)
+		nameIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
+		addressIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
+		ageIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
 
 		var lines []layout.Widget
 
 		lines = append(lines,
-			wid.GridRow(th, nil, 1.5, []float32{0, 9, 0.9, 8},
-				wid.Checkbox(th, "", wid.Bool(&data[1].Selected)),
-				wid.Label(th, &data[1].Address),
-				wid.Label(th, &data[1].Name),
-				wid.Label(th, &data[1].Age, wid.Dp(3), wid.Right())),
-			// wid.DropDown(&thg, &data[i].Status, []string{"Male", "Female", "Other"}),
-		)
-
-		lines = append(lines,
-			wid.GridRow(th, nil, 1.5, []float32{0, 0, 0},
-				wid.RadioButton(th, &Alternative, "LargeColumns", "LargeColumns", wid.Do(onWinChange)),
-				wid.RadioButton(th, &Alternative, "SmallColumns", "SmallColumns", wid.Do(onWinChange)),
-				wid.RadioButton(th, &Alternative, "FractionalColumns", "FractionalColumns", wid.Do(onWinChange)),
+			wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
+			wid.Label(th, "Different wighting and size of columns"),
+			wid.Row(th, nil, nil,
+				wid.RadioButton(th, &Alternative, "LargeColumns", "Large", wid.Do(onWinChange)),
+				wid.RadioButton(th, &Alternative, "SmallColumns", "Small", wid.Do(onWinChange)),
+				wid.RadioButton(th, &Alternative, "FractionalColumns", "Fractional", wid.Do(onWinChange)),
+				wid.RadioButton(th, &Alternative, "Zero", "Zero", wid.Do(onWinChange)),
+				wid.RadioButton(th, &Alternative, "Nil", "Nil", wid.Do(onWinChange)),
 			),
-			wid.Space(40),
+			wid.Space(5),
+			wid.Label(th, "Select font size"),
+			wid.Row(th, nil, []float32{0, 0, 0},
+				wid.RadioButton(th, &fontSize, "Large", "Large", wid.Do(onFontChange)),
+				wid.RadioButton(th, &fontSize, "Medium", "Medium", wid.Do(onFontChange)),
+				wid.RadioButton(th, &fontSize, "Small", "Small", wid.Do(onFontChange)),
+			),
+			wid.Space(20),
 		)
 		// Configure a row with headings.
-		bgColor := th.Bg(wid.Primary)
-		heading := wid.GridRow(th, &bgColor, 1.0, colWidths,
+		bgColor := th.Bg(wid.PrimaryContainer)
+		heading := wid.GridRow(th, &bgColor, gw, colWidths,
 			wid.Checkbox(th, "", wid.Bool(&selectAll), wid.Do(onCheck), wid.Prim()),
 			wid.HeaderButton(th, "Name", wid.Do(onNameClick), wid.Prim(), wid.BtnIcon(nameIcon)),
 			wid.HeaderButton(th, "Address", wid.Do(onAddressClick), wid.Prim(), wid.BtnIcon(addressIcon)),
 			wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.Prim(), wid.BtnIcon(ageIcon)),
-			// wid.Label(th, "Gender", wid.Bold()),
+			wid.Label(th, "Gender", wid.Bold()),
 		)
 		lines = append(lines, heading)
 
-		// lines = append(lines, wid.Separator(th, unit.Dp(2.0), wid.W(9999)))
 		for i := 0; i < len(data); i++ {
-			bgColor := wid.MulAlpha(wid.Blue, 20)
+			bgColor := wid.MulAlpha(th.Bg(wid.PrimaryContainer), 20)
 			if i%2 == 0 {
-				bgColor = wid.MulAlpha(wid.Red, 20)
+				bgColor = wid.MulAlpha(th.Bg(wid.SecondaryContainer), 20)
 			}
 			lines = append(lines,
-				wid.GridRow(th, &bgColor, 1.5, colWidths,
+				wid.GridRow(th, &bgColor, gw, colWidths,
 					wid.Checkbox(th, "", wid.Bool(&data[i].Selected)),
 					wid.Label(th, &data[i].Name),
 					wid.Label(th, &data[i].Address),
 					wid.Label(th, &data[i].Age, wid.Dp(2), wid.Right()),
-					// wid.DropDown(&thg, &data[i].Status, []string{"Male", "Female", "Other"}),
+					wid.DropDown(th, &data[i].Status, []string{"Male", "Female", "Other"}, wid.Border(0)),
 				))
 
 		}

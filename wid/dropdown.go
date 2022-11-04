@@ -20,16 +20,18 @@ import (
 type DropDownStyle struct {
 	Base
 	Clickable
-	disabler     *bool
-	items        []string
-	itemHovered  []bool
-	outlineColor color.NRGBA
-	listVisible  bool
-	list         layout.Widget
-	Items        []layout.Widget
-	label        string
-	labelSize    unit.Sp
-	above        bool
+	disabler        *bool
+	items           []string
+	itemHovered     []bool
+	outlineColor    color.NRGBA
+	listVisible     bool
+	list            layout.Widget
+	Items           []layout.Widget
+	label           string
+	labelSize       unit.Sp
+	above           bool
+	borderThickness unit.Dp
+	insidePadding   layout.Inset
 }
 
 var icon *Icon
@@ -44,7 +46,8 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 	b.index = index
 	b.items = items
 	b.labelSize = th.TextSize * 8
-
+	b.insidePadding = th.LabelPadding
+	b.borderThickness = b.th.BorderThickness
 	for i := range items {
 		b.Items = append(b.Items, b.option(th, i))
 		b.itemHovered = append(b.itemHovered, false)
@@ -55,17 +58,27 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 	for _, option := range options {
 		option.apply(&b)
 	}
+	if b.label == "" {
+		b.labelSize = 0
+	}
 	if (b.fgColor == color.NRGBA{}) {
 		b.fgColor = th.Fg(b.role)
 	}
 	if (b.bgColor == color.NRGBA{}) {
 		b.bgColor = th.Bg(b.role)
 	}
+	if b.borderThickness == 0 {
+		b.insidePadding = layout.Inset{}
+	}
 	return b.Layout
 }
 
 func (e *DropDownStyle) setLabel(s string) {
 	e.label = s
+}
+
+func (e *DropDownStyle) setBorder(w unit.Dp) {
+	e.borderThickness = w
 }
 
 // Layout adds padding to a dropdown box drawn with b.layout().
@@ -97,7 +110,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 
 	// Add outside padding
 	defer op.Offset(image.Pt(gtx.Dp(b.padding.Left), gtx.Dp(b.padding.Top))).Push(gtx.Ops).Pop()
-	o := op.Offset(image.Pt(gtx.Dp(b.th.LabelPadding.Left), gtx.Dp(b.th.LabelPadding.Top))).Push(gtx.Ops)
+	o := op.Offset(image.Pt(gtx.Dp(b.insidePadding.Left), gtx.Dp(b.insidePadding.Top))).Push(gtx.Ops)
 	paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
 	ctx := gtx
 	ctx.Constraints.Max.X = gtx.Sp(b.labelSize) - gtx.Dp(b.padding.Left)
@@ -107,14 +120,14 @@ func (b *DropDownStyle) layout(gtx C) D {
 	defer op.Offset(image.Pt(ofs, 0)).Push(gtx.Ops).Pop()
 
 	// Draw text with top/left padding offset
-	o = op.Offset(image.Pt(gtx.Dp(b.th.LabelPadding.Left), gtx.Dp(b.th.LabelPadding.Top))).Push(gtx.Ops)
+	o = op.Offset(image.Pt(gtx.Dp(b.insidePadding.Left), gtx.Dp(b.insidePadding.Top))).Push(gtx.Ops)
 	paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
 	dims := widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, b.th.Shaper, *b.Font, b.th.TextSize, b.items[*b.index])
 	o.Pop()
 
-	// Calculate widget size based on text size and LabelPadding, using all available x space
+	// Calculate widget size based on text size and padding, using all available x space
 	dims.Size.X = gtx.Constraints.Max.X
-	dims.Size.Y = dims.Size.Y + gtx.Dp(b.th.LabelPadding.Top+b.th.LabelPadding.Bottom+b.padding.Top+b.padding.Bottom)
+	dims.Size.Y = dims.Size.Y + gtx.Dp(b.insidePadding.Top+b.insidePadding.Bottom+b.padding.Top+b.padding.Bottom)
 
 	border := image.Rectangle{Max: image.Pt(
 		dims.Size.X-gtx.Dp(b.padding.Left+b.padding.Right)-ofs,
@@ -122,12 +135,14 @@ func (b *DropDownStyle) layout(gtx C) D {
 
 	// Draw border. Need to undo previous top padding offset first
 	r := gtx.Dp(b.cornerRadius)
-	if b.Focused() {
-		paintBorder(gtx, border, b.outlineColor, b.th.BorderThicknessActive, r)
-	} else if b.Hovered() {
-		paintBorder(gtx, border, b.outlineColor, (b.th.BorderThickness+b.th.BorderThicknessActive)/2, r)
-	} else {
-		paintBorder(gtx, border, b.fgColor, b.th.BorderThickness, r)
+	if b.borderThickness > 0 {
+		if b.Focused() {
+			paintBorder(gtx, border, b.outlineColor, b.borderThickness*2, r)
+		} else if b.Hovered() {
+			paintBorder(gtx, border, b.outlineColor, b.borderThickness*3/2, r)
+		} else {
+			paintBorder(gtx, border, b.fgColor, b.th.BorderThickness, r)
+		}
 	}
 
 	// Draw icon using forground color
@@ -175,7 +190,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 		stack := clip.UniformRRect(listClipRect, 0).Push(gtx.Ops)
 		paint.Fill(gtx.Ops, b.bgColor)
 		// Draw a border around all options
-		paintBorder(gtx, listClipRect, b.th.Fg(Outline), b.th.BorderThickness*2, 0)
+		paintBorder(gtx, listClipRect, b.th.Fg(Outline), b.th.BorderThicknessActive, 0)
 		call.Add(gtx.Ops)
 		stack.Pop()
 		call = macro.Stop()

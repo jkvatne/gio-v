@@ -21,6 +21,7 @@ type rowDef struct {
 	padTop        unit.Sp
 	padBtm        unit.Sp
 	gridLineWidth unit.Dp
+	gridColor     color.NRGBA
 }
 
 // SpaceClose is a shortcut for specifying that the row elements are placed close together, left to right
@@ -59,7 +60,7 @@ func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
 		if i < len(widths) && i < len(weights) {
 			if weights != nil {
 				if weights[i] <= 1.0 {
-					widths[i] = int(weights[i] * scale)
+					widths[i] = Max(1, int(weights[i]*scale))
 				} else {
 					widths[i] = gtx.Sp(textSize * unit.Sp(weights[i]) / 2)
 				}
@@ -80,6 +81,7 @@ func GridRow(th *Theme, pbgColor *color.NRGBA, gridLineWidth unit.Dp, weights []
 	r.padTop = th.RowPadTop
 	r.padBtm = th.RowPadBtm
 	r.gridLineWidth = gridLineWidth
+	r.gridColor = th.Fg(Outline)
 	dims := make([]D, len(widgets))
 	return func(gtx C) D {
 		return r.rowLayout(gtx, th.TextSize, dims, bgColor, weights, widgets...)
@@ -156,12 +158,13 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dims []D, bgColor color.NRGB
 		trans := op.Offset(image.Pt(pos[i], 0)).Push(gtx.Ops)
 		// Draw a vertical separator
 		if r.gridLineWidth > 0 {
-			outline := image.Rect(0, 0, pos[i+1]-pos[i], dims[i].Size.Y)
+			gw := gtx.Dp(r.gridLineWidth)
+			outline := image.Rect(gw/2, gw/2, pos[i+1]-pos[i]+gw/2, yMax)
 			paint.FillShape(gtx.Ops,
 				Black,
 				clip.Stroke{
 					Path:  clip.Rect(outline).Path(),
-					Width: float32(gtx.Dp(r.gridLineWidth)),
+					Width: float32(gw),
 				}.Op(),
 			)
 		}
