@@ -14,8 +14,6 @@ import (
 	"gioui.org/unit"
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
-	"gioui.org/widget"
-
 	"gioui.org/layout"
 )
 
@@ -25,7 +23,7 @@ var (
 	th          *wid.Theme
 	addIcon     *wid.Icon
 	checkIcon   *wid.Icon
-	group                   = new(widget.Enum)
+	group                   = ""
 	sliderValue float32     = 0.1
 	win         *app.Window // The main window
 	form        layout.Widget
@@ -100,9 +98,9 @@ func kitchen(th *wid.Theme) layout.Widget {
 		// ),
 
 		wid.Row(th, nil, nil,
-			wid.RadioButton(th, group, "RadioButton1", "RadioButton1"),
-			wid.RadioButton(th, group, "RadioButton2", "RadioButton2"),
-			wid.RadioButton(th, group, "RadioButton3", "RadioButton3"),
+			wid.RadioButton(th, &group, "RadioButton1", "RadioButton1"),
+			wid.RadioButton(th, &group, "RadioButton2", "RadioButton2"),
+			wid.RadioButton(th, &group, "RadioButton3", "RadioButton3"),
 		),
 		wid.Row(th, nil, []float32{0.9, 0.1},
 			wid.Slider(th, &sliderValue, 0, 100),

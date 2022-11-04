@@ -48,15 +48,12 @@ func main() {
 		currentTheme = wid.NewTheme(gofont.Collection(), 14)
 		win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
 		form = demo(currentTheme)
-		for {
-			select {
-			case e := <-win.Events():
-				switch e := e.(type) {
-				case system.DestroyEvent:
-					os.Exit(0)
-				case system.FrameEvent:
-					handleFrameEvents(e)
-				}
+		for e := range win.Events() {
+			switch e := e.(type) {
+			case system.DestroyEvent:
+				os.Exit(0)
+			case system.FrameEvent:
+				handleFrameEvents(e)
 			}
 		}
 	}()
@@ -125,9 +122,6 @@ func demo(th *wid.Theme) layout.Widget {
 
 		wid.Label(th, "Demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 
-		wid.Row(th, nil, nil, wid.RoundButton(th, homeIcon, wid.Prim())),
-		// wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(wid.RGB(0xF288F2)), wid.Fg(wid.RGB(0x0902200))),
-
 		wid.Label(th, "Checkbox to change between dark mode and light mode, changing the theme variable DarkMode"),
 		wid.Row(th, nil, []float32{.9, .5, .5, .5, .5},
 			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onSwitchMode)),
@@ -190,7 +184,6 @@ func demo(th *wid.Theme) layout.Widget {
 		),
 		wid.ProgressBar(th, &progress, wid.Pads(5.0), wid.W(12.0)),
 		wid.Separator(th, 0, wid.Pads(5.0)),
-		// wid.ImageFromJpgFile("gopher.jpg", wid.Contain),
-		/* */
+		wid.ImageFromJpgFile("gopher.jpg", wid.Contain),
 	)
 }

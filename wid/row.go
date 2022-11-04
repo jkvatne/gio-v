@@ -25,7 +25,7 @@ type rowDef struct {
 }
 
 // SpaceClose is a shortcut for specifying that the row elements are placed close together, left to right
-var SpaceClose = []float32{}
+var SpaceClose = []float32{0}
 
 // SpaceDistribute should disribute the widgets on a row evenly, with equal space for each
 var SpaceDistribute []float32

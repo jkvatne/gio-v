@@ -5,6 +5,11 @@ package wid
 import (
 	"image"
 	"image/color"
+	"os"
+
+	"gioui.org/io/system"
+	"gioui.org/op"
+	"gioui.org/op/paint"
 
 	"gioui.org/app"
 	"gioui.org/io/pointer"
@@ -307,4 +312,28 @@ func UpdateMousePos(gtx C, win *app.Window, size image.Point) {
 	}
 	winX = size.X
 	winY = size.Y
+}
+
+func Run(win *app.Window, theme *Theme, form func(th *Theme) layout.Widget) {
+	for e := range win.Events() {
+		switch e := e.(type) {
+		case system.DestroyEvent:
+			os.Exit(0)
+		case system.FrameEvent:
+			var ops op.Ops
+			gtx := layout.NewContext(&ops, e)
+			// Set background color according to theme
+			c := theme.Bg(Canvas)
+			paint.Fill(gtx.Ops, c)
+			// A hack to fetch mouse position and window size so we can avoid
+			// tooltips going outside the main window area
+			p := pointer.PassOp{}.Push(gtx.Ops)
+			UpdateMousePos(gtx, win, e.Size)
+			// Draw widgets
+			form(theme)(gtx)
+			p.Pop()
+			// Apply the actual screen drawing
+			e.Frame(gtx.Ops)
+		}
+	}
 }

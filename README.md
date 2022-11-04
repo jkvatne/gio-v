@@ -17,75 +17,81 @@ THIS IS WORK IN PROGRESS - ANYTHING CAN CHANGE AT ANY TIME
 
 ## Material design
 
-Quite a lot of effort has gone into making it look like Google's examples of material design forms. The shadows are noe
-almost identical, and hover/focus are at least similar.
+The design follows closely Google Material 3, where a few primary colors are used to generate all the other 
+colors. Most other design elements can be tuned by modifying the default theme.
 
 ## Keyboard only operation
 
-All (TODO) widgets handle keyboard only operation. Focus is moved py TAB/SHIFT-TAB keys. The tab sequence is given by
-the declaration sequence automatically. No mouse is needed.
+All widgets handle keyboard only operation. Focus is moved py TAB/SHIFT-TAB keys using standard gio
 
 ## Extended theming
 
 The theme is very much extended, with default values for all colors and sizes. You can set up several themes for
 different types of buttons etc, and use the themes when declaring the widgets.
 
+Dark and Light mode are both supported, and can be easily selected from a widget. 
+
 ## Dynamic resizing
 
-Everything scales with the text size, and the text size is set automatically as a fraction of the window size. This
-makes it easy to write programs that are maximized to fill the screen, or are operating mostly in full-screen mode. (
-Creating maximized windows depends on a small modification of gio itself, and is implemented in my gio fork)
+Everything scales with the text size, and the text size can be set automatically as a fraction of the window size. This
+makes it easy to write programs that are maximized to fill the screen, or are operating mostly in full-screen mode
 
 ## Importing gio directly
 
 The gio module itself does not need to be modified. The excellent work by Elias Naur and Chris Waldon is used without
-modifications. My widgets are only high-level extensions.
+modifications. My widgets are only a high-level extensions, replacing the material widgets in gio.
 
 ## Widget configuration by optional arguments
 
-Using a similar technique to what is used for window setup, you can configure the widgets as needed. Functions with
-optional parameters is not possible in Golang, but you can have a variable number of interface parameters as
-in ```func(options ...Option)``` . See example below
+All widget functions can have any number of options, as ```func(options ...Option)``` . See example below
 
 ## Easy setup of forms
 
-Here is an example from demo.go. The widgets can take a variable number of options for things like width and hints.
-Otherwise, default fallbacks are used.
+Here is an example from /examples/hello. The widgets can take a variable number of options for things like width and hints.
+Otherwise, default fallbacks are used. The defaults are mostly defined in the theme.
 
 ```
-	root = wid.MakeList(
-		th, layout.Vertical,
-		wid.Label(th, "Demo page", text.Middle, 2.0),
-		wid.Button(th, "WIDE BUTTON",
-			wid.W(950),
-			wid.Pad(30, 15, 15, 0),
-			wid.Hint("This is a dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-		wid.MakeFlex(
-			wid.Label(th, "Dark mode", text.Start, 1.0),
-			wid.Switch(th, darkMode, onSwitchMode),
-		),
-		wid.Checkbox(th, "Checkbox", darkMode, nil),
-		wid.MakeFlex(
-			wid.RoundButton(th, icons.ContentAdd,
-				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-			wid.Button(th, "Home", wid.BtnIcon(icons.ActionHome), wid.Disable(&darkMode)),
-			wid.Button(th, "Check", wid.BtnIcon(icons.ActionCheckCircle)),
-			wid.Button(&thb, "Change color", wid.Handler(onClick)),
-			wid.TextButton(th, "Text button"),
-			wid.OutlineButton(th, "Outline button"),
-			wid.Label(th, "Disabled", text.End, 1.0),
-			wid.Switch(th, false, doDisable),
-		),
-		wid.MakeFlex(
-			wid.Combo(th, unit.Value{}, 0, []string{"Option A", "Option B", "Option C"}),
-			wid.Combo(th, unit.Value{200, 0}, 1, []string{"Option 1", "Option 2", "Option 3"}),
-			wid.Combo(th, unit.Value{300, 0}, 1, []string{"Option 1", "Option 2", "Option 3"}),
-			wid.Combo(th, unit.Value{}, 0, []string{"Option A", "Option B", "Option C"}),
-		),
-		wid.Edit(th, wid.Hint("Value 1"), wid.W(950)),
-		wid.Edit(th, wid.Hint("Value 2")),
-		wid.Edit(th, wid.Hint("Value 3")),
+package main
+
+import (
+	"gio-v/wid"
+
+	"gioui.org/app"
+	"gioui.org/font/gofont"
+	"gioui.org/layout"
+	"gioui.org/unit"
+)
+
+func main() {
+	go wid.Run(
+		app.NewWindow(app.Title("Hello Gio demo"), app.Size(unit.Dp(900), unit.Dp(500))),
+		wid.NewTheme(gofont.Collection(), 14),
+		hello,
+	)
+	app.Main()
+}
+
+func hello(th *wid.Theme) layout.Widget {
+	return wid.List(th, wid.Overlay,
+		wid.Label(th, "Hello gio..", wid.Middle(), wid.Heading(), wid.Bold()),
+		wid.Label(th, "A small demo program using 25 lines toal"),
+	)
+}
 ```
+
+# Immediate mode?
+
+This implementation does not follow the gio recomendations fully. This is actualy not an 
+immediate mode design. The widgets are fully persistent, and callbacks and pointers are 
+used extensively. This is done to make it much more user-friendly, and it is primarily intended for
+desktop applications, where resources are plentiful.
+
+Switches and edits modify the corresponding variables directly, via pointers. When the variable is
+modified, the corresponding widget is emmediately uppdated without any acction from the program.
+This is typically done from an other go-routine.
+
+Note that the program is not yet protected from race conditions. 
+The plan is to include a global lock.
 
 # License
 
