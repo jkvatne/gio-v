@@ -175,7 +175,7 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dims []D, bgColor color.NRGB
 	dim := D{Size: image.Pt(pos[len(widgets)], yMax)}
 	drawAll := macro.Stop()
 	// Draw background.
-	defer clip.Rect{Max: dim.Size}.Push(gtx.Ops).Pop()
+	defer clip.Rect{Max: image.Pt(gtx.Constraints.Max.X, dim.Size.Y)}.Push(gtx.Ops).Pop()
 	paint.ColorOp{Color: bgColor}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
 	gtx.Constraints.Min = dim.Size

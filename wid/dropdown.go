@@ -90,11 +90,20 @@ func (b *DropDownStyle) layout(gtx C) D {
 
 	b.HandleEvents(gtx)
 	// Check for index range, because tha HandleEvents() function does not know the limits.
-	if *b.index < 0 {
-		*b.index = 0
+	GuiLock.RLock()
+	idx := *b.index
+	GuiLock.RUnlock()
+	if idx < 0 {
+		idx = 0
+		GuiLock.Lock()
+		*b.index = idx
+		GuiLock.Unlock()
 	}
-	if *b.index >= len(b.items) {
-		*b.index = len(b.items) - 1
+	if idx >= len(b.items) {
+		idx = len(b.items) - 1
+		GuiLock.Lock()
+		*b.index = idx
+		GuiLock.Unlock()
 	}
 
 	if b.disabler != nil && *b.disabler {
@@ -177,7 +186,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 		call := macro.Stop()
 
 		if !oldVisible {
-			b.setHovered()
+			b.setHovered(idx)
 			b.above = int(mouseY) > (winY - d.Size.Y)
 		}
 
@@ -197,24 +206,19 @@ func (b *DropDownStyle) layout(gtx C) D {
 		op.Defer(gtx.Ops, call)
 
 	} else {
-		b.setHovered()
+		b.setHovered(idx)
 	}
 	pointer.CursorPointer.Add(gtx.Ops)
 	b.SetupEventHandlers(gtx, dims.Size)
 	return dims
 }
 
-func (b *DropDownStyle) setHovered() {
-	if *b.index >= len(b.itemHovered) {
-		*b.index = len(b.itemHovered) - 1
-	}
-	if *b.index < 0 {
-		*b.index = 0
-	}
+func (b *DropDownStyle) setHovered(h int) {
+
 	for i := 0; i < len(b.itemHovered); i++ {
 		b.itemHovered[i] = false
 	}
-	b.itemHovered[*b.index] = true
+	b.itemHovered[h] = true
 }
 
 func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
@@ -223,7 +227,9 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 			if e, ok := e.(pointer.Event); ok {
 				switch e.Type {
 				case pointer.Release:
+					GuiLock.Lock()
 					*b.index = i
+					GuiLock.Unlock()
 					b.listVisible = false
 					b.itemHovered[i] = false
 				case pointer.Enter:
@@ -234,7 +240,7 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 				case pointer.Leave:
 					b.itemHovered[i] = false
 				case pointer.Cancel:
-					b.setHovered()
+					b.setHovered(i)
 				}
 			}
 		}

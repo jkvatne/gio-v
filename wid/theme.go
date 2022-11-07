@@ -87,9 +87,9 @@ func (th *Theme) Fg(kind UIRole) color.NRGBA {
 	if !th.DarkMode {
 		switch kind {
 		case Canvas:
-			return Tone(th.Pallet.NeutralColor, 10)
+			return Tone(th.Pallet.NeutralColor, 20)
 		case Surface:
-			return Tone(th.Pallet.NeutralColor, 10)
+			return Tone(th.Pallet.NeutralColor, 20)
 		case SurfaceVariant:
 			return Tone(th.Pallet.NeutralVariantColor, 30)
 		case Outline:

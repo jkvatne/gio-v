@@ -9,18 +9,14 @@ package main
 import (
 	"gio-v/wid"
 	"image/color"
-	"os"
+	"time"
 
-	"gioui.org/io/pointer"
+	"gioui.org/font/gofont"
 
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
 	"gioui.org/app"
-	"gioui.org/font/gofont"
-	"gioui.org/io/system"
 	"gioui.org/layout"
-	"gioui.org/op"
-	"gioui.org/op/paint"
 	"gioui.org/unit"
 )
 
@@ -35,7 +31,7 @@ var (
 	greenFlag              = false // the state variable for the button color
 	dropDownValue1         = 1
 	dropDownValue2         = 1
-	progress       float32 = 0.33
+	progress       float32 = 0.1
 	sliderValue    float32 = 0.1
 	WindowMode     string
 )
@@ -43,41 +39,26 @@ var (
 func main() {
 	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
 	homeIcon, _ = wid.NewIcon(icons.ActionHome)
-
-	go func() {
-		currentTheme = wid.NewTheme(gofont.Collection(), 14)
-		win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
-		form = demo(currentTheme)
-		for e := range win.Events() {
-			switch e := e.(type) {
-			case system.DestroyEvent:
-				os.Exit(0)
-			case system.FrameEvent:
-				handleFrameEvents(e)
-			}
-		}
-	}()
+	currentTheme = wid.NewTheme(gofont.Collection(), 14)
+	currentTheme.DarkMode = true
+	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
+	form = demo(currentTheme)
+	go wid.Run(win, &form)
+	go ticker()
 	app.Main()
 }
 
-func handleFrameEvents(e system.FrameEvent) {
-	var ops op.Ops
-	gtx := layout.NewContext(&ops, e)
-	// Set background color
-	c := currentTheme.Bg(wid.Canvas)
-	paint.Fill(gtx.Ops, c)
-	// A hack to fetch mouse position and window size so we can avoid
-	// tooltips going outside the main window area
-	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
-	wid.UpdateMousePos(gtx, win, e.Size)
-	progress = progress + 0.01
-	if progress > 1.0 {
-		progress = 0
+func ticker() {
+	for {
+		wid.GuiLock.Lock()
+		progress += 0.0001
+		if progress > 1.0 {
+			progress = 0
+		}
+		wid.GuiLock.Unlock()
+		time.Sleep(time.Millisecond * 1)
+		wid.Invalidate()
 	}
-	// Draw widgets
-	form(gtx)
-	// Apply the actual screen drawing
-	e.Frame(gtx.Ops)
 }
 
 func onSwitchMode() {

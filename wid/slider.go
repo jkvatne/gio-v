@@ -199,5 +199,7 @@ func (s *SliderStyle) setValue() {
 	if s.pos > 1.0 {
 		s.pos = 1.0
 	}
+	GuiLock.Lock()
 	*s.Value = s.pos*(s.max-s.min) + s.min
+	GuiLock.Unlock()
 }

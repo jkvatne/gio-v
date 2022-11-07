@@ -17,7 +17,7 @@ THIS IS WORK IN PROGRESS - ANYTHING CAN CHANGE AT ANY TIME
 
 ## Material design
 
-The design follows closely Google Material 3, where a few primary colors are used to generate all the other 
+The design follows closely Google Material 3, where a few primary colors are used to generate all the other
 colors. Most other design elements can be tuned by modifying the default theme.
 
 ## Keyboard only operation
@@ -29,7 +29,7 @@ All widgets handle keyboard only operation. Focus is moved py TAB/SHIFT-TAB keys
 The theme is very much extended, with default values for all colors and sizes. You can set up several themes for
 different types of buttons etc, and use the themes when declaring the widgets.
 
-Dark and Light mode are both supported, and can be easily selected from a widget. 
+Dark and Light mode are both supported, and can be easily selected from a widget.
 
 ## Dynamic resizing
 
@@ -47,7 +47,8 @@ All widget functions can have any number of options, as ```func(options ...Optio
 
 ## Easy setup of forms
 
-Here is an example from /examples/hello. The widgets can take a variable number of options for things like width and hints.
+Here is an example from /examples/hello. The widgets can take a variable number of options for things like width and
+hints.
 Otherwise, default fallbacks are used. The defaults are mostly defined in the theme.
 
 ```
@@ -81,8 +82,8 @@ func hello(th *wid.Theme) layout.Widget {
 
 # Immediate mode?
 
-This implementation does not follow the gio recomendations fully. This is actualy not an 
-immediate mode design. The widgets are fully persistent, and callbacks and pointers are 
+This implementation does not follow the gio recomendations fully. The widgets are fully persistent, and callbacks and
+pointers are
 used extensively. This is done to make it much more user-friendly, and it is primarily intended for
 desktop applications, where resources are plentiful.
 
@@ -90,7 +91,7 @@ Switches and edits modify the corresponding variables directly, via pointers. Wh
 modified, the corresponding widget is emmediately uppdated without any acction from the program.
 This is typically done from an other go-routine.
 
-Note that the program is not yet protected from race conditions. 
+Note that the program is not yet protected from race conditions.
 The plan is to include a global lock.
 
 # License

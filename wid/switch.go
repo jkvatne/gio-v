@@ -71,10 +71,16 @@ func dummyOnChange() {}
 func (s *SwitchDef) Layout(gtx C) D {
 
 	if s.sw.Changed() {
+		GuiLock.Lock()
 		*s.StatePtr = s.sw.Value
-		s.onUserChange()
+		if s.onUserChange != nil {
+			s.onUserChange()
+		}
+		GuiLock.Unlock()
 	} else {
+		GuiLock.RLock()
 		s.sw.Value = *s.StatePtr
+		GuiLock.RUnlock()
 	}
 
 	width := gtx.Dp(s.trackLength)
@@ -94,7 +100,7 @@ func (s *SwitchDef) Layout(gtx C) D {
 		s.hoverShadow = MulAlpha(s.th.Bg(Primary), 0)
 	}
 
-	if *s.StatePtr {
+	if s.sw.Value {
 		// Draw track in on position, filled rounded
 		paint.FillShape(gtx.Ops, s.trackColorOn, clip.UniformRRect(trackRect, height/2).Op(gtx.Ops))
 		// Draw thumb,
@@ -104,7 +110,7 @@ func (s *SwitchDef) Layout(gtx C) D {
 		paint.FillShape(gtx.Ops, s.hoverShadow,
 			clip.Ellipse{Min: image.Point{X: 2 * r, Y: -r / 2}, Max: image.Point{X: 7 * r, Y: 9 * r / 2}}.Op(gtx.Ops))
 		// TODO: Draw icon
-	} else if !*s.StatePtr {
+	} else {
 		// First draw track in OFF position, outlined
 		paint.FillShape(gtx.Ops, s.trackColorOff, clip.UniformRRect(trackRect, height/2).Op(gtx.Ops))
 		paint.FillShape(gtx.Ops, s.trackOutline,

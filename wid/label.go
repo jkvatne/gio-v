@@ -80,7 +80,10 @@ func (l LabelDef) Layout(gtx C) D {
 		// This is a hack to avoid splitting the line when only one line is allowed
 		c.Constraints.Max.X = inf
 	}
-	dims := tl.Layout(c, l.th.Shaper, l.Font, l.TextSize*unit.Sp(l.FontSize), l.Stringer(l.dp))
+	GuiLock.RLock()
+	str := l.Stringer(l.dp)
+	GuiLock.RUnlock()
+	dims := tl.Layout(c, l.th.Shaper, l.Font, l.TextSize*unit.Sp(l.FontSize), str)
 	dims.Size.X = gtx.Constraints.Min.X
 	return dims
 }
@@ -119,36 +122,58 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 }
 
 type Value interface {
-	int | float64 | float32 | string | *int | *float64 | *string
+	int | float64 | float32 | string | *int | *float64 | *float32 | *string
 }
 
 // Label returns a widget for a label showing a string
-func Label[V Value](th *Theme, x V, options ...Option) func(gtx C) D {
-	if x, ok := any(x).(int); ok {
+func Label[V Value](th *Theme, v V, options ...Option) func(gtx C) D {
+	if x, ok := any(v).(int); ok {
 		s := func(dp int) string { return fmt.Sprintf("%d", x) }
 		return StringerValue(th, s, options...)
 	}
-	if x, ok := any(x).(*int); ok {
-		s := func(dp int) string { return fmt.Sprintf("%d", *x) }
+	if x, ok := any(v).(*int); ok {
+		s := func(dp int) string {
+			GuiLock.RLock()
+			defer GuiLock.RUnlock()
+			return fmt.Sprintf("%d", *x)
+		}
 		return StringerValue(th, s, options...)
 	}
-	if x, ok := any(x).(float64); ok {
+	if x, ok := any(v).(float64); ok {
+		s := func(dp int) string { return strconv.FormatFloat(float64(x), 'f', dp, 64) }
+		return StringerValue(th, s, options...)
+	}
+	if x, ok := any(v).(*float64); ok {
+		s := func(dp int) string {
+			GuiLock.RLock()
+			defer GuiLock.RUnlock()
+			return strconv.FormatFloat(float64(*x), 'f', dp, 64)
+		}
+		return StringerValue(th, s, options...)
+	}
+	if x, ok := any(v).(float32); ok {
 		s := func(dp int) string { return strconv.FormatFloat(float64(x), 'f', dp, 32) }
 		return StringerValue(th, s, options...)
 	}
-	if x, ok := any(x).(*float64); ok {
-		s := func(dp int) string { return strconv.FormatFloat(float64(*x), 'f', dp, 32) }
+	if x, ok := any(v).(*float32); ok {
+		s := func(dp int) string {
+			GuiLock.RLock()
+			defer GuiLock.RUnlock()
+			return strconv.FormatFloat(float64(*x), 'f', dp, 32)
+		}
 		return StringerValue(th, s, options...)
 	}
-	if x, ok := any(x).(string); ok {
+	if x, ok := any(v).(string); ok {
 		s := func(dp int) string { return x }
 		return StringerValue(th, s, options...)
 	}
-	if x, ok := any(x).(*string); ok {
+	if x, ok := any(v).(*string); ok {
+		GuiLock.RLock()
+		defer GuiLock.RUnlock()
 		s := func(dp int) string { return *x }
 		return StringerValue(th, s, options...)
 	}
-	s := func(dp int) string { return fmt.Sprintf("%v", x) }
+	s := func(dp int) string { return fmt.Sprintf("%v", v) }
 	return StringerValue(th, s, options...)
 }
 

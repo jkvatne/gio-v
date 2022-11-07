@@ -7,16 +7,10 @@ package main
 
 import (
 	"gio-v/wid"
-	"os"
 	"sort"
-
-	"gioui.org/io/pointer"
-	"gioui.org/op"
-	"gioui.org/op/paint"
 
 	"gioui.org/app"
 	"gioui.org/font/gofont"
-	"gioui.org/io/system"
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
 	"gioui.org/layout"
@@ -26,10 +20,9 @@ import (
 const test = 0
 
 var (
-	currentTheme *wid.Theme  // the theme selected
-	win          *app.Window // The main window
-	form         layout.Widget
-	Alternative  = "SmallColumns"
+	form        layout.Widget
+	theme       wid.Theme
+	Alternative = "SmallColumns"
 	// Column widths are given in units of approximately one average character width (en).
 	// A witdth of zero means the widget's natural size should be used (f.ex. checkboxes)
 	largeColWidth = []float32{0, 40, 40, 20, 20}
@@ -42,11 +35,6 @@ var (
 	dir           bool
 	fontSize      = "Large"
 )
-var TriangleUp = []byte{
-	0x89, 0x49, 0x56, 0x47, 0x02, 0x0a, 0x00, 0x50, 0x50, 0xb0, 0xb0, 0xc0, 0x80, 0x8d, 0x77, 0x00,
-	0xc9, 0x8c, 0x98, 0xe6, 0x39, 0x73, 0x00, 0x80, 0x8d, 0x77, 0xe2, 0x80, 0x60, 0x00, 0x58, 0xa0,
-	0xe7, 0xd0, 0x00, 0x80, 0x60, 0xe1,
-}
 
 type person struct {
 	Selected bool
@@ -73,61 +61,37 @@ var data = []person{
 
 func main() {
 	makePersons(20)
-	go func() {
-		currentTheme = wid.NewTheme(gofont.Collection(), 24)
-		win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
-		onWinChange()
-		for {
-			e := <-win.Events()
-			switch e := e.(type) {
-			case system.DestroyEvent:
-				os.Exit(0)
-			case system.FrameEvent:
-				handleFrameEvents(e)
-			}
-
-		}
-	}()
+	theme = *wid.NewTheme(gofont.Collection(), 24)
+	onWinChange()
+	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500))), &form)
 	app.Main()
 }
 
-func handleFrameEvents(e system.FrameEvent) {
-	var ops op.Ops
-	gtx := layout.NewContext(&ops, e)
-	// Set background color
-	c := currentTheme.Bg(wid.Canvas)
-	paint.Fill(gtx.Ops, c)
-	// A hack to fetch mouse position and window size so we can avoid
-	// tooltips going outside the main window area
-	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
-	wid.UpdateMousePos(gtx, win, e.Size)
-	// Draw widgets
-	form(gtx)
-	// Apply the actual screen drawing
-	e.Frame(gtx.Ops)
-}
-
 func onWinChange() {
+	var f layout.Widget
 	if Alternative == "LargeColumns" {
-		form = Grid(currentTheme, wid.Occupy, data, largeColWidth)
+		f = Grid(&theme, wid.Occupy, data, largeColWidth)
 	} else if Alternative == "SmallColumns" {
-		form = Grid(currentTheme, wid.Overlay, data[:5], smallColWidth)
+		f = Grid(&theme, wid.Overlay, data[:5], smallColWidth)
 	} else if Alternative == "FractionalColumns" {
-		form = Grid(currentTheme, wid.Overlay, data, fracColWidth)
+		f = Grid(&theme, wid.Overlay, data, fracColWidth)
 	} else if Alternative == "Zero" {
-		form = Grid(currentTheme, wid.Occupy, data, []float32{0, 0, 0, 0, 0, 0, 0})
+		f = Grid(&theme, wid.Occupy, data, []float32{0, 0, 0, 0, 0, 0, 0})
 	} else {
-		form = Grid(currentTheme, wid.Occupy, data, nil)
+		f = Grid(&theme, wid.Occupy, data, nil)
 	}
+	wid.GuiLock.Lock()
+	form = f
+	defer wid.GuiLock.Unlock()
 }
 
 func onFontChange() {
 	if fontSize == "Large" {
-		currentTheme = wid.NewTheme(gofont.Collection(), 24)
+		theme = *wid.NewTheme(gofont.Collection(), 24)
 	} else if fontSize == "Small" {
-		currentTheme = wid.NewTheme(gofont.Collection(), 10)
+		theme = *wid.NewTheme(gofont.Collection(), 10)
 	} else if fontSize == "Medium" {
-		currentTheme = wid.NewTheme(gofont.Collection(), 14)
+		theme = *wid.NewTheme(gofont.Collection(), 14)
 	}
 	onWinChange()
 }
@@ -139,7 +103,6 @@ func makePersons(n int) {
 		data[0].Age = data[0].Age + float64(i)
 		data = append(data, data[0])
 	}
-	// data = data[0:n]
 }
 
 func onNameClick() {
@@ -192,6 +155,7 @@ const gw = 2.0 / 1.75
 
 // Grid is a widget that lays out the grid. This is all that is needed.
 func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []float32) layout.Widget {
+	// Set background color according to theme
 	if test == 1 {
 		return wid.GridRow(th, nil, gw, []float32{0, 0.9},
 			wid.Checkbox(th, "", wid.Bool(&data[1].Selected)),
@@ -245,9 +209,9 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 		lines = append(lines, heading)
 
 		for i := 0; i < len(data); i++ {
-			bgColor := wid.MulAlpha(th.Bg(wid.PrimaryContainer), 20)
+			bgColor := wid.MulAlpha(th.Bg(wid.PrimaryContainer), 50)
 			if i%2 == 0 {
-				bgColor = wid.MulAlpha(th.Bg(wid.SecondaryContainer), 20)
+				bgColor = wid.MulAlpha(th.Bg(wid.SecondaryContainer), 50)
 			}
 			lines = append(lines,
 				wid.GridRow(th, &bgColor, gw, colWidths,

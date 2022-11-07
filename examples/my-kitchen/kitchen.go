@@ -1,15 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"gio-v/wid"
-	"os"
+	"image"
+	"image/color"
+
+	"gioui.org/op/clip"
 
 	"gioui.org/app"
 	"gioui.org/font/gofont"
-	"gioui.org/io/pointer"
-	"gioui.org/io/system"
-	"gioui.org/op"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"golang.org/x/exp/shiny/materialdesign/icons"
@@ -23,79 +22,67 @@ var (
 	th          *wid.Theme
 	addIcon     *wid.Icon
 	checkIcon   *wid.Icon
-	group                   = ""
-	sliderValue float32     = 0.1
-	win         *app.Window // The main window
-	form        layout.Widget
+	group       string  = ""
+	sliderValue float32 = 0.1
+	win         *app.Window
 	progress    float32
+	disable     bool
+	form        layout.Widget
 )
 
 func main() {
-	c := wid.RGB(0x123456)
-	d := wid.Hsl2rgb(wid.Rgb2hsl(c))
-	fmt.Printf("D=%d", d)
 	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
 	addIcon, _ = wid.NewIcon(icons.ContentAdd)
-
-	go func() {
-		th = wid.NewTheme(gofont.Collection(), 14)
-		win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
-		form = kitchen(th)
-		for {
-			select {
-			case e := <-win.Events():
-				switch e := e.(type) {
-				case system.DestroyEvent:
-					os.Exit(0)
-				case system.FrameEvent:
-					handleFrameEvents(e)
-				}
-			}
-		}
-	}()
+	th = wid.NewTheme(gofont.Collection(), 14)
+	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
+	form = kitchen(th)
+	wid.Run(win, &form)
 	app.Main()
-}
-
-func handleFrameEvents(e system.FrameEvent) {
-	var ops op.Ops
-	gtx := layout.NewContext(&ops, e)
-	// Set background color
-	c := th.Bg(wid.Canvas)
-	paint.Fill(gtx.Ops, c)
-	// A hack to fetch mouse position and window size so we can avoid
-	// tooltips going outside the main window area
-	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
-	wid.UpdateMousePos(gtx, win, e.Size)
-	progress = progress + 0.01
-	if progress > 1.0 {
-		progress = 0
-	}
-	// Draw widgets
-	form(gtx)
-	// Apply the actual screen drawing
-	e.Frame(gtx.Ops)
 }
 
 func onClick() {
 
 }
 
+func colorBar(gtx layout.Context) layout.Dimensions {
+	gtx.Constraints.Min.Y = gtx.Dp(unit.Dp(50))
+	gtx.Constraints.Max.Y = gtx.Constraints.Min.Y
+
+	dr := image.Rectangle{Max: gtx.Constraints.Min}
+	paint.LinearGradientOp{
+		Stop1:  layout.FPt(dr.Min),
+		Stop2:  layout.FPt(dr.Max),
+		Color1: color.NRGBA{R: 0x10, G: 0xff, B: 0x10, A: 0xFF},
+		Color2: color.NRGBA{R: 0x10, G: 0x10, B: 0xff, A: 0xFF},
+	}.Add(gtx.Ops)
+	defer clip.Rect(dr).Push(gtx.Ops).Pop()
+	paint.PaintOp{}.Add(gtx.Ops)
+	return layout.Dimensions{
+		Size: gtx.Constraints.Max,
+	}
+}
+
 func kitchen(th *wid.Theme) layout.Widget {
 	thb = th
-	return wid.Col(
+	return wid.List(th, wid.Occupy,
 		wid.Label(th, topLabel, wid.Middle(), wid.FontSize(2.1)),
 		wid.Edit(th, wid.Hint("Value 1")),
 		wid.Edit(th, wid.Hint("Value 2")),
-		wid.Row(th, nil, []float32{25, 10, 20, 15, 20},
-			wid.Button(thb, "Click me!", wid.W(200), wid.Do(onClick), wid.Role(wid.Secondary)),
+		wid.Row(th, nil, wid.SpaceClose,
 			wid.RoundButton(th, addIcon, wid.Hint("This is another dummy button"), wid.Role(wid.Primary)),
 			wid.Button(th, "Icon", wid.BtnIcon(checkIcon), wid.Role(wid.Primary)),
+			wid.Button(thb, "Click me!", wid.W(200), wid.Do(onClick), wid.Role(wid.Secondary)),
 			wid.Button(thb, "Blue", wid.Role(wid.Primary)),
+			wid.TextButton(thb, "Flat"),
 		),
-		// TODO wid.Row(th, nil, nil,
-		// wid.ProgressBar(th, &progress),
-		// wid.Value(th, func() string { return fmt.Sprintf(" %0.1f frames/second", count/time.Since(startTime).Seconds()) }),
-		// ),
+		wid.ProgressBar(th, &progress),
+		func(gtx layout.Context) layout.Dimensions {
+			return layout.UniformInset(unit.Dp(16)).Layout(gtx, colorBar)
+		},
+		wid.Row(th, nil, wid.SpaceClose,
+			wid.Switch(th, &disable),
+			wid.Button(th, "disabled", wid.En(&disable)),
+		),
 
 		wid.Row(th, nil, nil,
 			wid.RadioButton(th, &group, "RadioButton1", "RadioButton1"),
@@ -104,6 +91,25 @@ func kitchen(th *wid.Theme) layout.Widget {
 		),
 		wid.Row(th, nil, []float32{0.9, 0.1},
 			wid.Slider(th, &sliderValue, 0, 100),
-			wid.Label(th, sliderValue)),
+			wid.Label(th, &sliderValue, wid.Dp(2), wid.Pads(10)),
+		),
 	)
 }
+
+const longText = `1. I learned from my grandfather, Verus, to use good manners, and to
+put restraint on anger. 2. In the famous memory of my father I had a
+pattern of modesty and manliness. 3. Of my mother I learned to be
+pious and generous; to keep myself not only from evil deeds, but even
+from evil thoughts; and to live with a simplicity which is far from
+customary among the rich. 4. I owe it to my great-grandfather that I
+did not attend public lectures and discussions, but had good and able
+teachers at home; and I owe him also the knowledge that for things of
+this nature a man should count no expense too great.
+
+5. My tutor taught me not to favour either green or blue at the
+chariot races, nor, in the contests of gladiators, to be a supporter
+either of light or heavy armed. He taught me also to endure labour;
+not to need many things; to serve myself without troubling others; not
+to intermeddle in the affairs of others, and not easily to listen to
+slanders against them.
+`

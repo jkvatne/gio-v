@@ -8,6 +8,8 @@ import (
 	"image/color"
 	"math"
 
+	"gioui.org/io/semantic"
+
 	"gioui.org/unit"
 
 	"gioui.org/io/pointer"
@@ -133,6 +135,9 @@ func (b *ButtonDef) Layout(gtx C) D {
 	// Add an outer padding outside the button
 	dims := b.padding.Layout(gtx,
 		func(gtx C) D {
+			if b.disabler != nil && *b.disabler == false {
+				gtx.Queue = nil
+			}
 			// Handle clickable pointer/keyboard inputs
 			b.HandleEvents(gtx)
 			dims := b.layout(gtx)
@@ -189,7 +194,9 @@ func (b *ButtonDef) layout(gtx C) D {
 
 	if b.Style == Outlined {
 		paintBorder(gtx, outline, b.th.Fg(Outline), b.th.BorderThickness, rr)
-	} else if b.Style != Text {
+	} else if b.Style != Text && gtx.Queue == nil {
+		paint.Fill(gtx.Ops, Disabled(b.bgColor))
+	} else {
 		paint.Fill(gtx.Ops, b.bgColor)
 	}
 	if b.Clickable.Focused() && b.Clickable.Hovered() {
@@ -199,6 +206,8 @@ func (b *ButtonDef) layout(gtx C) D {
 	} else if b.Clickable.Hovered() {
 		paint.Fill(gtx.Ops, MulAlpha(b.fgColor, 15))
 	}
+
+	semantic.DisabledOp(gtx.Queue == nil).Add(gtx.Ops)
 
 	cgtx.Constraints.Min = image.Point{X: width, Y: height}
 	for _, pressed := range b.Clickable.History() {
@@ -246,13 +255,6 @@ func BtnIcon(i *Icon) BtnOption {
 func RR(rr unit.Dp) BtnOption {
 	return func(b *ButtonDef) {
 		b.cornerRadius = rr
-	}
-}
-
-// Disable is an optional parameter to set a bool variable to disable the button
-func Disable(v *bool) BtnOption {
-	return func(b *ButtonDef) {
-		b.disabler = v
 	}
 }
 

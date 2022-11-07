@@ -80,19 +80,25 @@ func (c *CheckBoxDef) Layout(gtx layout.Context) layout.Dimensions {
 	c.HandleEvents(gtx)
 	for c.Clicked() {
 		c.Checked = !c.Checked
+		GuiLock.Lock()
 		if c.BoolValue != nil {
 			*c.BoolValue = c.Checked
 		} else if c.StrValue != nil {
 			*c.StrValue = c.Key
 		}
+		GuiLock.Unlock()
 		if c.onUserChange != nil {
 			c.onUserChange()
 		}
 	}
 	if c.BoolValue != nil {
+		GuiLock.RLock()
 		c.Checked = *c.BoolValue
+		GuiLock.RUnlock()
 	} else if c.StrValue != nil {
+		GuiLock.RLock()
 		c.Checked = *c.StrValue == c.Key
+		GuiLock.RUnlock()
 	}
 	semantic.DisabledOp(gtx.Queue == nil).Add(gtx.Ops)
 

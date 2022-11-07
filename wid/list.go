@@ -230,6 +230,7 @@ const (
 // ListStyle configures the presentation of a layout.List with a scrollbar.
 type ListStyle struct {
 	list       *layout.List
+	theme      *Theme
 	Hpos       int
 	VScrollBar ScrollbarStyle
 	HScrollBar ScrollbarStyle
@@ -245,8 +246,13 @@ func List(th *Theme, a AnchorStrategy, widgets ...layout.Widget) layout.Widget {
 		HScrollBar:     MakeScrollbarStyle(th),
 		AnchorStrategy: a,
 	}
-
+	listStyle.theme = th
 	return func(gtx C) D {
+		cl := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
+		c := th.Bg(Canvas)
+		paint.Fill(gtx.Ops, c)
+		cl.Pop()
+
 		var ch []layout.Widget
 		for i := 0; i < len(node.children); i++ {
 			ch = append(ch, *node.children[i].w)

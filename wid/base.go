@@ -6,13 +6,12 @@ import (
 	"image"
 	"image/color"
 	"os"
-
-	"gioui.org/io/system"
-	"gioui.org/op"
-	"gioui.org/op/paint"
+	"sync"
 
 	"gioui.org/app"
 	"gioui.org/io/pointer"
+	"gioui.org/io/system"
+	"gioui.org/op"
 	"gioui.org/op/clip"
 
 	"gioui.org/text"
@@ -34,16 +33,17 @@ const (
 )
 
 var (
-	mouseX float32
-	mouseY float32
-	winX   int
-	winY   int
+	mouseX     float32
+	mouseY     float32
+	winX       int
+	winY       int
+	GuiLock    sync.RWMutex
+	invalidate chan struct{}
 )
 
 // Base is tha base structure for widgets. It contains variables that (almost) all widgets share
 type Base struct {
-	th *Theme
-	// state        UIState
+	th           *Theme
 	hint         string
 	padding      layout.Inset
 	onUserChange func()
@@ -68,6 +68,7 @@ type BaseIf interface {
 	setFgColor(c color.NRGBA)
 	setHandler(h func())
 	setFont(f *text.Font)
+	setDisabler(b *bool)
 	getTheme() *Theme
 	setFontSize(f float32)
 }
@@ -130,6 +131,17 @@ func (wid *Base) setHandler(h func()) {
 
 func (wid *Base) setFontSize(h float32) {
 	wid.FontSize = h
+}
+
+func (wid *Base) setDisabler(b *bool) {
+	wid.disabler = b
+}
+
+func En(b *bool) BaseOption {
+	return func(w BaseIf) {
+		w.setDisabler(b)
+	}
+
 }
 
 // Pad is used to set default widget paddings (outside of widget)
@@ -314,26 +326,36 @@ func UpdateMousePos(gtx C, win *app.Window, size image.Point) {
 	winY = size.Y
 }
 
-func Run(win *app.Window, theme *Theme, form func(th *Theme) layout.Widget) {
-	for e := range win.Events() {
-		switch e := e.(type) {
-		case system.DestroyEvent:
-			os.Exit(0)
-		case system.FrameEvent:
-			var ops op.Ops
-			gtx := layout.NewContext(&ops, e)
-			// Set background color according to theme
-			c := theme.Bg(Canvas)
-			paint.Fill(gtx.Ops, c)
-			// A hack to fetch mouse position and window size so we can avoid
-			// tooltips going outside the main window area
-			p := pointer.PassOp{}.Push(gtx.Ops)
-			UpdateMousePos(gtx, win, e.Size)
-			// Draw widgets
-			form(theme)(gtx)
-			p.Pop()
-			// Apply the actual screen drawing
-			e.Frame(gtx.Ops)
+func Invalidate() {
+	invalidate <- struct{}{}
+}
+
+func Run(win *app.Window, form *layout.Widget) {
+	invalidate = make(chan struct{})
+	for {
+		select {
+		case e := <-win.Events():
+			switch e := e.(type) {
+			case system.DestroyEvent:
+				os.Exit(0)
+			case system.FrameEvent:
+				var ops op.Ops
+				gtx := layout.NewContext(&ops, e)
+				// A hack to fetch mouse position and window size so we can avoid
+				// tooltips going outside the main window area
+				p := pointer.PassOp{}.Push(gtx.Ops)
+				UpdateMousePos(gtx, win, e.Size)
+				// Draw widgets
+				GuiLock.Lock()
+				mainForm := *form
+				GuiLock.Unlock()
+				mainForm(gtx)
+				p.Pop()
+				// Apply the actual screen drawing
+				e.Frame(gtx.Ops)
+			}
+		case <-invalidate:
+			win.Invalidate()
 		}
 	}
 }
