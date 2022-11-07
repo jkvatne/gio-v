@@ -74,9 +74,15 @@ func colorBar(gtx layout.Context) layout.Dimensions {
 func kitchen(th *wid.Theme) layout.Widget {
 	thb = th
 	return wid.List(th, wid.Occupy,
+
 		wid.Label(th, topLabel, wid.Middle(), wid.FontSize(2.1)),
+
+		wid.Label(th, longText),
+
 		wid.Edit(th, wid.Hint("Value 1")),
+
 		wid.Edit(th, wid.Hint("Value 2")),
+
 		wid.Row(th, nil, wid.SpaceClose,
 			wid.RoundButton(th, addIcon, wid.Hint("This is another dummy button"), wid.Role(wid.Primary)),
 			wid.Button(th, "Icon", wid.BtnIcon(checkIcon), wid.Role(wid.Primary)),
@@ -84,23 +90,26 @@ func kitchen(th *wid.Theme) layout.Widget {
 			wid.Button(thb, "Blue", wid.Role(wid.Primary)),
 			wid.TextButton(thb, "Flat"),
 		),
+
 		wid.ProgressBar(th, &progress),
+
 		func(gtx layout.Context) layout.Dimensions {
 			return layout.UniformInset(unit.Dp(16)).Layout(gtx, colorBar)
 		},
+
 		wid.Row(th, nil, wid.SpaceClose,
 			wid.Switch(th, &enabled, wid.Do(onDisable)),
 			wid.Button(th, &enabledText, wid.En(&enabled)),
 		),
 
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, wid.SpaceClose,
 			wid.RadioButton(th, &group, "RadioButton1", "RadioButton1"),
 			wid.RadioButton(th, &group, "RadioButton2", "RadioButton2"),
 			wid.RadioButton(th, &group, "RadioButton3", "RadioButton3"),
 		),
+
 		wid.Row(th, nil, []float32{0.9, 0.1},
 			wid.Slider(th, &sliderValue, 0, 100),
-			wid.Label(th, &sliderValue, wid.Dp(2), wid.Pads(10)),
 		),
 	)
 }

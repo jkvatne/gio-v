@@ -106,6 +106,7 @@ func Row(th *Theme, pbgColor *color.NRGBA, weights []float32, widgets ...layout.
 func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dims []D, bgColor color.NRGBA, weights []float32, widgets ...layout.Widget) D {
 	call := make([]op.CallOp, len(widgets))
 	widths := make([]int, len(widgets))
+	w := make([]float32, len(weights))
 	// Fill in size where width is given as zero
 	for i, child := range widgets {
 		if i < len(weights) && weights[i] == 0 {
@@ -114,11 +115,13 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dims []D, bgColor color.NRGB
 			c.Constraints.Max.X = inf
 			c.Constraints.Min.X = 0
 			dim := child(c)
-			weights[i] = 2 * float32(dim.Size.X) / float32(gtx.Sp(textSize))
+			w[i] = 2 * float32(dim.Size.X) / float32(gtx.Sp(textSize))
 			_ = macro.Stop()
+		} else if i < len(weights) {
+			w[i] = weights[i]
 		}
 	}
-	calcWidths(gtx, textSize, weights, widths)
+	calcWidths(gtx, textSize, w, widths)
 	// Check child sizes and make macros for each widget in a row
 	yMax := 0
 	c := gtx
