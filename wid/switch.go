@@ -42,7 +42,6 @@ type SwitchDef struct {
 func Switch(th *Theme, statePtr *bool, options ...Option) func(gtx C) D {
 	s := &SwitchDef{}
 	s.th = th
-	s.onUserChange = dummyOnChange
 	// Calculate sizes
 	s.trackWidth = unit.Dp(s.th.TextSize) * 1.5
 	s.trackLength = s.trackWidth * 13 / 8
@@ -58,14 +57,15 @@ func Switch(th *Theme, statePtr *bool, options ...Option) func(gtx C) D {
 	s.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
 	// The pointer to a variable receiving switch on/off state
 	s.StatePtr = statePtr
+	for _, option := range options {
+		option.apply(s)
+	}
 	return func(gtx C) D {
 		return s.padding.Layout(gtx, func(gtx C) D {
 			return s.Layout(gtx)
 		})
 	}
 }
-
-func dummyOnChange() {}
 
 // Layout updates the switch and displays it.
 func (s *SwitchDef) Layout(gtx C) D {

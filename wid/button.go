@@ -38,12 +38,16 @@ const (
 	Header
 )
 
+type StrValue interface {
+	string | *string
+}
+
 // ButtonDef is the struct for buttons
 type ButtonDef struct {
 	Base
 	Tooltip
 	Clickable
-	Text      string
+	Text      *string
 	Icon      *Icon
 	Style     ButtonStyle
 	internPad layout.Inset
@@ -71,7 +75,7 @@ func OutlineButton(th *Theme, label string, options ...Option) layout.Widget {
 }
 
 // Button is the generic button selector. Defaults to primary
-func Button(th *Theme, label string, options ...Option) layout.Widget {
+func Button[V StrValue](th *Theme, label V, options ...Option) layout.Widget {
 	return aButton(Contained, th, label, options...).Layout
 }
 
@@ -87,12 +91,17 @@ func HeaderButton(th *Theme, label string, options ...Option) layout.Widget {
 	return b.Layout
 }
 
-func aButton(style ButtonStyle, th *Theme, label string, options ...Option) *ButtonDef {
+func aButton[V StrValue](style ButtonStyle, th *Theme, label V, options ...Option) *ButtonDef {
 	b := ButtonDef{}
 	// Setup default values
 	b.th = th
 	b.role = Primary
-	b.Text = label
+	if x, ok := any(label).(string); ok {
+		b.Text = &x
+	}
+	if x, ok := any(label).(*string); ok {
+		b.Text = x
+	}
 	b.Font = &th.DefaultFont
 	b.shaper = th.Shaper
 	b.Style = style
@@ -135,7 +144,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 	// Add an outer padding outside the button
 	dims := b.padding.Layout(gtx,
 		func(gtx C) D {
-			if b.disabler != nil && *b.disabler == false {
+			if b.disabler != nil && !*b.disabler {
 				gtx.Queue = nil
 			}
 			// Handle clickable pointer/keyboard inputs
@@ -157,7 +166,7 @@ func (b *ButtonDef) layout(gtx C) D {
 	macro := op.Record(gtx.Ops)
 	cgtx := gtx
 	cgtx.Constraints.Min.X = 0
-	dims := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontSize), b.Text)
+	dims := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontSize), *b.Text)
 	call := macro.Stop()
 	// Icon size is equal to label height
 	iconSize := 0
@@ -223,7 +232,7 @@ func (b *ButtonDef) layout(gtx C) D {
 	}
 	defer op.Offset(image.Pt(dx, dy)).Push(gtx.Ops).Pop()
 
-	if b.Icon != nil && b.Text != "" {
+	if b.Icon != nil && *b.Text != "" {
 		// Icon and text
 		_ = b.Icon.Layout(cgtx, b.fgColor)
 		defer op.Offset(image.Pt(height/4+iconSize, 0)).Push(gtx.Ops).Pop()

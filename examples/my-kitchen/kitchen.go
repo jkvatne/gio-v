@@ -26,8 +26,9 @@ var (
 	sliderValue float32 = 0.1
 	win         *app.Window
 	progress    float32
-	disable     bool
 	form        layout.Widget
+	enabledText = "Disabled"
+	enabled     bool
 )
 
 func main() {
@@ -42,6 +43,14 @@ func main() {
 
 func onClick() {
 
+}
+
+func onDisable() {
+	if enabled {
+		enabledText = "Enabled"
+	} else {
+		enabledText = "Disabled"
+	}
 }
 
 func colorBar(gtx layout.Context) layout.Dimensions {
@@ -80,8 +89,8 @@ func kitchen(th *wid.Theme) layout.Widget {
 			return layout.UniformInset(unit.Dp(16)).Layout(gtx, colorBar)
 		},
 		wid.Row(th, nil, wid.SpaceClose,
-			wid.Switch(th, &disable),
-			wid.Button(th, "disabled", wid.En(&disable)),
+			wid.Switch(th, &enabled, wid.Do(onDisable)),
+			wid.Button(th, &enabledText, wid.En(&enabled)),
 		),
 
 		wid.Row(th, nil, nil,
