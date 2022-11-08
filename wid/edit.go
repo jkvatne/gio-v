@@ -47,7 +47,7 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 		option.apply(e)
 	}
 	return func(gtx C) D {
-		gtx.Constraints.Min.X = 0
+		gtx.Constraints.Max.X = gtx.Constraints.Min.X
 		if e.label == "" {
 			return e.layEdit()(gtx)
 		}
