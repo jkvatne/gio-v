@@ -153,6 +153,7 @@ func onCheck() {
 	}
 }
 
+// gw is the grid line width
 const gw = 2.0 / 1.75
 
 // Grid is a widget that lays out the grid. This is all that is needed.

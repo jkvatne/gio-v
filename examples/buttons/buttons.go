@@ -37,6 +37,8 @@ var (
 	greenFlag            = false // the state variable for the button color
 	darkMode             = false
 	progress     float32 = 0.33
+	homeBg               = wid.RGB(0xF288F2)
+	homeFg               = wid.RGB(0x0902200)
 )
 
 func main() {
@@ -131,7 +133,7 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Row(th, nil, wid.SpaceClose,
 			wid.RoundButton(th, homeIcon,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(wid.RGB(0xF288F2)), wid.Fg(wid.RGB(0x0902200)),
+			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(&homeBg), wid.Fg(&homeFg),
 				wid.Hint("This is another hint")),
 			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.Role(wid.Secondary)),
 			wid.Button(th, "Change color", wid.Do(onClick)),
@@ -143,7 +145,7 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.RoundButton(th, homeIcon,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(wid.RGB(0xF288F2)), wid.Fg(wid.RGB(0x0902200)),
+			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(&homeBg), wid.Fg(&homeFg),
 				wid.Hint("This is another hint")),
 			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.Role(wid.Secondary)),
 			wid.Button(th, "Change color", wid.Do(onClick)),
@@ -155,7 +157,7 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Row(th, nil, []float32{7, 20, 20, 20, 20, 20},
 			wid.RoundButton(th, homeIcon,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(wid.RGB(0xF288F2)), wid.Fg(wid.RGB(0x0902200)),
+			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(&homeBg), wid.Fg(&homeFg),
 				wid.Hint("This is another hint")),
 			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Role(wid.Secondary)),
 			wid.Button(th, "Change color", wid.Do(onClick), wid.W(150)),
@@ -168,7 +170,7 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Row(th, nil, []float32{0.2, .4, .4, .4, .4, .4},
 			wid.RoundButton(th, homeIcon,
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(wid.RGB(0xF288F2)), wid.Fg(wid.RGB(0x0902200)),
+			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(&homeBg), wid.Fg(&homeFg),
 				wid.Hint("This is another hint")),
 			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.W(150), wid.Role(wid.Secondary)),
 			wid.Button(th, "Change color", wid.Do(onClick), wid.W(150)),

@@ -112,7 +112,9 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		})
 		call := macro.Stop()
 		defer clip.Rect(image.Rectangle{Max: dims.Size}).Push(gtx.Ops).Pop()
-		// paint.Fill(gtx.Ops, w.Bg())
+		if w.bgColor != nil {
+			paint.Fill(gtx.Ops, w.Bg())
+		}
 		call.Add(gtx.Ops)
 		return dims
 	}

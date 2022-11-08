@@ -77,7 +77,7 @@ func Tone(c color.NRGBA, tone int) color.NRGBA {
 	case tone < 96:
 		return Hsl2rgb(h, s, 0.85)
 	case tone < 100:
-		return Hsl2rgb(h, s, 0.97)
+		return Hsl2rgb(h, s, 0.95)
 	}
 	return White
 }
