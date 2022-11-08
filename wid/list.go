@@ -319,6 +319,9 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	if width > 0 {
 		hStart := float32(l.Hpos) / float32(width)
 		hEnd := hStart + float32(gtx.Constraints.Max.X)/float32(width)
+		if hEnd > 1.0 {
+			hEnd = 0.9999
+		}
 		layout.S.Layout(gtx, func(gtx C) D {
 			gtx.Constraints.Min = gtx.Constraints.Max
 			return l.HScrollBar.Layout(gtx, layout.Horizontal, hStart, hEnd)

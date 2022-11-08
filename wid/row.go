@@ -67,7 +67,7 @@ func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
 	if fracSum > 0 {
 		scale = (float32(gtx.Constraints.Max.X) - fixSum) / fracSum
 	}
-	for i, _ := range w {
+	for i := range w {
 		if w[i] <= 1.0 {
 			widths[i] = Max(1, int(w[i]*scale))
 		} else {

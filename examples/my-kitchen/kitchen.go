@@ -30,6 +30,10 @@ var (
 	form        layout.Widget
 	enabledText = "Disabled"
 	enabled     bool
+	blue        = true
+	homeBg      = wid.RGB(0x1288F2)
+	homeFg      = wid.RGB(0xFFFFFF)
+	btnText     = "Blue"
 )
 
 func main() {
@@ -54,7 +58,16 @@ func ticker() {
 }
 
 func onClick() {
-
+	blue = !blue
+	if blue {
+		btnText = "Blue"
+		homeBg = wid.RGB(0x1288F2)
+		homeFg = wid.RGB(0xFFFFFF)
+	} else {
+		btnText = "Green"
+		homeBg = wid.RGB(0x02F812)
+		homeFg = wid.RGB(0x000000)
+	}
 }
 
 func onDisable() {
@@ -99,7 +112,7 @@ func kitchen(th *wid.Theme) layout.Widget {
 			wid.RoundButton(th, addIcon, wid.Hint("This is another dummy button"), wid.Role(wid.Primary)),
 			wid.Button(th, "Icon", wid.BtnIcon(checkIcon), wid.Role(wid.Primary)),
 			wid.Button(thb, "Click me!", wid.W(200), wid.Do(onClick), wid.Role(wid.Secondary)),
-			wid.Button(thb, "Blue", wid.Role(wid.Primary)),
+			wid.Button(thb, &btnText, wid.Fg(&homeFg), wid.Bg(&homeBg)),
 			wid.TextButton(thb, "Flat"),
 		),
 

@@ -44,7 +44,7 @@ func RadioButton(th *Theme, value *string, key string, label string, options ...
 		Key:                key,
 	}
 	r.th = th
-	r.fgColor = th.Fg(Surface)
+	r.role = Surface
 	r.padding = th.LabelPadding
 	r.Font = &th.DefaultFont
 	for _, option := range options {
@@ -64,7 +64,7 @@ func Checkbox(th *Theme, label string, options ...Option) func(gtx C) D {
 		uncheckedStateIcon: th.CheckBoxUnchecked,
 	}
 	c.th = th
-	c.fgColor = th.Fg(Surface)
+	c.role = Surface
 	c.padding = th.LabelPadding
 	c.Font = &th.DefaultFont
 	for _, option := range options {
@@ -119,15 +119,15 @@ func (c *CheckBoxDef) Layout(gtx layout.Context) layout.Dimensions {
 	b := image.Rectangle{Min: image.Pt(-dx, -dx), Max: image.Pt(labelDim.Size.Y+dx, labelDim.Size.Y+dx)}
 	background := color.NRGBA{}
 	if c.Focused() && c.Hovered() {
-		background = MulAlpha(c.fgColor, 70)
+		background = MulAlpha(c.Fg(), 70)
 	} else if c.Focused() {
-		background = MulAlpha(c.fgColor, 45)
+		background = MulAlpha(c.Fg(), 45)
 	} else if c.Hovered() {
-		background = MulAlpha(c.fgColor, 35)
+		background = MulAlpha(c.Fg(), 35)
 	}
 	paint.FillShape(gtx.Ops, background, clip.Ellipse(b).Op(gtx.Ops))
 
-	col := c.fgColor
+	col := c.Fg()
 	if gtx.Queue == nil {
 		col = Disabled(col)
 	}

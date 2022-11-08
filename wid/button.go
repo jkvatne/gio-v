@@ -114,18 +114,6 @@ func aButton[V StrValue](style ButtonStyle, th *Theme, label V, options ...Optio
 	for _, option := range options {
 		option.apply(&b)
 	}
-	if b.role == Undefined {
-		b.role = Canvas
-	}
-	if (b.fgColor == color.NRGBA{}) {
-		b.fgColor = th.Fg(b.role)
-	}
-	if (b.bgColor == color.NRGBA{}) {
-		b.bgColor = th.Bg(b.role)
-	}
-	if b.Style == Outlined || b.Style == Text {
-		b.bgColor = color.NRGBA{}
-	}
 	b.Tooltip = PlatformTooltip(th)
 	return &b
 }
@@ -204,16 +192,16 @@ func (b *ButtonDef) layout(gtx C) D {
 	if b.Style == Outlined {
 		paintBorder(gtx, outline, b.th.Fg(Outline), b.th.BorderThickness, rr)
 	} else if b.Style != Text && gtx.Queue == nil {
-		paint.Fill(gtx.Ops, Disabled(b.bgColor))
-	} else {
-		paint.Fill(gtx.Ops, b.bgColor)
+		paint.Fill(gtx.Ops, Disabled(b.Bg()))
+	} else if b.Style != Text && b.Style != Header {
+		paint.Fill(gtx.Ops, b.Bg())
 	}
 	if b.Clickable.Focused() && b.Clickable.Hovered() {
-		paint.Fill(gtx.Ops, MulAlpha(b.fgColor, 30))
+		paint.Fill(gtx.Ops, MulAlpha(b.Fg(), 30))
 	} else if b.Clickable.Focused() {
-		paint.Fill(gtx.Ops, MulAlpha(b.fgColor, 20))
+		paint.Fill(gtx.Ops, MulAlpha(b.Fg(), 20))
 	} else if b.Clickable.Hovered() {
-		paint.Fill(gtx.Ops, MulAlpha(b.fgColor, 15))
+		paint.Fill(gtx.Ops, MulAlpha(b.Fg(), 15))
 	}
 
 	semantic.DisabledOp(gtx.Queue == nil).Add(gtx.Ops)
@@ -234,16 +222,16 @@ func (b *ButtonDef) layout(gtx C) D {
 
 	if b.Icon != nil && *b.Text != "" {
 		// Icon and text
-		_ = b.Icon.Layout(cgtx, b.fgColor)
+		_ = b.Icon.Layout(cgtx, b.Fg())
 		defer op.Offset(image.Pt(height/4+iconSize, 0)).Push(gtx.Ops).Pop()
-		paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
+		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 		call.Add(gtx.Ops)
 	} else if b.Icon != nil {
 		// Icon only
-		_ = b.Icon.Layout(cgtx, b.fgColor)
+		_ = b.Icon.Layout(cgtx, b.Fg())
 	} else {
 		// Text only
-		paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
+		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 		call.Add(gtx.Ops)
 	}
 	return D{Size: outline.Max}

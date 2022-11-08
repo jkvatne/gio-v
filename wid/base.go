@@ -51,8 +51,8 @@ type Base struct {
 	width        unit.Dp
 	role         UIRole
 	cornerRadius unit.Dp
-	fgColor      color.NRGBA
-	bgColor      color.NRGBA
+	fgColor      *color.NRGBA
+	bgColor      *color.NRGBA
 	description  string
 	Font         *text.Font
 	FontSize     float32
@@ -64,8 +64,8 @@ type BaseIf interface {
 	setHint(hint string)
 	setPadding(padding layout.Inset)
 	setRole(role UIRole)
-	setBgColor(c color.NRGBA)
-	setFgColor(c color.NRGBA)
+	setBgColor(c *color.NRGBA)
+	setFgColor(c *color.NRGBA)
 	setHandler(h func())
 	setFont(f *text.Font)
 	setDisabler(b *bool)
@@ -117,11 +117,11 @@ func (wid *Base) setPadding(padding layout.Inset) {
 	wid.padding = padding
 }
 
-func (wid *Base) setFgColor(c color.NRGBA) {
+func (wid *Base) setFgColor(c *color.NRGBA) {
 	wid.fgColor = c
 }
 
-func (wid *Base) setBgColor(c color.NRGBA) {
+func (wid *Base) setBgColor(c *color.NRGBA) {
 	wid.bgColor = c
 }
 
@@ -171,14 +171,14 @@ func Hint(hint string) BaseOption {
 }
 
 // Fg is an option parameter to set widget foreground color
-func Fg(c color.NRGBA) BaseOption {
+func Fg(c *color.NRGBA) BaseOption {
 	return func(w BaseIf) {
 		w.setFgColor(c)
 	}
 }
 
 // Bg is an option parameter to set widget background color
-func Bg(c color.NRGBA) BaseOption {
+func Bg(c *color.NRGBA) BaseOption {
 	return func(w BaseIf) {
 		w.setBgColor(c)
 	}
@@ -187,8 +187,6 @@ func Bg(c color.NRGBA) BaseOption {
 // Role set the theme role for the widget (Primary, Secondary etc)
 func Role(r UIRole) BaseOption {
 	return func(w BaseIf) {
-		w.setBgColor(w.getTheme().Bg(r))
-		w.setFgColor(w.getTheme().Fg(r))
 		w.setRole(r)
 	}
 }
@@ -288,6 +286,22 @@ func Pads(pads ...float32) BaseOption {
 		case 4:
 			w.setPadding(layout.Inset{Top: unit.Dp(pads[0]), Right: unit.Dp(pads[1]), Bottom: unit.Dp(pads[2]), Left: unit.Dp(pads[3])})
 		}
+	}
+}
+
+func (b Base) Fg() color.NRGBA {
+	if b.fgColor == nil {
+		return b.th.Fg(b.role)
+	} else {
+		return *b.fgColor
+	}
+}
+
+func (b Base) Bg() color.NRGBA {
+	if b.fgColor == nil {
+		return b.th.Bg(b.role)
+	} else {
+		return *b.bgColor
 	}
 }
 

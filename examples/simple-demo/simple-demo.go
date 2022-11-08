@@ -34,6 +34,8 @@ var (
 	progress       float32 = 0.1
 	sliderValue    float32 = 0.1
 	WindowMode     string
+	homeBg         = wid.RGB(0xF288F2)
+	homeFg         = wid.RGB(0x0902200)
 )
 
 func main() {
@@ -96,7 +98,7 @@ func onWinChange() {
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
-	return wid.List(th, wid.Overlay,
+	return wid.List(th, wid.Occupy,
 
 		wid.Label(th, "Demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 
@@ -120,7 +122,7 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Row(th, nil, wid.SpaceClose,
 			wid.RoundButton(th, homeIcon, wid.Prim(),
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(wid.RGB(0xF288F2)), wid.Fg(wid.RGB(0x0902200)),
+			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(&homeBg), wid.Fg(&homeFg),
 				wid.Hint("This is another hint")),
 			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.Role(wid.Secondary)),
 			wid.Button(th, "Change color", wid.Do(onClick)),
@@ -140,12 +142,12 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Slider(th, &sliderValue, 0, 100),
 		// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
-		wid.Row(th, nil, wid.SpaceDistribute,
+		wid.Row(th, nil, []float32{1, 1},
 			wid.Edit(th, wid.Hint("Value 3")),
 			wid.Edit(th, wid.Hint("Value 4")),
 			wid.Edit(th, wid.Hint("Value 5")),
 		),
-		wid.Row(th, nil, wid.SpaceDistribute,
+		wid.Row(th, nil, []float32{1, 1},
 			wid.Col(
 				wid.Edit(th, wid.Hint("Value 6")),
 				wid.Edit(th, wid.Hint("Value 7"), wid.Lbl("Value 7")),
@@ -156,7 +158,7 @@ func demo(th *wid.Theme) layout.Widget {
 			),
 		),
 
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, []float32{1, 1},
 			wid.DropDown(th, &dropDownValue1, []string{"Option 1 with very long text", "Option 2", "Option 3"}, wid.Lbl("Dropdown 1")),
 			wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}, wid.Lbl("Dropdown 2")),
 		),

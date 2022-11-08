@@ -22,7 +22,7 @@ const test = 0
 var (
 	form        layout.Widget
 	theme       wid.Theme
-	Alternative = "Native"
+	Alternative = "Narrow"
 	// Column widths are given in units of approximately one average character width (en).
 	// A witdth of zero means the widget's natural size should be used (f.ex. checkboxes)
 	wideColWidth  = []float32{0, 40, 40, 20, 20}
@@ -202,7 +202,7 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 		// Configure a row with headings.
 		bgColor := th.Bg(wid.PrimaryContainer)
 		heading := wid.GridRow(th, &bgColor, gw, colWidths,
-			wid.Checkbox(th, "", wid.Bool(&selectAll), wid.Do(onCheck), wid.Prim()),
+			wid.Checkbox(th, "", wid.Bool(&selectAll), wid.Do(onCheck)),
 			wid.HeaderButton(th, "Name", wid.Do(onNameClick), wid.Prim(), wid.BtnIcon(nameIcon)),
 			wid.HeaderButton(th, "Address", wid.Do(onAddressClick), wid.Prim(), wid.BtnIcon(addressIcon)),
 			wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.Prim(), wid.BtnIcon(ageIcon)),

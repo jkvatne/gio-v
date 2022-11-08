@@ -27,14 +27,9 @@ func ProgressBar(th *Theme, progress *float32, options ...Option) func(gtx C) D 
 	p.width = 10
 	p.role = Primary
 	p.Apply(options...)
-
-	if (p.fgColor == color.NRGBA{}) {
-		p.fgColor = th.Bg(p.role)
-	}
-	if (p.bgColor == color.NRGBA{}) {
-		p.bgColor = th.Bg(SurfaceVariant)
-	}
+	p.role = SurfaceVariant
 	p.width = 10
+	p.th = th
 	return func(gtx C) D {
 		return p.layout(gtx)
 	}
@@ -54,14 +49,14 @@ func (p ProgressBarStyle) layout(gtx C) D {
 	return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
 		return layout.Stack{Alignment: layout.W}.Layout(gtx,
 			layout.Stacked(func(gtx C) D {
-				return shader(progressBarWidth, p.bgColor)
+				return shader(progressBarWidth, p.Bg())
 			}),
 			layout.Stacked(func(gtx C) D {
 				GuiLock.RLock()
 				value := *p.Progress
 				GuiLock.RUnlock()
 				fillWidth := int(float32(progressBarWidth) * clamp1(value))
-				fillColor := p.fgColor
+				fillColor := p.Fg()
 				if gtx.Queue == nil {
 					fillColor = Disabled(fillColor)
 				}

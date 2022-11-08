@@ -12,7 +12,6 @@ import (
 	"gioui.org/widget"
 	"golang.org/x/exp/constraints"
 	"image"
-	"image/color"
 	"strconv"
 )
 
@@ -73,7 +72,7 @@ func (e LabelOption) apply(cfg interface{}) {
 
 // Layout will draw the label
 func (l LabelDef) Layout(gtx C) D {
-	paint.ColorOp{Color: l.fgColor}.Add(gtx.Ops)
+	paint.ColorOp{Color: l.Fg()}.Add(gtx.Ops)
 	tl := widget.Label{Alignment: l.Alignment, MaxLines: l.MaxLines}
 	c := gtx
 	if l.MaxLines == 1 {
@@ -100,9 +99,7 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 	w.padding = th.LabelPadding
 	w.th = th
 	// Default to Canvas role (typically black for LightMode and white for DarkMode
-	w.fgColor = th.Fg(Canvas)
-	// Default to transparent background
-	w.bgColor = color.NRGBA{}
+	w.role = Canvas
 	w.FontSize = 1.0
 	for _, option := range options {
 		option.apply(&w)
@@ -115,7 +112,7 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		})
 		call := macro.Stop()
 		defer clip.Rect(image.Rectangle{Max: dims.Size}).Push(gtx.Ops).Pop()
-		paint.Fill(gtx.Ops, w.bgColor)
+		// paint.Fill(gtx.Ops, w.Bg())
 		call.Add(gtx.Ops)
 		return dims
 	}

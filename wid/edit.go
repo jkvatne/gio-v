@@ -41,8 +41,7 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e.padding = th.EditPadding
 	e.outlineColor = th.Fg(Outline)
 	e.selectionColor = MulAlpha(th.Bg(Primary), 60)
-	e.fgColor = th.Fg(Canvas)
-	e.bgColor = th.Bg(Canvas)
+	e.role = Canvas
 	// Read in options to change from default values to something else.
 	for _, option := range options {
 		option.apply(e)
@@ -95,9 +94,9 @@ func (e *EditDef) layoutEditBackground() func(gtx C) D {
 			Y: gtx.Constraints.Min.Y,
 		}}
 		rr := rr(gtx, e.th.BorderCornerRadius, outline.Max.Y)
-		color := MulAlpha(e.fgColor, 200)
+		color := MulAlpha(e.Fg(), 200)
 		if e.Focused() {
-			color = e.bgColor
+			color = e.Bg()
 		}
 		paint.FillShape(gtx.Ops, color, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		return D{}
@@ -190,7 +189,7 @@ func (e *EditDef) layLabel() layout.Widget {
 func (e *EditDef) layoutEdit() func(gtx C) D {
 	return func(gtx C) D {
 		macro := op.Record(gtx.Ops)
-		paint.ColorOp{Color: MulAlpha(e.fgColor, 110)}.Add(gtx.Ops)
+		paint.ColorOp{Color: MulAlpha(e.Fg(), 110)}.Add(gtx.Ops)
 		var maxLines int
 		if e.Editor.SingleLine {
 			maxLines = 1
@@ -209,13 +208,13 @@ func (e *EditDef) layoutEdit() func(gtx C) D {
 		if e.Editor.Len() > 0 {
 			paint.ColorOp{Color: e.selectionColor}.Add(gtx.Ops)
 			e.Editor.PaintSelection(gtx)
-			paint.ColorOp{Color: e.fgColor}.Add(gtx.Ops)
+			paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
 			e.Editor.PaintText(gtx)
 		} else {
 			call.Add(gtx.Ops)
 		}
 		if !disabled && e.Editor.Len() > 0 {
-			paint.ColorOp{Color: e.fgColor}.Add(gtx.Ops)
+			paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
 			e.Editor.PaintCaret(gtx)
 		}
 		return dims

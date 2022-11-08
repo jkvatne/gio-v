@@ -2,7 +2,6 @@ package wid
 
 import (
 	"image"
-	"image/color"
 
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -21,7 +20,6 @@ type SeparatorStyle struct {
 func Space(size unit.Dp) layout.Widget {
 	s := SeparatorStyle{}
 	s.thickness = size
-	s.fgColor = color.NRGBA{}
 	return func(gtx C) D {
 		return layout.Dimensions{Size: image.Pt(gtx.Constraints.Max.X, gtx.Dp(s.thickness))}
 	}
@@ -31,9 +29,9 @@ func Space(size unit.Dp) layout.Widget {
 func Separator(th *Theme, thickness unit.Dp, options ...Option) layout.Widget {
 	s := SeparatorStyle{}
 	s.thickness = thickness
-	s.fgColor = th.Fg(Canvas)
+	s.role = Canvas
 	s.Apply(options...)
-
+	s.th = th
 	return func(gtx C) D {
 		dim := gtx.Constraints.Max
 		dim.Y = gtx.Dp(s.thickness) + gtx.Dp(s.padding.Top) + gtx.Dp(s.padding.Bottom)
@@ -43,7 +41,7 @@ func Separator(th *Theme, thickness unit.Dp, options ...Option) layout.Widget {
 		}
 		defer op.Offset(image.Pt(gtx.Dp(s.padding.Left), gtx.Dp(s.padding.Top))).Push(gtx.Ops).Pop()
 		defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
-		paint.ColorOp{Color: s.fgColor}.Add(gtx.Ops)
+		paint.ColorOp{Color: s.Fg()}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
 		return layout.Dimensions{Size: dim}
 	}

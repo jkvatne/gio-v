@@ -36,8 +36,8 @@ type Tooltip struct {
 	Hover     InvalidateDeadline
 	Press     InvalidateDeadline
 	LongPress InvalidateDeadline
-	Fg        color.NRGBA
-	Bg        color.NRGBA
+	Fgc       color.NRGBA
+	Bgc       color.NRGBA
 	TooltipRR unit.Dp
 	TextSize  unit.Sp
 	init      bool
@@ -48,8 +48,8 @@ type Tooltip struct {
 // MobileTooltip constructs a tooltip suitable for use on mobile devices.
 func MobileTooltip(th *Theme) Tooltip {
 	return Tooltip{
-		Fg:       th.TooltipOnBackground,
-		Bg:       th.TooltipBackground,
+		Fgc:      th.TooltipOnBackground,
+		Bgc:      th.TooltipBackground,
 		font:     text.Font{Weight: text.Medium},
 		shaper:   th.Shaper,
 		TextSize: th.TextSize * 0.9,
@@ -59,14 +59,15 @@ func MobileTooltip(th *Theme) Tooltip {
 // DesktopTooltip constructs a tooltip suitable for use on desktop devices.
 func DesktopTooltip(th *Theme) Tooltip {
 	return Tooltip{
-		Fg:        th.TooltipOnBackground,
-		Bg:        th.TooltipBackground,
+		Fgc:       th.TooltipOnBackground,
+		Bgc:       th.TooltipBackground,
 		MaxWidth:  th.TooltipWidth,
 		TooltipRR: th.TooltipCornerRadius,
 		font:      text.Font{Weight: text.Medium},
 		shaper:    th.Shaper,
 		TextSize:  th.TextSize * 0.9,
 	}
+
 }
 
 // InvalidateDeadline helps to ensure that a frame is generated at a specific
@@ -167,8 +168,8 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 			if t.Visible() {
 				macro := op.Record(gtx.Ops)
 				v := t.VisibilityAnimation.Revealed(gtx)
-				bg := WithAlpha(t.Bg, uint8(v*255))
-				t.Fg = WithAlpha(t.Fg, uint8(v*255))
+				bg := WithAlpha(t.Bgc, uint8(v*255))
+				t.Fgc = WithAlpha(t.Fgc, uint8(v*255))
 				gtx.Constraints.Max.X = gtx.Metric.Dp(t.MaxWidth)
 				p := unit.Dp(t.TextSize * 0.5)
 				inset := layout.Inset{Top: p, Right: p, Bottom: p, Left: p}
@@ -178,12 +179,12 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 						rr := gtx.Dp(t.TooltipRR)
 						outline := image.Rectangle{Max: gtx.Constraints.Min}
 						paint.FillShape(gtx.Ops, bg, clip.UniformRRect(outline, rr).Op(gtx.Ops))
-						paintBorder(gtx, outline, MulAlpha(t.Fg, 128), unit.Dp(0.5), gtx.Dp(t.TooltipRR))
+						paintBorder(gtx, outline, MulAlpha(t.Fgc, 128), unit.Dp(0.5), gtx.Dp(t.TooltipRR))
 						return D{}
 					}),
 					layout.Stacked(func(gtx C) D {
 						return inset.Layout(gtx, func(gtx C) D {
-							paint.ColorOp{Color: t.Fg}.Add(gtx.Ops)
+							paint.ColorOp{Color: t.Fgc}.Add(gtx.Ops)
 							return t.Text.Layout(gtx, t.shaper, t.font, t.TextSize, hint)
 						})
 					}),

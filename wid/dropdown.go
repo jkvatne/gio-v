@@ -61,12 +61,6 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 	if b.label == "" {
 		b.labelSize = 0
 	}
-	if (b.fgColor == color.NRGBA{}) {
-		b.fgColor = th.Fg(b.role)
-	}
-	if (b.bgColor == color.NRGBA{}) {
-		b.bgColor = th.Bg(b.role)
-	}
 	if b.borderThickness == 0 {
 		b.insidePadding = layout.Inset{}
 	}
@@ -120,7 +114,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 	// Add outside padding
 	defer op.Offset(image.Pt(gtx.Dp(b.padding.Left), gtx.Dp(b.padding.Top))).Push(gtx.Ops).Pop()
 	o := op.Offset(image.Pt(gtx.Dp(b.insidePadding.Left), gtx.Dp(b.insidePadding.Top))).Push(gtx.Ops)
-	paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
+	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 	ctx := gtx
 	ctx.Constraints.Max.X = gtx.Sp(b.labelSize) - gtx.Dp(b.padding.Left)
 	_ = widget.Label{Alignment: text.End, MaxLines: 1}.Layout(ctx, b.th.Shaper, *b.Font, b.th.TextSize, b.label)
@@ -130,7 +124,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 
 	// Draw text with top/left padding offset
 	o = op.Offset(image.Pt(gtx.Dp(b.insidePadding.Left), gtx.Dp(b.insidePadding.Top))).Push(gtx.Ops)
-	paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
+	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 	dims := widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, b.th.Shaper, *b.Font, b.th.TextSize, b.items[*b.index])
 	o.Pop()
 
@@ -150,7 +144,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 		} else if b.Hovered() {
 			paintBorder(gtx, border, b.outlineColor, b.borderThickness*3/2, r)
 		} else {
-			paintBorder(gtx, border, b.fgColor, b.th.BorderThickness, r)
+			paintBorder(gtx, border, b.Fg(), b.th.BorderThickness, r)
 		}
 	}
 
@@ -159,7 +153,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 	iconSize := image.Pt(border.Max.Y, border.Max.Y)
 	c := gtx
 	c.Constraints.Max = iconSize
-	icon.Layout(c, b.fgColor)
+	icon.Layout(c, b.Fg())
 	o.Pop()
 
 	oldVisible := b.listVisible
@@ -197,7 +191,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 		}
 		op.Offset(image.Pt(0, dy)).Add(gtx.Ops)
 		stack := clip.UniformRRect(listClipRect, 0).Push(gtx.Ops)
-		paint.Fill(gtx.Ops, b.bgColor)
+		paint.Fill(gtx.Ops, b.Bg())
 		// Draw a border around all options
 		paintBorder(gtx, listClipRect, b.th.Fg(Outline), b.th.BorderThicknessActive, 0)
 		call.Add(gtx.Ops)
@@ -244,16 +238,16 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 				}
 			}
 		}
-		paint.ColorOp{Color: b.fgColor}.Add(gtx.Ops)
+		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 		lblWidget := func(gtx C) D {
 			return widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, *b.Font, th.TextSize, b.items[i])
 		}
 		dims := layout.Inset{Top: unit.Dp(4), Left: unit.Dp(th.TextSize * 0.4), Right: unit.Dp(0)}.Layout(gtx, lblWidget)
 		defer clip.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Push(gtx.Ops).Pop()
 		if b.itemHovered[i] {
-			c := MulAlpha(b.fgColor, 48)
-			if Luminance(b.bgColor) > 28 {
-				c = MulAlpha(b.fgColor, 160)
+			c := MulAlpha(b.Fg(), 48)
+			if Luminance(b.Bg()) > 28 {
+				c = MulAlpha(b.Fg(), 160)
 			}
 			paint.ColorOp{Color: c}.Add(gtx.Ops)
 			paint.PaintOp{}.Add(gtx.Ops)
@@ -271,7 +265,7 @@ func (b *DropDownStyle) LayoutIcon() layout.Widget {
 	return func(gtx C) D {
 		size := gtx.Sp(b.th.TextSize * 1)
 		gtx.Constraints = layout.Exact(image.Pt(size, size))
-		return icon.Layout(gtx, b.fgColor)
+		return icon.Layout(gtx, b.Fg())
 	}
 }
 
