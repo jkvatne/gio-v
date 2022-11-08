@@ -161,6 +161,7 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dim []D, bgColor color.NRGBA
 	yMax += gtx.Sp(r.padBtm + r.padTop)
 	for i := range widgets {
 		trans := op.Offset(image.Pt(pos[i], 0)).Push(gtx.Ops)
+		call[i].Add(gtx.Ops)
 		// Draw a vertical separator
 		if r.gridLineWidth > 0 {
 			gw := gtx.Dp(r.gridLineWidth)
@@ -173,7 +174,6 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dim []D, bgColor color.NRGBA
 				}.Op(),
 			)
 		}
-		call[i].Add(gtx.Ops)
 		trans.Pop()
 	}
 	// The row width is now the position after the last drawn widget + padBtm

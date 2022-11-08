@@ -108,7 +108,12 @@ func (b *DropDownStyle) layout(gtx C) D {
 	w := gtx.Dp(b.width)
 	if w > gtx.Constraints.Min.X && w < gtx.Constraints.Max.X {
 		gtx.Constraints.Min.X = w
-		gtx.Constraints.Max.X = w
+	}
+	gtx.Constraints.Max.X = gtx.Constraints.Min.X
+	// Shade for focused dropdown box
+	r := gtx.Dp(b.cornerRadius)
+	if b.Focused() {
+		paint.FillShape(gtx.Ops, b.Bg(), clip.RRect{Rect: image.Rectangle{Max: gtx.Constraints.Max}, SE: r, SW: r, NW: r, NE: r}.Op(gtx.Ops))
 	}
 
 	// Add outside padding
@@ -123,11 +128,12 @@ func (b *DropDownStyle) layout(gtx C) D {
 	defer op.Offset(image.Pt(ofs, 0)).Push(gtx.Ops).Pop()
 
 	// Draw text with top/left padding offset
+	macro := op.Record(gtx.Ops)
 	o = op.Offset(image.Pt(gtx.Dp(b.insidePadding.Left), gtx.Dp(b.insidePadding.Top))).Push(gtx.Ops)
 	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 	dims := widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, b.th.Shaper, *b.Font, b.th.TextSize, b.items[*b.index])
 	o.Pop()
-
+	call := macro.Stop()
 	// Calculate widget size based on text size and padding, using all available x space
 	dims.Size.X = gtx.Constraints.Max.X
 	dims.Size.Y = dims.Size.Y + gtx.Dp(b.insidePadding.Top+b.insidePadding.Bottom+b.padding.Top+b.padding.Bottom)
@@ -137,7 +143,6 @@ func (b *DropDownStyle) layout(gtx C) D {
 		dims.Size.Y-gtx.Dp(b.padding.Top+b.padding.Bottom))}
 
 	// Draw border. Need to undo previous top padding offset first
-	r := gtx.Dp(b.cornerRadius)
 	if b.borderThickness > 0 {
 		if b.Focused() {
 			paintBorder(gtx, border, b.outlineColor, b.borderThickness*2, r)
@@ -147,6 +152,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 			paintBorder(gtx, border, b.Fg(), b.th.BorderThickness, r)
 		}
 	}
+	call.Add(gtx.Ops)
 
 	// Draw icon using forground color
 	o = op.Offset(image.Pt(border.Max.X-border.Max.Y, 0)).Push(gtx.Ops)
@@ -179,8 +185,8 @@ func (b *DropDownStyle) layout(gtx C) D {
 		listClipRect := image.Rect(0, 0, gtx.Constraints.Min.X, d.Size.Y)
 		call := macro.Stop()
 
+		b.setHovered(idx)
 		if !oldVisible {
-			b.setHovered(idx)
 			b.above = int(mouseY) > (winY - d.Size.Y)
 		}
 
@@ -208,7 +214,6 @@ func (b *DropDownStyle) layout(gtx C) D {
 }
 
 func (b *DropDownStyle) setHovered(h int) {
-
 	for i := 0; i < len(b.itemHovered); i++ {
 		b.itemHovered[i] = false
 	}

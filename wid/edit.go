@@ -21,13 +21,15 @@ import (
 type EditDef struct {
 	Base
 	widget.Editor
-	hovered        bool
-	outlineColor   color.NRGBA
-	selectionColor color.NRGBA
-	CharLimit      uint
-	label          string
-	value          *string
-	LabelSize      unit.Sp
+	hovered         bool
+	outlineColor    color.NRGBA
+	selectionColor  color.NRGBA
+	CharLimit       uint
+	label           string
+	value           *string
+	LabelSize       unit.Sp
+	borderThickness unit.Dp
+	wasFocused      bool
 }
 
 // Edit will return a widget (layout function) for a text editor
@@ -37,14 +39,21 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e.Font = &th.DefaultFont
 	e.LabelSize = th.TextSize * 8
 	e.SingleLine = true
-	e.width = unit.Dp(5000) // Default to max width that is possible
-	e.padding = th.EditPadding
+	e.borderThickness = th.BorderThickness
+	e.width = unit.Dp(5000)    // Default to max width that is possible
+	e.padding = layout.Inset{} // th.EditPadding
 	e.outlineColor = th.Fg(Outline)
 	e.selectionColor = MulAlpha(th.Bg(Primary), 60)
 	e.role = Canvas
 	// Read in options to change from default values to something else.
 	for _, option := range options {
 		option.apply(e)
+	}
+	if e.borderThickness > 0 {
+		e.padding = th.EditPadding
+	}
+	if e.value != nil {
+		e.Editor.SetText(*e.value)
 	}
 	return func(gtx C) D {
 		gtx.Constraints.Max.X = gtx.Constraints.Min.X
@@ -69,6 +78,10 @@ func Var(s *string) EditOption {
 	}
 }
 
+func (e *EditDef) setBorder(w unit.Dp) {
+	e.borderThickness = w
+}
+
 func (e EditOption) apply(cfg interface{}) {
 	if o, ok := cfg.(*EditDef); ok {
 		e(o)
@@ -90,15 +103,13 @@ func rr(gtx C, radius unit.Dp, height int) int {
 func (e *EditDef) layoutEditBackground() func(gtx C) D {
 	return func(gtx C) D {
 		outline := image.Rectangle{Max: image.Point{
-			X: gtx.Constraints.Min.X,
-			Y: gtx.Constraints.Min.Y,
+			X: gtx.Constraints.Max.X,
+			Y: gtx.Constraints.Max.Y,
 		}}
 		rr := rr(gtx, e.th.BorderCornerRadius, outline.Max.Y)
-		color := MulAlpha(e.Fg(), 200)
 		if e.Focused() {
-			color = e.Bg()
+			paint.FillShape(gtx.Ops, e.Bg(), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		}
-		paint.FillShape(gtx.Ops, color, clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
 		return D{}
 	}
 }
@@ -116,6 +127,12 @@ func paintBorder(gtx C, outline image.Rectangle, col color.NRGBA, width unit.Dp,
 // LayoutBorder will draw a border around the widget
 func LayoutBorder(e *EditDef, th *Theme) func(gtx C) D {
 	return func(gtx C) D {
+		if e.wasFocused && !e.Focused() && e.value != nil {
+			GuiLock.Lock()
+			*e.value = e.Text()
+			GuiLock.Unlock()
+		}
+		e.wasFocused = e.Focused()
 		outline := image.Rectangle{Max: image.Point{
 			X: gtx.Constraints.Min.X,
 			Y: gtx.Constraints.Min.Y,
@@ -124,12 +141,14 @@ func LayoutBorder(e *EditDef, th *Theme) func(gtx C) D {
 		if r > outline.Max.Y/2 {
 			r = outline.Max.Y / 2
 		}
-		if e.Focused() {
-			paintBorder(gtx, outline, e.outlineColor, th.BorderThicknessActive, r)
-		} else if e.hovered {
-			paintBorder(gtx, outline, e.outlineColor, (th.BorderThickness+th.BorderThicknessActive)/2, r)
-		} else {
-			paintBorder(gtx, outline, e.outlineColor, th.BorderThickness, r)
+		if e.borderThickness > 0 {
+			if e.Focused() {
+				paintBorder(gtx, outline, e.outlineColor, th.BorderThicknessActive, r)
+			} else if e.hovered {
+				paintBorder(gtx, outline, e.outlineColor, (th.BorderThickness+th.BorderThicknessActive)/2, r)
+			} else {
+				paintBorder(gtx, outline, e.outlineColor, th.BorderThickness, r)
+			}
 		}
 		eventArea := clip.Rect(outline).Push(gtx.Ops)
 		for _, ev := range gtx.Events(&e.hovered) {

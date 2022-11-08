@@ -25,15 +25,16 @@ var (
 	Alternative = "Wide"
 	// Column widths are given in units of approximately one average character width (en).
 	// A witdth of zero means the widget's natural size should be used (f.ex. checkboxes)
-	wideColWidth  = []float32{0, 40, 40, 20, 20}
-	smallColWidth = []float32{0, 13, 13, 12, 12}
-	fracColWidth  = []float32{0, 0.3, 0.3, .2, .2}
-	selectAll     bool
-	nameIcon      *wid.Icon
-	addressIcon   *wid.Icon
-	ageIcon       *wid.Icon
-	dir           bool
-	fontSize      = "Large"
+	wideColWidth   = []float32{0, 40, 40, 20, 20}
+	smallColWidth  = []float32{0, 13, 13, 12, 12}
+	fracColWidth   = []float32{0, 0.3, 0.3, .2, .2}
+	selectAll      bool
+	nameIcon       *wid.Icon
+	addressIcon    *wid.Icon
+	ageIcon        *wid.Icon
+	dir            bool
+	fontSize       = "Large"
+	dropDownValue1 = 1
 )
 
 type person struct {
@@ -198,6 +199,8 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 				wid.RadioButton(th, &fontSize, "Small", "Small", wid.Do(onFontChange)),
 			),
 			wid.Space(20),
+			wid.Edit(th, wid.Hint("Line editor")),
+			wid.DropDown(th, &dropDownValue1, []string{"Option 1 with long text as shown here", "Option 2", "Option 3"}, wid.Lbl("Dropdown 1")),
 		)
 		// Configure a row with headings.
 		bgColor := th.Bg(wid.PrimaryContainer)
@@ -206,7 +209,7 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 			wid.HeaderButton(th, "Name", wid.Do(onNameClick), wid.Prim(), wid.BtnIcon(nameIcon)),
 			wid.HeaderButton(th, "Address", wid.Do(onAddressClick), wid.Prim(), wid.BtnIcon(addressIcon)),
 			wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.Prim(), wid.BtnIcon(ageIcon)),
-			wid.Label(th, "Gender", wid.Bold()),
+			wid.Label(th, "Gender"),
 		)
 		lines = append(lines, heading)
 
@@ -219,7 +222,7 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 				wid.GridRow(th, &bgColor, gw, colWidths,
 					wid.Checkbox(th, "", wid.Bool(&data[i].Selected)),
 					wid.Label(th, &data[i].Name),
-					wid.Label(th, &data[i].Address),
+					wid.Edit(th, wid.Var(&data[i].Address), wid.Border(0)),
 					wid.Label(th, &data[i].Age, wid.Dp(2), wid.Right()),
 					wid.DropDown(th, &data[i].Status, []string{"Male", "Female", "Other"}, wid.Border(0)),
 				))

@@ -264,6 +264,9 @@ func Border(b unit.Dp) BaseOption {
 		if o, ok := w.(*DropDownStyle); ok {
 			o.setBorder(b)
 		}
+		if o, ok := w.(*EditDef); ok {
+			o.setBorder(b)
+		}
 	}
 }
 
