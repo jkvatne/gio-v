@@ -107,7 +107,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 	ctx.Constraints.Max.X = gtx.Sp(b.labelSize) - gtx.Dp(b.padding.Left)
 	_ = widget.Label{Alignment: text.End, MaxLines: 1}.Layout(ctx, b.th.Shaper, *b.Font, b.th.TextSize, b.label)
 	o.Pop()
-	ofs := gtx.Sp(b.labelSize) + gtx.Dp(b.padding.Left)
+	ofs := gtx.Sp(b.labelSize) + gtx.Dp(b.padding.Left+b.padding.Right)
 	defer op.Offset(image.Pt(ofs, 0)).Push(gtx.Ops).Pop()
 
 	// Draw text with top/left padding offset

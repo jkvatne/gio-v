@@ -323,10 +323,10 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.Elevation = unit.Dp(t.TextSize) * 0.5
 	// Text
 	t.LabelPadding = layout.Inset{
-		Top:    unit.Dp(t.TextSize) * 0.3,
-		Right:  unit.Dp(t.TextSize) * 0.2,
-		Bottom: unit.Dp(t.TextSize) * 0.3,
-		Left:   unit.Dp(t.TextSize) * 0.3}
+		Top:    unit.Dp(t.TextSize) * 0.4,
+		Right:  unit.Dp(t.TextSize) * 0.3,
+		Bottom: unit.Dp(t.TextSize) * 0.4,
+		Left:   unit.Dp(t.TextSize) * 0.6}
 	t.DropDownPadding = t.LabelPadding
 	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
 	t.EditPadding = t.LabelPadding
