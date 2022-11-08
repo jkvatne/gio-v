@@ -84,25 +84,8 @@ func (b *DropDownStyle) layout(gtx C) D {
 
 	b.HandleEvents(gtx)
 	// Check for index range, because tha HandleEvents() function does not know the limits.
-	GuiLock.RLock()
-	idx := *b.index
-	GuiLock.RUnlock()
-	if idx < 0 {
-		idx = 0
-		GuiLock.Lock()
-		*b.index = idx
-		GuiLock.Unlock()
-	}
-	if idx >= len(b.items) {
-		idx = len(b.items) - 1
-		GuiLock.Lock()
-		*b.index = idx
-		GuiLock.Unlock()
-	}
-
-	if b.disabler != nil && *b.disabler {
-		gtx = gtx.Disabled()
-	}
+	idx := b.GetIndex(len(b.items))
+	b.CheckDisable(gtx)
 
 	// Use all awailable x space, unless a width is given, and it is within constraints.
 	w := gtx.Dp(b.width)

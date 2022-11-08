@@ -308,6 +308,16 @@ func (b Base) Bg() color.NRGBA {
 	}
 }
 
+func (b Base) CheckDisable(gtx C) {
+	if b.disabler != nil {
+		GuiLock.RLock()
+		if *b.disabler {
+			gtx = gtx.Disabled()
+		}
+		GuiLock.RUnlock()
+	}
+}
+
 // CalcMin will calculate the minimum size of widget.
 func CalcMin(gtx C, width unit.Dp) image.Point {
 	min := gtx.Constraints.Min

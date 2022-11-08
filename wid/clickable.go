@@ -184,3 +184,21 @@ func (b *Clickable) HandleEvents(gtx layout.Context) {
 		}
 	}
 }
+
+func (b Clickable) GetIndex(n int) int {
+	GuiLock.RLock()
+	idx := *b.index
+	GuiLock.RUnlock()
+	if idx < 0 {
+		idx = 0
+		GuiLock.Lock()
+		*b.index = idx
+		GuiLock.Unlock()
+	} else if idx >= n {
+		idx = n - 1
+		GuiLock.Lock()
+		*b.index = idx
+		GuiLock.Unlock()
+	}
+	return idx
+}
