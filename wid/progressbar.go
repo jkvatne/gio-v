@@ -45,7 +45,7 @@ func (p ProgressBarStyle) layout(gtx C) D {
 		paint.PaintOp{}.Add(gtx.Ops)
 		return D{Size: d}
 	}
-	progressBarWidth := gtx.Constraints.Max.X - gtx.Dp(4)
+	progressBarWidth := gtx.Constraints.Min.X - gtx.Dp(4)
 	return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
 		return layout.Stack{Alignment: layout.W}.Layout(gtx,
 			layout.Stacked(func(gtx C) D {

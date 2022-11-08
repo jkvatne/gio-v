@@ -65,13 +65,13 @@ func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
 	}
 	scale := float32(1.0)
 	if fracSum > 0 {
-		scale = (float32(gtx.Constraints.Max.X) - fixSum) / fracSum
+		scale = (float32(gtx.Constraints.Min.X) - fixSum) / fracSum
 	}
 	for i := range w {
 		if w[i] <= 1.0 {
 			widths[i] = Max(1, int(w[i]*scale))
 		} else {
-			widths[i] = Min(int(w[i]), gtx.Constraints.Max.X)
+			widths[i] = Min(int(w[i]), gtx.Constraints.Min.X)
 		}
 	}
 }
@@ -108,7 +108,7 @@ func Row(th *Theme, pbgColor *color.NRGBA, weights []float32, widgets ...layout.
 	}
 }
 
-func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dims []D, bgColor color.NRGBA, weights []float32, widgets ...layout.Widget) D {
+func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dim []D, bgColor color.NRGBA, weights []float32, widgets ...layout.Widget) D {
 	call := make([]op.CallOp, len(widgets))
 	widths := make([]int, len(widgets))
 	// Fill in size where width is given as zero
@@ -144,15 +144,15 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dims []D, bgColor color.NRGB
 			c.Constraints.Min.X = 0
 		}
 		macro := op.Record(c.Ops)
-		dims[i] = child(c)
-		if widths[i] < dims[i].Size.X {
-			pos[i+1] = pos[i] + dims[i].Size.X
+		dim[i] = child(c)
+		if widths[i] < dim[i].Size.X {
+			pos[i+1] = pos[i] + dim[i].Size.X
 		} else {
 			pos[i+1] = pos[i] + widths[i]
 		}
 		call[i] = macro.Stop()
-		if yMax < dims[i].Size.Y {
-			yMax = dims[i].Size.Y
+		if yMax < dim[i].Size.Y {
+			yMax = dim[i].Size.Y
 		}
 	}
 	macro := op.Record(gtx.Ops)
@@ -177,13 +177,13 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dims []D, bgColor color.NRGB
 		trans.Pop()
 	}
 	// The row width is now the position after the last drawn widget + padBtm
-	dim := D{Size: image.Pt(pos[len(widgets)], yMax)}
+	dims := D{Size: image.Pt(pos[len(widgets)], yMax)}
 	drawAll := macro.Stop()
 	// Draw background.
-	defer clip.Rect{Max: image.Pt(gtx.Constraints.Max.X, dim.Size.Y)}.Push(gtx.Ops).Pop()
+	defer clip.Rect{Max: image.Pt(gtx.Constraints.Max.X, dims.Size.Y)}.Push(gtx.Ops).Pop()
 	paint.ColorOp{Color: bgColor}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
-	gtx.Constraints.Min = dim.Size
+	gtx.Constraints.Min = dims.Size
 	// Draw the row background color. Widgets should be transparent.
 	paint.ColorOp{Color: bgColor}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
@@ -191,5 +191,5 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dims []D, bgColor color.NRGB
 	defer op.Offset(image.Pt(0, gtx.Sp(r.padTop))).Push(gtx.Ops).Pop()
 	// Then play the macro to draw all the children.
 	drawAll.Add(gtx.Ops)
-	return dim
+	return dims
 }

@@ -94,8 +94,10 @@ func (s *SliderStyle) handleKeys(gtx C) {
 
 // Layout will draw the slider
 func (s *SliderStyle) Layout(gtx C) D {
-
-	gtx.Constraints.Min = CalcMin(gtx, s.width)
+	w := gtx.Dp(s.width)
+	if w < gtx.Constraints.Min.X {
+		gtx.Constraints.Min.X = w
+	}
 	thumbRadius := gtx.Sp(s.th.TextSize * 0.5)
 	trackWidth := gtx.Sp(s.th.TextSize * 0.5)
 

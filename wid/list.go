@@ -278,11 +278,14 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	}
 	// Reserve space for the scrollbars using the gtx constraints.
 	gtx.Constraints.Max.X -= barWidth
+	gtx.Constraints.Min.X -= barWidth
 	gtx.Constraints.Max.Y -= barWidth
 
 	// Draw the list
 	macro := op.Record(gtx.Ops)
-	listDims := l.list.Layout(gtx, length, w)
+	c := gtx
+	c.Constraints.Max.X = inf
+	listDims := l.list.Layout(c, length, w)
 	call := macro.Stop()
 	cl := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
 
@@ -298,7 +301,6 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	// Increase the width to account for the space occupied by the scrollbar.
 	listDims.Size.X += barWidth
 	listDims.Size.Y += barWidth
-	gtx.Constraints.Max.X += barWidth
 	gtx.Constraints.Max.Y += barWidth
 
 	// Draw the Vertical scrollbar.
@@ -318,10 +320,8 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 
 	if width > 0 {
 		hStart := float32(l.Hpos) / float32(width)
-		hEnd := hStart + float32(gtx.Constraints.Max.X)/float32(width)
-		if hEnd > 1.0 {
-			hEnd = 0.9999
-		}
+		hEnd := hStart + float32(gtx.Constraints.Min.X)/float32(width)
+
 		layout.S.Layout(gtx, func(gtx C) D {
 			gtx.Constraints.Min = gtx.Constraints.Max
 			return l.HScrollBar.Layout(gtx, layout.Horizontal, hStart, hEnd)

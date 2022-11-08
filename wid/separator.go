@@ -21,7 +21,7 @@ func Space(size unit.Dp) layout.Widget {
 	s := SeparatorStyle{}
 	s.thickness = size
 	return func(gtx C) D {
-		return layout.Dimensions{Size: image.Pt(gtx.Constraints.Max.X, gtx.Dp(s.thickness))}
+		return layout.Dimensions{Size: image.Pt(gtx.Constraints.Min.X, gtx.Dp(s.thickness))}
 	}
 }
 

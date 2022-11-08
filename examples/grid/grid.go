@@ -22,7 +22,7 @@ const test = 0
 var (
 	form        layout.Widget
 	theme       wid.Theme
-	Alternative = "Narrow"
+	Alternative = "Wide"
 	// Column widths are given in units of approximately one average character width (en).
 	// A witdth of zero means the widget's natural size should be used (f.ex. checkboxes)
 	wideColWidth  = []float32{0, 40, 40, 20, 20}
@@ -70,7 +70,7 @@ func main() {
 func onWinChange() {
 	var f layout.Widget
 	if Alternative == "Wide" {
-		f = Grid(&theme, wid.Occupy, data, wideColWidth)
+		f = Grid(&theme, wid.Overlay, data, wideColWidth)
 	} else if Alternative == "Narrow" {
 		f = Grid(&theme, wid.Overlay, data[:5], smallColWidth)
 	} else if Alternative == "Fractional" {
@@ -177,7 +177,6 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 		ageIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
 
 		var lines []layout.Widget
-
 		lines = append(lines,
 			wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 			wid.Label(th, "Different wighting and size of columns"),

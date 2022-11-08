@@ -20,7 +20,7 @@ var (
 	Black  = RGB(0x000000)
 )
 
-const inf = 1e6
+const inf = 5000
 
 // DeEmphasis will change a color to a less prominent color
 // In light mode, colors will be lighter, in dark mode, colors will be darker
