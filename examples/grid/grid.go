@@ -22,10 +22,10 @@ const test = 0
 var (
 	form        layout.Widget
 	theme       wid.Theme
-	Alternative = "SmallColumns"
+	Alternative = "Native"
 	// Column widths are given in units of approximately one average character width (en).
 	// A witdth of zero means the widget's natural size should be used (f.ex. checkboxes)
-	largeColWidth = []float32{0, 40, 40, 20, 20}
+	wideColWidth  = []float32{0, 40, 40, 20, 20}
 	smallColWidth = []float32{0, 13, 13, 12, 12}
 	fracColWidth  = []float32{0, 0.3, 0.3, .2, .2}
 	selectAll     bool
@@ -69,16 +69,18 @@ func main() {
 
 func onWinChange() {
 	var f layout.Widget
-	if Alternative == "LargeColumns" {
-		f = Grid(&theme, wid.Occupy, data, largeColWidth)
-	} else if Alternative == "SmallColumns" {
+	if Alternative == "Wide" {
+		f = Grid(&theme, wid.Occupy, data, wideColWidth)
+	} else if Alternative == "Narrow" {
 		f = Grid(&theme, wid.Overlay, data[:5], smallColWidth)
-	} else if Alternative == "FractionalColumns" {
+	} else if Alternative == "Fractional" {
 		f = Grid(&theme, wid.Overlay, data, fracColWidth)
-	} else if Alternative == "Zero" {
-		f = Grid(&theme, wid.Occupy, data, []float32{0, 0, 0, 0, 0, 0, 0})
+	} else if Alternative == "Equal" {
+		f = Grid(&theme, wid.Occupy, data, wid.SpaceDistribute)
+	} else if Alternative == "Native" {
+		f = Grid(&theme, wid.Occupy, data, wid.SpaceClose)
 	} else {
-		f = Grid(&theme, wid.Occupy, data, nil)
+		f = Grid(&theme, wid.Occupy, data, wid.SpaceDistribute)
 	}
 	wid.GuiLock.Lock()
 	form = f
@@ -161,14 +163,14 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 			wid.Checkbox(th, "", wid.Bool(&data[1].Selected)),
 			wid.Label(th, &data[1].Name))
 	} else if test == 2 {
-		return wid.GridRow(th, nil, gw, []float32{0, 9, 0.9, 8},
+		return wid.GridRow(th, nil, gw, []float32{0, 40, 40, 20, 20},
 			wid.Checkbox(th, "", wid.Bool(&data[1].Selected)),
 			wid.Label(th, &data[1].Address),
 			wid.Label(th, &data[1].Name),
 			wid.Label(th, &data[1].Age, wid.Dp(3), wid.Right()))
 
 	} else if test == 3 {
-		return wid.RadioButton(th, &Alternative, "LargeColumns", "LargeColumns", wid.Do(onWinChange))
+		return wid.RadioButton(th, &Alternative, "WideColumns", "WideColumns", wid.Do(onWinChange))
 	} else {
 		nameIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
 		addressIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
@@ -180,11 +182,11 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 			wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 			wid.Label(th, "Different wighting and size of columns"),
 			wid.Row(th, nil, nil,
-				wid.RadioButton(th, &Alternative, "LargeColumns", "Large", wid.Do(onWinChange)),
-				wid.RadioButton(th, &Alternative, "SmallColumns", "Small", wid.Do(onWinChange)),
-				wid.RadioButton(th, &Alternative, "FractionalColumns", "Fractional", wid.Do(onWinChange)),
-				wid.RadioButton(th, &Alternative, "Zero", "Zero", wid.Do(onWinChange)),
-				wid.RadioButton(th, &Alternative, "Nil", "Nil", wid.Do(onWinChange)),
+				wid.RadioButton(th, &Alternative, "Wide", "Wide", wid.Do(onWinChange)),
+				wid.RadioButton(th, &Alternative, "Narrow", "Narrow", wid.Do(onWinChange)),
+				wid.RadioButton(th, &Alternative, "Fractional", "Fractional", wid.Do(onWinChange)),
+				wid.RadioButton(th, &Alternative, "Equal", "Equal", wid.Do(onWinChange)),
+				wid.RadioButton(th, &Alternative, "Native", "Native", wid.Do(onWinChange)),
 			),
 			wid.Space(5),
 			wid.Label(th, "Select font size"),

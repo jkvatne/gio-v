@@ -84,7 +84,7 @@ func (l LabelDef) Layout(gtx C) D {
 	str := l.Stringer(l.dp)
 	GuiLock.RUnlock()
 	dims := tl.Layout(c, l.th.Shaper, l.Font, l.TextSize*unit.Sp(l.FontSize), str)
-	dims.Size.X = gtx.Constraints.Min.X
+	dims.Size.X = Min(gtx.Constraints.Max.X, dims.Size.X)
 	return dims
 }
 

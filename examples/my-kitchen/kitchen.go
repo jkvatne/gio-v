@@ -4,6 +4,7 @@ import (
 	"gio-v/wid"
 	"image"
 	"image/color"
+	"time"
 
 	"gioui.org/op/clip"
 
@@ -25,7 +26,7 @@ var (
 	group       string  = ""
 	sliderValue float32 = 0.1
 	win         *app.Window
-	progress    float32
+	progress    float32 = 0.1
 	form        layout.Widget
 	enabledText = "Disabled"
 	enabled     bool
@@ -37,8 +38,19 @@ func main() {
 	th = wid.NewTheme(gofont.Collection(), 14)
 	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
 	form = kitchen(th)
+	go ticker()
 	wid.Run(win, &form)
 	app.Main()
+}
+
+func ticker() {
+	for {
+		time.Sleep(time.Millisecond * 16)
+		wid.GuiLock.Lock()
+		progress = float32(int32((progress*1000)+5)%1000) / 1000.0
+		wid.GuiLock.Unlock()
+		wid.Invalidate()
+	}
 }
 
 func onClick() {

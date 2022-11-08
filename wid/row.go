@@ -25,48 +25,53 @@ type rowDef struct {
 }
 
 // SpaceClose is a shortcut for specifying that the row elements are placed close together, left to right
-var SpaceClose = []float32{0}
+var SpaceClose = []float32{}
 
 // SpaceDistribute should disribute the widgets on a row evenly, with equal space for each
-var SpaceDistribute []float32
+var SpaceDistribute []float32 = nil
 
 // Calculate widths
 func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
-	if weights == nil {
-		weights = []float32{}
-		for range widths {
-			weights = append(weights, 1.0)
+	w := make([]float32, len(widths))
+	for i := 0; i < len(w); i++ {
+		if weights == nil {
+			// If weights is nil it means all widgets distributed equaly (like 1,1,1,1...)
+			w[i] = 1.0
+		} else if len(weights) == 0 {
+			// If weights has no values, it means use native size (like 0,0,0,0...)
+			w[i] = float32(widths[i])
+		} else if i < len(weights) && weights[i] > 1.0 {
+			// Weights > 1 is given in characters, do rescale to pixels
+			w[i] = float32(gtx.Sp(textSize * unit.Sp(weights[i]) / 2))
+		} else if i < len(weights) {
+			w[i] = weights[i]
 		}
-	} else if len(weights) == 0 {
-		for range widths {
-			weights = append(weights, 0)
+		if w[i] == 0.0 {
+			w[i] = float32(widths[i])
 		}
 	}
 	fracSum := float32(0.0)
 	fixSum := float32(0.0)
-	for _, w := range weights {
+	for i, w := range w {
 		if w <= 1.0 {
 			fracSum += w
 		} else {
-			fixSum += w
+			if widths[i] > 0 {
+				fixSum += float32(widths[i])
+			} else {
+				fixSum += w
+			}
 		}
 	}
-	fixWidth := gtx.Sp(textSize * unit.Sp(fixSum) / 2)
 	scale := float32(1.0)
 	if fracSum > 0 {
-		scale = float32(gtx.Constraints.Max.X-fixWidth) / fracSum
+		scale = (float32(gtx.Constraints.Max.X) - fixSum) / fracSum
 	}
-	for i := range widths {
-		if i < len(widths) && i < len(weights) {
-			if weights != nil {
-				if weights[i] <= 1.0 {
-					widths[i] = Max(1, int(weights[i]*scale))
-				} else {
-					widths[i] = gtx.Sp(textSize * unit.Sp(weights[i]) / 2)
-				}
-			} else {
-				widths[i] = gtx.Constraints.Max.X / len(weights)
-			}
+	for i, _ := range w {
+		if w[i] <= 1.0 {
+			widths[i] = Max(1, int(w[i]*scale))
+		} else {
+			widths[i] = Min(int(w[i]), gtx.Constraints.Max.X)
 		}
 	}
 }
@@ -106,22 +111,19 @@ func Row(th *Theme, pbgColor *color.NRGBA, weights []float32, widgets ...layout.
 func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dims []D, bgColor color.NRGBA, weights []float32, widgets ...layout.Widget) D {
 	call := make([]op.CallOp, len(widgets))
 	widths := make([]int, len(widgets))
-	w := make([]float32, len(weights))
 	// Fill in size where width is given as zero
 	for i, child := range widgets {
-		if i < len(weights) && weights[i] == 0 {
+		if i < len(weights) && weights[i] == 0 || len(weights) == 0 {
 			c := gtx
 			macro := op.Record(c.Ops)
 			c.Constraints.Max.X = inf
 			c.Constraints.Min.X = 0
 			dim := child(c)
-			w[i] = 2 * float32(dim.Size.X) / float32(gtx.Sp(textSize))
+			widths[i] = dim.Size.X
 			_ = macro.Stop()
-		} else if i < len(weights) {
-			w[i] = weights[i]
 		}
 	}
-	calcWidths(gtx, textSize, w, widths)
+	calcWidths(gtx, textSize, weights, widths)
 	// Check child sizes and make macros for each widget in a row
 	yMax := 0
 	c := gtx

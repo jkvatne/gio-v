@@ -50,13 +50,10 @@ func main() {
 
 func ticker() {
 	for {
+		time.Sleep(time.Millisecond * 16)
 		wid.GuiLock.Lock()
-		progress += 0.0001
-		if progress > 1.0 {
-			progress = 0
-		}
+		progress = float32(int32((progress*1000)+5)%1000) / 1000.0
 		wid.GuiLock.Unlock()
-		time.Sleep(time.Millisecond * 1)
 		wid.Invalidate()
 	}
 }
@@ -114,13 +111,13 @@ func demo(th *wid.Theme) layout.Widget {
 
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Buttons with fixed length and large font, with and without icon"),
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.Button(th, "Change palette", wid.Do(onClick), wid.SecCont(), wid.W(450), wid.Large()),
 			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.FontSize(1.4), wid.Sec()),
 		),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Button spaced closely, left adjusted"),
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, wid.SpaceClose,
 			wid.RoundButton(th, homeIcon, wid.Prim(),
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(wid.RGB(0xF288F2)), wid.Fg(wid.RGB(0x0902200)),
@@ -132,7 +129,7 @@ func demo(th *wid.Theme) layout.Widget {
 		),
 		wid.Separator(th, unit.Dp(1.0)),
 
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, wid.SpaceClose,
 			wid.Label(th, "A switch"),
 			wid.Switch(th, &greenFlag, wid.Do(swColor)),
 			wid.Label(th, " "),
@@ -143,12 +140,12 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Slider(th, &sliderValue, 0, 100),
 		// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.Edit(th, wid.Hint("Value 3")),
 			wid.Edit(th, wid.Hint("Value 4")),
 			wid.Edit(th, wid.Hint("Value 5")),
 		),
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.Col(
 				wid.Edit(th, wid.Hint("Value 6")),
 				wid.Edit(th, wid.Hint("Value 7"), wid.Lbl("Value 7")),
