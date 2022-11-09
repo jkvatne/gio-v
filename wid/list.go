@@ -226,6 +226,7 @@ type ListStyle struct {
 	VScrollBar ScrollbarStyle
 	HScrollBar ScrollbarStyle
 	AnchorStrategy
+	showHorBar bool
 }
 
 // List makes a vertical list
@@ -270,8 +271,9 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	// Reserve space for the scrollbars using the gtx constraints.
 	gtx.Constraints.Max.X -= barWidth
 	gtx.Constraints.Min.X -= barWidth
-	gtx.Constraints.Max.Y -= barWidth
-
+	if l.showHorBar {
+		gtx.Constraints.Max.Y -= barWidth
+	}
 	// Draw the list
 	macro := op.Record(gtx.Ops)
 	c := gtx
@@ -313,7 +315,7 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	if width > 0 {
 		hStart := float32(l.Hpos) / float32(width)
 		hEnd := hStart + float32(gtx.Constraints.Min.X+barWidth)/float32(width)
-
+		l.showHorBar = (hEnd - hStart) < 1.0
 		layout.S.Layout(gtx, func(gtx C) D {
 			gtx.Constraints.Min = gtx.Constraints.Max
 			return l.HScrollBar.Layout(gtx, layout.Horizontal, hStart, hEnd)

@@ -127,11 +127,24 @@ func paintBorder(gtx C, outline image.Rectangle, col color.NRGBA, width unit.Dp,
 // LayoutBorder will draw a border around the widget
 func LayoutBorder(e *EditDef, th *Theme) func(gtx C) D {
 	return func(gtx C) D {
-		if e.wasFocused && !e.Focused() && e.value != nil {
-			GuiLock.Lock()
-			*e.value = e.Text()
-			GuiLock.Unlock()
+		if !e.Focused() && e.value != nil {
+			current := e.Text()
+			if e.wasFocused {
+				// When the edit is loosing focus, we must update the underlying variable
+				GuiLock.Lock()
+				*e.value = current
+				GuiLock.Unlock()
+			} else {
+				// When the underlying variable changes, update the edit buffer
+				GuiLock.RLock()
+				s := *e.value
+				GuiLock.RUnlock()
+				if s != current {
+					e.SetText(s)
+				}
+			}
 		}
+
 		e.wasFocused = e.Focused()
 		outline := image.Rectangle{Max: image.Point{
 			X: gtx.Constraints.Min.X,

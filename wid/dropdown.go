@@ -83,6 +83,9 @@ func (b *DropDownStyle) Layout(gtx C) D {
 func (b *DropDownStyle) layout(gtx C) D {
 
 	b.HandleEvents(gtx)
+	if b.disabler != nil && !*b.disabler {
+		gtx.Queue = nil
+	}
 	// Check for index range, because tha HandleEvents() function does not know the limits.
 	idx := b.GetIndex(len(b.items))
 	b.CheckDisable(gtx)

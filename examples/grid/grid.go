@@ -68,20 +68,22 @@ func main() {
 	app.Main()
 }
 
+var Style = wid.Occupy
+
 func onWinChange() {
 	var f layout.Widget
 	if Alternative == "Wide" {
-		f = Grid(&theme, wid.Overlay, data, wideColWidth)
+		f = Grid(&theme, Style, data, wideColWidth)
 	} else if Alternative == "Narrow" {
-		f = Grid(&theme, wid.Overlay, data[:5], smallColWidth)
+		f = Grid(&theme, Style, data[:5], smallColWidth)
 	} else if Alternative == "Fractional" {
-		f = Grid(&theme, wid.Overlay, data, fracColWidth)
+		f = Grid(&theme, Style, data, fracColWidth)
 	} else if Alternative == "Equal" {
-		f = Grid(&theme, wid.Occupy, data, wid.SpaceDistribute)
+		f = Grid(&theme, Style, data, wid.SpaceDistribute)
 	} else if Alternative == "Native" {
-		f = Grid(&theme, wid.Occupy, data, wid.SpaceClose)
+		f = Grid(&theme, Style, data, wid.SpaceClose)
 	} else {
-		f = Grid(&theme, wid.Occupy, data, wid.SpaceDistribute)
+		f = Grid(&theme, Style, data, wid.SpaceDistribute)
 	}
 	wid.GuiLock.Lock()
 	form = f
