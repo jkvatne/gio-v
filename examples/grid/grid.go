@@ -212,7 +212,6 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 			wid.Label(th, "Gender"),
 		)
 		lines = append(lines, heading)
-
 		for i := 0; i < len(data); i++ {
 			bgColor := wid.MulAlpha(th.Bg(wid.PrimaryContainer), 50)
 			if i%2 == 0 {

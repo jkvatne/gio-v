@@ -271,6 +271,12 @@ type Theme struct {
 	FadeDuration time.Duration
 	RowPadTop    unit.Sp
 	RowPadBtm    unit.Sp
+	// Scroll bar size
+	ScrollMajorPadding unit.Sp
+	ScrollMinorPadding unit.Sp
+	ScrollMajorMinLen  unit.Sp
+	ScrollMinorWidth   unit.Sp
+	ScrollCornerRadius unit.Sp
 }
 
 type (
@@ -357,6 +363,12 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.DotColor = t.Fg(Primary)
 	t.RowPadTop = t.TextSize * 0.0
 	t.RowPadBtm = t.TextSize * 0.0
+
+	t.ScrollMajorPadding = 2
+	t.ScrollMinorPadding = 2
+	t.ScrollMajorMinLen = t.TextSize / 1.25
+	t.ScrollMinorWidth = t.TextSize / 1.5
+	t.ScrollCornerRadius = 3
 	return t
 }
 

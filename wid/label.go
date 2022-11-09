@@ -83,6 +83,7 @@ func (l LabelDef) Layout(gtx C) D {
 	str := l.Stringer(l.dp)
 	GuiLock.RUnlock()
 	dims := tl.Layout(c, l.th.Shaper, l.Font, l.TextSize*unit.Sp(l.FontSize), str)
+	// NB: Use Min.X instead of Max.X in order to fill screen width. Max.X is very large to allow scrolling wide widgets.
 	dims.Size.X = Min(gtx.Constraints.Max.X, dims.Size.X)
 	return dims
 }
@@ -107,6 +108,8 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 
 	return func(gtx C) D {
 		macro := op.Record(gtx.Ops)
+		// NB: Use Min.X instead of Max.X in order to fill screen width. Max.X is very large to allow scrolling wide widgets.
+		gtx.Constraints.Max.X = gtx.Constraints.Min.X
 		dims := w.padding.Layout(gtx, func(gtx C) D {
 			return w.Layout(gtx)
 		})

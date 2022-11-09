@@ -36,14 +36,6 @@ func fromListPosition(lp layout.Position, elements int, majorAxisSize int) (star
 	return viewportStart, clamp1(viewportStart + visibleFraction)
 }
 
-// rangeIsScrollable returns whether the viewport described by start and end
-// is smaller than the underlying content (such that it can be scrolled).
-// start and end are expected to each be in the range [0,1], and start
-// must be less than or equal to end.
-func rangeIsScrollable(start, end float32) bool {
-	return end-start < 1
-}
-
 // ScrollTrackStyle configures the presentation of a track for a scroll area.
 type ScrollTrackStyle struct {
 	// MajorPadding and MinorPadding along the major and minor axis of the
@@ -84,19 +76,17 @@ func MakeScrollbarStyle(th *Theme) ScrollbarStyle {
 	lightFg.A = 150
 	darkFg := lightFg
 	darkFg.A = 200
-	a := unit.Dp(th.TextSize / 1.25)
-	b := unit.Dp(th.TextSize / 2)
 	return ScrollbarStyle{
 		Scrollbar: &Scrollbar{},
 		Track: ScrollTrackStyle{
-			MajorPadding: unit.Dp(2),
-			MinorPadding: unit.Dp(2),
+			MajorPadding: unit.Dp(th.ScrollMajorPadding),
+			MinorPadding: unit.Dp(th.ScrollMinorPadding),
 			Color:        th.TrackColor,
 		},
 		Indicator: ScrollIndicatorStyle{
-			MajorMinLen:  a,
-			MinorWidth:   b,
-			CornerRadius: unit.Dp(3),
+			MajorMinLen:  unit.Dp(th.ScrollMajorMinLen),
+			MinorWidth:   unit.Dp(th.ScrollMinorWidth),
+			CornerRadius: unit.Dp(th.ScrollCornerRadius),
 			Color:        lightFg,
 			HoverColor:   darkFg,
 		},
@@ -111,7 +101,8 @@ func (s ScrollbarStyle) Width() unit.Dp {
 
 // Layout the scrollbar.
 func (s ScrollbarStyle) Layout(gtx C, axis layout.Axis, viewportStart, viewportEnd float32) D {
-	if !rangeIsScrollable(viewportStart, viewportEnd) {
+	// if !rangeIsScrollable(viewportStart, viewportEnd) {
+	if viewportEnd-viewportStart >= 1 {
 		return D{}
 	}
 
@@ -273,7 +264,7 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	// Determine how much space the scrollbar occupies.
 	barWidth := gtx.Dp(l.VScrollBar.Width())
 
-	if l.AnchorStrategy != Occupy {
+	if l.AnchorStrategy == Overlay {
 		barWidth = 0
 	}
 	// Reserve space for the scrollbars using the gtx constraints.
@@ -284,6 +275,7 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	// Draw the list
 	macro := op.Record(gtx.Ops)
 	c := gtx
+	// Must set Max.X to infinity to allow rows wider than the frame.
 	c.Constraints.Max.X = inf
 	listDims := l.list.Layout(c, length, w)
 	call := macro.Stop()
@@ -320,7 +312,7 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 
 	if width > 0 {
 		hStart := float32(l.Hpos) / float32(width)
-		hEnd := hStart + float32(gtx.Constraints.Min.X)/float32(width)
+		hEnd := hStart + float32(gtx.Constraints.Min.X+barWidth)/float32(width)
 
 		layout.S.Layout(gtx, func(gtx C) D {
 			gtx.Constraints.Min = gtx.Constraints.Max

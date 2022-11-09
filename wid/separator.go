@@ -33,7 +33,7 @@ func Separator(th *Theme, thickness unit.Dp, options ...Option) layout.Widget {
 	s.Apply(options...)
 	s.th = th
 	return func(gtx C) D {
-		dim := gtx.Constraints.Max
+		dim := gtx.Constraints.Min
 		dim.Y = gtx.Dp(s.thickness) + gtx.Dp(s.padding.Top) + gtx.Dp(s.padding.Bottom)
 		size := image.Pt(dim.X-gtx.Dp(s.padding.Left)-gtx.Dp(s.padding.Right), gtx.Dp(s.thickness))
 		if w := gtx.Dp(s.Base.width); w > size.X {

@@ -52,7 +52,7 @@ func main() {
 
 func ticker() {
 	for {
-		time.Sleep(time.Millisecond * 16)
+		time.Sleep(time.Millisecond * 160)
 		wid.GuiLock.Lock()
 		progress = float32(int32((progress*1000)+5)%1000) / 1000.0
 		wid.GuiLock.Unlock()

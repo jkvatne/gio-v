@@ -40,7 +40,9 @@ func (fit Fit) scale(cs layout.Constraints, pos layout.Direction, dims layout.Di
 		dims.Baseline += offset.Y
 		return dims, f32.Affine2D{}.Offset(layout.FPt(offset))
 	}
-
+	if cs.Min.X > 0 {
+		cs.Max.X = cs.Min.X
+	}
 	scale := f32.Point{
 		X: float32(cs.Max.X) / float32(dims.Size.X),
 		Y: float32(cs.Max.Y) / float32(dims.Size.Y),

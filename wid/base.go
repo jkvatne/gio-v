@@ -312,7 +312,7 @@ func (b Base) CheckDisable(gtx C) {
 	if b.disabler != nil {
 		GuiLock.RLock()
 		if *b.disabler {
-			gtx = gtx.Disabled()
+			_ = gtx.Disabled()
 		}
 		GuiLock.RUnlock()
 	}
