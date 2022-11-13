@@ -33,10 +33,10 @@ const (
 )
 
 var (
-	mouseX     float32
-	mouseY     float32
-	winX       int
-	winY       int
+	MouseX     float32
+	MouseY     float32
+	WinX       int
+	WinY       int
 	GuiLock    sync.RWMutex
 	invalidate chan struct{}
 )
@@ -345,12 +345,12 @@ func UpdateMousePos(gtx C, win *app.Window, size image.Point) {
 	for _, gtxEvent := range gtx.Events(win) {
 		switch e := gtxEvent.(type) {
 		case pointer.Event:
-			mouseX = e.Position.X
-			mouseY = e.Position.Y
+			MouseX = e.Position.X
+			MouseY = e.Position.Y
 		}
 	}
-	winX = size.X
-	winY = size.Y
+	WinX = size.X
+	WinY = size.Y
 }
 
 func Invalidate() {

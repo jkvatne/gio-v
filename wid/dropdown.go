@@ -4,6 +4,8 @@ import (
 	"image"
 	"image/color"
 
+	"gioui.org/f32"
+
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -52,7 +54,7 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 		b.Items = append(b.Items, b.option(th, i))
 		b.itemHovered = append(b.itemHovered, false)
 	}
-	b.list = List(th, Overlay, b.Items...)
+	b.list = List(th, Overlay, f32.Point{}, b.Items...)
 	b.cornerRadius = th.BorderCornerRadius
 	b.padding = th.DropDownPadding
 	for _, option := range options {
@@ -173,7 +175,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 
 		b.setHovered(idx)
 		if !oldVisible {
-			b.above = int(mouseY) > (winY - d.Size.Y)
+			b.above = int(MouseY) > (WinY - d.Size.Y)
 		}
 
 		macro = op.Record(gtx.Ops)
