@@ -272,29 +272,29 @@ func List(th *Theme, a AnchorStrategy, Size f32.Point, widgets ...layout.Widget)
 
 // Layout the list and its scrollbar.
 func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
-	originalConstraints := gtx.Constraints
 	// Determine how much space the scrollbar occupies.
 	hBarWidth := gtx.Dp(l.HScrollBar.Width())
 	vBarWidth := gtx.Dp(l.VScrollBar.Width())
 
 	// Reserve space for the scrollbars using the gtx constraints.
+	c := gtx
 	if l.AnchorStrategy == Occupy {
-		gtx.Constraints.Max.X -= vBarWidth
-		gtx.Constraints.Min.X -= vBarWidth
-		gtx.Constraints.Max.Y -= hBarWidth
-		gtx.Constraints.Min.Y -= hBarWidth
+		c.Constraints.Max.X -= vBarWidth
+		c.Constraints.Min.X -= vBarWidth
+		c.Constraints.Max.Y -= hBarWidth
+		c.Constraints.Min.Y -= hBarWidth
 	}
 	// Draw the list
 	macro := op.Record(gtx.Ops)
-	c := gtx
 	// Must set Max.X to infinity to allow rows wider than the frame.
 	c.Constraints.Max.X = inf
 	listDims := l.list.Layout(c, length, w)
 	call := macro.Stop()
-	cl := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
 
-	gtx.Constraints = originalConstraints
-	gtx.Constraints.Min = gtx.Constraints.Max
+	gtx.Constraints.Max.X -= vBarWidth
+	cl := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
+	c.Constraints.Min = c.Constraints.Max
+	gtx.Constraints.Max.X += vBarWidth
 
 	pt := image.Pt(-l.Hpos, 0)
 	trans := op.Offset(pt).Push(gtx.Ops)
@@ -315,9 +315,9 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 		c := gtx
 		start, end := fromListPosition(l.list.Position, length, listDims.Size.Y)
 		if l.AnchorStrategy == Overlay {
-			c.Constraints.Max.Y -= hBarWidth
+			// c.Constraints.Max.Y -= hBarWidth
 		} else {
-			c.Constraints.Max.X += vBarWidth
+			// c.Constraints.Max.X += vBarWidth
 		}
 		c.Constraints.Min = c.Constraints.Max
 		layout.E.Layout(c, func(gtx layout.Context) layout.Dimensions {
@@ -329,7 +329,7 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	if hBarWidth > 0 {
 		c := gtx
 		start := float32(l.Hpos) / float32(totalWidth)
-		end := start + float32(c.Constraints.Max.X)/float32(totalWidth)
+		end := start + float32(c.Constraints.Max.X)/float32(totalWidth+vBarWidth)
 		if l.AnchorStrategy == Occupy {
 			// c.Constraints.Max.Y += hBarWidth
 		}
@@ -341,7 +341,7 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 		delta := l.HScrollBar.Scrollbar.ScrollDistance()
 		if delta != 0 {
 			deltaPx := int(math.Round(float64(float32(totalWidth) * delta)))
-			l.Hpos = limit(l.Hpos+deltaPx, 0, totalWidth-gtx.Constraints.Max.X)
+			l.Hpos = limit(l.Hpos+deltaPx, 0, totalWidth-gtx.Constraints.Max.X+vBarWidth)
 		}
 	}
 

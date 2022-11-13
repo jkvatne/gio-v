@@ -59,7 +59,7 @@ var data = []person{
 }
 
 func main() {
-	makePersons(20)
+	makePersons(12)
 	theme = *wid.NewTheme(gofont.Collection(), 24)
 	onWinChange()
 	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500))), &form)
@@ -211,7 +211,7 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 		)
 	*/
 
-	return wid.List(th, wid.Overlay, f32.Point{1.0, 1.0}, gridLines...)
+	return wid.List(th, wid.Occupy, f32.Point{1.0, 1.0}, gridLines...)
 	/*
 		return wid.List(th, wid.Occupy, f32.Point{1.0, 1.0},
 			wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
