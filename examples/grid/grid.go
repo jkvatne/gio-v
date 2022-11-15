@@ -183,10 +183,22 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 	}
 
 	// Make form
-	var lines []layout.Widget
+	var lines []layout.FlexChild
+	lines = append(lines, layout.Rigid(wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer))))
+	lines = append(lines, layout.Flexed(0.8, wid.List(th, wid.Occupy, f32.Point{1.0, 0.0}, gridLines...)))
+	lines = append(lines, layout.Rigid(func(gtx wid.C) wid.D {
+		return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceAround}.Layout(gtx,
+			layout.Rigid(wid.Button(th, "Update")))
+	}))
+
+	return func(gtx wid.C) wid.D {
+		return layout.Flex{Axis: layout.Vertical, Alignment: layout.Start, Spacing: layout.SpaceEnd}.Layout(gtx, lines...)
+	}
+}
+
+/*
 	lines = append(lines,
 		wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		/*
 			wid.Label(th, "Different wighting and size of columns"),
 			wid.Row(th, nil, nil,
 				wid.RadioButton(th, &Alternative, "Wide", "Wide", wid.Do(onWinChange)),
@@ -203,7 +215,7 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 					wid.RadioButton(th, &fontSize, "Large", "Large", wid.Do(onFontChange)),
 					wid.RadioButton(th, &fontSize, "Medium", "Medium", wid.Do(onFontChange)),
 					wid.RadioButton(th, &fontSize, "Small", "Small", wid.Do(onFontChange)),
-				), */
+				),
 		// wid.Space(20),
 		// wid.Edit(th, wid.Hint("Line editor")),
 		// wid.DropDown(th, &dropDownValue1, []string{"Option 1 with long text as shown here", "Option 2", "Option 3"}, wid.Lbl("Dropdown 1")),
@@ -217,3 +229,4 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 	// return wid.List(th, wid.Occupy, f32.Point{1.0, 1.0}, lines...)
 	return wid.Col(lines...)
 }
+*/
