@@ -9,6 +9,8 @@ import (
 	"gio-v/wid"
 	"sort"
 
+	"gioui.org/op/paint"
+
 	"gioui.org/f32"
 
 	"gioui.org/app"
@@ -149,12 +151,14 @@ const gw = 2.0 / 1.75
 
 // Grid is a widget that lays out the grid. This is all that is needed.
 func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []float32) layout.Widget {
+
+	bgColor := th.Bg(wid.Canvas)
+
 	nameIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
 	addressIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
 	ageIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
 
 	// Configure a grid with headings and several rows
-	bgColor := th.Bg(wid.PrimaryContainer)
 	var gridLines []layout.Widget
 	gridLines = append(gridLines,
 		wid.GridRow(th, &bgColor, gw, colWidths,
@@ -185,13 +189,15 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 	// Make form
 	var lines []layout.FlexChild
 	lines = append(lines, layout.Rigid(wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer))))
-	lines = append(lines, layout.Flexed(0.8, wid.List(th, wid.Overlay, f32.Point{1.0, 0.0}, gridLines...)))
+	lines = append(lines, layout.Flexed(0.8, wid.List(th, anchor, f32.Point{1.0, 0.0}, gridLines...)))
 	lines = append(lines, layout.Rigid(func(gtx wid.C) wid.D {
 		return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceAround}.Layout(gtx,
 			layout.Rigid(wid.Button(th, "Update")))
 	}))
 
 	return func(gtx wid.C) wid.D {
+		bgColor := th.Bg(wid.Canvas)
+		paint.Fill(gtx.Ops, bgColor)
 		return layout.Flex{Axis: layout.Vertical, Alignment: layout.Start, Spacing: layout.SpaceEnd}.Layout(gtx, lines...)
 	}
 }

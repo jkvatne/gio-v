@@ -304,7 +304,7 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	}
 	l.HorVisible = hBarWidth > 0
 
-	if l.AnchorStrategy == Overlay {
+	if l.AnchorStrategy == Occupy {
 		gtx.Constraints.Max.X -= vBarWidth
 		gtx.Constraints.Max.Y -= hBarWidth
 	}
