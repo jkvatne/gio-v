@@ -103,7 +103,6 @@ func (s ScrollbarStyle) Width() unit.Dp {
 
 // Layout the scrollbar.
 func (s ScrollbarStyle) Layout(gtx C, axis layout.Axis, viewportStart, viewportEnd float32) D {
-	// if !rangeIsScrollable(viewportStart, viewportEnd) {
 	if viewportEnd-viewportStart >= 1 {
 		return D{}
 	}
@@ -157,8 +156,9 @@ func (s ScrollbarStyle) layout(gtx C, axis layout.Axis, viewportStart, viewportE
 			defer pointer.PassOp{}.Push(gtx.Ops).Pop()
 			defer pointerArea.Push(gtx.Ops).Pop()
 			s.Scrollbar.AddTrack(gtx.Ops)
-
-			paint.FillShape(gtx.Ops, s.Track.Color, clip.Rect(area).Op())
+			if s.Scrollbar.IndicatorHovered() {
+				paint.FillShape(gtx.Ops, s.Track.Color, clip.Rect(area).Op())
+			}
 			return D{}
 		}),
 		layout.Stacked(func(gtx C) D {
@@ -226,6 +226,7 @@ type ListStyle struct {
 	theme      *Theme
 	Hpos       int
 	HorTotal   int
+	HorVisible bool
 	VScrollBar ScrollbarStyle
 	HScrollBar ScrollbarStyle
 	AnchorStrategy
@@ -233,7 +234,6 @@ type ListStyle struct {
 
 // List makes a vertical listp
 func List(th *Theme, a AnchorStrategy, Size f32.Point, widgets ...layout.Widget) layout.Widget {
-	node := makeNode(widgets)
 	listStyle := ListStyle{
 		list:           &layout.List{Axis: layout.Vertical},
 		VScrollBar:     MakeScrollbarStyle(th),
@@ -258,8 +258,8 @@ func List(th *Theme, a AnchorStrategy, Size f32.Point, widgets ...layout.Widget)
 		cl.Pop()
 
 		var ch []layout.Widget
-		for i := 0; i < len(node.children); i++ {
-			ch = append(ch, *node.children[i].w)
+		for i := 0; i < len(widgets); i++ {
+			ch = append(ch, widgets[i])
 		}
 		return listStyle.Layout(
 			gtx,
@@ -276,13 +276,11 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	// Determine how much space the scrollbar occupies.
 	hBarWidth := gtx.Dp(l.HScrollBar.Width())
 	vBarWidth := gtx.Dp(l.VScrollBar.Width())
-	// Reserve space for the scrollbars using the gtx constraints.
-	c := gtx
+
 	// Must set Max.X to infinity to allow rows wider than the frame.
+	c := gtx
 	c.Constraints.Max.X = inf
-	if l.HorTotal > gtx.Constraints.Max.X {
-		c.Constraints.Max.Y -= hBarWidth
-	}
+
 	// Draw the list
 	macro := op.Record(gtx.Ops)
 	listDims := l.list.Layout(c, length, w)
@@ -300,19 +298,20 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 			vBarWidth = 0
 		}
 	}
-	if l.AnchorStrategy == Occupy {
-		c.Constraints.Max.X -= vBarWidth
-		c.Constraints.Min.X -= vBarWidth
-		c.Constraints.Max.Y -= hBarWidth
-		c.Constraints.Min.Y -= hBarWidth
-	}
+	l.HorVisible = hBarWidth > 0
 
-	gtx.Constraints.Max.X -= vBarWidth
-	gtx.Constraints.Max.Y -= hBarWidth
+	if l.AnchorStrategy == Occupy {
+		gtx.Constraints.Max.X -= vBarWidth
+		gtx.Constraints.Max.Y -= hBarWidth
+	}
 	cl := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
 	c.Constraints.Min = c.Constraints.Max
-	gtx.Constraints.Max.X += vBarWidth
-
+	if l.AnchorStrategy == Occupy {
+		gtx.Constraints.Max.X += vBarWidth
+	}
+	if l.Hpos+gtx.Constraints.Max.X > l.HorTotal {
+		l.Hpos = Max(l.HorTotal-gtx.Constraints.Max.X+vBarWidth, 0)
+	}
 	pt := image.Pt(-l.Hpos, 0)
 	trans := op.Offset(pt).Push(gtx.Ops)
 	call.Add(gtx.Ops)
@@ -336,6 +335,15 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 
 	// Draw the Horizontal scrollbar
 	if hBarWidth > 0 {
+		delta := l.HScrollBar.Scrollbar.ScrollDistance()
+		if delta != 0 {
+			deltaPx := int(math.Round(float64(float32(l.HorTotal) * delta)))
+			if l.AnchorStrategy == Occupy {
+				l.Hpos = limit(l.Hpos+deltaPx, 0, l.HorTotal-gtx.Constraints.Max.X+vBarWidth)
+			} else {
+				l.Hpos = limit(l.Hpos+deltaPx, 0, l.HorTotal-gtx.Constraints.Max.X)
+			}
+		}
 		c := gtx
 		start := float32(l.Hpos) / float32(l.HorTotal)
 		end := start + float32(c.Constraints.Max.X)/float32(l.HorTotal)
@@ -343,17 +351,14 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 			c.Constraints.Max.Y += hBarWidth
 		}
 		c.Constraints.Min = c.Constraints.Max
-		layout.S.Layout(gtx, func(gtx C) D {
+		layout.S.Layout(c, func(gtx C) D {
 			gtx.Constraints.Min = gtx.Constraints.Max
-			return l.HScrollBar.Layout(gtx, layout.Horizontal, start, end)
+			return l.HScrollBar.Layout(c, layout.Horizontal, start, end)
 		})
-		delta := l.HScrollBar.Scrollbar.ScrollDistance()
-		if delta != 0 {
-			deltaPx := int(math.Round(float64(float32(l.HorTotal) * delta)))
-			l.Hpos = limit(l.Hpos+deltaPx, 0, l.HorTotal-gtx.Constraints.Max.X+vBarWidth)
-		}
 	}
-
+	// Increase the size to account for the space occupied by the scrollbar.
+	listDims.Size.X += vBarWidth
+	// listDims.Size.Y += hBarWidth
 	return listDims
 }
 

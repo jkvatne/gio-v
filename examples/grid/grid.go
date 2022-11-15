@@ -66,7 +66,7 @@ func main() {
 	app.Main()
 }
 
-var Style = wid.Occupy
+var Style = wid.Overlay
 
 func onWinChange() {
 	var f layout.Widget
@@ -183,10 +183,10 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 	}
 
 	// Make form
-	/*
-		var lines []layout.Widget
-		lines = append(lines,
-			wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
+	var lines []layout.Widget
+	lines = append(lines,
+		wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
+		/*
 			wid.Label(th, "Different wighting and size of columns"),
 			wid.Row(th, nil, nil,
 				wid.RadioButton(th, &Alternative, "Wide", "Wide", wid.Do(onWinChange)),
@@ -196,31 +196,24 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 				wid.RadioButton(th, &Alternative, "Native", "Native", wid.Do(onWinChange)),
 			),
 			wid.Space(5),
-			wid.Label(th, "Select font size"),
-			wid.Row(th, nil, nil,
-				wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onWinChange)),
-				wid.Label(th, ""),
-				wid.RadioButton(th, &fontSize, "Large", "Large", wid.Do(onFontChange)),
-				wid.RadioButton(th, &fontSize, "Medium", "Medium", wid.Do(onFontChange)),
-				wid.RadioButton(th, &fontSize, "Small", "Small", wid.Do(onFontChange)),
-			),
-			// wid.Space(20),
-			// wid.Edit(th, wid.Hint("Line editor")),
-			// wid.DropDown(th, &dropDownValue1, []string{"Option 1 with long text as shown here", "Option 2", "Option 3"}, wid.Lbl("Dropdown 1")),
-			wid.List(th, Style, 200, gridLines...),
-		)
-	*/
-
-	return wid.List(th, wid.Occupy, f32.Point{1.0, 1.0}, gridLines...)
-	/*
-		return wid.List(th, wid.Occupy, f32.Point{1.0, 1.0},
-			wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-			wid.List(th, wid.Occupy, f32.Point{1.0, 0.7}, gridLines...),
-			wid.Row(th, nil, []float32{0.9, 0, 0.9},
-				wid.Space(1),
-				wid.Button(th, "Update"),
-				wid.Space(1),
-			),
-		)
-	*/
+				wid.Label(th, "Select font size"),
+				wid.Row(th, nil, nil,
+					wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onWinChange)),
+					wid.Label(th, ""),
+					wid.RadioButton(th, &fontSize, "Large", "Large", wid.Do(onFontChange)),
+					wid.RadioButton(th, &fontSize, "Medium", "Medium", wid.Do(onFontChange)),
+					wid.RadioButton(th, &fontSize, "Small", "Small", wid.Do(onFontChange)),
+				), */
+		// wid.Space(20),
+		// wid.Edit(th, wid.Hint("Line editor")),
+		// wid.DropDown(th, &dropDownValue1, []string{"Option 1 with long text as shown here", "Option 2", "Option 3"}, wid.Lbl("Dropdown 1")),
+		wid.List(th, wid.Overlay, f32.Point{1.0, 350.0}, gridLines...),
+		wid.Row(th, nil, []float32{1.0, 1.0},
+			wid.Space(1),
+			wid.Button(th, "Update"),
+			wid.Space(1),
+		),
+	)
+	// return wid.List(th, wid.Occupy, f32.Point{1.0, 1.0}, lines...)
+	return wid.Col(lines...)
 }
