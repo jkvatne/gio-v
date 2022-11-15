@@ -280,12 +280,16 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	// Must set Max.X to infinity to allow rows wider than the frame.
 	c := gtx
 	c.Constraints.Max.X = inf
-
+	if l.HorVisible && l.AnchorStrategy == Occupy {
+		c.Constraints.Max.Y -= hBarWidth
+	}
 	// Draw the list
 	macro := op.Record(gtx.Ops)
 	listDims := l.list.Layout(c, length, w)
 	call := macro.Stop()
-
+	if l.HorVisible && l.AnchorStrategy == Occupy {
+		listDims.Size.Y += hBarWidth
+	}
 	l.HorTotal = listDims.Size.X
 	totalHeight := l.list.Position.Length
 	if l.HorTotal <= gtx.Constraints.Max.X {
@@ -300,7 +304,7 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	}
 	l.HorVisible = hBarWidth > 0
 
-	if l.AnchorStrategy == Occupy {
+	if l.AnchorStrategy == Overlay {
 		gtx.Constraints.Max.X -= vBarWidth
 		gtx.Constraints.Max.Y -= hBarWidth
 	}

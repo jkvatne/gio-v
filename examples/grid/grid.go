@@ -185,7 +185,7 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 	// Make form
 	var lines []layout.FlexChild
 	lines = append(lines, layout.Rigid(wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer))))
-	lines = append(lines, layout.Flexed(0.8, wid.List(th, wid.Occupy, f32.Point{1.0, 0.0}, gridLines...)))
+	lines = append(lines, layout.Flexed(0.8, wid.List(th, wid.Overlay, f32.Point{1.0, 0.0}, gridLines...)))
 	lines = append(lines, layout.Rigid(func(gtx wid.C) wid.D {
 		return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceAround}.Layout(gtx,
 			layout.Rigid(wid.Button(th, "Update")))
