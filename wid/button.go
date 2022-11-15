@@ -4,6 +4,7 @@
 package wid
 
 import (
+	"gioui.org/io/pointer"
 	"image"
 	"image/color"
 	"math"
@@ -11,8 +12,6 @@ import (
 	"gioui.org/io/semantic"
 
 	"gioui.org/unit"
-
-	"gioui.org/io/pointer"
 
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -137,15 +136,16 @@ func (b *ButtonDef) Layout(gtx C) D {
 			}
 			// Handle clickable pointer/keyboard inputs
 			b.HandleEvents(gtx)
+			b.HandleClick()
 			dims := b.layout(gtx)
+			b.SetupEventHandlers(gtx, dims.Size)
 			dims = b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
 				return dims
 			})
-			b.SetupEventHandlers(gtx, dims.Size)
 			return dims
 		})
-	b.HandleClick()
 	pointer.CursorPointer.Add(gtx.Ops)
+
 	return dims
 }
 
@@ -154,6 +154,7 @@ func (b *ButtonDef) layout(gtx C) D {
 	macro := op.Record(gtx.Ops)
 	cgtx := gtx
 	cgtx.Constraints.Min.X = 0
+	cgtx.Constraints.Min.Y = 0
 	dims := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontSize), *b.Text)
 	call := macro.Stop()
 	// Icon size is equal to label height

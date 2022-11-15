@@ -338,9 +338,9 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.EditPadding = t.LabelPadding
 	// Buttons
 	// ButtonPadding is the margin outside a button, giving distance to other elements
-	t.ButtonPadding = layout.Inset{Top: 4, Right: 4, Bottom: 4, Left: 4}
+	t.ButtonPadding = layout.Inset{Top: 8, Right: 4, Bottom: 8, Left: 4}
 	t.ButtonCornerRadius = unit.Dp(t.TextSize) * 999 // Force rounded buttons
-	t.ButtonLabelPadding = layout.Inset{Top: 4, Right: 4, Bottom: 4, Left: 4}
+	t.ButtonLabelPadding = layout.Inset{Top: 2, Right: 4, Bottom: 2, Left: 4}
 	t.IconSize = unit.Dp(t.TextSize) * 1.5
 	// Tooltip
 	t.TooltipInset = layout.UniformInset(unit.Dp(10))

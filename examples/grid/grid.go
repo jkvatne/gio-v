@@ -13,6 +13,10 @@ import (
 
 	"gioui.org/f32"
 
+	"gioui.org/widget/material"
+
+	"gioui.org/widget"
+
 	"gioui.org/app"
 	"gioui.org/font/gofont"
 	"golang.org/x/exp/shiny/materialdesign/icons"
@@ -31,10 +35,14 @@ var (
 	smallColWidth = []float32{0, 13, 13, 12, 12}
 	fracColWidth  = []float32{0, 0.3, 0.3, .2, .2}
 	selectAll     bool
+	doOccupy      bool
 	nameIcon      *wid.Icon
 	addressIcon   *wid.Icon
 	ageIcon       *wid.Icon
 	dir           bool
+	button        = new(widget.Clickable)
+	mth           = material.NewTheme(gofont.Collection())
+	test          = 1
 )
 
 type person struct {
@@ -68,22 +76,20 @@ func main() {
 	app.Main()
 }
 
-var Style = wid.Overlay
-
 func onWinChange() {
 	var f layout.Widget
 	if Alternative == "Wide" {
-		f = Grid(&theme, Style, data, wideColWidth)
+		f = Grid(&theme, data, wideColWidth)
 	} else if Alternative == "Narrow" {
-		f = Grid(&theme, Style, data, smallColWidth)
+		f = Grid(&theme, data, smallColWidth)
 	} else if Alternative == "Fractional" {
-		f = Grid(&theme, Style, data, fracColWidth)
+		f = Grid(&theme, data, fracColWidth)
 	} else if Alternative == "Equal" {
-		f = Grid(&theme, Style, data, wid.SpaceDistribute)
+		f = Grid(&theme, data, wid.SpaceDistribute)
 	} else if Alternative == "Native" {
-		f = Grid(&theme, Style, data, wid.SpaceClose)
+		f = Grid(&theme, data, wid.SpaceClose)
 	} else {
-		f = Grid(&theme, Style, data, wid.SpaceDistribute)
+		f = Grid(&theme, data, wid.SpaceDistribute)
 	}
 	wid.GuiLock.Lock()
 	form = f
@@ -150,8 +156,11 @@ func onCheck() {
 const gw = 2.0 / 1.75
 
 // Grid is a widget that lays out the grid. This is all that is needed.
-func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []float32) layout.Widget {
-
+func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
+	anchor := wid.Overlay
+	if doOccupy {
+		anchor = wid.Occupy
+	}
 	bgColor := th.Bg(wid.Canvas)
 
 	nameIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
@@ -185,47 +194,29 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 			))
 
 	}
-
-	// Make form
-	var lines []layout.FlexChild
-	lines = append(lines, layout.Rigid(wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer))))
-	lines = append(lines, layout.Flexed(0.8, wid.List(th, anchor, f32.Point{1.0, 0.0}, gridLines...)))
-	lines = append(lines, layout.Rigid(func(gtx wid.C) wid.D {
-		return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle, Spacing: layout.SpaceAround}.Layout(gtx,
-			layout.Rigid(wid.Button(th, "Update")))
-	}))
-
-	return func(gtx wid.C) wid.D {
-		bgColor := th.Bg(wid.Canvas)
-		paint.Fill(gtx.Ops, bgColor)
-		return layout.Flex{Axis: layout.Vertical, Alignment: layout.Start, Spacing: layout.SpaceEnd}.Layout(gtx, lines...)
-	}
-}
-
-/*
+	var lines []layout.Widget
 	lines = append(lines,
-		wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-			wid.Label(th, "Different wighting and size of columns"),
-			wid.Row(th, nil, nil,
-				wid.RadioButton(th, &Alternative, "Wide", "Wide", wid.Do(onWinChange)),
-				wid.RadioButton(th, &Alternative, "Narrow", "Narrow", wid.Do(onWinChange)),
-				wid.RadioButton(th, &Alternative, "Fractional", "Fractional", wid.Do(onWinChange)),
-				wid.RadioButton(th, &Alternative, "Equal", "Equal", wid.Do(onWinChange)),
-				wid.RadioButton(th, &Alternative, "Native", "Native", wid.Do(onWinChange)),
-			),
-			wid.Space(5),
-				wid.Label(th, "Select font size"),
-				wid.Row(th, nil, nil,
-					wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onWinChange)),
-					wid.Label(th, ""),
-					wid.RadioButton(th, &fontSize, "Large", "Large", wid.Do(onFontChange)),
-					wid.RadioButton(th, &fontSize, "Medium", "Medium", wid.Do(onFontChange)),
-					wid.RadioButton(th, &fontSize, "Small", "Small", wid.Do(onFontChange)),
-				),
+		wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.Canvas)),
+		wid.Label(th, "Different wighting and size of columns"),
+		wid.Row(th, nil, nil,
+			wid.RadioButton(th, &Alternative, "Wide", "Wide", wid.Do(onWinChange)),
+			wid.RadioButton(th, &Alternative, "Narrow", "Narrow", wid.Do(onWinChange)),
+			wid.RadioButton(th, &Alternative, "Fractional", "Fractional", wid.Do(onWinChange)),
+			wid.RadioButton(th, &Alternative, "Equal", "Equal", wid.Do(onWinChange)),
+			wid.RadioButton(th, &Alternative, "Native", "Native", wid.Do(onWinChange)),
+		),
+		wid.Row(th, nil, nil,
+			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onWinChange)),
+			wid.Checkbox(th, "Scroll-bar occupy", wid.Bool(&doOccupy), wid.Do(onWinChange)),
+			wid.Label(th, ""),
+			// wid.RadioButton(th, &fontSize, "Large", "Large", wid.Do(onFontChange)),
+			// wid.RadioButton(th, &fontSize, "Medium", "Medium", wid.Do(onFontChange)),
+			// wid.RadioButton(th, &fontSize, "Small", "Small", wid.Do(onFontChange)),
+		),
 		// wid.Space(20),
 		// wid.Edit(th, wid.Hint("Line editor")),
 		// wid.DropDown(th, &dropDownValue1, []string{"Option 1 with long text as shown here", "Option 2", "Option 3"}, wid.Lbl("Dropdown 1")),
-		wid.List(th, wid.Overlay, f32.Point{1.0, 350.0}, gridLines...),
+		wid.List(th, anchor, f32.Point{1.0, 350.0}, gridLines...),
 		wid.Row(th, nil, []float32{1.0, 1.0},
 			wid.Space(1),
 			wid.Button(th, "Update"),
@@ -233,6 +224,10 @@ func Grid(th *wid.Theme, anchor wid.AnchorStrategy, data []person, colWidths []f
 		),
 	)
 	// return wid.List(th, wid.Occupy, f32.Point{1.0, 1.0}, lines...)
-	return wid.Col(lines...)
+	return func(gtx layout.Context) layout.Dimensions {
+		bgColor := th.Bg(wid.Canvas)
+		paint.Fill(gtx.Ops, bgColor)
+		return wid.Col([]float32{0, 0, 0, 0, 1, 0}, lines...)(gtx)
+		// return wid.List(th, anchor, f32.Pt(1, 1), lines...)(gtx)
+	}
 }
-*/
