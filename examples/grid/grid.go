@@ -13,10 +13,6 @@ import (
 
 	"gioui.org/f32"
 
-	"gioui.org/widget/material"
-
-	"gioui.org/widget"
-
 	"gioui.org/app"
 	"gioui.org/font/gofont"
 	"golang.org/x/exp/shiny/materialdesign/icons"
@@ -40,9 +36,9 @@ var (
 	addressIcon   *wid.Icon
 	ageIcon       *wid.Icon
 	dir           bool
-	button        = new(widget.Clickable)
-	mth           = material.NewTheme(gofont.Collection())
-	test          = 1
+	// button        = new(widget.Clickable)
+	// mth           = material.NewTheme(gofont.Collection())
+	// test          = 1
 )
 
 type person struct {
