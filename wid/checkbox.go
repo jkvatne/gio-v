@@ -110,7 +110,7 @@ func (c *CheckBoxDef) Layout(gtx layout.Context) layout.Dimensions {
 	macro := op.Record(gtx.Ops)
 	gtx.Constraints.Min.Y = 0
 	gtx.Constraints.Min.X = 0
-	labelDim := widget.Label{}.Layout(gtx, c.th.Shaper, *c.Font, c.TextSize, c.Label)
+	labelDim := widget.Label{MaxLines: 1}.Layout(gtx, c.th.Shaper, *c.Font, c.TextSize, c.Label)
 	drawLabel := macro.Stop()
 	dx := labelDim.Size.Y / 6
 	dy := gtx.Dp(c.padding.Top + 1)
@@ -131,8 +131,9 @@ func (c *CheckBoxDef) Layout(gtx layout.Context) layout.Dimensions {
 	if gtx.Queue == nil {
 		col = Disabled(col)
 	}
-	gtx.Constraints.Min = image.Point{X: labelDim.Size.Y}
-	icon.Layout(gtx, col)
+	cgtx := gtx
+	cgtx.Constraints.Min = image.Point{X: labelDim.Size.Y}
+	icon.Layout(cgtx, col)
 	dims := layout.Dimensions{
 		Size: image.Point{
 			X: labelDim.Size.Y + gtx.Dp(c.padding.Left+c.padding.Right),
