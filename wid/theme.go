@@ -116,7 +116,7 @@ func (th *Theme) Fg(kind UIRole) color.NRGBA {
 	} else {
 		switch kind {
 		case Canvas:
-			return Tone(th.Pallet.NeutralColor, 90)
+			return Tone(th.Pallet.NeutralColor, 80)
 		case Surface:
 			return Tone(th.Pallet.NeutralColor, 90)
 		case SurfaceVariant:
@@ -329,9 +329,9 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.Elevation = unit.Dp(t.TextSize) * 0.5
 	// Text
 	t.LabelPadding = layout.Inset{
-		Top:    unit.Dp(t.TextSize) * 0.3,
+		Top:    unit.Dp(t.TextSize) * 0.2,
 		Right:  unit.Dp(t.TextSize) * 0.3,
-		Bottom: unit.Dp(t.TextSize) * 0.3,
+		Bottom: unit.Dp(t.TextSize) * 0.2,
 		Left:   unit.Dp(t.TextSize) * 0.4}
 	t.DropDownPadding = t.LabelPadding
 	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)

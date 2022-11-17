@@ -277,7 +277,7 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 	hdim := D{}
 	if header != nil {
 		trans := op.Offset(image.Pt(-l.Hpos, 0)).Push(gtx.Ops)
-		hdim = header(gtx)
+		hdim = header(c)
 		trans.Pop()
 	}
 

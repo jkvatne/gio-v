@@ -46,7 +46,7 @@ func main() {
 	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
 	form = demo(currentTheme)
 	go wid.Run(win, &form, currentTheme)
-	// OBS go ticker()
+	go ticker()
 	app.Main()
 }
 

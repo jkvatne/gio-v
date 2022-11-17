@@ -100,6 +100,7 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		Font:      text.Font{Weight: text.Medium, Style: text.Regular},
 		MaxLines:  0,
 	}
+	w.Font = th.DefaultFont
 	w.padding = th.LabelPadding
 	w.th = th
 	// Default to Canvas role (typically black for LightMode and white for DarkMode
@@ -118,8 +119,6 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		defer clip.Rect(image.Rectangle{Max: dim.Size}).Push(gtx.Ops).Pop()
 		if w.bgColor != nil {
 			paint.Fill(gtx.Ops, w.Bg())
-		} else {
-			paint.Fill(gtx.Ops, w.th.Bg(w.role))
 		}
 		call.Add(gtx.Ops)
 		return dim

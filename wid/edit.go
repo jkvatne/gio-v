@@ -49,9 +49,6 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	for _, option := range options {
 		option.apply(e)
 	}
-	if e.borderThickness > 0 {
-		e.padding = th.EditPadding
-	}
 	if e.value != nil {
 		e.Editor.SetText(*e.value)
 	}
@@ -67,7 +64,7 @@ func (e *EditDef) Layout(gtx C) D {
 	if e.label != "" {
 		c := gtx
 		c.Constraints.Min.X = gtx.Sp(e.LabelSize)
-		paint.ColorOp{Color: e.th.Fg(Canvas)}.Add(gtx.Ops)
+		// paint.ColorOp{Color: e.th.Fg(Canvas)}.Add(gtx.Ops)
 		ofs := op.Offset(image.Pt(0, gtx.Dp(p.Top))).Push(gtx.Ops)
 		labelDims = widget.Label{Alignment: text.End}.Layout(c, e.th.Shaper, *e.Font, e.th.TextSize, e.label)
 		ofs.Pop()

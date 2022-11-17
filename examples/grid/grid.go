@@ -9,8 +9,6 @@ import (
 	"gio-v/wid"
 	"sort"
 
-	"gioui.org/op/paint"
-
 	"gioui.org/app"
 	"gioui.org/font/gofont"
 	"golang.org/x/exp/shiny/materialdesign/icons"
@@ -21,7 +19,7 @@ import (
 
 var (
 	form        layout.Widget
-	theme       wid.Theme
+	theme       *wid.Theme
 	Alternative = "Wide"
 	// Column widths are given in units of approximately one average character width (en).
 	// A witdth of zero means the widget's natural size should be used (f.ex. checkboxes)
@@ -64,7 +62,7 @@ var data = []person{
 
 func main() {
 	makePersons(12)
-	theme = *wid.NewTheme(gofont.Collection(), 24)
+	theme = wid.NewTheme(gofont.Collection(), 24)
 	onWinChange()
 	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500))), &form, theme)
 	app.Main()
@@ -73,17 +71,17 @@ func main() {
 func onWinChange() {
 	var f layout.Widget
 	if Alternative == "Wide" {
-		f = Grid(&theme, data, wideColWidth)
+		f = Grid(theme, data, wideColWidth)
 	} else if Alternative == "Narrow" {
-		f = Grid(&theme, data, smallColWidth)
+		f = Grid(theme, data, smallColWidth)
 	} else if Alternative == "Fractional" {
-		f = Grid(&theme, data, fracColWidth)
+		f = Grid(theme, data, fracColWidth)
 	} else if Alternative == "Equal" {
-		f = Grid(&theme, data, wid.SpaceDistribute)
+		f = Grid(theme, data, wid.SpaceDistribute)
 	} else if Alternative == "Native" {
-		f = Grid(&theme, data, wid.SpaceClose)
+		f = Grid(theme, data, wid.SpaceClose)
 	} else {
-		f = Grid(&theme, data, wid.SpaceDistribute)
+		f = Grid(theme, data, wid.SpaceDistribute)
 	}
 	wid.GuiLock.Lock()
 	form = f
@@ -180,15 +178,15 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 			wid.GridRow(th, &bgColor, gw, colWidths,
 				wid.Checkbox(th, "", wid.Bool(&data[i].Selected)),
 				wid.Label(th, &data[i].Name),
-				wid.Edit(th, wid.Var(&data[i].Address), wid.Border(0)),
+				wid.Edit(th, wid.Var(&data[i].Address), wid.Border(0), wid.Pads(0)),
 				wid.Label(th, &data[i].Age, wid.Dp(2), wid.Right()),
 				wid.DropDown(th, &data[i].Status, []string{"Male", "Female", "Other"}, wid.Border(0)),
 			))
 
 	}
 	var lines = []layout.Widget{
-		wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.Canvas)),
-		wid.Label(th, "Different wighting and size of columns"),
+		// wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.Canvas)),
+		// wid.Label(th, "Different wighting and size of columns"),
 		wid.Row(th, nil, nil,
 			wid.RadioButton(th, &Alternative, "Wide", "Wide Table", wid.Do(onWinChange)),
 			wid.RadioButton(th, &Alternative, "Narrow", "Narrow Table", wid.Do(onWinChange)),
@@ -216,8 +214,8 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 
 	// return wid.List(th, wid.Occupy, f32.Point{1.0, 1.0}, lines...)
 	return func(gtx layout.Context) layout.Dimensions {
-		bgColor := th.Bg(wid.Canvas)
-		paint.Fill(gtx.Ops, bgColor)
+		// bgColor := th.Bg(wid.Canvas)
+		// paint.Fill(gtx.Ops, bgColor)
 		return wid.Col([]float32{0, 0, 0, 0, 1, 0}, lines...)(gtx)
 		// return wid.List(th, anchor, f32.Pt(1, 1), lines...)(gtx)
 	}
