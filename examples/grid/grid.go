@@ -66,7 +66,7 @@ func main() {
 	makePersons(12)
 	theme = *wid.NewTheme(gofont.Collection(), 24)
 	onWinChange()
-	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500))), &form)
+	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500))), &form, theme)
 	app.Main()
 }
 

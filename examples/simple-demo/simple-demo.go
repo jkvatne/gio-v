@@ -45,7 +45,7 @@ func main() {
 	currentTheme.DarkMode = false
 	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
 	form = demo(currentTheme)
-	go wid.Run(win, &form)
+	go wid.Run(win, &form, currentTheme)
 	// OBS go ticker()
 	app.Main()
 }
@@ -98,7 +98,6 @@ func onWinChange() {
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
-	// return wid.List(th, wid.Occupy, f32.Point{1, 1},
 	return wid.Col(nil,
 		wid.Label(th, "Demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Row(th, nil, []float32{1, 1, 1},
@@ -138,13 +137,12 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")),
 		),
 		wid.Separator(th, unit.Dp(1.0)),
-
-		wid.Row(th, nil, wid.SpaceClose,
-			wid.Label(th, "A switch"),
+		wid.Row(th, nil, []float32{1, 1, 1, 1, 1, 1},
+			wid.Label(th, "Change color"),
 			wid.Switch(th, &greenFlag, wid.Do(swColor)),
 			wid.Label(th, " "),
 			wid.Label(th, " "),
-			wid.Label(th, "Another switch"),
+			wid.Label(th, "Tandem switch"),
 			wid.Switch(th, &greenFlag, wid.Do(swColor)),
 		),
 		wid.Separator(th, unit.Dp(1.0)),

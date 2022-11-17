@@ -111,8 +111,6 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 
 	return func(gtx C) D {
 		macro := op.Record(gtx.Ops)
-		// NB: Use Min.X instead of Max.X in order to fill screen width. Max.X is very large to allow scrolling wide widgets.
-		gtx.Constraints.Max.X = gtx.Constraints.Min.X
 		dim := w.padding.Layout(gtx, func(gtx C) D {
 			return w.Layout(gtx)
 		})
@@ -120,6 +118,8 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		defer clip.Rect(image.Rectangle{Max: dim.Size}).Push(gtx.Ops).Pop()
 		if w.bgColor != nil {
 			paint.Fill(gtx.Ops, w.Bg())
+		} else {
+			paint.Fill(gtx.Ops, w.th.Bg(w.role))
 		}
 		call.Add(gtx.Ops)
 		return dim

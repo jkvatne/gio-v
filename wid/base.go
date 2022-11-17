@@ -8,6 +8,8 @@ import (
 	"os"
 	"sync"
 
+	"gioui.org/op/paint"
+
 	"gioui.org/app"
 	"gioui.org/io/pointer"
 	"gioui.org/io/system"
@@ -346,7 +348,7 @@ func Invalidate() {
 	invalidate <- struct{}{}
 }
 
-func Run(win *app.Window, form *layout.Widget) {
+func Run(win *app.Window, form *layout.Widget, th *Theme) {
 	invalidate = make(chan struct{})
 	for {
 		select {
@@ -356,17 +358,22 @@ func Run(win *app.Window, form *layout.Widget) {
 				os.Exit(0)
 			case system.FrameEvent:
 				var ops op.Ops
-				// Save window size for use by widgets
+				// Save window size for use by widgets. Must be done before drawing
 				WinX = e.Size.X
 				WinY = e.Size.Y
 				gtx := layout.NewContext(&ops, e)
-				// A hack to fetch mouse position and window size so we can avoid
-				// tooltips going outside the main window area
+
+				paint.ColorOp{Color: th.Bg(Canvas)}.Add(gtx.Ops)
+				paint.PaintOp{}.Add(gtx.Ops)
+
 				// Draw widgets
 				GuiLock.Lock()
 				mainForm := *form
 				GuiLock.Unlock()
 				mainForm(gtx)
+
+				// A hack to fetch mouse position and window size so we can avoid
+				// tooltips going outside the main window area
 				p := pointer.PassOp{}.Push(gtx.Ops)
 				UpdateMousePos(gtx, win)
 				p.Pop()
