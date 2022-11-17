@@ -23,15 +23,6 @@ import (
 // UIState is the hovered/focusted etc. state
 type UIState uint8
 
-// constants for the state of the widget. It usually determines shading
-const (
-	DisabledState UIState = iota
-	EnabledState
-	HoveredState
-	FocusedState
-	PressedState
-)
-
 var (
 	MouseX     float32
 	MouseY     float32

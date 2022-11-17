@@ -40,8 +40,8 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e.LabelSize = th.TextSize * 8
 	e.SingleLine = true
 	e.borderThickness = th.BorderThickness
-	e.width = unit.Dp(5000)    // Default to max width that is possible
-	e.padding = layout.Inset{} // th.EditPadding
+	e.width = unit.Dp(5000) // Default to max width that is possible
+	e.padding = th.EditPadding
 	e.outlineColor = th.Fg(Outline)
 	e.selectionColor = MulAlpha(th.Bg(Primary), 60)
 	e.role = Canvas
@@ -56,17 +56,88 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 		e.Editor.SetText(*e.value)
 	}
 	return func(gtx C) D {
-		gtx.Constraints.Max.X = gtx.Constraints.Min.X
-		defer pointer.PassOp{}.Push(gtx.Ops).Pop()
-		if e.label == "" {
-			return e.layEdit()(gtx)
-		}
-		return layout.Flex{Axis: layout.Horizontal, Alignment: layout.Start, Spacing: layout.SpaceStart}.Layout(
-			gtx,
-			layout.Rigid(e.layLabel()),
-			layout.Rigid(e.layEdit()),
-		)
+		return e.Layout(gtx)
 	}
+}
+
+func (e *EditDef) Layout(gtx C) D {
+	labelDims := D{}
+	p := e.padding
+	p.Top = p.Top + e.th.LabelPadding.Top
+	if e.label != "" {
+		c := gtx
+		c.Constraints.Min.X = gtx.Sp(e.LabelSize)
+		paint.ColorOp{Color: e.th.Fg(Canvas)}.Add(gtx.Ops)
+		ofs := op.Offset(image.Pt(0, gtx.Dp(p.Top))).Push(gtx.Ops)
+		labelDims = widget.Label{Alignment: text.End}.Layout(c, e.th.Shaper, *e.Font, e.th.TextSize, e.label)
+		ofs.Pop()
+	}
+	defer op.Offset(image.Pt(labelDims.Size.X+gtx.Dp(e.padding.Left), gtx.Dp(e.padding.Top))).Push(gtx.Ops).Pop()
+
+	if !e.Focused() && e.value != nil {
+		current := e.Text()
+		if e.wasFocused {
+			// When the edit is loosing focus, we must update the underlying variable
+			GuiLock.Lock()
+			*e.value = current
+			GuiLock.Unlock()
+		} else {
+			// When the underlying variable changes, update the edit buffer
+			GuiLock.RLock()
+			s := *e.value
+			GuiLock.RUnlock()
+			if s != current {
+				e.SetText(s)
+			}
+		}
+	}
+
+	macro := op.Record(gtx.Ops)
+	dims := e.layoutEdit()(gtx)
+	ce := macro.Stop()
+
+	e.wasFocused = e.Focused()
+	outline := image.Rectangle{Max: image.Pt(
+		dims.Size.X-labelDims.Size.X-gtx.Dp(e.th.LabelPadding.Left+e.padding.Right),
+		dims.Size.Y+gtx.Dp(e.th.LabelPadding.Top+e.th.LabelPadding.Bottom))}
+	r := gtx.Dp(e.th.BorderCornerRadius)
+	if r > outline.Max.Y/2 {
+		r = outline.Max.Y / 2
+	}
+
+	if e.borderThickness > 0 {
+		if e.Focused() {
+			paintBorder(gtx, outline, e.outlineColor, e.th.BorderThicknessActive, r)
+		} else if e.hovered {
+			paintBorder(gtx, outline, e.outlineColor, (e.th.BorderThickness+e.th.BorderThicknessActive)/2, r)
+		} else {
+			paintBorder(gtx, outline, e.outlineColor, e.th.BorderThickness, r)
+		}
+	}
+
+	eventArea := clip.Rect(outline).Push(gtx.Ops)
+	for _, ev := range gtx.Events(&e.hovered) {
+		if ev, ok := ev.(pointer.Event); ok {
+			switch ev.Type {
+			case pointer.Leave:
+				e.hovered = false
+			case pointer.Enter:
+				e.hovered = true
+			}
+		}
+	}
+
+	pointer.InputOp{
+		Tag:   &e.hovered,
+		Types: pointer.Enter | pointer.Leave,
+	}.Add(gtx.Ops)
+	eventArea.Pop()
+
+	defer op.Offset(image.Pt(gtx.Dp(e.th.LabelPadding.Left), gtx.Dp(e.th.LabelPadding.Top))).Push(gtx.Ops).Pop()
+	ce.Add(gtx.Ops)
+
+	// call.Add(gtx.Ops)
+	return D{Size: image.Pt(gtx.Constraints.Max.X, outline.Max.Y+gtx.Dp(e.padding.Bottom+e.padding.Top))}
 }
 
 // EditOption is options specific to Edits
@@ -101,20 +172,6 @@ func rr(gtx C, radius unit.Dp, height int) int {
 	return rr
 }
 
-func (e *EditDef) layoutEditBackground() func(gtx C) D {
-	return func(gtx C) D {
-		outline := image.Rectangle{Max: image.Point{
-			X: gtx.Constraints.Max.X,
-			Y: gtx.Constraints.Max.Y,
-		}}
-		rr := rr(gtx, e.th.BorderCornerRadius, outline.Max.Y)
-		if e.Focused() {
-			paint.FillShape(gtx.Ops, e.Bg(), clip.RRect{Rect: outline, SE: rr, SW: rr, NW: rr, NE: rr}.Op(gtx.Ops))
-		}
-		return D{}
-	}
-}
-
 func paintBorder(gtx C, outline image.Rectangle, col color.NRGBA, width unit.Dp, rr int) {
 	paint.FillShape(gtx.Ops,
 		col,
@@ -123,100 +180,6 @@ func paintBorder(gtx C, outline image.Rectangle, col color.NRGBA, width unit.Dp,
 			Width: Pxr(gtx, width),
 		}.Op(),
 	)
-}
-
-// LayoutBorder will draw a border around the widget
-func LayoutBorder(e *EditDef, th *Theme) func(gtx C) D {
-	return func(gtx C) D {
-		if !e.Focused() && e.value != nil {
-			current := e.Text()
-			if e.wasFocused {
-				// When the edit is loosing focus, we must update the underlying variable
-				GuiLock.Lock()
-				*e.value = current
-				GuiLock.Unlock()
-			} else {
-				// When the underlying variable changes, update the edit buffer
-				GuiLock.RLock()
-				s := *e.value
-				GuiLock.RUnlock()
-				if s != current {
-					e.SetText(s)
-				}
-			}
-		}
-
-		e.wasFocused = e.Focused()
-		outline := image.Rectangle{Max: image.Point{
-			X: gtx.Constraints.Min.X,
-			Y: gtx.Constraints.Min.Y,
-		}}
-		r := gtx.Dp(th.BorderCornerRadius)
-		if r > outline.Max.Y/2 {
-			r = outline.Max.Y / 2
-		}
-		if e.borderThickness > 0 {
-			if e.Focused() {
-				paintBorder(gtx, outline, e.outlineColor, th.BorderThicknessActive, r)
-			} else if e.hovered {
-				paintBorder(gtx, outline, e.outlineColor, (th.BorderThickness+th.BorderThicknessActive)/2, r)
-			} else {
-				paintBorder(gtx, outline, e.outlineColor, th.BorderThickness, r)
-			}
-		}
-		eventArea := clip.Rect(outline).Push(gtx.Ops)
-		for _, ev := range gtx.Events(&e.hovered) {
-			if ev, ok := ev.(pointer.Event); ok {
-				switch ev.Type {
-				case pointer.Leave:
-					e.hovered = false
-				case pointer.Enter:
-					e.hovered = true
-				}
-			}
-		}
-		pointer.InputOp{
-			Tag:   &e.hovered,
-			Types: pointer.Enter | pointer.Leave,
-		}.Add(gtx.Ops)
-		eventArea.Pop()
-
-		return D{}
-	}
-}
-
-func (e *EditDef) layEdit() layout.Widget {
-	return func(gtx C) D {
-		return e.padding.Layout(gtx, func(gtx C) D {
-			return layout.Stack{}.Layout(
-				gtx,
-				layout.Expanded(e.layoutEditBackground()),
-				layout.Expanded(func(gtx C) D {
-					gtx.Constraints.Min.X = 5000
-					return e.th.LabelPadding.Layout(gtx, func(gtx C) D {
-						return e.layoutEdit()(gtx)
-					})
-				}),
-				layout.Expanded(LayoutBorder(e, e.th)),
-			)
-		})
-	}
-}
-
-func (e *EditDef) layLabel() layout.Widget {
-	return func(gtx C) D {
-		p := e.padding
-		p.Top = p.Top + e.th.LabelPadding.Top
-		return p.Layout(gtx, func(gtx C) D {
-			if e.label == "" {
-				return D{}
-			}
-			gtx.Constraints.Min.X = gtx.Sp(e.LabelSize)
-			paint.ColorOp{Color: e.th.Fg(Canvas)}.Add(gtx.Ops)
-			w := widget.Label{Alignment: text.End}.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, e.label)
-			return w
-		})
-	}
 }
 
 func (e *EditDef) layoutEdit() func(gtx C) D {
