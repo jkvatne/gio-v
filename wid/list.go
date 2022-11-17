@@ -7,9 +7,8 @@ import (
 	"image/color"
 	"math"
 
-	"gioui.org/f32"
-
 	"gioui.org/io/pointer"
+
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -233,7 +232,7 @@ type ListStyle struct {
 }
 
 // List makes a vertical listp
-func List(th *Theme, a AnchorStrategy, Size f32.Point, widgets ...layout.Widget) layout.Widget {
+func List(th *Theme, a AnchorStrategy, heading layout.Widget, widgets ...layout.Widget) layout.Widget {
 	listStyle := ListStyle{
 		list:           &layout.List{Axis: layout.Vertical},
 		VScrollBar:     MakeScrollbarStyle(th),
@@ -242,16 +241,6 @@ func List(th *Theme, a AnchorStrategy, Size f32.Point, widgets ...layout.Widget)
 	}
 	listStyle.theme = th
 	return func(gtx C) D {
-		if Size.X <= 1.0 && Size.X > 0.001 {
-			gtx.Constraints.Max.X = int(float32(gtx.Constraints.Max.X) * Size.X)
-		} else if Size.X > 1.0 {
-			gtx.Constraints.Max.X = Min(gtx.Constraints.Max.X, gtx.Dp(unit.Dp(Size.X)))
-		}
-		if Size.Y <= 1.0 && Size.Y > 0.001 {
-			gtx.Constraints.Max.Y = int(float32(WinY) * Size.Y)
-		} else if Size.Y > 1.0 {
-			gtx.Constraints.Max.Y = Min(gtx.Constraints.Max.Y, gtx.Dp(unit.Dp(Size.Y)))
-		}
 		cl := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
 		c := th.Bg(Canvas)
 		paint.Fill(gtx.Ops, c)
@@ -264,6 +253,7 @@ func List(th *Theme, a AnchorStrategy, Size f32.Point, widgets ...layout.Widget)
 		return listStyle.Layout(
 			gtx,
 			len(ch),
+			heading,
 			func(gtx C, i int) D {
 				return ch[i](gtx)
 			},
@@ -272,7 +262,7 @@ func List(th *Theme, a AnchorStrategy, Size f32.Point, widgets ...layout.Widget)
 }
 
 // Layout the list and its scrollbar.
-func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
+func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.ListElement) D {
 	// Determine how much space the scrollbar occupies.
 	hBarWidth := gtx.Dp(l.HScrollBar.Width())
 	vBarWidth := gtx.Dp(l.VScrollBar.Width())
@@ -283,10 +273,23 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	if l.HorVisible && l.AnchorStrategy == Occupy {
 		c.Constraints.Max.Y -= hBarWidth
 	}
+	// Draw the header
+	hdim := D{}
+	if header != nil {
+		trans := op.Offset(image.Pt(-l.Hpos, 0)).Push(gtx.Ops)
+		hdim = header(gtx)
+		trans.Pop()
+	}
+
+	gtx.Constraints.Max.Y -= hdim.Size.Y
+	// Move down the header height
+	defer op.Offset(image.Pt(0, hdim.Size.Y)).Push(gtx.Ops).Pop()
+
 	// Draw the list
 	macro := op.Record(gtx.Ops)
 	listDims := l.list.Layout(c, length, w)
 	call := macro.Stop()
+
 	if l.HorVisible && l.AnchorStrategy == Occupy {
 		listDims.Size.Y += hBarWidth
 	}
@@ -316,8 +319,7 @@ func (l *ListStyle) Layout(gtx C, length int, w layout.ListElement) D {
 	if l.Hpos+gtx.Constraints.Max.X > l.HorTotal {
 		l.Hpos = Max(l.HorTotal-gtx.Constraints.Max.X+vBarWidth, 0)
 	}
-	pt := image.Pt(-l.Hpos, 0)
-	trans := op.Offset(pt).Push(gtx.Ops)
+	trans := op.Offset(image.Pt(-l.Hpos, 0)).Push(gtx.Ops)
 	call.Add(gtx.Ops)
 	trans.Pop()
 	cl.Pop()

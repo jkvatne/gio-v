@@ -42,11 +42,11 @@ func main() {
 	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
 	homeIcon, _ = wid.NewIcon(icons.ActionHome)
 	currentTheme = wid.NewTheme(gofont.Collection(), 14)
-	currentTheme.DarkMode = true
+	currentTheme.DarkMode = false
 	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
 	form = demo(currentTheme)
 	go wid.Run(win, &form)
-	go ticker()
+	// OBS go ticker()
 	app.Main()
 }
 
@@ -98,10 +98,13 @@ func onWinChange() {
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
-	return wid.List(th, wid.Occupy,
-
+	// return wid.List(th, wid.Occupy, f32.Point{1, 1},
+	return wid.Col(nil,
 		wid.Label(th, "Demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-
+		wid.Row(th, nil, []float32{1, 1},
+			wid.DropDown(th, &dropDownValue1, []string{"Option 1 with very long text", "Option 2", "Option 3"}, wid.Lbl("Dropdown 1")),
+			wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}, wid.Lbl("Dropdown 2")),
+		),
 		wid.Label(th, "Checkbox to change between dark mode and light mode, changing the theme variable DarkMode"),
 		wid.Row(th, nil, []float32{.9, .5, .5, .5, .5},
 			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onSwitchMode)),
@@ -140,6 +143,7 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.Switch(th, &greenFlag, wid.Do(swColor)),
 		),
 		wid.Separator(th, unit.Dp(1.0)),
+		wid.Edit(th, wid.Lbl("Value"), wid.Var(&name)),
 		wid.Slider(th, &sliderValue, 0, 100),
 		// The edit's default to their max size so they each get 1/5 of the row size. The MakeFlex spacing parameter will have no effect.
 		wid.Row(th, nil, []float32{1, 1},
@@ -148,19 +152,14 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.Edit(th, wid.Hint("Value 5")),
 		),
 		wid.Row(th, nil, []float32{1, 1},
-			wid.Col(
+			wid.Col([]float32{},
 				wid.Edit(th, wid.Hint("Value 6")),
 				wid.Edit(th, wid.Hint("Value 7"), wid.Lbl("Value 7")),
 			),
-			wid.Col(
+			wid.Col([]float32{},
 				wid.Edit(th, wid.Lbl("Name"), wid.Var(&name)),
 				wid.Edit(th, wid.Lbl("Address"), wid.Var(&address)),
 			),
-		),
-
-		wid.Row(th, nil, []float32{1, 1},
-			wid.DropDown(th, &dropDownValue1, []string{"Option 1 with very long text", "Option 2", "Option 3"}, wid.Lbl("Dropdown 1")),
-			wid.DropDown(th, &dropDownValue2, []string{"Option 1", "Option 2", "Option 3"}, wid.Lbl("Dropdown 2")),
 		),
 		wid.ProgressBar(th, &progress, wid.Pads(5.0), wid.W(12.0)),
 		wid.Separator(th, 0, wid.Pads(5.0)),

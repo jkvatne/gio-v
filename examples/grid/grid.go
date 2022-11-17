@@ -11,8 +11,6 @@ import (
 
 	"gioui.org/op/paint"
 
-	"gioui.org/f32"
-
 	"gioui.org/app"
 	"gioui.org/font/gofont"
 	"golang.org/x/exp/shiny/materialdesign/icons"
@@ -157,7 +155,7 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 	if doOccupy {
 		anchor = wid.Occupy
 	}
-	bgColor := th.Bg(wid.Canvas)
+	bgColor := th.Bg(wid.Primary)
 
 	nameIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
 	addressIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
@@ -165,14 +163,12 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 
 	// Configure a grid with headings and several rows
 	var gridLines []layout.Widget
-	gridLines = append(gridLines,
-		wid.GridRow(th, &bgColor, gw, colWidths,
-			wid.Checkbox(th, "", wid.Bool(&selectAll), wid.Do(onCheck)),
-			wid.HeaderButton(th, "Name", wid.Do(onNameClick), wid.Prim(), wid.BtnIcon(nameIcon)),
-			wid.HeaderButton(th, "Address", wid.Do(onAddressClick), wid.Prim(), wid.BtnIcon(addressIcon)),
-			wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.Prim(), wid.BtnIcon(ageIcon)),
-			wid.Label(th, "Gender"),
-		),
+	header := wid.GridRow(th, &bgColor, gw, colWidths,
+		wid.Checkbox(th, "", wid.Bool(&selectAll), wid.Do(onCheck)),
+		wid.HeaderButton(th, "Name", wid.Do(onNameClick), wid.Prim(), wid.BtnIcon(nameIcon)),
+		wid.HeaderButton(th, "Address", wid.Do(onAddressClick), wid.Prim(), wid.BtnIcon(addressIcon)),
+		wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.Prim(), wid.BtnIcon(ageIcon)),
+		wid.Label(th, "Gender", wid.Prim()),
 	)
 
 	for i := 0; i < len(data); i++ {
@@ -190,8 +186,7 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 			))
 
 	}
-	var lines []layout.Widget
-	lines = append(lines,
+	var lines = []layout.Widget{
 		wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.Canvas)),
 		wid.Label(th, "Different wighting and size of columns"),
 		wid.Row(th, nil, nil,
@@ -209,16 +204,16 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 			// wid.RadioButton(th, &fontSize, "Medium", "Medium", wid.Do(onFontChange)),
 			// wid.RadioButton(th, &fontSize, "Small", "Small", wid.Do(onFontChange)),
 		),
-		// wid.Space(20),
 		// wid.Edit(th, wid.Hint("Line editor")),
 		// wid.DropDown(th, &dropDownValue1, []string{"Option 1 with long text as shown here", "Option 2", "Option 3"}, wid.Lbl("Dropdown 1")),
-		wid.List(th, anchor, f32.Point{1.0, 350.0}, gridLines...),
-		wid.Row(th, nil, []float32{1.0, 1.0},
+		wid.List(th, anchor, header, gridLines...),
+		wid.Row(th, nil, []float32{1.0, 1.0, 1.0},
 			wid.Space(1),
 			wid.Button(th, "Update"),
 			wid.Space(1),
 		),
-	)
+	}
+
 	// return wid.List(th, wid.Occupy, f32.Point{1.0, 1.0}, lines...)
 	return func(gtx layout.Context) layout.Dimensions {
 		bgColor := th.Bg(wid.Canvas)

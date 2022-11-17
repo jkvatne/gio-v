@@ -57,6 +57,7 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	}
 	return func(gtx C) D {
 		gtx.Constraints.Max.X = gtx.Constraints.Min.X
+		defer pointer.PassOp{}.Push(gtx.Ops).Pop()
 		if e.label == "" {
 			return e.layEdit()(gtx)
 		}
@@ -220,35 +221,33 @@ func (e *EditDef) layLabel() layout.Widget {
 
 func (e *EditDef) layoutEdit() func(gtx C) D {
 	return func(gtx C) D {
-		macro := op.Record(gtx.Ops)
-		paint.ColorOp{Color: MulAlpha(e.Fg(), 110)}.Add(gtx.Ops)
 		var maxLines int
 		if e.Editor.SingleLine {
 			maxLines = 1
 		}
+
+		macro := op.Record(gtx.Ops)
+		paint.ColorOp{Color: MulAlpha(e.Fg(), 110)}.Add(gtx.Ops)
 		tl := widget.Label{Alignment: e.Editor.Alignment, MaxLines: maxLines}
 		dims := tl.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, e.hint)
 		call := macro.Stop()
-		if w := dims.Size.X; gtx.Constraints.Min.X < w {
-			gtx.Constraints.Min.X = w
-		}
-		if h := dims.Size.Y; gtx.Constraints.Min.Y < h {
-			gtx.Constraints.Min.Y = h
-		}
-		dims = e.Editor.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, nil)
-		disabled := gtx.Queue == nil
-		if e.Editor.Len() > 0 {
-			paint.ColorOp{Color: e.selectionColor}.Add(gtx.Ops)
-			e.Editor.PaintSelection(gtx)
-			paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
-			e.Editor.PaintText(gtx)
-		} else {
-			call.Add(gtx.Ops)
-		}
-		if !disabled && e.Editor.Len() > 0 {
-			paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
-			e.Editor.PaintCaret(gtx)
-		}
+
+		dims = e.Editor.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, func(gtx layout.Context) layout.Dimensions {
+			disabled := gtx.Queue == nil
+			if e.Editor.Len() > 0 || e.Focused() {
+				paint.ColorOp{Color: e.selectionColor}.Add(gtx.Ops)
+				e.Editor.PaintSelection(gtx)
+				paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
+				e.Editor.PaintText(gtx)
+			} else {
+				call.Add(gtx.Ops)
+			}
+			if !disabled && (e.Editor.Len() > 0 || e.Focused()) {
+				paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
+				e.Editor.PaintCaret(gtx)
+			}
+			return dims
+		})
 		return dims
 	}
 }

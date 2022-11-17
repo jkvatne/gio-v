@@ -334,6 +334,10 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 		Bottom: unit.Dp(t.TextSize) * 0.4,
 		Left:   unit.Dp(t.TextSize) * 0.6}
 	t.DropDownPadding = t.LabelPadding
+	// OBS
+	t.DropDownPadding.Bottom = 10
+	t.DropDownPadding.Top = 10
+
 	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
 	t.EditPadding = t.LabelPadding
 	// Buttons

@@ -11,7 +11,7 @@ import (
 	"image/color"
 	"os"
 
-	"gioui.org/io/pointer"
+	"gioui.org/f32"
 
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
@@ -69,10 +69,6 @@ func handleFrameEvents(e system.FrameEvent) {
 	// Set background color
 	c := currentTheme.Bg(wid.Canvas)
 	paint.Fill(gtx.Ops, c)
-	// A hack to fetch mouse position and window size so we can avoid
-	// tooltips going outside the main window area
-	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
-	wid.UpdateMousePos(gtx, win, e.Size)
 	progress = progress + 0.01
 	if progress > 1.0 {
 		progress = 0
@@ -122,7 +118,7 @@ func onWinChange() {
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
-	return wid.List(th, wid.Overlay,
+	return wid.List(th, wid.Overlay, f32.Point{},
 		wid.Label(th, "Buttons demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Label(th, "Buttons with fixed length and large font"),
 		wid.Button(th, "Change color", wid.Do(onClick), wid.W(450), wid.Large()),

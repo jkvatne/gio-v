@@ -335,7 +335,7 @@ func CalcMin(gtx C, width unit.Dp) image.Point {
 // UpdateMousePos must be called from the main program in order to get mouse
 // position and window size. They are needed to avoid that the tooltip
 // is outside the window frame
-func UpdateMousePos(gtx C, win *app.Window, size image.Point) {
+func UpdateMousePos(gtx C, win *app.Window) {
 	eventArea := clip.Rect(image.Rect(0, 0, 99999, 99999)).Push(gtx.Ops)
 	pointer.InputOp{
 		Types: pointer.Move,
@@ -349,8 +349,6 @@ func UpdateMousePos(gtx C, win *app.Window, size image.Point) {
 			MouseY = e.Position.Y
 		}
 	}
-	WinX = size.X
-	WinY = size.Y
 }
 
 func Invalidate() {
@@ -367,16 +365,19 @@ func Run(win *app.Window, form *layout.Widget) {
 				os.Exit(0)
 			case system.FrameEvent:
 				var ops op.Ops
+				// Save window size for use by widgets
+				WinX = e.Size.X
+				WinY = e.Size.Y
 				gtx := layout.NewContext(&ops, e)
 				// A hack to fetch mouse position and window size so we can avoid
 				// tooltips going outside the main window area
-				p := pointer.PassOp{}.Push(gtx.Ops)
-				UpdateMousePos(gtx, win, e.Size)
 				// Draw widgets
 				GuiLock.Lock()
 				mainForm := *form
 				GuiLock.Unlock()
 				mainForm(gtx)
+				p := pointer.PassOp{}.Push(gtx.Ops)
+				UpdateMousePos(gtx, win)
 				p.Pop()
 				// Apply the actual screen drawing
 				e.Frame(gtx.Ops)

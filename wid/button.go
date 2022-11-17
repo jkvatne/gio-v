@@ -84,7 +84,6 @@ func HeaderButton(th *Theme, label string, options ...Option) layout.Widget {
 	b := aButton(Text, th, label, options...)
 	b.cornerRadius = 0
 	b.internPad = th.LabelPadding
-	b.role = Canvas
 	b.Style = Header
 	b.padding = layout.Inset{}
 	return b.Layout

@@ -9,7 +9,9 @@ import (
 	"gioui.org/op"
 )
 
-// Col makes a column of widgets.
+// Col makes a column of widgets. It is not scrollable, but
+// weights are used to split the available area.
+// Set weigth to 0 for fixed height widgets, and 1 for flexible widgets (like lists)
 func Col(weights []float32, widgets ...layout.Widget) layout.Widget {
 	return func(gtx C) D {
 		size := 0
@@ -48,7 +50,7 @@ func Col(weights []float32, widgets ...layout.Widget) layout.Widget {
 				flexSize = Min(flexSize, remaining)
 			}
 			macro := op.Record(gtx.Ops)
-			cgtx.Constraints = layout.Constraints{Min: image.Pt(gtx.Constraints.Min.X, flexSize), Max: image.Pt(gtx.Constraints.Max.X, flexSize)}
+			cgtx.Constraints = layout.Constraints{Min: image.Pt(gtx.Constraints.Min.X, 0), Max: image.Pt(gtx.Constraints.Max.X, flexSize)}
 			dim := child(cgtx)
 			c := macro.Stop()
 			sz := dim.Size.Y

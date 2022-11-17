@@ -85,6 +85,9 @@ func (l LabelDef) Layout(gtx C) D {
 	dims := tl.Layout(c, l.th.Shaper, l.Font, l.TextSize*unit.Sp(l.FontSize), str)
 	// NB: Use Min.X instead of Max.X in order to fill screen width. Max.X is very large to allow scrolling wide widgets.
 	dims.Size.X = Min(gtx.Constraints.Max.X, dims.Size.X)
+	if dims.Size.Y > 100 {
+		dims.Size.Y++
+	}
 	return dims
 }
 
@@ -110,16 +113,16 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		macro := op.Record(gtx.Ops)
 		// NB: Use Min.X instead of Max.X in order to fill screen width. Max.X is very large to allow scrolling wide widgets.
 		gtx.Constraints.Max.X = gtx.Constraints.Min.X
-		dims := w.padding.Layout(gtx, func(gtx C) D {
+		dim := w.padding.Layout(gtx, func(gtx C) D {
 			return w.Layout(gtx)
 		})
 		call := macro.Stop()
-		defer clip.Rect(image.Rectangle{Max: dims.Size}).Push(gtx.Ops).Pop()
+		defer clip.Rect(image.Rectangle{Max: dim.Size}).Push(gtx.Ops).Pop()
 		if w.bgColor != nil {
 			paint.Fill(gtx.Ops, w.Bg())
 		}
 		call.Add(gtx.Ops)
-		return dims
+		return dim
 	}
 }
 

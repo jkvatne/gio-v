@@ -11,8 +11,6 @@ import (
 	"image/color"
 	"os"
 
-	"gioui.org/io/pointer"
-
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
 	"gioui.org/widget"
@@ -74,8 +72,8 @@ func handleFrameEvents(e system.FrameEvent) {
 	paint.Fill(gtx.Ops, c)
 	// A hack to fetch mouse position and window size so we can avoid
 	// tooltips going outside the main window area
-	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
-	wid.UpdateMousePos(gtx, win, e.Size)
+	// defer pointer.PassOp{}.Push(gtx.Ops).Pop()
+	// wid.UpdateMousePos(gtx, win, e.Size)
 	progress = progress + 0.01
 	if progress > 1.0 {
 		progress = 0

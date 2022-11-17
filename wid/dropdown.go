@@ -4,8 +4,6 @@ import (
 	"image"
 	"image/color"
 
-	"gioui.org/f32"
-
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -54,7 +52,7 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 		b.Items = append(b.Items, b.option(th, i))
 		b.itemHovered = append(b.itemHovered, false)
 	}
-	b.list = List(th, Overlay, f32.Point{}, b.Items...)
+	b.list = List(th, Overlay, nil, b.Items...)
 	b.cornerRadius = th.BorderCornerRadius
 	b.padding = th.DropDownPadding
 	for _, option := range options {
@@ -113,6 +111,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 	_ = widget.Label{Alignment: text.End, MaxLines: 1}.Layout(ctx, b.th.Shaper, *b.Font, b.th.TextSize, b.label)
 	o.Pop()
 	ofs := gtx.Sp(b.labelSize) + gtx.Dp(b.padding.Left+b.padding.Right)
+	// Move space used by label
 	defer op.Offset(image.Pt(ofs, 0)).Push(gtx.Ops).Pop()
 
 	// Draw text with top/left padding offset
@@ -170,26 +169,26 @@ func (b *DropDownStyle) layout(gtx C) D {
 
 		macro := op.Record(gtx.Ops)
 		d := b.list(gtx)
-		listClipRect := image.Rect(0, 0, gtx.Constraints.Min.X, d.Size.Y)
+		listClipRect := image.Rect(0, 0, border.Max.X, d.Size.Y)
 		call := macro.Stop()
 
-		b.setHovered(idx)
 		if !oldVisible {
+			b.setHovered(idx)
 			b.above = int(MouseY) > (WinY - d.Size.Y)
 		}
 
 		macro = op.Record(gtx.Ops)
-		dy := dims.Size.Y
+		dy := dims.Size.Y - gtx.Dp(b.padding.Top) - gtx.Dp(b.padding.Bottom)
 		if b.above {
 			dy = -d.Size.Y
 		}
 		op.Offset(image.Pt(0, dy)).Add(gtx.Ops)
 		stack := clip.UniformRRect(listClipRect, 0).Push(gtx.Ops)
 		paint.Fill(gtx.Ops, b.Bg())
-		// Draw a border around all options
-		paintBorder(gtx, listClipRect, b.th.Fg(Outline), b.th.BorderThicknessActive, 0)
 		call.Add(gtx.Ops)
 		stack.Pop()
+		// Draw a border around all options
+		paintBorder(gtx, listClipRect, b.th.Fg(Outline), b.th.BorderThicknessActive, 0)
 		call = macro.Stop()
 		op.Defer(gtx.Ops, call)
 
@@ -227,7 +226,7 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 				case pointer.Leave:
 					b.itemHovered[i] = false
 				case pointer.Cancel:
-					b.setHovered(i)
+					// b.setHovered(i)
 				}
 			}
 		}
