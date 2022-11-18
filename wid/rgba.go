@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"image/color"
 	"math"
-
-	"gioui.org/unit"
 )
 
 // Some default colors
@@ -30,11 +28,6 @@ func DeEmphasis(c color.NRGBA, amount uint8) color.NRGBA {
 		return MulAlpha(c, 255-amount)
 	}
 	return MulAlpha(c, amount)
-}
-
-// Pxr maps the value v to pixels, returning a float32
-func Pxr(c C, v unit.Dp) float32 {
-	return float32(c.Dp(v))
 }
 
 // Disabled blends color towards the luminance and multiplies alpha.

@@ -242,6 +242,7 @@ type Theme struct {
 	TooltipOnBackground   color.NRGBA
 	LabelPadding          layout.Inset
 	EditPadding           layout.Inset
+	EditInternalPadding   layout.Inset
 	DropDownPadding       layout.Inset
 	IconInset             layout.Inset
 	ListInset             layout.Inset
@@ -320,7 +321,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.FingerSize = unit.Dp(38)
 	// Borders around edit fields
 	t.BorderThickness = unit.Dp(t.TextSize) * 0.08
-	t.BorderThicknessActive = unit.Dp(t.TextSize) * 0.18
+	t.BorderThicknessActive = unit.Dp(t.TextSize) * 0.3 // OBS 0.18
 	t.BorderColor = t.Fg(Outline)
 	t.BorderColorHovered = t.Fg(Primary)
 	t.BorderColorActive = t.Fg(Primary)
@@ -330,12 +331,13 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	// Text
 	t.LabelPadding = layout.Inset{
 		Top:    unit.Dp(t.TextSize) * 0.2,
-		Right:  unit.Dp(t.TextSize) * 0.3,
+		Right:  unit.Dp(t.TextSize) * 0.2,
 		Bottom: unit.Dp(t.TextSize) * 0.2,
-		Left:   unit.Dp(t.TextSize) * 0.4}
+		Left:   unit.Dp(t.TextSize) * 0.2}
 	t.DropDownPadding = t.LabelPadding
 	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
 	t.EditPadding = t.LabelPadding
+	t.EditInternalPadding = layout.Inset{3, 3, 3, 1}
 	// Buttons
 	// ButtonPadding is the margin outside a button, giving distance to other elements
 	t.ButtonPadding = layout.Inset{Top: 8, Right: 4, Bottom: 8, Left: 4}
