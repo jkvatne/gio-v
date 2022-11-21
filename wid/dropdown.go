@@ -31,7 +31,6 @@ type DropDownStyle struct {
 	labelSize       unit.Sp
 	above           bool
 	borderThickness unit.Dp
-	insidePadding   layout.Inset
 }
 
 var icon *Icon
@@ -46,7 +45,6 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 	b.index = index
 	b.items = items
 	b.labelSize = th.TextSize * 8
-	b.insidePadding = th.LabelPadding
 	b.borderThickness = b.th.BorderThickness
 	for i := range items {
 		b.Items = append(b.Items, b.option(th, i))
@@ -54,15 +52,12 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 	}
 	b.list = List(th, Overlay, nil, b.Items...)
 	b.cornerRadius = th.BorderCornerRadius
-	b.padding = th.DropDownPadding
+	b.padding = th.OutsidePadding
 	for _, option := range options {
 		option.apply(&b)
 	}
 	if b.label == "" {
 		b.labelSize = 0
-	}
-	if b.borderThickness == 0 {
-		b.insidePadding = layout.Inset{}
 	}
 	return b.Layout
 }
@@ -104,30 +99,36 @@ func (b *DropDownStyle) layout(gtx C) D {
 
 	// Add outside padding
 	defer op.Offset(image.Pt(gtx.Dp(b.padding.Left), gtx.Dp(b.padding.Top))).Push(gtx.Ops).Pop()
-	o := op.Offset(image.Pt(gtx.Dp(b.insidePadding.Left), gtx.Dp(b.insidePadding.Top))).Push(gtx.Ops)
-	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
-	ctx := gtx
-	ctx.Constraints.Max.X = gtx.Sp(b.labelSize) - gtx.Dp(b.padding.Left)
-	_ = widget.Label{Alignment: text.End, MaxLines: 1}.Layout(ctx, b.th.Shaper, *b.Font, b.th.TextSize, b.label)
-	o.Pop()
-	ofs := gtx.Sp(b.labelSize) + gtx.Dp(b.padding.Left+b.padding.Right)
-	// Move space used by label
-	defer op.Offset(image.Pt(ofs, 0)).Push(gtx.Ops).Pop()
+
+	// Add outside label to the left of the dropdown box
+	if b.label != "" {
+		o := op.Offset(image.Pt(gtx.Dp(b.th.InsidePadding.Left), gtx.Dp(b.th.InsidePadding.Top))).Push(gtx.Ops)
+		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
+		ctx := gtx
+		ctx.Constraints.Max.X = gtx.Sp(b.labelSize) - gtx.Dp(b.padding.Left)
+		_ = widget.Label{Alignment: text.End, MaxLines: 1}.Layout(ctx, b.th.Shaper, *b.Font, b.th.TextSize, b.label)
+		o.Pop()
+		ofs := gtx.Sp(b.labelSize) + gtx.Dp(b.padding.Left+b.padding.Right)
+		// Move space used by label
+		defer op.Offset(image.Pt(ofs, 0)).Push(gtx.Ops).Pop()
+		gtx.Constraints.Max.X -= ofs
+		gtx.Constraints.Min.X -= gtx.Constraints.Max.X
+	}
 
 	// Draw text with top/left padding offset
 	macro := op.Record(gtx.Ops)
-	o = op.Offset(image.Pt(gtx.Dp(b.insidePadding.Left), gtx.Dp(b.insidePadding.Top))).Push(gtx.Ops)
+	o := op.Offset(image.Pt(gtx.Dp(b.th.InsidePadding.Left), gtx.Dp(b.th.InsidePadding.Top))).Push(gtx.Ops)
 	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 	dims := widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, b.th.Shaper, *b.Font, b.th.TextSize, b.items[*b.index])
 	o.Pop()
 	call := macro.Stop()
 	// Calculate widget size based on text size and padding, using all available x space
 	dims.Size.X = gtx.Constraints.Max.X
-	dims.Size.Y = dims.Size.Y + gtx.Dp(b.insidePadding.Top+b.insidePadding.Bottom+b.padding.Top+b.padding.Bottom)
+	dims.Size.Y += gtx.Dp(b.th.InsidePadding.Top + b.th.InsidePadding.Bottom + b.padding.Top + b.padding.Bottom)
 
 	border := image.Rectangle{Max: image.Pt(
-		dims.Size.X-gtx.Dp(b.padding.Left+b.padding.Right)-ofs,
-		dims.Size.Y-gtx.Dp(b.padding.Top+b.padding.Bottom))}
+		dims.Size.X-gtx.Dp(b.th.InsidePadding.Left+b.padding.Right),
+		dims.Size.Y-gtx.Dp(b.th.InsidePadding.Bottom))}
 
 	// Draw border. Need to undo previous top padding offset first
 	if b.borderThickness > 0 {
@@ -142,7 +143,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 	call.Add(gtx.Ops)
 
 	// Draw icon using forground color
-	o = op.Offset(image.Pt(border.Max.X-border.Max.Y, 0)).Push(gtx.Ops)
+	o = op.Offset(image.Pt(border.Max.X-border.Max.Y, gtx.Dp(b.th.InsidePadding.Top))).Push(gtx.Ops)
 	iconSize := image.Pt(border.Max.Y, border.Max.Y)
 	c := gtx
 	c.Constraints.Max = iconSize
@@ -188,7 +189,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 		call.Add(gtx.Ops)
 		stack.Pop()
 		// Draw a border around all options
-		paintBorder(gtx, listClipRect, b.th.Fg(Outline), b.th.BorderThicknessActive, 0)
+		paintBorder(gtx, listClipRect, b.th.Fg(Outline), b.th.BorderThickness, 0)
 		call = macro.Stop()
 		op.Defer(gtx.Ops, call)
 

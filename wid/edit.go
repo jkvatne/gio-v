@@ -41,7 +41,7 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e.SingleLine = true
 	e.borderThickness = th.BorderThickness
 	e.width = unit.Dp(5000) // Default to max width that is possible
-	e.padding = th.EditPadding
+	e.padding = th.OutsidePadding
 	e.outlineColor = th.Fg(Outline)
 	e.selectionColor = MulAlpha(th.Bg(Primary), 60)
 	e.role = Canvas
@@ -65,9 +65,9 @@ func (e *EditDef) Layout(gtx C) D {
 	// Move to offset the external padding around both label and edit
 	defer op.Offset(image.Pt(
 		gtx.Dp(e.padding.Left),
-		gtx.Dp(e.padding.Top+e.th.BorderThicknessActive+e.th.EditInternalPadding.Top))).Push(gtx.Ops).Pop()
+		gtx.Dp(e.padding.Top+e.th.InsidePadding.Top))).Push(gtx.Ops).Pop()
 	// And reduce the size to make space for the padding
-	gtx.Constraints.Max.X -= gtx.Dp(e.padding.Left + e.padding.Right + 2*e.th.BorderThicknessActive)
+	gtx.Constraints.Max.X -= gtx.Dp(e.padding.Left + e.padding.Right)
 
 	labelDims := D{}
 	if e.label != "" {
@@ -96,7 +96,7 @@ func (e *EditDef) Layout(gtx C) D {
 		}
 	}
 	//  Move right in case there was a label and include the internal padding and border
-	defer op.Offset(image.Pt(labelDims.Size.X+gtx.Dp(e.th.EditInternalPadding.Left+e.th.BorderThicknessActive),
+	defer op.Offset(image.Pt(labelDims.Size.X+gtx.Dp(e.th.InsidePadding.Left),
 		0)).Push(gtx.Ops).Pop()
 
 	ma := op.Record(gtx.Ops)
@@ -107,7 +107,7 @@ func (e *EditDef) Layout(gtx C) D {
 
 	macro := op.Record(gtx.Ops)
 	gtx.Constraints.Max.X -= (gtx.Dp(e.padding.Right+
-		e.th.EditInternalPadding.Left+e.th.EditInternalPadding.Right) + labelDims.Size.X)
+		e.th.InsidePadding.Left+e.th.InsidePadding.Right) + labelDims.Size.X)
 	gtx.Constraints.Min.X = gtx.Constraints.Max.X
 	dims = e.Editor.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, func(gtx layout.Context) layout.Dimensions {
 		disabled := gtx.Queue == nil
@@ -129,10 +129,10 @@ func (e *EditDef) Layout(gtx C) D {
 
 	e.wasFocused = e.Focused()
 	outline := image.Rectangle{
-		Min: image.Pt(-gtx.Dp(e.th.BorderThicknessActive/2), -gtx.Dp(e.th.EditInternalPadding.Top)),
+		Min: image.Pt(-gtx.Dp(e.th.BorderThickness), -gtx.Dp(e.th.InsidePadding.Top)),
 		Max: image.Pt(
-			gtx.Constraints.Max.X+gtx.Dp(e.th.EditInternalPadding.Left+e.th.EditInternalPadding.Right),
-			dims.Size.Y+gtx.Dp(e.th.EditInternalPadding.Bottom))}
+			gtx.Constraints.Max.X+gtx.Dp(e.th.InsidePadding.Left+e.th.InsidePadding.Right),
+			dims.Size.Y+gtx.Dp(e.th.InsidePadding.Bottom))}
 	r := gtx.Dp(e.th.BorderCornerRadius)
 	if r > outline.Max.Y/2 {
 		r = outline.Max.Y / 2
@@ -140,9 +140,9 @@ func (e *EditDef) Layout(gtx C) D {
 
 	if e.borderThickness > 0 {
 		if e.Focused() {
-			paintBorder(gtx, outline, e.outlineColor, e.th.BorderThicknessActive, r)
+			paintBorder(gtx, outline, e.outlineColor, e.th.BorderThickness*2, r)
 		} else if e.hovered {
-			paintBorder(gtx, outline, e.outlineColor, (e.th.BorderThickness+e.th.BorderThicknessActive)/2, r)
+			paintBorder(gtx, outline, e.outlineColor, e.th.BorderThickness*3/2, r)
 		} else {
 			paintBorder(gtx, outline, e.outlineColor, e.th.BorderThickness, r)
 		}
@@ -166,13 +166,13 @@ func (e *EditDef) Layout(gtx C) D {
 	}.Add(gtx.Ops)
 	eventArea.Pop()
 
-	defer op.Offset(image.Pt(gtx.Dp(e.th.EditInternalPadding.Left), 0)).Push(gtx.Ops).Pop()
+	defer op.Offset(image.Pt(gtx.Dp(e.th.InsidePadding.Left), 0)).Push(gtx.Ops).Pop()
 	callEdit.Add(gtx.Ops)
 
 	// call.Add(gtx.Ops)
 	return D{Size: image.Pt(
 		gtx.Constraints.Max.X,
-		outline.Max.Y-outline.Min.Y+gtx.Dp(e.th.BorderThicknessActive*2+e.padding.Bottom+e.padding.Top))}
+		outline.Max.Y-outline.Min.Y+gtx.Dp(e.padding.Bottom+e.padding.Top))}
 }
 
 // EditOption is options specific to Edits

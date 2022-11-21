@@ -83,7 +83,6 @@ func (l LabelDef) Layout(gtx C) D {
 	str := l.Stringer(l.dp)
 	GuiLock.RUnlock()
 	dims := tl.Layout(c, l.th.Shaper, l.Font, l.TextSize*unit.Sp(l.FontSize), str)
-	// NB: Use Min.X instead of Max.X in order to fill screen width. Max.X is very large to allow scrolling wide widgets.
 	dims.Size.X = Min(gtx.Constraints.Max.X, dims.Size.X)
 	if dims.Size.Y > 100 {
 		dims.Size.Y++
@@ -101,14 +100,19 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		MaxLines:  0,
 	}
 	w.Font = th.DefaultFont
-	w.padding = th.LabelPadding
+	w.padding = th.OutsidePadding
 	w.th = th
+
 	// Default to Canvas role (typically black for LightMode and white for DarkMode
 	w.role = Canvas
 	w.FontSize = 1.0
 	for _, option := range options {
 		option.apply(&w)
 	}
+	w.padding.Bottom += th.InsidePadding.Bottom
+	w.padding.Top += th.InsidePadding.Top
+	w.padding.Left += th.InsidePadding.Left
+	w.padding.Right += th.InsidePadding.Right
 
 	return func(gtx C) D {
 		macro := op.Record(gtx.Ops)

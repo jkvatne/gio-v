@@ -45,7 +45,7 @@ func RadioButton(th *Theme, value *string, key string, label string, options ...
 	}
 	r.th = th
 	r.role = Surface
-	r.padding = th.LabelPadding
+	r.padding = th.OutsidePadding
 	r.Font = &th.DefaultFont
 	for _, option := range options {
 		option.apply(&r)
@@ -65,7 +65,7 @@ func Checkbox(th *Theme, label string, options ...Option) func(gtx C) D {
 	}
 	c.th = th
 	c.role = Surface
-	c.padding = th.LabelPadding
+	c.padding = th.OutsidePadding
 	c.Font = &th.DefaultFont
 	for _, option := range options {
 		option.apply(c)

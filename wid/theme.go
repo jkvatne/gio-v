@@ -219,37 +219,34 @@ type Pallet struct {
 // Theme contains color/layout settings for all widgets
 type Theme struct {
 	Pallet
-	DarkMode              bool
-	Shaper                text.Shaper
-	TextSize              unit.Sp
-	DefaultFont           text.Font
-	CheckBoxChecked       *Icon
-	CheckBoxUnchecked     *Icon
-	RadioChecked          *Icon
-	RadioUnchecked        *Icon
-	FingerSize            unit.Dp // FingerSize is the minimum touch target size.
-	SelectionColor        color.NRGBA
-	BorderThicknessActive unit.Dp
-	BorderThickness       unit.Dp
-	BorderColor           color.NRGBA
-	BorderColorHovered    color.NRGBA
-	BorderColorActive     color.NRGBA
-	BorderCornerRadius    unit.Dp
-	TooltipInset          layout.Inset
-	TooltipCornerRadius   unit.Dp
-	TooltipWidth          unit.Dp
-	TooltipBackground     color.NRGBA
-	TooltipOnBackground   color.NRGBA
-	LabelPadding          layout.Inset
-	EditPadding           layout.Inset
-	EditInternalPadding   layout.Inset
-	DropDownPadding       layout.Inset
-	IconInset             layout.Inset
-	ListInset             layout.Inset
-	ButtonPadding         layout.Inset
-	ButtonLabelPadding    layout.Inset
-	ButtonCornerRadius    unit.Dp
-	IconSize              unit.Dp
+	DarkMode            bool
+	Shaper              text.Shaper
+	TextSize            unit.Sp
+	DefaultFont         text.Font
+	CheckBoxChecked     *Icon
+	CheckBoxUnchecked   *Icon
+	RadioChecked        *Icon
+	RadioUnchecked      *Icon
+	FingerSize          unit.Dp // FingerSize is the minimum touch target size.
+	SelectionColor      color.NRGBA
+	BorderThickness     unit.Dp
+	BorderColor         color.NRGBA
+	BorderColorHovered  color.NRGBA
+	BorderColorActive   color.NRGBA
+	BorderCornerRadius  unit.Dp
+	TooltipInset        layout.Inset
+	TooltipCornerRadius unit.Dp
+	TooltipWidth        unit.Dp
+	TooltipBackground   color.NRGBA
+	TooltipOnBackground color.NRGBA
+	OutsidePadding      layout.Inset
+	InsidePadding       layout.Inset
+	IconInset           layout.Inset
+	ListInset           layout.Inset
+	ButtonPadding       layout.Inset
+	ButtonLabelPadding  layout.Inset
+	ButtonCornerRadius  unit.Dp
+	IconSize            unit.Dp
 	// Elevation is the shadow width
 	Elevation unit.Dp
 	// SashColor is the color of the movable divider
@@ -321,7 +318,6 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.FingerSize = unit.Dp(38)
 	// Borders around edit fields
 	t.BorderThickness = unit.Dp(t.TextSize) * 0.08
-	t.BorderThicknessActive = unit.Dp(t.TextSize) * 0.3 // OBS 0.18
 	t.BorderColor = t.Fg(Outline)
 	t.BorderColorHovered = t.Fg(Primary)
 	t.BorderColorActive = t.Fg(Primary)
@@ -329,15 +325,13 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	// Shadow
 	t.Elevation = unit.Dp(t.TextSize) * 0.5
 	// Text
-	t.LabelPadding = layout.Inset{
+	t.OutsidePadding = layout.Inset{
 		Top:    unit.Dp(t.TextSize) * 0.2,
 		Right:  unit.Dp(t.TextSize) * 0.2,
 		Bottom: unit.Dp(t.TextSize) * 0.2,
 		Left:   unit.Dp(t.TextSize) * 0.2}
-	t.DropDownPadding = t.LabelPadding
 	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
-	t.EditPadding = t.LabelPadding
-	t.EditInternalPadding = layout.Inset{3, 3, 3, 1}
+	t.InsidePadding = layout.Inset{5, 5, 5, 5}
 	// Buttons
 	// ButtonPadding is the margin outside a button, giving distance to other elements
 	t.ButtonPadding = layout.Inset{Top: 8, Right: 4, Bottom: 8, Left: 4}
