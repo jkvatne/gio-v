@@ -166,7 +166,8 @@ func (b *DropDownStyle) layout(gtx C) D {
 	}
 	if b.listVisible {
 		gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
-		gtx.Constraints.Max.Y = gtx.Constraints.Max.Y - dims.Size.Y - 5
+		// LImit list length to 8 times the gross size of the dropdow
+		gtx.Constraints.Max.Y = dims.Size.Y * 8
 
 		macro := op.Record(gtx.Ops)
 		d := b.list(gtx)
@@ -175,7 +176,9 @@ func (b *DropDownStyle) layout(gtx C) D {
 
 		if !oldVisible {
 			b.setHovered(idx)
-			b.above = int(MouseY) > (WinY - d.Size.Y)
+			// b.above = int(MouseY) > (WinY - d.Size.Y)
+			// New methode:
+			b.above = WinY-CurrentY < d.Size.Y+dims.Size.Y
 		}
 
 		macro = op.Record(gtx.Ops)

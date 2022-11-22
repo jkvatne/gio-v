@@ -30,6 +30,8 @@ var (
 	MouseY     float32
 	WinX       int
 	WinY       int
+	CurrentX   int
+	CurrentY   int
 	GuiLock    sync.RWMutex
 	invalidate chan struct{}
 )
@@ -362,7 +364,8 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 				WinX = e.Size.X
 				WinY = e.Size.Y
 				gtx := layout.NewContext(&ops, e)
-
+				CurrentY = 0
+				CurrentY = 0
 				paint.ColorOp{Color: th.Bg(Canvas)}.Add(gtx.Ops)
 				paint.PaintOp{}.Add(gtx.Ops)
 

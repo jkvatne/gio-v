@@ -13,8 +13,10 @@ import (
 // weights are used to split the available area.
 // Set weigth to 0 for fixed height widgets, and 1 for flexible widgets (like lists)
 func Col(weights []float32, widgets ...layout.Widget) layout.Widget {
+	offsets := make([]int, len(widgets))
 	return func(gtx C) D {
 		size := 0
+		startY := CurrentY
 		var totalWeight float32
 		cgtx := gtx
 		cgtx.Constraints.Min.Y = 0
@@ -26,6 +28,7 @@ func Col(weights []float32, widgets ...layout.Widget) layout.Widget {
 			if i < len(weights) && weights[i] > 0 {
 				totalWeight += weights[i]
 			} else {
+				CurrentY = offsets[i]
 				macro := op.Record(gtx.Ops)
 				cgtx.Constraints.Max.Y = remaining
 				dims[i] = child(cgtx)
@@ -42,6 +45,7 @@ func Col(weights []float32, widgets ...layout.Widget) layout.Widget {
 			if len(weights) <= i || weights[i] == 0 {
 				continue
 			}
+			CurrentY = offsets[i]
 			var flexSize int
 			if remaining > 0 && totalWeight > 0 {
 				childSize := float32(flexTotal) * weights[i] / totalWeight
@@ -66,11 +70,14 @@ func Col(weights []float32, widgets ...layout.Widget) layout.Widget {
 			}
 		}
 		var mainSize int
+		CurrentY = startY
 		for i := range widgets {
 			dims := dims[i]
+			offsets[i] = CurrentY
 			trans := op.Offset(image.Pt(0, mainSize)).Push(gtx.Ops)
 			calls[i].Add(gtx.Ops)
 			trans.Pop()
+			CurrentY += dims.Size.Y
 			mainSize += dims.Size.Y
 		}
 		mainSize += Max(0, gtx.Constraints.Min.Y-size)
