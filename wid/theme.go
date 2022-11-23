@@ -326,12 +326,12 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.Elevation = unit.Dp(t.TextSize) * 0.5
 	// Text
 	t.OutsidePadding = layout.Inset{
-		Top:    unit.Dp(t.TextSize) * 0.2,
-		Right:  unit.Dp(t.TextSize) * 0.2,
-		Bottom: unit.Dp(t.TextSize) * 0.2,
-		Left:   unit.Dp(t.TextSize) * 0.2}
+		Top:    unit.Dp(t.TextSize) * 0.25,
+		Right:  unit.Dp(t.TextSize) * 0.25,
+		Bottom: unit.Dp(t.TextSize) * 0.25,
+		Left:   unit.Dp(t.TextSize) * 0.25}
 	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
-	t.InsidePadding = layout.Inset{1, 1, 1, 1}
+	t.InsidePadding = layout.Inset{3, 3, 3, 3}
 	// Buttons
 	// ButtonPadding is the margin outside a button, giving distance to other elements
 	t.ButtonPadding = layout.Inset{Top: 8, Right: 4, Bottom: 8, Left: 4}

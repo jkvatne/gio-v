@@ -72,22 +72,19 @@ func (e *DropDownStyle) setBorder(w unit.Dp) {
 
 // Layout adds padding to a dropdown box drawn with b.layout().
 func (b *DropDownStyle) Layout(gtx C) D {
-	return b.layout(gtx)
-}
-
-func (b *DropDownStyle) layout(gtx C) D {
 
 	// Move to offset the external padding around both label and edit
 	defer op.Offset(image.Pt(
 		gtx.Dp(b.padding.Left),
-		gtx.Dp(b.padding.Top+b.th.InsidePadding.Top))).Push(gtx.Ops).Pop()
+		gtx.Dp(b.padding.Top))).Push(gtx.Ops).Pop()
+
 	// If a width is given, and it is within constraints, limit size
 	if w := gtx.Dp(b.width); w > gtx.Constraints.Min.X && w < gtx.Constraints.Max.X {
 		gtx.Constraints.Min.X = w
 	}
-	gtx.Constraints.Max.X = gtx.Constraints.Min.X
 	// And reduce the size to make space for the padding
-	gtx.Constraints.Max.X -= gtx.Dp(b.padding.Left + b.padding.Right)
+	gtx.Constraints.Max.X = gtx.Constraints.Min.X
+	gtx.Constraints.Max.X -= gtx.Dp(b.padding.Left + b.padding.Right + b.th.InsidePadding.Left + b.th.InsidePadding.Right)
 
 	if b.disabler != nil && !*b.disabler {
 		gtx.Queue = nil
@@ -99,24 +96,18 @@ func (b *DropDownStyle) layout(gtx C) D {
 	idx := b.GetIndex(len(b.items))
 	b.CheckDisable(gtx)
 
-	// OBS Shade for focused dropdown box
-	r := gtx.Dp(b.cornerRadius)
-	if b.Focused() {
-		// paint.FillShape(gtx.Ops, b.Bg(), clip.RRect{Rect: image.Rectangle{Max: gtx.Constraints.Max}, SE: r, SW: r, NW: r, NE: r}.Op(gtx.Ops))
-	}
-
 	// Add outside label to the left of the dropdown box
 	if b.label != "" {
-		o := op.Offset(image.Pt(gtx.Dp(b.th.InsidePadding.Left), gtx.Dp(b.th.InsidePadding.Top))).Push(gtx.Ops)
+		o := op.Offset(image.Pt(0, gtx.Dp(b.th.InsidePadding.Top))).Push(gtx.Ops)
 		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 		ctx := gtx
-		ctx.Constraints.Max.X = gtx.Sp(b.labelSize) - gtx.Dp(b.padding.Left+b.th.InsidePadding.Left)
+		ctx.Constraints.Max.X = gtx.Sp(b.labelSize)
 		_ = widget.Label{Alignment: text.End, MaxLines: 1}.Layout(ctx, b.th.Shaper, *b.Font, b.th.TextSize, b.label)
 		o.Pop()
-		ofs := gtx.Sp(b.labelSize) + gtx.Dp(b.padding.Left+b.padding.Right)
+		ofs := gtx.Sp(b.labelSize) + gtx.Dp(b.th.InsidePadding.Left)
 		// Move space used by label
 		defer op.Offset(image.Pt(ofs, 0)).Push(gtx.Ops).Pop()
-		gtx.Constraints.Max.X -= ofs
+		gtx.Constraints.Max.X -= ofs - gtx.Dp(b.th.InsidePadding.Left)
 		gtx.Constraints.Min.X -= gtx.Constraints.Max.X
 	}
 
@@ -124,18 +115,23 @@ func (b *DropDownStyle) layout(gtx C) D {
 	macro := op.Record(gtx.Ops)
 	o := op.Offset(image.Pt(gtx.Dp(b.th.InsidePadding.Left), gtx.Dp(b.th.InsidePadding.Top))).Push(gtx.Ops)
 	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
-	dims := widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, b.th.Shaper, *b.Font, b.th.TextSize, b.items[*b.index])
+	tl := widget.Label{Alignment: text.Start, MaxLines: 1}
+	dims := tl.Layout(gtx, b.th.Shaper, *b.Font, b.th.TextSize, b.items[*b.index])
 	o.Pop()
 	call := macro.Stop()
+
 	// Calculate widget size based on text size and padding, using all available x space
 	dims.Size.X = gtx.Constraints.Max.X
-	dims.Size.Y += gtx.Dp(b.th.InsidePadding.Top + b.th.InsidePadding.Bottom + b.padding.Top + b.padding.Bottom)
 
 	border := image.Rectangle{Max: image.Pt(
-		dims.Size.X-gtx.Dp(b.th.InsidePadding.Left+b.padding.Right),
-		dims.Size.Y-gtx.Dp(b.th.InsidePadding.Bottom+b.th.InsidePadding.Top+b.padding.Top))}
+		gtx.Constraints.Max.X+gtx.Dp(b.th.InsidePadding.Left+b.th.InsidePadding.Right),
+		dims.Size.Y+gtx.Dp(b.th.InsidePadding.Bottom+b.th.InsidePadding.Top))}
 
 	// Draw border. Need to undo previous top padding offset first
+	r := gtx.Dp(b.cornerRadius)
+	if r > border.Max.Y/2 {
+		r = border.Max.Y / 2
+	}
 	if b.borderThickness > 0 {
 		if b.Focused() {
 			paintBorder(gtx, border, b.outlineColor, b.borderThickness*2, r)
@@ -206,7 +202,10 @@ func (b *DropDownStyle) layout(gtx C) D {
 	}
 	pointer.CursorPointer.Add(gtx.Ops)
 	b.SetupEventHandlers(gtx, dims.Size)
-	return dims
+
+	return D{Size: image.Pt(
+		gtx.Constraints.Max.X,
+		border.Max.Y-border.Min.Y+gtx.Dp(b.padding.Bottom+b.padding.Top))}
 }
 
 func (b *DropDownStyle) setHovered(h int) {
