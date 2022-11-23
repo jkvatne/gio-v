@@ -23,6 +23,7 @@ type DropDownStyle struct {
 	disabler        *bool
 	items           []string
 	itemHovered     []bool
+	mouseInList     bool
 	outlineColor    color.NRGBA
 	listVisible     bool
 	list            layout.Widget
@@ -72,6 +73,7 @@ func (e *DropDownStyle) setBorder(w unit.Dp) {
 
 // Layout adds padding to a dropdown box drawn with b.layout().
 func (b *DropDownStyle) Layout(gtx C) D {
+	b.CheckDisable(gtx)
 
 	// Move to offset the external padding around both label and edit
 	defer op.Offset(image.Pt(
@@ -86,13 +88,10 @@ func (b *DropDownStyle) Layout(gtx C) D {
 	gtx.Constraints.Min.X -= gtx.Dp(b.padding.Left + b.padding.Right + b.th.InsidePadding.Left + b.th.InsidePadding.Right)
 	gtx.Constraints.Max.X = gtx.Constraints.Min.X
 
-	b.CheckDisable(gtx)
-
 	b.HandleEvents(gtx)
 
 	// Check for index range, because tha HandleEvents() function does not know the limits.
 	idx := b.GetIndex(len(b.items))
-	b.CheckDisable(gtx)
 
 	// Add outside label to the left of the dropdown box
 	if b.label != "" {
@@ -166,23 +165,22 @@ func (b *DropDownStyle) Layout(gtx C) D {
 	}
 	if b.listVisible {
 		gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
-		// LImit list length to 8 times the gross size of the dropdow
+		// Limit list length to 8 times the gross size of the dropdow
 		gtx.Constraints.Max.Y = dims.Size.Y * 8
 
 		macro := op.Record(gtx.Ops)
 		d := b.list(gtx)
 		listClipRect := image.Rect(0, 0, border.Max.X, d.Size.Y)
 		call := macro.Stop()
-
 		if !oldVisible {
-			b.setHovered(idx)
-			// b.above = int(MouseY) > (WinY - d.Size.Y)
-			// New methode:
+			b.mouseInList = false
 			b.above = WinY-CurrentY < d.Size.Y+dims.Size.Y
 		}
-
+		if !b.mouseInList {
+			b.setHovered(idx)
+		}
 		macro = op.Record(gtx.Ops)
-		dy := dims.Size.Y - gtx.Dp(b.padding.Top) - gtx.Dp(b.padding.Bottom)
+		dy := dims.Size.Y + gtx.Dp(b.padding.Top) + gtx.Dp(b.padding.Bottom)
 		if b.above {
 			dy = -d.Size.Y
 		}
@@ -226,14 +224,15 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 					b.listVisible = false
 					b.itemHovered[i] = false
 				case pointer.Enter:
+					b.mouseInList = true
 					for j := 0; j < len(b.itemHovered); j++ {
 						b.itemHovered[j] = false
 					}
 					b.itemHovered[i] = true
 				case pointer.Leave:
+					b.mouseInList = false
 					b.itemHovered[i] = false
 				case pointer.Cancel:
-					// b.setHovered(i)
 				}
 			}
 		}

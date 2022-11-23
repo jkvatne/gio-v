@@ -85,6 +85,7 @@ func (e *EditDef) maxLines() int {
 }
 
 func (e *EditDef) Layout(gtx C) D {
+	e.CheckDisable(gtx)
 
 	// Move to offset the outside padding
 	defer op.Offset(image.Pt(
@@ -98,7 +99,6 @@ func (e *EditDef) Layout(gtx C) D {
 	// And reduce the size to make space for the padding
 	gtx.Constraints.Min.X -= gtx.Dp(e.padding.Left + e.padding.Right + e.th.InsidePadding.Left + e.th.InsidePadding.Right)
 	gtx.Constraints.Max.X = gtx.Constraints.Min.X
-	e.CheckDisable(gtx)
 
 	if e.label != "" {
 		o := op.Offset(image.Pt(0, gtx.Dp(e.th.InsidePadding.Top))).Push(gtx.Ops)
