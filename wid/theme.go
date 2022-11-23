@@ -89,7 +89,7 @@ func (th *Theme) Fg(kind UIRole) color.NRGBA {
 		case Canvas:
 			return Tone(th.Pallet.NeutralColor, 20)
 		case Surface:
-			return Tone(th.Pallet.NeutralColor, 20)
+			return Tone(th.Pallet.NeutralColor, 0)
 		case SurfaceVariant:
 			return Tone(th.Pallet.NeutralVariantColor, 30)
 		case Outline:
@@ -118,7 +118,7 @@ func (th *Theme) Fg(kind UIRole) color.NRGBA {
 		case Canvas:
 			return Tone(th.Pallet.NeutralColor, 80)
 		case Surface:
-			return Tone(th.Pallet.NeutralColor, 90)
+			return Tone(th.Pallet.NeutralColor, 99)
 		case SurfaceVariant:
 			return Tone(th.Pallet.NeutralVariantColor, 90)
 		case Outline:
@@ -331,7 +331,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 		Bottom: unit.Dp(t.TextSize) * 0.2,
 		Left:   unit.Dp(t.TextSize) * 0.2}
 	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
-	t.InsidePadding = layout.Inset{5, 5, 5, 5}
+	t.InsidePadding = layout.Inset{1, 1, 1, 1}
 	// Buttons
 	// ButtonPadding is the margin outside a button, giving distance to other elements
 	t.ButtonPadding = layout.Inset{Top: 8, Right: 4, Bottom: 8, Left: 4}

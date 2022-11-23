@@ -57,27 +57,7 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	}
 }
 
-func (e *EditDef) Layout(gtx C) D {
-	var maxLines int
-	if e.Editor.SingleLine {
-		maxLines = 1
-	}
-	// Move to offset the external padding around both label and edit
-	defer op.Offset(image.Pt(
-		gtx.Dp(e.padding.Left),
-		gtx.Dp(e.padding.Top+e.th.InsidePadding.Top))).Push(gtx.Ops).Pop()
-	// And reduce the size to make space for the padding
-	gtx.Constraints.Max.X -= gtx.Dp(e.padding.Left + e.padding.Right)
-
-	labelDims := D{}
-	if e.label != "" {
-		c := gtx
-		c.Constraints.Min.X = gtx.Sp(e.LabelSize)
-		c.Constraints.Max.X = gtx.Sp(e.LabelSize)
-		paint.ColorOp{Color: e.th.Fg(Canvas)}.Add(gtx.Ops)
-		labelDims = widget.Label{Alignment: text.End}.Layout(c, e.th.Shaper, *e.Font, e.th.TextSize, e.label)
-	}
-
+func (e *EditDef) updateValue() {
 	if !e.Focused() && e.value != nil {
 		current := e.Text()
 		if e.wasFocused {
@@ -95,13 +75,50 @@ func (e *EditDef) Layout(gtx C) D {
 			}
 		}
 	}
+}
+
+func (e *EditDef) maxLines() int {
+	if e.Editor.SingleLine {
+		return 1
+	}
+	return 0
+}
+
+func (e *EditDef) Layout(gtx C) D {
+
+	// Move to offset the external padding around both label and edit
+	defer op.Offset(image.Pt(
+		gtx.Dp(e.padding.Left),
+		gtx.Dp(e.padding.Top+e.th.InsidePadding.Top))).Push(gtx.Ops).Pop()
+	// If a width is given, and it is within constraints, limit size
+	if w := gtx.Dp(e.width); w > gtx.Constraints.Min.X && w < gtx.Constraints.Max.X {
+		gtx.Constraints.Min.X = w
+	}
+	gtx.Constraints.Max.X = gtx.Constraints.Min.X
+	// And reduce the size to make space for the padding
+	gtx.Constraints.Max.X -= gtx.Dp(e.padding.Left + e.padding.Right)
+
+	if e.disabler != nil && !*e.disabler {
+		gtx.Queue = nil
+	}
+
+	labelDims := D{}
+	if e.label != "" {
+		c := gtx
+		c.Constraints.Min.X = gtx.Sp(e.LabelSize)
+		c.Constraints.Max.X = gtx.Sp(e.LabelSize)
+		paint.ColorOp{Color: e.th.Fg(Canvas)}.Add(gtx.Ops)
+		labelDims = widget.Label{Alignment: text.End}.Layout(c, e.th.Shaper, *e.Font, e.th.TextSize, e.label)
+	}
+	e.updateValue()
+
 	//  Move right in case there was a label and include the internal padding and border
 	defer op.Offset(image.Pt(labelDims.Size.X+gtx.Dp(e.th.InsidePadding.Left),
 		0)).Push(gtx.Ops).Pop()
 
 	ma := op.Record(gtx.Ops)
 	paint.ColorOp{Color: MulAlpha(e.Fg(), 110)}.Add(gtx.Ops)
-	tl := widget.Label{Alignment: e.Editor.Alignment, MaxLines: maxLines}
+	tl := widget.Label{Alignment: e.Editor.Alignment, MaxLines: e.maxLines()}
 	dims := tl.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, e.hint)
 	callHint := ma.Stop()
 

@@ -77,35 +77,40 @@ func (b *DropDownStyle) Layout(gtx C) D {
 
 func (b *DropDownStyle) layout(gtx C) D {
 
-	b.HandleEvents(gtx)
+	// Move to offset the external padding around both label and edit
+	defer op.Offset(image.Pt(
+		gtx.Dp(b.padding.Left),
+		gtx.Dp(b.padding.Top+b.th.InsidePadding.Top))).Push(gtx.Ops).Pop()
+	// If a width is given, and it is within constraints, limit size
+	if w := gtx.Dp(b.width); w > gtx.Constraints.Min.X && w < gtx.Constraints.Max.X {
+		gtx.Constraints.Min.X = w
+	}
+	gtx.Constraints.Max.X = gtx.Constraints.Min.X
+	// And reduce the size to make space for the padding
+	gtx.Constraints.Max.X -= gtx.Dp(b.padding.Left + b.padding.Right)
+
 	if b.disabler != nil && !*b.disabler {
 		gtx.Queue = nil
 	}
+
+	b.HandleEvents(gtx)
+
 	// Check for index range, because tha HandleEvents() function does not know the limits.
 	idx := b.GetIndex(len(b.items))
 	b.CheckDisable(gtx)
 
-	// Use all awailable x space, unless a width is given, and it is within constraints.
-	w := gtx.Dp(b.width)
-	if w > gtx.Constraints.Min.X && w < gtx.Constraints.Max.X {
-		gtx.Constraints.Min.X = w
-	}
-	gtx.Constraints.Max.X = gtx.Constraints.Min.X
-	// Shade for focused dropdown box
+	// OBS Shade for focused dropdown box
 	r := gtx.Dp(b.cornerRadius)
 	if b.Focused() {
-		paint.FillShape(gtx.Ops, b.Bg(), clip.RRect{Rect: image.Rectangle{Max: gtx.Constraints.Max}, SE: r, SW: r, NW: r, NE: r}.Op(gtx.Ops))
+		// paint.FillShape(gtx.Ops, b.Bg(), clip.RRect{Rect: image.Rectangle{Max: gtx.Constraints.Max}, SE: r, SW: r, NW: r, NE: r}.Op(gtx.Ops))
 	}
-
-	// Add outside padding
-	defer op.Offset(image.Pt(gtx.Dp(b.padding.Left), gtx.Dp(b.padding.Top))).Push(gtx.Ops).Pop()
 
 	// Add outside label to the left of the dropdown box
 	if b.label != "" {
 		o := op.Offset(image.Pt(gtx.Dp(b.th.InsidePadding.Left), gtx.Dp(b.th.InsidePadding.Top))).Push(gtx.Ops)
 		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 		ctx := gtx
-		ctx.Constraints.Max.X = gtx.Sp(b.labelSize) - gtx.Dp(b.padding.Left)
+		ctx.Constraints.Max.X = gtx.Sp(b.labelSize) - gtx.Dp(b.padding.Left+b.th.InsidePadding.Left)
 		_ = widget.Label{Alignment: text.End, MaxLines: 1}.Layout(ctx, b.th.Shaper, *b.Font, b.th.TextSize, b.label)
 		o.Pop()
 		ofs := gtx.Sp(b.labelSize) + gtx.Dp(b.padding.Left+b.padding.Right)
@@ -128,7 +133,7 @@ func (b *DropDownStyle) layout(gtx C) D {
 
 	border := image.Rectangle{Max: image.Pt(
 		dims.Size.X-gtx.Dp(b.th.InsidePadding.Left+b.padding.Right),
-		dims.Size.Y-gtx.Dp(b.th.InsidePadding.Bottom))}
+		dims.Size.Y-gtx.Dp(b.th.InsidePadding.Bottom+b.th.InsidePadding.Top+b.padding.Top))}
 
 	// Draw border. Need to undo previous top padding offset first
 	if b.borderThickness > 0 {
@@ -143,8 +148,8 @@ func (b *DropDownStyle) layout(gtx C) D {
 	call.Add(gtx.Ops)
 
 	// Draw icon using forground color
-	o = op.Offset(image.Pt(border.Max.X-border.Max.Y, gtx.Dp(b.th.InsidePadding.Top))).Push(gtx.Ops)
 	iconSize := image.Pt(border.Max.Y, border.Max.Y)
+	o = op.Offset(image.Pt(border.Max.X-iconSize.X, 0)).Push(gtx.Ops)
 	c := gtx
 	c.Constraints.Max = iconSize
 	icon.Layout(c, b.Fg())
@@ -253,15 +258,6 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 			Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave,
 		}.Add(gtx.Ops)
 		return dims
-	}
-}
-
-// LayoutIcon draws the icon
-func (b *DropDownStyle) LayoutIcon() layout.Widget {
-	return func(gtx C) D {
-		size := gtx.Sp(b.th.TextSize * 1)
-		gtx.Constraints = layout.Exact(image.Pt(size, size))
-		return icon.Layout(gtx, b.Fg())
 	}
 }
 

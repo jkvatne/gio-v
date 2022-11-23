@@ -31,11 +31,15 @@ var (
 	greenFlag              = false // the state variable for the button color
 	dropDownValue1         = 1
 	dropDownValue2         = 1
+	dropDownValue3         = 1
 	progress       float32 = 0.1
 	sliderValue    float32 = 0.1
 	WindowMode     string
 	homeBg         = wid.RGB(0xF288F2)
 	homeFg         = wid.RGB(0x0902200)
+	list1          = []string{"Option 1 with very very very very very very very very very very very long text", "Option 2", "Option3"}
+	list2          = []string{"Many options", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17"}
+	list3          = []string{"Many options", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17"}
 )
 
 func main() {
@@ -100,12 +104,6 @@ func onWinChange() {
 func demo(th *wid.Theme) layout.Widget {
 	return wid.Col(nil,
 		wid.Label(th, "Demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Row(th, nil, []float32{1, 1, 1},
-			wid.Edit(th, wid.Hint("Value 3")),
-			wid.Edit(th, wid.Hint("Value 4")),
-			wid.Edit(th, wid.Hint("Value 5")),
-		),
-
 		wid.Label(th, "Checkbox to change between dark mode and light mode, changing the theme variable DarkMode"),
 		wid.Row(th, nil, []float32{.9, .5, .5, .5, .5},
 			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onSwitchMode)),
@@ -143,11 +141,23 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.Switch(th, &greenFlag, wid.Do(swColor)),
 		),
 		wid.Separator(th, unit.Dp(1.0)),
+		wid.Row(th, nil, []float32{1, 1, 1},
+			wid.Edit(th, wid.Hint("Value 3")),
+			wid.Edit(th, wid.Hint("Value 4")),
+			wid.Edit(th, wid.Hint("Value 5")),
+		),
+		wid.Row(th, nil, []float32{1, 1, 1},
+			wid.DropDown(th, &dropDownValue1, list1, wid.Hint("Value 3")),
+			wid.DropDown(th, &dropDownValue2, list2, wid.Hint("Value 4")),
+			wid.DropDown(th, &dropDownValue3, list3, wid.Hint("Value 5")),
+		),
+		wid.Row(th, nil, []float32{1, 1, 1},
+			wid.Edit(th, wid.Hint("Value 3"), wid.Lbl("Name")),
+			wid.Edit(th, wid.Hint("Value 4"), wid.Lbl("Adcdress")),
+		),
 		wid.Row(th, nil, []float32{1, 1},
-			wid.DropDown(th, &dropDownValue1,
-				[]string{"Option 1 with very very very very very very very very very very very long text", "Option 2", "Option 3"}, wid.Lbl("Dropdown 1")),
-			wid.DropDown(th, &dropDownValue2,
-				[]string{"Many options", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17"}, wid.Lbl("Dropdown 2")),
+			wid.DropDown(th, &dropDownValue1, list1, wid.Lbl("Dropdown 1")),
+			wid.DropDown(th, &dropDownValue2, list2, wid.Lbl("Dropdown 1")),
 		),
 		wid.Edit(th, wid.Lbl("Value"), wid.Var(&name)),
 		wid.Slider(th, &sliderValue, 0, 100),
