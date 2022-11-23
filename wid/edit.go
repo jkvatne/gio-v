@@ -96,9 +96,8 @@ func (e *EditDef) Layout(gtx C) D {
 		gtx.Constraints.Min.X = w
 	}
 	// And reduce the size to make space for the padding
+	gtx.Constraints.Min.X -= gtx.Dp(e.padding.Left + e.padding.Right + e.th.InsidePadding.Left + e.th.InsidePadding.Right)
 	gtx.Constraints.Max.X = gtx.Constraints.Min.X
-	gtx.Constraints.Max.X -= gtx.Dp(e.padding.Left + e.padding.Right + e.th.InsidePadding.Left + e.th.InsidePadding.Right)
-
 	e.CheckDisable(gtx)
 
 	if e.label != "" {
@@ -111,8 +110,8 @@ func (e *EditDef) Layout(gtx C) D {
 		ofs := gtx.Sp(e.labelSize) + gtx.Dp(e.th.InsidePadding.Left)
 		// Move space used by label
 		defer op.Offset(image.Pt(ofs, 0)).Push(gtx.Ops).Pop()
-		gtx.Constraints.Max.X -= ofs - gtx.Dp(e.th.InsidePadding.Left)
-		gtx.Constraints.Min.X -= gtx.Constraints.Max.X
+		gtx.Constraints.Max.X -= ofs
+		gtx.Constraints.Min.X = gtx.Constraints.Max.X
 	}
 	e.updateValue()
 

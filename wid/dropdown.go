@@ -83,12 +83,10 @@ func (b *DropDownStyle) Layout(gtx C) D {
 		gtx.Constraints.Min.X = w
 	}
 	// And reduce the size to make space for the padding
+	gtx.Constraints.Min.X -= gtx.Dp(b.padding.Left + b.padding.Right + b.th.InsidePadding.Left + b.th.InsidePadding.Right)
 	gtx.Constraints.Max.X = gtx.Constraints.Min.X
-	gtx.Constraints.Max.X -= gtx.Dp(b.padding.Left + b.padding.Right + b.th.InsidePadding.Left + b.th.InsidePadding.Right)
 
-	if b.disabler != nil && !*b.disabler {
-		gtx.Queue = nil
-	}
+	b.CheckDisable(gtx)
 
 	b.HandleEvents(gtx)
 
@@ -107,8 +105,8 @@ func (b *DropDownStyle) Layout(gtx C) D {
 		ofs := gtx.Sp(b.labelSize) + gtx.Dp(b.th.InsidePadding.Left)
 		// Move space used by label
 		defer op.Offset(image.Pt(ofs, 0)).Push(gtx.Ops).Pop()
-		gtx.Constraints.Max.X -= ofs - gtx.Dp(b.th.InsidePadding.Left)
-		gtx.Constraints.Min.X -= gtx.Constraints.Max.X
+		gtx.Constraints.Max.X -= ofs
+		gtx.Constraints.Min.X = gtx.Constraints.Max.X
 	}
 
 	// Draw text with top/left padding offset
@@ -148,6 +146,7 @@ func (b *DropDownStyle) Layout(gtx C) D {
 	o = op.Offset(image.Pt(border.Max.X-iconSize.X, 0)).Push(gtx.Ops)
 	c := gtx
 	c.Constraints.Max = iconSize
+	c.Constraints.Min = iconSize
 	icon.Layout(c, b.Fg())
 	o.Pop()
 
