@@ -163,14 +163,15 @@ func (b *DropDownStyle) Layout(gtx C) D {
 		b.listVisible = false
 	}
 	if b.listVisible {
-		gtx.Constraints.Min = image.Pt(dims.Size.X, dims.Size.Y)
+		gtx.Constraints.Min = image.Pt(border.Max.X, dims.Size.Y)
 		// Limit list length to 8 times the gross size of the dropdow
 		gtx.Constraints.Max.Y = dims.Size.Y * 8
-
+		gtx.Constraints.Max.X = gtx.Constraints.Min.X
 		macro := op.Record(gtx.Ops)
 		d := b.list(gtx)
 		listClipRect := image.Rect(0, 0, border.Max.X, d.Size.Y)
 		call := macro.Stop()
+
 		if !oldVisible {
 			b.above = WinY-CurrentY < d.Size.Y+dims.Size.Y
 			b.setHovered(idx)
@@ -181,10 +182,9 @@ func (b *DropDownStyle) Layout(gtx C) D {
 			dy = -d.Size.Y
 		}
 		op.Offset(image.Pt(0, dy)).Add(gtx.Ops)
-		stack := clip.UniformRRect(listClipRect, 0).Push(gtx.Ops)
-		paint.Fill(gtx.Ops, b.Bg())
+		// stack := clip.UniformRRect(listClipRect, 0).Push(gtx.Ops)
 		call.Add(gtx.Ops)
-		stack.Pop()
+		// stack.Pop()
 		// Draw a border around all options
 		paintBorder(gtx, listClipRect, b.th.Fg(Outline), b.th.BorderThickness, 0)
 		call = macro.Stop()
@@ -230,6 +230,7 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 				}
 			}
 		}
+		gtx.Constraints.Max.X = gtx.Constraints.Min.X
 		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 		lblWidget := func(gtx C) D {
 			return widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, *b.Font, th.TextSize, b.items[i])

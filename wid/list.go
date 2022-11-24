@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Unlicense OR MIT
+// SPDX-License-Identifier: Unlicense OR MIT
 
 package wid
 
