@@ -79,6 +79,9 @@ func Col(weights []float32, widgets ...layout.Widget) layout.Widget {
 			trans.Pop()
 			CurrentY += dims.Size.Y
 			mainSize += dims.Size.Y
+			if mainSize >= gtx.Constraints.Max.Y {
+				break
+			}
 		}
 		mainSize += Max(0, gtx.Constraints.Min.Y-size)
 		sz := gtx.Constraints.Constrain(image.Pt(maxX, mainSize))

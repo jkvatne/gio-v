@@ -34,7 +34,7 @@ func fromListPosition(lp layout.Position, elements int, majorAxisSize int) (star
 	// Compute the location of the beginning of the viewport.
 	viewportStart := (float32(lp.First)*meanElementHeight + listOffsetF) / lengthPx
 
-	return viewportStart, clamp1(viewportStart + visibleFraction)
+	return viewportStart, Clamp(viewportStart+visibleFraction, 0, 1)
 }
 
 // ScrollTrackStyle configures the presentation of a track for a scroll area.

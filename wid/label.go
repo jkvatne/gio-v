@@ -10,7 +10,6 @@ import (
 	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
-	"golang.org/x/exp/constraints"
 	"image"
 	"strconv"
 )
@@ -183,18 +182,4 @@ func Label[V Value](th *Theme, v V, options ...Option) func(gtx C) D {
 	}
 	s := func(dp int) string { return fmt.Sprintf("%v", v) }
 	return StringerValue(th, s, options...)
-}
-
-func Min[T constraints.Ordered](x, y T) T {
-	if x < y {
-		return x
-	}
-	return y
-}
-
-func Max[T constraints.Ordered](x, y T) T {
-	if x >= y {
-		return x
-	}
-	return y
 }

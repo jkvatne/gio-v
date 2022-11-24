@@ -23,7 +23,6 @@ type DropDownStyle struct {
 	disabler        *bool
 	items           []string
 	itemHovered     []bool
-	mouseInList     bool
 	outlineColor    color.NRGBA
 	listVisible     bool
 	list            layout.Widget
@@ -173,10 +172,7 @@ func (b *DropDownStyle) Layout(gtx C) D {
 		listClipRect := image.Rect(0, 0, border.Max.X, d.Size.Y)
 		call := macro.Stop()
 		if !oldVisible {
-			b.mouseInList = false
 			b.above = WinY-CurrentY < d.Size.Y+dims.Size.Y
-		}
-		if !b.mouseInList {
 			b.setHovered(idx)
 		}
 		macro = op.Record(gtx.Ops)
@@ -224,13 +220,11 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 					b.listVisible = false
 					b.itemHovered[i] = false
 				case pointer.Enter:
-					b.mouseInList = true
 					for j := 0; j < len(b.itemHovered); j++ {
 						b.itemHovered[j] = false
 					}
 					b.itemHovered[i] = true
 				case pointer.Leave:
-					b.mouseInList = false
 					b.itemHovered[i] = false
 				case pointer.Cancel:
 				}
@@ -242,14 +236,15 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 		}
 		dims := layout.Inset{Top: unit.Dp(4), Left: unit.Dp(th.TextSize * 0.4), Right: unit.Dp(0)}.Layout(gtx, lblWidget)
 		defer clip.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Push(gtx.Ops).Pop()
-		if b.itemHovered[i] {
-			c := MulAlpha(b.Fg(), 48)
-			if Luminance(b.Bg()) > 28 {
-				c = MulAlpha(b.Fg(), 160)
-			}
-			paint.ColorOp{Color: c}.Add(gtx.Ops)
-			paint.PaintOp{}.Add(gtx.Ops)
+		c := color.NRGBA{}
+		if *b.index == i {
+			c = MulAlpha(b.Fg(), 64)
+		} else if b.itemHovered[i] {
+			c = MulAlpha(b.Fg(), 24)
 		}
+		paint.ColorOp{Color: c}.Add(gtx.Ops)
+		paint.PaintOp{}.Add(gtx.Ops)
+
 		pointer.InputOp{
 			Tag:   &b.items[i],
 			Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave,

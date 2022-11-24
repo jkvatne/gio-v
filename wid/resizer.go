@@ -69,15 +69,6 @@ func (rs *Resize) setCursor(gtx C, dims image.Point) {
 	}
 }
 
-func clamp(v float32, lo float32, hi float32) float32 {
-	if v < lo {
-		return lo
-	} else if v > hi {
-		return 0.95
-	}
-	return v
-}
-
 func (rs *Resize) dragging(gtx C, length float32) {
 	var dp int
 	pos := int(rs.ratio * length)
@@ -95,7 +86,7 @@ func (rs *Resize) dragging(gtx C, length float32) {
 		}
 	}
 	// Clamp the handle position, leaving it always visible.
-	rs.ratio = clamp(float32(pos)/length, 0.05, 0.95)
+	rs.ratio = Clamp(float32(pos)/length, 0.05, 0.95)
 }
 
 func (rs *Resize) drawSash(gtx C) image.Point {

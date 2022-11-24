@@ -4,7 +4,6 @@ package wid
 
 import (
 	"image"
-	"image/color"
 
 	"gioui.org/layout"
 	"gioui.org/op/clip"
@@ -36,7 +35,16 @@ func ProgressBar(th *Theme, progress *float32, options ...Option) func(gtx C) D 
 }
 
 func (p ProgressBarStyle) layout(gtx C) D {
-	shader := func(width int, color color.NRGBA) D {
+	progressBarWidth := gtx.Constraints.Min.X - gtx.Dp(4)
+	return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
+		GuiLock.RLock()
+		value := *p.Progress
+		GuiLock.RUnlock()
+		width := int(float32(progressBarWidth) * Clamp(value, 0, 1))
+		color := p.Fg()
+		if gtx.Queue == nil {
+			color = Disabled(color)
+		}
 		rr := rr(gtx, p.cornerRadius, gtx.Dp(p.width))
 		d := image.Point{X: width, Y: gtx.Dp(p.width)}
 		height := p.width
@@ -44,36 +52,5 @@ func (p ProgressBarStyle) layout(gtx C) D {
 		paint.ColorOp{Color: color}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
 		return D{Size: d}
-	}
-	progressBarWidth := gtx.Constraints.Min.X - gtx.Dp(4)
-	return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
-		return layout.Stack{Alignment: layout.W}.Layout(gtx,
-			layout.Stacked(func(gtx C) D {
-				return shader(progressBarWidth, p.Bg())
-			}),
-			layout.Stacked(func(gtx C) D {
-				GuiLock.RLock()
-				value := *p.Progress
-				GuiLock.RUnlock()
-				fillWidth := int(float32(progressBarWidth) * clamp1(value))
-				fillColor := p.Fg()
-				if gtx.Queue == nil {
-					fillColor = Disabled(fillColor)
-				}
-				return shader(fillWidth, fillColor)
-			}),
-		)
-	},
-	)
-}
-
-// clamp1 limits v to range [0..1].
-func clamp1(v float32) float32 {
-	if v >= 1 {
-		return 1
-	} else if v <= 0 {
-		return 0
-	} else {
-		return v
-	}
+	})
 }

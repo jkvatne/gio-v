@@ -3,6 +3,7 @@
 package wid
 
 import (
+	"golang.org/x/exp/constraints"
 	"image"
 	"image/color"
 	"os"
@@ -387,4 +388,27 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 			win.Invalidate()
 		}
 	}
+}
+
+func Min[T constraints.Ordered](x, y T) T {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+func Max[T constraints.Ordered](x, y T) T {
+	if x >= y {
+		return x
+	}
+	return y
+}
+
+func Clamp[T constraints.Ordered](v T, lo T, hi T) T {
+	if v < lo {
+		return lo
+	} else if v > hi {
+		return hi
+	}
+	return v
 }
