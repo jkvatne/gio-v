@@ -20,11 +20,11 @@ import (
 type DropDownStyle struct {
 	Base
 	Clickable
-	disabler        *bool
 	items           []string
 	itemHovered     []bool
 	outlineColor    color.NRGBA
 	listVisible     bool
+	inList          bool
 	list            layout.Widget
 	Items           []layout.Widget
 	label           string
@@ -139,7 +139,7 @@ func (b *DropDownStyle) Layout(gtx C) D {
 	}
 	call.Add(gtx.Ops)
 
-	// Draw icon using forground color
+	// Draw icon using foreground color
 	iconSize := image.Pt(border.Max.Y, border.Max.Y)
 	o = op.Offset(image.Pt(border.Max.X-iconSize.X, 0)).Push(gtx.Ops)
 	c := gtx
@@ -159,7 +159,7 @@ func (b *DropDownStyle) Layout(gtx C) D {
 	for i := 0; i < len(b.items); i++ {
 		ok = ok || b.itemHovered[i]
 	}
-	if !ok {
+	if !ok && !b.inList {
 		b.listVisible = false
 	}
 	if b.listVisible {
@@ -182,9 +182,27 @@ func (b *DropDownStyle) Layout(gtx C) D {
 			dy = -d.Size.Y
 		}
 		op.Offset(image.Pt(0, dy)).Add(gtx.Ops)
-		// stack := clip.UniformRRect(listClipRect, 0).Push(gtx.Ops)
 		call.Add(gtx.Ops)
-		// stack.Pop()
+
+		for _, e := range gtx.Events(&b.role) {
+			if e, ok := e.(pointer.Event); ok {
+				switch e.Type {
+				case pointer.Enter:
+					b.inList = true
+				case pointer.Leave:
+					b.inList = false
+				}
+			}
+		}
+		cl := clip.Rect(listClipRect).Push(gtx.Ops)
+		pass := pointer.PassOp{}.Push(gtx.Ops)
+		pointer.InputOp{
+			Tag:   &b.role,
+			Types: pointer.Enter | pointer.Leave,
+		}.Add(gtx.Ops)
+		cl.Pop()
+		pass.Pop()
+
 		// Draw a border around all options
 		paintBorder(gtx, listClipRect, b.th.Fg(Outline), b.th.BorderThickness, 0)
 		call = macro.Stop()
