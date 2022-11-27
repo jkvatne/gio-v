@@ -108,13 +108,13 @@ func (b *DropDownStyle) Layout(gtx C) D {
 	}
 
 	// Draw text with top/left padding offset
-	macro := op.Record(gtx.Ops)
+	textMacro := op.Record(gtx.Ops)
 	o := op.Offset(image.Pt(gtx.Dp(b.th.InsidePadding.Left), gtx.Dp(b.th.InsidePadding.Top))).Push(gtx.Ops)
 	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 	tl := widget.Label{Alignment: text.Start, MaxLines: 1}
 	dims := tl.Layout(gtx, b.th.Shaper, *b.Font, b.th.TextSize, b.items[*b.index])
 	o.Pop()
-	call := macro.Stop()
+	drawTextMacro := textMacro.Stop()
 
 	// Calculate widget size based on text size and padding, using all available x space
 	dims.Size.X = gtx.Constraints.Max.X
@@ -137,7 +137,7 @@ func (b *DropDownStyle) Layout(gtx C) D {
 			paintBorder(gtx, border, b.Fg(), b.th.BorderThickness, r)
 		}
 	}
-	call.Add(gtx.Ops)
+	drawTextMacro.Add(gtx.Ops)
 
 	// Draw icon using foreground color
 	iconSize := image.Pt(border.Max.Y, border.Max.Y)
@@ -167,22 +167,23 @@ func (b *DropDownStyle) Layout(gtx C) D {
 		// Limit list length to 8 times the gross size of the dropdow
 		gtx.Constraints.Max.Y = dims.Size.Y * 8
 		gtx.Constraints.Max.X = gtx.Constraints.Min.X
-		macro := op.Record(gtx.Ops)
+
+		listMacro := op.Record(gtx.Ops)
 		d := b.list(gtx)
 		listClipRect := image.Rect(0, 0, border.Max.X, d.Size.Y)
-		call := macro.Stop()
+		theListMacro := listMacro.Stop()
 
 		if !oldVisible {
 			b.above = WinY-CurrentY < d.Size.Y+dims.Size.Y
 			b.setHovered(idx)
 		}
-		macro = op.Record(gtx.Ops)
+
+		macro := op.Record(gtx.Ops)
 		dy := dims.Size.Y + gtx.Dp(b.padding.Top) + gtx.Dp(b.padding.Bottom)
 		if b.above {
 			dy = -d.Size.Y
 		}
 		op.Offset(image.Pt(0, dy)).Add(gtx.Ops)
-		call.Add(gtx.Ops)
 
 		for _, e := range gtx.Events(&b.role) {
 			if e, ok := e.(pointer.Event); ok {
@@ -194,7 +195,15 @@ func (b *DropDownStyle) Layout(gtx C) D {
 				}
 			}
 		}
-		cl := clip.Rect(listClipRect).Push(gtx.Ops)
+
+		// Fill background and draw list
+		cl := clip.Rect{Max: listClipRect.Max}.Push(gtx.Ops)
+		paint.Fill(gtx.Ops, b.th.Bg(Canvas))
+		theListMacro.Add(gtx.Ops)
+		cl.Pop()
+
+		// Handle mouse enter/leave into list
+		cl = clip.Rect(listClipRect).Push(gtx.Ops)
 		pass := pointer.PassOp{}.Push(gtx.Ops)
 		pointer.InputOp{
 			Tag:   &b.role,
@@ -205,7 +214,7 @@ func (b *DropDownStyle) Layout(gtx C) D {
 
 		// Draw a border around all options
 		paintBorder(gtx, listClipRect, b.th.Fg(Outline), b.th.BorderThickness, 0)
-		call = macro.Stop()
+		call := macro.Stop()
 		op.Defer(gtx.Ops, call)
 
 	} else {

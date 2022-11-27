@@ -242,11 +242,6 @@ func List(th *Theme, a AnchorStrategy, heading layout.Widget, widgets ...layout.
 	}
 	listStyle.theme = th
 	return func(gtx C) D {
-		cl := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
-		c := th.Bg(Canvas)
-		paint.Fill(gtx.Ops, c)
-		cl.Pop()
-
 		var ch []layout.Widget
 		for i := 0; i < len(widgets); i++ {
 			ch = append(ch, widgets[i])
