@@ -277,6 +277,10 @@ type Theme struct {
 	ScrollCornerRadius unit.Sp
 }
 
+func uniformPadding(p unit.Dp) layout.Inset {
+	return layout.Inset{p, p, p, p}
+}
+
 // NewTheme creates a new theme with given FontFace and FontSize, based on the theme t
 func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.NRGBA) *Theme {
 	t := new(Theme)
@@ -301,7 +305,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 
 	t.Shaper = text.NewCache(fontCollection)
 	t.TextSize = fontSize
-	v := unit.Dp(t.TextSize) * 0.4
+	v := unit.Dp(t.TextSize) / 10
 	// Icons
 	t.CheckBoxChecked = mustIcon(NewIcon(icons.ToggleCheckBox))
 	t.CheckBoxUnchecked = mustIcon(NewIcon(icons.ToggleCheckBoxOutlineBlank))
@@ -314,39 +318,28 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.BorderColor = t.Fg(Outline)
 	t.BorderColorHovered = t.Fg(Primary)
 	t.BorderColorActive = t.Fg(Primary)
-	t.BorderCornerRadius = unit.Dp(t.TextSize) * 0.3
+	t.BorderCornerRadius = v * 3
 	// Shadow
 	t.Elevation = unit.Dp(t.TextSize) * 0.5
 	// Text
-	t.OutsidePadding = layout.Inset{
-		Top:    unit.Dp(t.TextSize) * 0.25,
-		Right:  unit.Dp(t.TextSize) * 0.25,
-		Bottom: unit.Dp(t.TextSize) * 0.25,
-		Left:   unit.Dp(t.TextSize) * 0.25}
+	t.OutsidePadding = uniformPadding(2.5 * v)
 	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
-	t.InsidePadding = layout.Inset{5, 5, 5, 2}
+	t.InsidePadding = uniformPadding(2.5 * v)
 	// Buttons
 	// ButtonPadding is the margin outside a button, giving distance to other elements
-	t.ButtonPadding = layout.Inset{Top: 8, Right: 4, Bottom: 8, Left: 4}
-	t.ButtonCornerRadius = unit.Dp(t.TextSize) * 0.3
-	t.ButtonLabelPadding = layout.Inset{Top: 2, Right: 4, Bottom: 2, Left: 4}
-	t.IconSize = unit.Dp(t.TextSize) * 1.5
+	t.ButtonPadding = uniformPadding(3 * v)
+	t.ButtonCornerRadius = t.BorderCornerRadius
+	t.ButtonLabelPadding = uniformPadding(5 * v)
+	t.IconSize = v * 20
 	// Tooltip
 	t.TooltipInset = layout.UniformInset(unit.Dp(10))
-	t.TooltipCornerRadius = unit.Dp(6.0)
-	t.TooltipWidth = v * 50
+	t.TooltipCornerRadius = t.BorderCornerRadius
+	t.TooltipWidth = v * 250
 	t.TooltipBackground = t.Bg(SecondaryContainer)
 	t.TooltipOnBackground = t.Fg(SecondaryContainer)
-	// List
-	t.ListInset = layout.Inset{
-		Top:    v * 0.5,
-		Right:  v * 0.75,
-		Bottom: v * 0.5,
-		Left:   v * 0.75,
-	}
 	// Resizer
 	t.SashColor = WithAlpha(t.Fg(Surface), 0x80)
-	t.SashWidth = v * 0.5
+	t.SashWidth = v * 2
 	// Switch
 	t.TrackColor = WithAlpha(t.Fg(Primary), 0x40)
 	t.DotColor = t.Fg(Primary)

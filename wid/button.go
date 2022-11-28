@@ -103,9 +103,7 @@ func aButton[V StrValue](style ButtonStyle, th *Theme, label V, options ...Optio
 	b.Font = &th.DefaultFont
 	b.shaper = th.Shaper
 	b.Style = style
-	b.internPad = th.OutsidePadding
-	b.internPad.Left = 5
-	b.internPad.Right = 5
+	b.internPad = th.ButtonLabelPadding
 	// Apply standard padding on the outside of the button. Can be overridden by option function
 	b.padding = th.ButtonPadding
 	b.FontSize = 1.0

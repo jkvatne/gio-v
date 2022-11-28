@@ -40,10 +40,10 @@ func main() {
 	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
 	addIcon, _ = wid.NewIcon(icons.ContentAdd)
 	th = wid.NewTheme(gofont.Collection(), 14)
-	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
+	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(650)))
 	form = kitchen(th)
 	go ticker()
-	wid.Run(win, &form)
+	wid.Run(win, &form, th)
 	app.Main()
 }
 
@@ -98,7 +98,7 @@ func colorBar(gtx wid.C) wid.D {
 
 func kitchen(th *wid.Theme) layout.Widget {
 	thb = th
-	return wid.List(th, wid.Occupy,
+	return wid.List(th, wid.Occupy, nil,
 
 		wid.Label(th, topLabel, wid.Middle(), wid.FontSize(2.1)),
 
@@ -139,20 +139,9 @@ func kitchen(th *wid.Theme) layout.Widget {
 	)
 }
 
-const longText = `1. I learned from my grandfather, Verus, to use good manners, and to
-put restraint on anger. 2. In the famous memory of my father I had a
-pattern of modesty and manliness. 3. Of my mother I learned to be
-pious and generous; to keep myself not only from evil deeds, but even
-from evil thoughts; and to live with a simplicity which is far from
-customary among the rich. 4. I owe it to my great-grandfather that I
-did not attend public lectures and discussions, but had good and able
-teachers at home; and I owe him also the knowledge that for things of
-this nature a man should count no expense too great.
-
-5. My tutor taught me not to favour either green or blue at the
-chariot races, nor, in the contests of gladiators, to be a supporter
-either of light or heavy armed. He taught me also to endure labour;
-not to need many things; to serve myself without troubling others; not
-to intermeddle in the affairs of others, and not easily to listen to
-slanders against them.
+const longText = `1. I learned from my grandfather, Verus, to use good manners, and to put restraint on anger. 
+2. In the famous memory of my father I had a pattern of modesty and manliness. 
+3. Of my mother I learned to be pious and generous; to keep myself not only from evil deeds, but even from evil thoughts; and to live with a simplicity which is far from customary among the rich. 
+4. I owe it to my great-grandfather that I did not attend public lectures and discussions, but had good and able teachers at home; and I owe him also the knowledge that for things of this nature a man should count no expense too great.
+5. My tutor taught me not to favour either green or blue at the chariot races, nor, in the contests of gladiators, to be a supporter either of light or heavy armed. He taught me also to endure labour; not to need many things; to serve myself without troubling others; not to intermeddle in the affairs of others, and not easily to listen to slanders against them.
 `
