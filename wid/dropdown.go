@@ -50,7 +50,7 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 		b.Items = append(b.Items, b.option(th, i))
 		b.itemHovered = append(b.itemHovered, false)
 	}
-	b.list = List(th, Overlay, nil, b.Items...)
+	b.list = List(th, Overlay, b.Items...)
 	b.cornerRadius = th.BorderCornerRadius
 	b.padding = th.OutsidePadding
 	for _, option := range options {

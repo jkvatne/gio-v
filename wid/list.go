@@ -232,8 +232,8 @@ type ListStyle struct {
 	AnchorStrategy
 }
 
-// List makes a vertical list
-func List(th *Theme, a AnchorStrategy, heading layout.Widget, widgets ...layout.Widget) layout.Widget {
+// Table makes a scrollable vertical list with a fixed header row
+func Table(th *Theme, a AnchorStrategy, heading layout.Widget, widgets ...layout.Widget) layout.Widget {
 	listStyle := ListStyle{
 		list:           &layout.List{Axis: layout.Vertical},
 		VScrollBar:     MakeScrollbarStyle(th),
@@ -255,6 +255,11 @@ func List(th *Theme, a AnchorStrategy, heading layout.Widget, widgets ...layout.
 			},
 		)
 	}
+}
+
+// List makes a vertical list
+func List(th *Theme, a AnchorStrategy, widgets ...layout.Widget) layout.Widget {
+	return Table(th, a, nil, widgets...)
 }
 
 // Layout the list and its scrollbar.

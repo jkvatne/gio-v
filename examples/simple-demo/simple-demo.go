@@ -22,7 +22,7 @@ import (
 
 var (
 	SmallFont      bool
-	currentTheme   *wid.Theme  // the theme selected
+	theme          *wid.Theme  // the theme selected
 	win            *app.Window // The main window
 	form           layout.Widget
 	name           string = "Jan Kåre Vatne"
@@ -46,11 +46,11 @@ var (
 func main() {
 	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
 	homeIcon, _ = wid.NewIcon(icons.ActionHome)
-	currentTheme = wid.NewTheme(gofont.Collection(), 14)
-	currentTheme.DarkMode = false
+	theme = wid.NewTheme(gofont.Collection(), 14)
+	theme.DarkMode = false
 	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
-	form = demo(currentTheme)
-	go wid.Run(win, &form, currentTheme)
+	form = demo(theme)
+	go wid.Run(win, &form, theme)
 	go ticker()
 	app.Main()
 }
@@ -67,28 +67,28 @@ func ticker() {
 
 func onSwitchMode() {
 	if SmallFont {
-		currentTheme = wid.NewTheme(gofont.Collection(), 11)
+		theme = wid.NewTheme(gofont.Collection(), 11)
 	} else {
-		currentTheme = wid.NewTheme(gofont.Collection(), 14)
+		theme = wid.NewTheme(gofont.Collection(), 14)
 	}
-	form = demo(currentTheme)
+	form = demo(theme)
 }
 
 func onClick() {
 	greenFlag = !greenFlag
 	if greenFlag {
-		currentTheme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
+		theme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
 	} else {
-		currentTheme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
+		theme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
 	}
-	form = demo(currentTheme)
+	form = demo(theme)
 }
 
 func swColor() {
 	if greenFlag {
-		currentTheme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
+		theme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
 	} else {
-		currentTheme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
+		theme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
 	}
 }
 

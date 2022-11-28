@@ -2,7 +2,7 @@
 **/android/build
 *.exe
 profile*.*
-profile.out
+*.out
 .idea/
 notes/
 old/

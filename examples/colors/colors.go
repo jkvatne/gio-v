@@ -17,14 +17,14 @@ import (
 )
 
 var (
-	currentTheme *wid.Theme // the theme selected
-	form         layout.Widget
+	theme *wid.Theme // the theme selected
+	form  layout.Widget
 )
 
 func main() {
-	currentTheme = wid.NewTheme(gofont.Collection(), 14)
-	form = demo(currentTheme)
-	go wid.Run(app.NewWindow(app.Title("Colors"), app.Size(unit.Dp(900), unit.Dp(700))), &form, currentTheme)
+	theme = wid.NewTheme(gofont.Collection(), 14)
+	form = demo(theme)
+	go wid.Run(app.NewWindow(app.Title("Colors"), app.Size(unit.Dp(900), unit.Dp(700))), &form, theme)
 	app.Main()
 }
 
@@ -54,7 +54,7 @@ func showTones(th *wid.Theme, c color.NRGBA) layout.Widget {
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
-	return wid.List(th, wid.Overlay, nil,
+	return wid.List(th, wid.Overlay,
 		wid.Label(th, "Show all colors", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Primary", wid.Large()),

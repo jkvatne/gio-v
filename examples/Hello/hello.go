@@ -10,12 +10,13 @@ import (
 	"gioui.org/unit"
 )
 
-var th *wid.Theme
+var theme *wid.Theme
+var form wid.Wid
 
 func main() {
-	th = wid.NewTheme(gofont.Collection(), 14)
-	form := hello(th)
-	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500))), &form, th)
+	theme = wid.NewTheme(gofont.Collection(), 14)
+	form = hello(theme)
+	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500))), &form, theme)
 	app.Main()
 }
 

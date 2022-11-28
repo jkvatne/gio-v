@@ -20,7 +20,7 @@ import (
 var (
 	topLabel    = "Hello, Gio"
 	thb         *wid.Theme
-	th          *wid.Theme
+	theme       *wid.Theme
 	addIcon     *wid.Icon
 	checkIcon   *wid.Icon
 	group       string  = ""
@@ -39,11 +39,11 @@ var (
 func main() {
 	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
 	addIcon, _ = wid.NewIcon(icons.ContentAdd)
-	th = wid.NewTheme(gofont.Collection(), 14)
+	theme = wid.NewTheme(gofont.Collection(), 14)
 	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(650)))
-	form = kitchen(th)
+	form = kitchen(theme)
 	go ticker()
-	wid.Run(win, &form, th)
+	wid.Run(win, &form, theme)
 	app.Main()
 }
 
@@ -98,7 +98,7 @@ func colorBar(gtx wid.C) wid.D {
 
 func kitchen(th *wid.Theme) layout.Widget {
 	thb = th
-	return wid.List(th, wid.Occupy, nil,
+	return wid.List(th, wid.Occupy,
 
 		wid.Label(th, topLabel, wid.Middle(), wid.FontSize(2.1)),
 

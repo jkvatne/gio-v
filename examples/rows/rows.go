@@ -9,121 +9,44 @@ package main
 import (
 	"gio-v/wid"
 	"image/color"
-	"os"
 
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
-	"gioui.org/widget"
-
 	"gioui.org/app"
-	"gioui.org/font/gofont"
-	"gioui.org/io/system"
 	"gioui.org/layout"
-	"gioui.org/op"
-	"gioui.org/op/paint"
 	"gioui.org/unit"
 )
 
 var (
-	currentTheme   *wid.Theme  // the theme selected
-	win            *app.Window // The main window
-	form           layout.Widget
-	name           string
-	address        string
-	group          = new(widget.Enum)
-	homeIcon       *wid.Icon
-	checkIcon      *wid.Icon
-	greenFlag              = false // the state variable for the button color
-	darkMode               = false
-	dropDownValue1         = 1
-	dropDownValue2         = 1
-	progress       float32 = 0.33
-	sliderValue    float32 = 0.1
+	theme     *wid.Theme  // the theme selected
+	win       *app.Window // The main window
+	form      layout.Widget
+	homeIcon  *wid.Icon
+	checkIcon *wid.Icon
+	greenFlag = false // the state variable for the button color
 )
 
 func main() {
 	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
 	homeIcon, _ = wid.NewIcon(icons.ActionHome)
-
-	go func() {
-		currentTheme = wid.NewTheme(gofont.Collection(), 14)
-		win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
-		form = demo(currentTheme)
-		for {
-			select {
-			case e := <-win.Events():
-				switch e := e.(type) {
-				case system.DestroyEvent:
-					os.Exit(0)
-				case system.FrameEvent:
-					handleFrameEvents(e)
-				}
-			}
-		}
-	}()
+	go wid.Run(win, &form, theme)
 	app.Main()
-}
-
-func handleFrameEvents(e system.FrameEvent) {
-	var ops op.Ops
-	gtx := layout.NewContext(&ops, e)
-	// Set background color
-	c := currentTheme.Bg(wid.Surface)
-	paint.Fill(gtx.Ops, c)
-	// A hack to fetch mouse position and window size so we can avoid
-	// tooltips going outside the main window area
-	// defer pointer.PassOp{}.Push(gtx.Ops).Pop()
-	// wid.UpdateMousePos(gtx, win, e.Size)
-	progress = progress + 0.01
-	if progress > 1.0 {
-		progress = 0
-	}
-	// Draw widgets
-	form(gtx)
-	// Apply the actual screen drawing
-	e.Frame(gtx.Ops)
-}
-
-func onSwitchMode() {
-	currentTheme.DarkMode = darkMode
-	form = demo(currentTheme)
 }
 
 func onClick() {
 	greenFlag = !greenFlag
 	if greenFlag {
-		currentTheme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
+		theme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
 	} else {
-		currentTheme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
+		theme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
 	}
-	form = demo(currentTheme)
-}
-
-func swColor() {
-	if greenFlag {
-		currentTheme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
-	} else {
-		currentTheme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
-	}
-}
-
-func onWinChange() {
-	switch group.Value {
-	case "windowed":
-		win.Option(app.Windowed.Option())
-	case "minimized":
-		win.Option(app.Minimized.Option())
-	case "fullscreen":
-		win.Option(app.Fullscreen.Option())
-	case "maximized":
-		win.Option(app.Maximized.Option())
-	}
+	form = demo(theme)
 }
 
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
-	return wid.List(th, wid.Overlay, nil,
+	return wid.List(th, wid.Overlay,
 
 		wid.Label(th, "Row examples", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Label(th, "Button spaced closely, left adjusted"),
