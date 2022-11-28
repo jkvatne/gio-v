@@ -25,7 +25,7 @@ type VisibilityAnimation struct {
 // state automatically.
 //
 // If the animation is in the process of animating, calling Revealed will automatically add
-// an InvalidateOp to the provided layout.Context to ensure that the next frame will be generated
+// an InvalidateOp to the provided Context to ensure that the next frame will be generated
 // promptly.
 func (v *VisibilityAnimation) Revealed(gtx C) float32 {
 	if v.Animating() {

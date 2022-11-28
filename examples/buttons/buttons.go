@@ -11,11 +11,7 @@ import (
 	"image/color"
 	"os"
 
-	"gioui.org/f32"
-
 	"golang.org/x/exp/shiny/materialdesign/icons"
-
-	"gioui.org/widget"
 
 	"gioui.org/app"
 	"gioui.org/font/gofont"
@@ -30,8 +26,6 @@ var (
 	currentTheme *wid.Theme  // the theme selected
 	win          *app.Window // The main window
 	form         layout.Widget
-	name         string
-	group        = new(widget.Enum)
 	homeIcon     *wid.Icon
 	checkIcon    *wid.Icon
 	greenFlag            = false // the state variable for the button color
@@ -46,7 +40,7 @@ func main() {
 	homeIcon, _ = wid.NewIcon(icons.ActionHome)
 	go func() {
 		currentTheme = wid.NewTheme(gofont.Collection(), 14)
-		win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
+		win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(600)))
 		form = demo(currentTheme)
 		for {
 			select {
@@ -102,23 +96,10 @@ func swColor() {
 	}
 }
 
-func onWinChange() {
-	switch group.Value {
-	case "windowed":
-		win.Option(app.Windowed.Option())
-	case "minimized":
-		win.Option(app.Minimized.Option())
-	case "fullscreen":
-		win.Option(app.Fullscreen.Option())
-	case "maximized":
-		win.Option(app.Maximized.Option())
-	}
-}
-
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
-	return wid.List(th, wid.Overlay, f32.Point{},
+	return wid.List(th, wid.Overlay, nil,
 		wid.Label(th, "Buttons demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Label(th, "Buttons with fixed length and large font"),
 		wid.Button(th, "Change color", wid.Do(onClick), wid.W(450), wid.Large()),

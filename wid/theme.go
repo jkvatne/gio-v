@@ -277,13 +277,6 @@ type Theme struct {
 	ScrollCornerRadius unit.Sp
 }
 
-type (
-	// C is a shortcut for layout.Context
-	C = layout.Context
-	// D is a shortcut for layout.Dimensions
-	D = layout.Dimensions
-)
-
 // NewTheme creates a new theme with given FontFace and FontSize, based on the theme t
 func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.NRGBA) *Theme {
 	t := new(Theme)
@@ -291,8 +284,8 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.SecondaryColor = RGB(0x57624E)
 	t.TertiaryColor = RGB(0x336669)
 	t.ErrorColor = RGB(0xAF2525)
-	t.NeutralColor = RGB(0x5D5F5A)
-	t.NeutralVariantColor = RGB(0x5C6057)
+	t.NeutralColor = RGB(0x5D5D5D)
+	t.NeutralVariantColor = RGB(0x756057)
 	if len(colors) >= 1 {
 		t.PrimaryColor = colors[0]
 	}

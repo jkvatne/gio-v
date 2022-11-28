@@ -8,7 +8,6 @@ import (
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/io/semantic"
-	"gioui.org/layout"
 	"gioui.org/op/clip"
 )
 
@@ -122,7 +121,7 @@ func (b *Clickable) SetupEventHandlers(gtx C, size image.Point) {
 }
 
 // HandleEvents the button state by processing events.
-func (b *Clickable) HandleEvents(gtx layout.Context) {
+func (b *Clickable) HandleEvents(gtx C) {
 	// Flush clicks from before the last HandleEvents.
 	n := copy(b.clicks, b.clicks[b.prevClicks:])
 	b.clicks = b.clicks[:n]

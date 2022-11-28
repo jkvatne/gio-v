@@ -76,7 +76,7 @@ func Checkbox(th *Theme, label string, options ...Option) func(gtx C) D {
 }
 
 // Layout updates the checkBox and displays it.
-func (c *CheckBoxDef) Layout(gtx layout.Context) layout.Dimensions {
+func (c *CheckBoxDef) Layout(gtx C) D {
 	c.HandleEvents(gtx)
 	for c.Clicked() {
 		c.Checked = !c.Checked

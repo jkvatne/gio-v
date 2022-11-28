@@ -205,6 +205,7 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 		),
 		wid.Edit(th, wid.Hint("Line editor")),
 		wid.List(th, anchor, header, gridLines...),
+		wid.Separator(th, 2),
 		wid.Row(th, nil, []float32{1.0, 1.0, 1.0},
 			wid.Space(1),
 			wid.Button(th, "Update"),
@@ -213,7 +214,7 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 	}
 
 	// return wid.List(th, wid.Occupy, f32.Point{1.0, 1.0}, lines...)
-	return func(gtx layout.Context) layout.Dimensions {
+	return func(gtx wid.C) wid.D {
 		bgColor := th.Bg(wid.Canvas)
 		paint.Fill(gtx.Ops, bgColor)
 		return wid.Col([]float32{0, 0, 0, 0, 1, 0}, lines...)(gtx)

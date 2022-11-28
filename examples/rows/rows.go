@@ -123,7 +123,7 @@ func onWinChange() {
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
-	return wid.List(th, wid.Overlay,
+	return wid.List(th, wid.Overlay, nil,
 
 		wid.Label(th, "Row examples", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Label(th, "Button spaced closely, left adjusted"),

@@ -23,6 +23,15 @@ import (
 	"gioui.org/unit"
 )
 
+type (
+	// C is a shortcut for layout.Context
+	C = layout.Context
+	// D is a shortcut for layout.Dimensions
+	D   = layout.Dimensions
+	Wid = layout.Widget
+	Con = layout.Constraints
+)
+
 // UIState is the hovered/focusted etc. state
 type UIState uint8
 

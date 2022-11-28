@@ -232,7 +232,7 @@ type ListStyle struct {
 	AnchorStrategy
 }
 
-// List makes a vertical listp
+// List makes a vertical list
 func List(th *Theme, a AnchorStrategy, heading layout.Widget, widgets ...layout.Widget) layout.Widget {
 	listStyle := ListStyle{
 		list:           &layout.List{Axis: layout.Vertical},
@@ -265,7 +265,11 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 
 	// Must set Max.X to infinity to allow rows wider than the frame.
 	c := gtx
-	c.Constraints.Max.X = inf
+	// If a header is given, we allow long, scrollable rows
+	// If no header, horizontal scrolling wil normaly not be done.
+	if header != nil {
+		c.Constraints.Max.X = inf
+	}
 	if l.HorVisible && l.AnchorStrategy == Occupy {
 		c.Constraints.Max.Y -= hBarWidth
 	}
@@ -330,7 +334,7 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 		c := gtx
 		start, end := fromListPosition(l.list.Position, length, listDims.Size.Y+hBarWidth)
 		c.Constraints.Min = c.Constraints.Max
-		layout.E.Layout(c, func(gtx layout.Context) layout.Dimensions {
+		layout.E.Layout(c, func(gtx C) D {
 			return l.VScrollBar.Layout(gtx, layout.Vertical, start, end)
 		})
 	}
@@ -360,7 +364,6 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 	}
 	// Increase the size to account for the space occupied by the scrollbar.
 	listDims.Size.X += vBarWidth
-	// listDims.Size.Y += hBarWidth
 	return listDims
 }
 

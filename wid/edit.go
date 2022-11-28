@@ -8,7 +8,6 @@ import (
 
 	"gioui.org/io/pointer"
 
-	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
@@ -129,7 +128,7 @@ func (e *EditDef) Layout(gtx C) D {
 	macro = op.Record(gtx.Ops)
 	o := op.Offset(image.Pt(0, gtx.Dp(e.th.InsidePadding.Top))).Push(gtx.Ops)
 	gtx.Constraints.Min.X = gtx.Constraints.Max.X
-	dims = e.Editor.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, func(gtx layout.Context) layout.Dimensions {
+	dims = e.Editor.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, func(gtx C) D {
 		disabled := gtx.Queue == nil
 		if e.Editor.Len() > 0 || e.Focused() {
 			paint.ColorOp{Color: e.selectionColor}.Add(gtx.Ops)

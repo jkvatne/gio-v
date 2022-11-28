@@ -78,7 +78,7 @@ func onDisable() {
 	}
 }
 
-func colorBar(gtx layout.Context) layout.Dimensions {
+func colorBar(gtx wid.C) wid.D {
 	gtx.Constraints.Min.Y = gtx.Dp(unit.Dp(50))
 	gtx.Constraints.Max.Y = gtx.Constraints.Min.Y
 
@@ -118,7 +118,7 @@ func kitchen(th *wid.Theme) layout.Widget {
 
 		wid.ProgressBar(th, &progress),
 
-		func(gtx layout.Context) layout.Dimensions {
+		func(gtx wid.C) wid.D {
 			return layout.UniformInset(unit.Dp(16)).Layout(gtx, colorBar)
 		},
 

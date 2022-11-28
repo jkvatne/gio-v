@@ -25,8 +25,8 @@ type DropDownStyle struct {
 	outlineColor    color.NRGBA
 	listVisible     bool
 	inList          bool
-	list            layout.Widget
-	Items           []layout.Widget
+	list            Wid
+	Items           []Wid
 	label           string
 	labelSize       unit.Sp
 	above           bool

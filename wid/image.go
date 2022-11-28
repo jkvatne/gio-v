@@ -61,7 +61,7 @@ func Image(img image.Image, fit Fit) func(gtx C) D {
 	}
 }
 
-func (im ImageDef) Layout(gtx layout.Context) layout.Dimensions {
+func (im ImageDef) Layout(gtx C) D {
 	scale := im.Scale
 	if scale == 0 {
 		scale = gtx.Metric.PxPerDp
