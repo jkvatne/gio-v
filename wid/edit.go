@@ -44,7 +44,6 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e.padding = th.OutsidePadding
 	e.outlineColor = th.Fg(Outline)
 	e.selectionColor = MulAlpha(th.Bg(Primary), 60)
-	e.role = Canvas
 	// Read in options to change from default values to something else.
 	for _, option := range options {
 		option.apply(e)
@@ -75,6 +74,7 @@ func (e *EditDef) updateValue() {
 			}
 		}
 	}
+	e.wasFocused = e.Focused()
 }
 
 func (e *EditDef) maxLines() int {
@@ -147,7 +147,6 @@ func (e *EditDef) Layout(gtx C) D {
 	})
 	o.Pop()
 	callEdit := macro.Stop()
-	e.wasFocused = e.Focused()
 
 	border := image.Rectangle{Max: image.Pt(
 		gtx.Constraints.Max.X+gtx.Dp(e.th.InsidePadding.Left+e.th.InsidePadding.Right),
@@ -156,6 +155,9 @@ func (e *EditDef) Layout(gtx C) D {
 	r := gtx.Dp(e.th.BorderCornerRadius)
 	if r > border.Max.Y/2 {
 		r = border.Max.Y / 2
+	}
+	if e.Focused() {
+		paint.FillShape(gtx.Ops, e.th.Bg(Canvas), clip.UniformRRect(border, r).Op(gtx.Ops))
 	}
 	if e.borderThickness > 0 {
 		if e.Focused() {

@@ -21,11 +21,12 @@ import (
 )
 
 var (
+	SmallFont      bool
 	currentTheme   *wid.Theme  // the theme selected
 	win            *app.Window // The main window
 	form           layout.Widget
-	name           string
-	address        string
+	name           string = "Jan Kåre Vatne"
+	address        string = "Blomsterveien 45"
 	homeIcon       *wid.Icon
 	checkIcon      *wid.Icon
 	greenFlag              = false // the state variable for the button color
@@ -65,6 +66,11 @@ func ticker() {
 }
 
 func onSwitchMode() {
+	if SmallFont {
+		currentTheme = wid.NewTheme(gofont.Collection(), 11)
+	} else {
+		currentTheme = wid.NewTheme(gofont.Collection(), 14)
+	}
 	form = demo(currentTheme)
 }
 
@@ -105,11 +111,11 @@ func demo(th *wid.Theme) layout.Widget {
 	return wid.Col(nil,
 		wid.Label(th, "Demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Label(th, "Checkbox to change between dark mode and light mode, changing the theme variable DarkMode"),
-		wid.Row(th, nil, []float32{.9, .5, .5, .5, .5},
+		wid.Row(th, nil, []float32{.5, .9, .5, .5, .5},
 			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onSwitchMode)),
+			wid.Checkbox(th, "Small font", wid.Bool(&SmallFont), wid.Do(onSwitchMode)),
 			wid.RadioButton(th, &WindowMode, "windowed", "Windowed", wid.Do(onWinChange)),
 			wid.RadioButton(th, &WindowMode, "fullscreen", "Fullscreen", wid.Do(onWinChange)),
-			wid.RadioButton(th, &WindowMode, "minimized", "Minimized", wid.Do(onWinChange)),
 			wid.RadioButton(th, &WindowMode, "maximized", "Maximized", wid.Do(onWinChange)),
 		),
 

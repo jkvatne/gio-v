@@ -367,7 +367,7 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 				gtx := layout.NewContext(&ops, e)
 				CurrentY = 0
 				CurrentY = 0
-				paint.ColorOp{Color: th.Bg(Canvas)}.Add(gtx.Ops)
+				paint.ColorOp{Color: th.Bg(Surface)}.Add(gtx.Ops)
 				paint.PaintOp{}.Add(gtx.Ops)
 
 				// Draw widgets

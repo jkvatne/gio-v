@@ -21,9 +21,9 @@ import (
 type UIRole uint8
 
 const (
-	// Canvas is the default background
+	// Canvas is white/black. Used in edits, dropdowns etc to standouw
 	Canvas UIRole = iota
-	// Surface is usually the same as Canvas
+	// Surface is the default surface for windows.
 	Surface
 	// SurfaceVariant is for variation
 	SurfaceVariant
@@ -86,12 +86,12 @@ func Tone(c color.NRGBA, tone int) color.NRGBA {
 func (th *Theme) Fg(kind UIRole) color.NRGBA {
 	if !th.DarkMode {
 		switch kind {
-		case Canvas:
-			return Tone(th.Pallet.NeutralColor, 20)
-		case Surface:
+		case Canvas: // Black
 			return Tone(th.Pallet.NeutralColor, 0)
-		case SurfaceVariant:
-			return Tone(th.Pallet.NeutralVariantColor, 30)
+		case Surface: // Black
+			return Tone(th.Pallet.NeutralColor, 0)
+		case SurfaceVariant: // Black
+			return Tone(th.Pallet.NeutralVariantColor, 0)
 		case Outline:
 			return Tone(th.Pallet.NeutralColor, 50)
 		case Primary:
@@ -115,11 +115,11 @@ func (th *Theme) Fg(kind UIRole) color.NRGBA {
 		}
 	} else {
 		switch kind {
-		case Canvas:
+		case Canvas: // White
 			return Tone(th.Pallet.NeutralColor, 80)
-		case Surface:
-			return Tone(th.Pallet.NeutralColor, 99)
-		case SurfaceVariant:
+		case Surface: // Light silver
+			return Tone(th.Pallet.NeutralColor, 100)
+		case SurfaceVariant: // Some other very light color
 			return Tone(th.Pallet.NeutralVariantColor, 90)
 		case Outline:
 			return Tone(th.Pallet.NeutralColor, 60)
@@ -150,11 +150,11 @@ func (th *Theme) Fg(kind UIRole) color.NRGBA {
 func (th *Theme) Bg(kind UIRole) color.NRGBA {
 	if !th.DarkMode {
 		switch kind {
-		case Canvas:
+		case Canvas: // White background
+			return Tone(th.Pallet.NeutralColor, 100)
+		case Surface: // Light silver background
 			return Tone(th.Pallet.NeutralColor, 99)
-		case Surface:
-			return Tone(th.Pallet.NeutralColor, 99)
-		case SurfaceVariant:
+		case SurfaceVariant: // Some other light background
 			return Tone(th.Pallet.NeutralVariantColor, 90)
 		case Primary:
 			return Tone(th.Pallet.PrimaryColor, 40)
@@ -177,12 +177,12 @@ func (th *Theme) Bg(kind UIRole) color.NRGBA {
 		}
 	} else {
 		switch kind {
-		case Canvas:
+		case Canvas: // Black background
+			return Tone(th.Pallet.NeutralColor, 0)
+		case Surface: // Dark gray background
 			return Tone(th.Pallet.NeutralColor, 10)
-		case Surface:
-			return Tone(th.Pallet.NeutralColor, 10)
-		case SurfaceVariant:
-			return Tone(th.Pallet.NeutralVariantColor, 30)
+		case SurfaceVariant: // Another very dark background
+			return Tone(th.Pallet.NeutralVariantColor, 20)
 		case Primary:
 			return Tone(th.Pallet.PrimaryColor, 80)
 		case Secondary:
@@ -321,7 +321,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.BorderColor = t.Fg(Outline)
 	t.BorderColorHovered = t.Fg(Primary)
 	t.BorderColorActive = t.Fg(Primary)
-	t.BorderCornerRadius = unit.Dp(t.TextSize) * 0.2
+	t.BorderCornerRadius = unit.Dp(t.TextSize) * 0.3
 	// Shadow
 	t.Elevation = unit.Dp(t.TextSize) * 0.5
 	// Text
@@ -335,7 +335,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	// Buttons
 	// ButtonPadding is the margin outside a button, giving distance to other elements
 	t.ButtonPadding = layout.Inset{Top: 8, Right: 4, Bottom: 8, Left: 4}
-	t.ButtonCornerRadius = unit.Dp(t.TextSize) * 999 // Force rounded buttons
+	t.ButtonCornerRadius = unit.Dp(t.TextSize) * 0.3
 	t.ButtonLabelPadding = layout.Inset{Top: 2, Right: 4, Bottom: 2, Left: 4}
 	t.IconSize = unit.Dp(t.TextSize) * 1.5
 	// Tooltip

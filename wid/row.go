@@ -79,7 +79,7 @@ func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
 // GridRow returns a widget grid row with a grid separating columns and rows
 func GridRow(th *Theme, pbgColor *color.NRGBA, gridLineWidth unit.Dp, weights []float32, widgets ...layout.Widget) layout.Widget {
 	r := rowDef{}
-	bgColor := th.Bg(Canvas)
+	bgColor := color.NRGBA{}
 	if (pbgColor != nil) && (*pbgColor != color.NRGBA{}) {
 		bgColor = *pbgColor
 	}
@@ -96,7 +96,7 @@ func GridRow(th *Theme, pbgColor *color.NRGBA, gridLineWidth unit.Dp, weights []
 // Row returns a widget grid row with selectable color.
 func Row(th *Theme, pbgColor *color.NRGBA, weights []float32, widgets ...layout.Widget) layout.Widget {
 	r := rowDef{}
-	bgColor := th.Bg(Canvas)
+	bgColor := color.NRGBA{}
 	if (pbgColor != nil) && (*pbgColor != color.NRGBA{}) {
 		bgColor = *pbgColor
 	}

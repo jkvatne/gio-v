@@ -67,7 +67,7 @@ func handleFrameEvents(e system.FrameEvent) {
 	var ops op.Ops
 	gtx := layout.NewContext(&ops, e)
 	// Set background color
-	c := currentTheme.Bg(wid.Canvas)
+	c := currentTheme.Bg(wid.Surface)
 	paint.Fill(gtx.Ops, c)
 	progress = progress + 0.01
 	if progress > 1.0 {

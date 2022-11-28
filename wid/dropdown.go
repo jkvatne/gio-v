@@ -178,7 +178,6 @@ func (b *DropDownStyle) Layout(gtx C) D {
 			b.setHovered(idx)
 		}
 
-		macro := op.Record(gtx.Ops)
 		dy := dims.Size.Y + gtx.Dp(b.padding.Top) + gtx.Dp(b.padding.Bottom)
 		if b.above {
 			dy = -d.Size.Y
@@ -195,6 +194,8 @@ func (b *DropDownStyle) Layout(gtx C) D {
 				}
 			}
 		}
+
+		dropdownMacro := op.Record(gtx.Ops)
 
 		// Fill background and draw list
 		cl := clip.Rect{Max: listClipRect.Max}.Push(gtx.Ops)
@@ -214,8 +215,9 @@ func (b *DropDownStyle) Layout(gtx C) D {
 
 		// Draw a border around all options
 		paintBorder(gtx, listClipRect, b.th.Fg(Outline), b.th.BorderThickness, 0)
-		call := macro.Stop()
-		op.Defer(gtx.Ops, call)
+		// Save and defer execution
+		dropDownListCall := dropdownMacro.Stop()
+		op.Defer(gtx.Ops, dropDownListCall)
 
 	} else {
 		b.setHovered(idx)

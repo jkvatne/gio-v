@@ -109,6 +109,7 @@ func aButton[V StrValue](style ButtonStyle, th *Theme, label V, options ...Optio
 	// Apply standard padding on the outside of the button. Can be overridden by option function
 	b.padding = th.ButtonPadding
 	b.FontSize = 1.0
+	b.cornerRadius = th.ButtonCornerRadius
 	for _, option := range options {
 		option.apply(&b)
 	}

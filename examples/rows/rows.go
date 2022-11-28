@@ -68,7 +68,7 @@ func handleFrameEvents(e system.FrameEvent) {
 	var ops op.Ops
 	gtx := layout.NewContext(&ops, e)
 	// Set background color
-	c := currentTheme.Bg(wid.Canvas)
+	c := currentTheme.Bg(wid.Surface)
 	paint.Fill(gtx.Ops, c)
 	// A hack to fetch mouse position and window size so we can avoid
 	// tooltips going outside the main window area

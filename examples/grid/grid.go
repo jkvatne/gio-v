@@ -187,7 +187,7 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 
 	}
 	var lines = []layout.Widget{
-		wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.Canvas)),
+		wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold()),
 		wid.Row(th, nil, nil,
 			wid.RadioButton(th, &Alternative, "Wide", "Wide Table", wid.Do(onWinChange)),
 			wid.RadioButton(th, &Alternative, "Narrow", "Narrow Table", wid.Do(onWinChange)),
