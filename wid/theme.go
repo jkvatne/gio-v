@@ -339,7 +339,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.TooltipOnBackground = t.Fg(SecondaryContainer)
 	// Resizer
 	t.SashColor = WithAlpha(t.Fg(Surface), 0x80)
-	t.SashWidth = v * 2
+	t.SashWidth = v * 4
 	// Switch
 	t.TrackColor = WithAlpha(t.Fg(Primary), 0x40)
 	t.DotColor = t.Fg(Primary)
