@@ -16,7 +16,7 @@ var form wid.Wid
 func main() {
 	theme = wid.NewTheme(gofont.Collection(), 14)
 	form = hello(theme)
-	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500))), &form, theme)
+	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(300), unit.Dp(100))), &form, theme)
 	app.Main()
 }
 

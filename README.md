@@ -1,3 +1,9 @@
+# Gio-v demo
+
+This is a small demonstration of the package, with a scrollable grid and a few other widgets.
+
+![Demo.go](https://github.com/jkvatne/gio-v/blob/main/grid.png)
+
 # Extension of Gio
 
 See [gioui.org](https://gioui.org).
@@ -80,6 +86,8 @@ func hello(th *wid.Theme) layout.Widget {
 }
 ```
 
+![hello.go](https://github.com/jkvatne/gio-v/blob/main/hello.png)
+
 # Immediate mode?
 
 This implementation does not follow the gio recomendations fully. The widgets are fully persistent, and callbacks and
@@ -101,7 +109,3 @@ Dual MIT/Unlicense; same as Gio
 # Demo
 
 ![Demo.go](https://github.com/jkvatne/gio-v/blob/main/demo.png)
-
-# Grid demo
-
-![Demo.go](https://github.com/jkvatne/gio-v/blob/main/grid.png)
