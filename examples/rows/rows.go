@@ -10,6 +10,7 @@ import (
 	"gio-v/wid"
 	"image/color"
 
+	"gioui.org/font/gofont"
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
 	"gioui.org/app"
@@ -18,17 +19,19 @@ import (
 )
 
 var (
-	theme     *wid.Theme  // the theme selected
-	win       *app.Window // The main window
-	form      layout.Widget
-	homeIcon  *wid.Icon
-	checkIcon *wid.Icon
-	greenFlag = false // the state variable for the button color
+	theme        *wid.Theme  // the theme selected
+	win          *app.Window // The main window
+	form         layout.Widget
+	greenFlag    = false // the state variable for the button color
+	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
+	homeIcon, _  = wid.NewIcon(icons.ActionHome)
 )
 
 func main() {
-	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
-	homeIcon, _ = wid.NewIcon(icons.ActionHome)
+
+	win = app.NewWindow(app.Title("Rows demo"), app.Size(unit.Dp(900), unit.Dp(500)))
+	theme = wid.NewTheme(gofont.Collection(), 14)
+	form = demo(theme)
 	go wid.Run(win, &form, theme)
 	app.Main()
 }
