@@ -87,60 +87,60 @@ func (th *Theme) Fg(kind UIRole) color.NRGBA {
 	if !th.DarkMode {
 		switch kind {
 		case Canvas: // Black
-			return Tone(th.Pallet.NeutralColor, 0)
+			return Tone(th.NeutralColor, 0)
 		case Surface: // Black
-			return Tone(th.Pallet.NeutralColor, 0)
+			return Tone(th.NeutralColor, 0)
 		case SurfaceVariant: // Black
-			return Tone(th.Pallet.NeutralVariantColor, 0)
+			return Tone(th.NeutralVariantColor, 0)
 		case Outline:
-			return Tone(th.Pallet.NeutralColor, 50)
+			return Tone(th.NeutralColor, 50)
 		case Primary:
-			return Tone(th.Pallet.PrimaryColor, 100)
+			return Tone(th.PrimaryColor, 100)
 		case Secondary:
-			return Tone(th.Pallet.SecondaryColor, 100)
+			return Tone(th.SecondaryColor, 100)
 		case Tertiary:
-			return Tone(th.Pallet.TertiaryColor, 100)
+			return Tone(th.TertiaryColor, 100)
 		case Error:
-			return Tone(th.Pallet.TertiaryColor, 100)
+			return Tone(th.TertiaryColor, 100)
 		case PrimaryContainer:
-			return Tone(th.Pallet.PrimaryColor, 10)
+			return Tone(th.PrimaryColor, 10)
 		case SecondaryContainer:
-			return Tone(th.Pallet.SecondaryColor, 10)
+			return Tone(th.SecondaryColor, 10)
 		case TertiaryContainer:
-			return Tone(th.Pallet.TertiaryColor, 10)
+			return Tone(th.TertiaryColor, 10)
 		case ErrorContainer:
-			return Tone(th.Pallet.ErrorColor, 10)
+			return Tone(th.ErrorColor, 10)
 		default:
-			return Tone(th.Pallet.NeutralColor, 10)
+			return Tone(th.NeutralColor, 10)
 		}
 	} else {
 		switch kind {
 		case Canvas: // White
-			return Tone(th.Pallet.NeutralColor, 80)
+			return Tone(th.NeutralColor, 80)
 		case Surface: // Light silver
-			return Tone(th.Pallet.NeutralColor, 100)
+			return Tone(th.NeutralColor, 100)
 		case SurfaceVariant: // Some other very light color
-			return Tone(th.Pallet.NeutralVariantColor, 90)
+			return Tone(th.NeutralVariantColor, 90)
 		case Outline:
-			return Tone(th.Pallet.NeutralColor, 60)
+			return Tone(th.NeutralColor, 60)
 		case Primary:
-			return Tone(th.Pallet.PrimaryColor, 20)
+			return Tone(th.PrimaryColor, 20)
 		case Secondary:
-			return Tone(th.Pallet.SecondaryColor, 20)
+			return Tone(th.SecondaryColor, 20)
 		case Tertiary:
-			return Tone(th.Pallet.TertiaryColor, 20)
+			return Tone(th.TertiaryColor, 20)
 		case Error:
-			return Tone(th.Pallet.ErrorColor, 20)
+			return Tone(th.ErrorColor, 20)
 		case PrimaryContainer:
-			return Tone(th.Pallet.PrimaryColor, 90)
+			return Tone(th.PrimaryColor, 90)
 		case SecondaryContainer:
-			return Tone(th.Pallet.SecondaryColor, 90)
+			return Tone(th.SecondaryColor, 90)
 		case TertiaryContainer:
-			return Tone(th.Pallet.TertiaryColor, 90)
+			return Tone(th.TertiaryColor, 90)
 		case ErrorContainer:
-			return Tone(th.Pallet.TertiaryColor, 90)
+			return Tone(th.TertiaryColor, 90)
 		default:
-			return Tone(th.Pallet.NeutralColor, 90)
+			return Tone(th.NeutralColor, 90)
 		}
 	}
 }
@@ -150,56 +150,56 @@ func (th *Theme) Bg(kind UIRole) color.NRGBA {
 	if !th.DarkMode {
 		switch kind {
 		case Canvas: // White background
-			return Tone(th.Pallet.NeutralColor, 100)
+			return Tone(th.NeutralColor, 100)
 		case Surface: // Light silver background
-			return Tone(th.Pallet.NeutralColor, 99)
+			return Tone(th.NeutralColor, 99)
 		case SurfaceVariant: // Some other light background
-			return Tone(th.Pallet.NeutralVariantColor, 90)
+			return Tone(th.NeutralVariantColor, 90)
 		case Primary:
-			return Tone(th.Pallet.PrimaryColor, 40)
+			return Tone(th.PrimaryColor, 40)
 		case Secondary:
-			return Tone(th.Pallet.SecondaryColor, 40)
+			return Tone(th.SecondaryColor, 40)
 		case Tertiary:
-			return Tone(th.Pallet.TertiaryColor, 40)
+			return Tone(th.TertiaryColor, 40)
 		case Error:
-			return Tone(th.Pallet.ErrorColor, 40)
+			return Tone(th.ErrorColor, 40)
 		case PrimaryContainer:
-			return Tone(th.Pallet.PrimaryColor, 90)
+			return Tone(th.PrimaryColor, 90)
 		case SecondaryContainer:
-			return Tone(th.Pallet.SecondaryColor, 90)
+			return Tone(th.SecondaryColor, 90)
 		case TertiaryContainer:
-			return Tone(th.Pallet.TertiaryColor, 90)
+			return Tone(th.TertiaryColor, 90)
 		case ErrorContainer:
-			return Tone(th.Pallet.ErrorColor, 90)
+			return Tone(th.ErrorColor, 90)
 		default:
-			return Tone(th.Pallet.NeutralColor, 99)
+			return Tone(th.NeutralColor, 99)
 		}
 	} else {
 		switch kind {
 		case Canvas: // Black background
-			return Tone(th.Pallet.NeutralColor, 0)
+			return Tone(th.NeutralColor, 0)
 		case Surface: // Dark gray background
-			return Tone(th.Pallet.NeutralColor, 10)
+			return Tone(th.NeutralColor, 10)
 		case SurfaceVariant: // Another very dark background
-			return Tone(th.Pallet.NeutralVariantColor, 20)
+			return Tone(th.NeutralVariantColor, 20)
 		case Primary:
-			return Tone(th.Pallet.PrimaryColor, 80)
+			return Tone(th.PrimaryColor, 80)
 		case Secondary:
-			return Tone(th.Pallet.SecondaryColor, 80)
+			return Tone(th.SecondaryColor, 80)
 		case Tertiary:
-			return Tone(th.Pallet.TertiaryColor, 80)
+			return Tone(th.TertiaryColor, 80)
 		case Error:
-			return Tone(th.Pallet.ErrorColor, 80)
+			return Tone(th.ErrorColor, 80)
 		case PrimaryContainer:
-			return Tone(th.Pallet.PrimaryColor, 30)
+			return Tone(th.PrimaryColor, 30)
 		case SecondaryContainer:
-			return Tone(th.Pallet.SecondaryColor, 30)
+			return Tone(th.SecondaryColor, 30)
 		case TertiaryContainer:
-			return Tone(th.Pallet.TertiaryColor, 30)
+			return Tone(th.TertiaryColor, 30)
 		case ErrorContainer:
-			return Tone(th.Pallet.TertiaryColor, 30)
+			return Tone(th.TertiaryColor, 30)
 		default:
-			return Tone(th.Pallet.NeutralColor, 10)
+			return Tone(th.NeutralColor, 10)
 		}
 	}
 }

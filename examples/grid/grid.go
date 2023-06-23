@@ -62,7 +62,7 @@ var data = []person{
 
 func main() {
 	makePersons(12)
-	theme = wid.NewTheme(gofont.Collection(), 24)
+	theme = wid.NewTheme(gofont.Collection(), 14)
 	onWinChange()
 	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500))), &form, theme)
 	app.Main()
@@ -146,11 +146,11 @@ func onCheck() {
 
 func onFontChange() {
 	if fontSize == "Medium" {
-		theme.UpdateFontSize(24)
+		theme.UpdateFontSize(14)
 	} else if fontSize == "Large" {
-		theme.UpdateFontSize(32)
+		theme.UpdateFontSize(24)
 	} else if fontSize == "Small" {
-		theme.UpdateFontSize(16)
+		theme.UpdateFontSize(10)
 	}
 	onWinChange()
 }
