@@ -270,6 +270,10 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 
 	// Must set Max.X to infinity to allow rows wider than the frame.
 	c := gtx
+	if l.AnchorStrategy == Occupy {
+		c.Constraints.Min.X -= vBarWidth
+	}
+
 	// If a header is given, we allow long, scrollable rows
 	// If no header, horizontal scrolling wil normaly not be done.
 	if header != nil {
@@ -314,6 +318,7 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 
 	if l.AnchorStrategy == Occupy {
 		gtx.Constraints.Max.X -= vBarWidth
+		gtx.Constraints.Min.X -= vBarWidth
 		gtx.Constraints.Max.Y -= hBarWidth
 	}
 	cl := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
