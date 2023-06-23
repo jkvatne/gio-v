@@ -225,6 +225,7 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 	return func(gtx wid.C) wid.D {
 		bgColor := th.Bg(wid.Canvas)
 		paint.Fill(gtx.Ops, bgColor)
+		// Use flexible row heights. Set 1 for the grid, so it will use all available space.
 		return wid.Col([]float32{0, 0, 0, 0, 1, 0}, lines...)(gtx)
 	}
 }

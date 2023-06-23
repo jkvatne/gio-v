@@ -310,7 +310,7 @@ func (t *Theme) UpdateFontSize(newFontSize unit.Sp) {
 	t.ScrollMajorPadding = 2
 	t.ScrollMinorPadding = 2
 	t.ScrollMajorMinLen = t.TextSize / 1.25
-	t.ScrollMinorWidth = t.TextSize / 1.5
+	t.ScrollMinorWidth = t.TextSize / 1.0
 	t.ScrollCornerRadius = t.TextSize / 5
 	t.TooltipInset = layout.UniformInset(v)
 }
