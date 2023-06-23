@@ -4,6 +4,7 @@ package wid
 
 import (
 	"fmt"
+	"gioui.org/font"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
@@ -18,7 +19,7 @@ import (
 type LabelDef struct {
 	Base
 	// Face defines the text style.
-	Font text.Font
+	Font font.Font
 	// Alignment specify the text alignment.
 	Alignment text.Alignment
 	// MaxLines limits the number of lines. Zero means no limit.
@@ -34,12 +35,12 @@ type LabelOption func(w *LabelDef)
 // Bold is an option parameter to set the widget hint (tooltip).
 func Bold() LabelOption {
 	return func(d *LabelDef) {
-		d.Font.Weight = text.Bold
+		d.Font.Weight = font.Bold
 	}
 }
 
 // Weight sets the font weight.
-func Weight(weight text.Weight) LabelOption {
+func Weight(weight font.Weight) LabelOption {
 	return func(d *LabelDef) {
 		d.Font.Weight = weight
 	}
@@ -81,7 +82,9 @@ func (l LabelDef) Layout(gtx C) D {
 	GuiLock.RLock()
 	str := l.Stringer(l.dp)
 	GuiLock.RUnlock()
-	dims := tl.Layout(c, l.th.Shaper, l.Font, l.TextSize*unit.Sp(l.FontSize), str)
+	colMacro := op.Record(gtx.Ops)
+	paint.ColorOp{Color: l.Fg()}.Add(gtx.Ops)
+	dims := tl.Layout(c, l.th.Shaper, l.Font, l.TextSize*unit.Sp(l.FontSize), str, colMacro.Stop())
 	dims.Size.X = Min(gtx.Constraints.Max.X, dims.Size.X)
 	if dims.Size.Y > 100 {
 		dims.Size.Y++
@@ -95,7 +98,7 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		Stringer:  s,
 		TextSize:  th.TextSize,
 		Alignment: text.Start,
-		Font:      text.Font{Weight: text.Medium, Style: text.Regular},
+		Font:      font.Font{Weight: font.Medium, Style: font.Regular},
 		MaxLines:  0,
 	}
 	w.Font = th.DefaultFont

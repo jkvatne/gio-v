@@ -3,6 +3,7 @@
 package wid
 
 import (
+	"gioui.org/font"
 	"golang.org/x/exp/constraints"
 	"image"
 	"image/color"
@@ -16,8 +17,6 @@ import (
 	"gioui.org/io/system"
 	"gioui.org/op"
 	"gioui.org/op/clip"
-
-	"gioui.org/text"
 
 	"gioui.org/layout"
 	"gioui.org/unit"
@@ -59,7 +58,7 @@ type Base struct {
 	fgColor      *color.NRGBA
 	bgColor      *color.NRGBA
 	description  string
-	Font         *text.Font
+	Font         *font.Font
 	FontSize     float32
 }
 
@@ -72,7 +71,7 @@ type BaseIf interface {
 	setBgColor(c *color.NRGBA)
 	setFgColor(c *color.NRGBA)
 	setHandler(h func())
-	setFont(f *text.Font)
+	setFont(f *font.Font)
 	setDisabler(b *bool)
 	getTheme() *Theme
 	setFontSize(f float32)
@@ -114,7 +113,7 @@ func (wid *Base) setRole(role UIRole) {
 	wid.role = role
 }
 
-func (wid *Base) setFont(font *text.Font) {
+func (wid *Base) setFont(font *font.Font) {
 	wid.Font = font
 }
 

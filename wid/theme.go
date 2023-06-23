@@ -6,12 +6,13 @@ import (
 	"image/color"
 	"time"
 
+	"gioui.org/font/gofont"
+
+	"gioui.org/font"
 	"gioui.org/layout"
-
-	"golang.org/x/exp/shiny/materialdesign/icons"
-
 	"gioui.org/text"
 	"gioui.org/unit"
+	"golang.org/x/exp/shiny/materialdesign/icons"
 )
 
 // UIRole describes the type of UI element
@@ -220,9 +221,9 @@ type Pallet struct {
 type Theme struct {
 	Pallet
 	DarkMode            bool
-	Shaper              text.Shaper
+	Shaper              *text.Shaper
 	TextSize            unit.Sp
-	DefaultFont         text.Font
+	DefaultFont         font.Font
 	CheckBoxChecked     *Icon
 	CheckBoxUnchecked   *Icon
 	RadioChecked        *Icon
@@ -303,7 +304,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 		t.ErrorColor = colors[3]
 	}
 
-	t.Shaper = text.NewCache(fontCollection)
+	t.Shaper = text.NewShaper(gofont.Collection())
 	t.TextSize = fontSize
 	v := unit.Dp(t.TextSize) / 10
 	// Icons

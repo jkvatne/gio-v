@@ -5,6 +5,8 @@ import (
 	"image/color"
 	"time"
 
+	"gioui.org/font"
+
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -41,8 +43,8 @@ type Tooltip struct {
 	TooltipRR unit.Dp
 	TextSize  unit.Sp
 	init      bool
-	shaper    text.Shaper
-	font      text.Font
+	shaper    *text.Shaper
+	font      font.Font
 }
 
 // MobileTooltip constructs a tooltip suitable for use on mobile devices.
@@ -50,7 +52,7 @@ func MobileTooltip(th *Theme) Tooltip {
 	return Tooltip{
 		Fgc:      th.TooltipOnBackground,
 		Bgc:      th.TooltipBackground,
-		font:     text.Font{Weight: text.Medium},
+		font:     font.Font{Weight: font.Medium},
 		shaper:   th.Shaper,
 		TextSize: th.TextSize * 0.9,
 	}
@@ -63,7 +65,7 @@ func DesktopTooltip(th *Theme) Tooltip {
 		Bgc:       th.TooltipBackground,
 		MaxWidth:  th.TooltipWidth,
 		TooltipRR: th.TooltipCornerRadius,
-		font:      text.Font{Weight: text.Medium},
+		font:      font.Font{Weight: font.Medium},
 		shaper:    th.Shaper,
 		TextSize:  th.TextSize * 0.9,
 	}
@@ -183,9 +185,11 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 						return D{}
 					}),
 					layout.Stacked(func(gtx C) D {
+						colMacro := op.Record(gtx.Ops)
+						paint.ColorOp{Color: t.Fgc}.Add(gtx.Ops)
 						return inset.Layout(gtx, func(gtx C) D {
-							paint.ColorOp{Color: t.Fgc}.Add(gtx.Ops)
-							return t.Text.Layout(gtx, t.shaper, t.font, t.TextSize, hint)
+							// paint.ColorOp{Color: t.Fgc}.Add(gtx.Ops)
+							return t.Text.Layout(gtx, t.shaper, t.font, t.TextSize, hint, colMacro.Stop())
 						})
 					}),
 				)

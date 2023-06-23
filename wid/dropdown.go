@@ -98,7 +98,9 @@ func (b *DropDownStyle) Layout(gtx C) D {
 		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 		ctx := gtx
 		ctx.Constraints.Max.X = gtx.Sp(b.labelSize)
-		_ = widget.Label{Alignment: text.End, MaxLines: 1}.Layout(ctx, b.th.Shaper, *b.Font, b.th.TextSize, b.label)
+		colMacro := op.Record(gtx.Ops)
+		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
+		_ = widget.Label{Alignment: text.End, MaxLines: 1}.Layout(ctx, b.th.Shaper, *b.Font, b.th.TextSize, b.label, colMacro.Stop())
 		o.Pop()
 		ofs := gtx.Sp(b.labelSize) + gtx.Dp(b.th.InsidePadding.Left)
 		// Move space used by label
@@ -112,7 +114,9 @@ func (b *DropDownStyle) Layout(gtx C) D {
 	o := op.Offset(image.Pt(gtx.Dp(b.th.InsidePadding.Left), gtx.Dp(b.th.InsidePadding.Top))).Push(gtx.Ops)
 	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 	tl := widget.Label{Alignment: text.Start, MaxLines: 1}
-	dims := tl.Layout(gtx, b.th.Shaper, *b.Font, b.th.TextSize, b.items[*b.index])
+	colMacro := op.Record(gtx.Ops)
+	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
+	dims := tl.Layout(gtx, b.th.Shaper, *b.Font, b.th.TextSize, b.items[*b.index], colMacro.Stop())
 	o.Pop()
 	drawTextMacro := textMacro.Stop()
 
@@ -262,7 +266,10 @@ func (b *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 		gtx.Constraints.Max.X = gtx.Constraints.Min.X
 		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 		lblWidget := func(gtx C) D {
-			return widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, *b.Font, th.TextSize, b.items[i])
+			m := op.Record(gtx.Ops)
+			paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
+			colMacro := m.Stop()
+			return widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, *b.Font, th.TextSize, b.items[i], colMacro)
 		}
 		dims := layout.Inset{Top: unit.Dp(4), Left: unit.Dp(th.TextSize * 0.4), Right: unit.Dp(0)}.Layout(gtx, lblWidget)
 		defer clip.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Push(gtx.Ops).Pop()

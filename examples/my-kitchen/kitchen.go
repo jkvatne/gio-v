@@ -106,7 +106,7 @@ func kitchen(th *wid.Theme) layout.Widget {
 
 		wid.Edit(th, wid.Hint("Value 1")),
 
-		wid.Edit(th, wid.Hint("Value 2")),
+		// wid.Edit(th, wid.Hint("Value 2")),
 
 		wid.Row(th, nil, wid.SpaceClose,
 			wid.RoundButton(th, addIcon, wid.Hint("This is another dummy button"), wid.Role(wid.Primary)),

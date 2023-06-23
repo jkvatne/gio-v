@@ -153,7 +153,9 @@ func (b *ButtonDef) layout(gtx C) D {
 	cgtx := gtx
 	cgtx.Constraints.Min.X = 0
 	cgtx.Constraints.Min.Y = 0
-	dims := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontSize), *b.Text)
+	colMacro := op.Record(gtx.Ops)
+	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
+	dims := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontSize), *b.Text, colMacro.Stop())
 	call := macro.Stop()
 	// Icon size is equal to label height
 	iconSize := 0
