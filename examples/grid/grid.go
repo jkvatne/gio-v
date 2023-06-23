@@ -146,12 +146,13 @@ func onCheck() {
 
 func onFontChange() {
 	if fontSize == "Medium" {
-		theme.TextSize = 24
+		theme.UpdateFontSize(24)
 	} else if fontSize == "Large" {
-		theme.TextSize = 32
+		theme.UpdateFontSize(32)
 	} else if fontSize == "Small" {
-		theme.TextSize = 16
+		theme.UpdateFontSize(16)
 	}
+	onWinChange()
 }
 
 // gw is the grid line width
