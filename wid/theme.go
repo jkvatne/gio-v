@@ -6,19 +6,18 @@ import (
 	"image/color"
 	"time"
 
-	"gioui.org/font/gofont"
+	"golang.org/x/exp/shiny/materialdesign/icons"
 
 	"gioui.org/font"
 	"gioui.org/layout"
 	"gioui.org/text"
 	"gioui.org/unit"
-	"golang.org/x/exp/shiny/materialdesign/icons"
 )
 
 // UIRole describes the type of UI element
 // There are two colors for each UIRole, one for text/icon and one for background
-// Typicaly you specify a UIRole for each user elemet (button, checkbox etc).
-// Default and Zero value is Neutral.
+// Typicaly you specify a UIRole for each user element (button, checkbox etc).
+// Default and Zero value is Canvas which gives black text/borders on white background.
 type UIRole uint8
 
 const (
@@ -144,7 +143,6 @@ func (th *Theme) Fg(kind UIRole) color.NRGBA {
 			return Tone(th.Pallet.NeutralColor, 90)
 		}
 	}
-	return RGB(0x000000)
 }
 
 // Bg returns the background color used to fill the element.
@@ -204,7 +202,6 @@ func (th *Theme) Bg(kind UIRole) color.NRGBA {
 			return Tone(th.Pallet.NeutralColor, 10)
 		}
 	}
-	return RGB(0xFFFFFFFF)
 }
 
 // Pallet is the key colors. All other colors are derived from them
@@ -278,19 +275,74 @@ type Theme struct {
 	ScrollCornerRadius unit.Sp
 }
 
+func mustIcon(ic *Icon, err error) *Icon {
+	if err != nil {
+		panic(err)
+	}
+	return ic
+}
+
 func uniformPadding(p unit.Dp) layout.Inset {
 	return layout.Inset{p, p, p, p}
 }
 
-// NewTheme creates a new theme with given FontFace and FontSize, based on the theme t
+func (t *Theme) UpdateFontSize(newFontSize unit.Sp) {
+	t.TextSize = newFontSize
+	t.FingerSize = unit.Dp(38)
+	v := unit.Dp(t.TextSize) / 10
+	t.IconInset = layout.Inset{Top: v, Right: v, Bottom: v, Left: v}
+	t.BorderThickness = unit.Dp(t.TextSize) * 0.08
+	t.BorderCornerRadius = v * 3
+	// Shadow
+	t.Elevation = unit.Dp(t.TextSize) * 0.5
+	// Text
+	t.OutsidePadding = uniformPadding(2.5 * v)
+	t.InsidePadding = uniformPadding(2.5 * v)
+	t.ButtonPadding = uniformPadding(3 * v)
+	t.ButtonCornerRadius = t.BorderCornerRadius
+	t.ButtonLabelPadding = uniformPadding(5 * v)
+	t.IconSize = v * 20
+	t.TooltipCornerRadius = t.BorderCornerRadius
+	t.TooltipWidth = v * 250
+	t.SashWidth = v * 4
+	t.RowPadTop = t.TextSize * 0.0
+	t.RowPadBtm = t.TextSize * 0.0
+	t.ScrollMajorPadding = 2
+	t.ScrollMinorPadding = 2
+	t.ScrollMajorMinLen = t.TextSize / 1.25
+	t.ScrollMinorWidth = t.TextSize / 1.5
+	t.ScrollCornerRadius = t.TextSize / 5
+	t.TooltipInset = layout.UniformInset(v)
+}
+
+func (t *Theme) UpdateColors() {
+	// Borders around edit fields
+	t.BorderColor = t.Fg(Outline)
+	t.BorderColorHovered = t.Fg(Primary)
+	t.BorderColorActive = t.Fg(Primary)
+	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
+	// Tooltip
+	t.TooltipBackground = t.Bg(SecondaryContainer)
+	t.TooltipOnBackground = t.Fg(SecondaryContainer)
+	// Resizer
+	t.SashColor = WithAlpha(t.Fg(Surface), 0x80)
+	// Switch
+	t.TrackColor = WithAlpha(t.Fg(Primary), 0x40)
+	t.DotColor = t.Fg(Primary)
+}
+
+// NewTheme creates a new theme with given font size and pallete
+// The pallet can be left out, to use the defaults - or include as many colors you like.
 func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.NRGBA) *Theme {
 	t := new(Theme)
+	// Set up the default pallete
 	t.PrimaryColor = RGB(0x45682A)
 	t.SecondaryColor = RGB(0x57624E)
 	t.TertiaryColor = RGB(0x336669)
 	t.ErrorColor = RGB(0xAF2525)
 	t.NeutralColor = RGB(0x5D5D5D)
 	t.NeutralVariantColor = RGB(0x756057)
+	// Then replace the optional colors in the argument list
 	if len(colors) >= 1 {
 		t.PrimaryColor = colors[0]
 	}
@@ -303,61 +355,16 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	if len(colors) >= 4 {
 		t.ErrorColor = colors[3]
 	}
-
-	t.Shaper = text.NewShaper(gofont.Collection())
-	t.TextSize = fontSize
-	v := unit.Dp(t.TextSize) / 10
-	// Icons
+	// Setup icons
 	t.CheckBoxChecked = mustIcon(NewIcon(icons.ToggleCheckBox))
 	t.CheckBoxUnchecked = mustIcon(NewIcon(icons.ToggleCheckBoxOutlineBlank))
 	t.RadioChecked = mustIcon(NewIcon(icons.ToggleRadioButtonChecked))
 	t.RadioUnchecked = mustIcon(NewIcon(icons.ToggleRadioButtonUnchecked))
-	t.IconInset = layout.Inset{Top: v, Right: v, Bottom: v, Left: v}
-	t.FingerSize = unit.Dp(38)
-	// Borders around edit fields
-	t.BorderThickness = unit.Dp(t.TextSize) * 0.08
-	t.BorderColor = t.Fg(Outline)
-	t.BorderColorHovered = t.Fg(Primary)
-	t.BorderColorActive = t.Fg(Primary)
-	t.BorderCornerRadius = v * 3
-	// Shadow
-	t.Elevation = unit.Dp(t.TextSize) * 0.5
-	// Text
-	t.OutsidePadding = uniformPadding(2.5 * v)
-	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
-	t.InsidePadding = uniformPadding(2.5 * v)
-	// Buttons
-	// ButtonPadding is the margin outside a button, giving distance to other elements
-	t.ButtonPadding = uniformPadding(3 * v)
-	t.ButtonCornerRadius = t.BorderCornerRadius
-	t.ButtonLabelPadding = uniformPadding(5 * v)
-	t.IconSize = v * 20
-	// Tooltip
-	t.TooltipInset = layout.UniformInset(unit.Dp(10))
-	t.TooltipCornerRadius = t.BorderCornerRadius
-	t.TooltipWidth = v * 250
-	t.TooltipBackground = t.Bg(SecondaryContainer)
-	t.TooltipOnBackground = t.Fg(SecondaryContainer)
-	// Resizer
-	t.SashColor = WithAlpha(t.Fg(Surface), 0x80)
-	t.SashWidth = v * 4
-	// Switch
-	t.TrackColor = WithAlpha(t.Fg(Primary), 0x40)
-	t.DotColor = t.Fg(Primary)
-	t.RowPadTop = t.TextSize * 0.0
-	t.RowPadBtm = t.TextSize * 0.0
-
-	t.ScrollMajorPadding = 2
-	t.ScrollMinorPadding = 2
-	t.ScrollMajorMinLen = t.TextSize / 1.25
-	t.ScrollMinorWidth = t.TextSize / 1.5
-	t.ScrollCornerRadius = 3
+	// Setup font types
+	t.Shaper = text.NewShaper(fontCollection)
+	// Scale all sizes from the given font size
+	t.UpdateFontSize(fontSize)
+	// Update all colors from the pallete
+	t.UpdateColors()
 	return t
-}
-
-func mustIcon(ic *Icon, err error) *Icon {
-	if err != nil {
-		panic(err)
-	}
-	return ic
 }

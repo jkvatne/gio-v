@@ -48,7 +48,7 @@ func main() {
 	homeIcon, _ = wid.NewIcon(icons.ActionHome)
 	theme = wid.NewTheme(gofont.Collection(), 14)
 	theme.DarkMode = false
-	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
+	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(700)))
 	form = demo(theme)
 	go wid.Run(win, &form, theme)
 	go ticker()
@@ -65,13 +65,16 @@ func ticker() {
 	}
 }
 
-func onSwitchMode() {
+func onSwitchFontSize() {
 	if SmallFont {
 		theme = wid.NewTheme(gofont.Collection(), 11)
 	} else {
 		theme = wid.NewTheme(gofont.Collection(), 14)
 	}
 	form = demo(theme)
+}
+
+func onSwitchMode() {
 }
 
 func onClick() {
@@ -110,10 +113,9 @@ func onWinChange() {
 func demo(th *wid.Theme) layout.Widget {
 	return wid.Col(nil,
 		wid.Label(th, "Demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Label(th, "Checkbox to change between dark mode and light mode, changing the theme variable DarkMode"),
 		wid.Row(th, nil, []float32{.5, .9, .5, .5, .5},
 			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onSwitchMode)),
-			wid.Checkbox(th, "Small font", wid.Bool(&SmallFont), wid.Do(onSwitchMode)),
+			wid.Checkbox(th, "Small font", wid.Bool(&SmallFont), wid.Do(onSwitchFontSize)),
 			wid.RadioButton(th, &WindowMode, "windowed", "Windowed", wid.Do(onWinChange)),
 			wid.RadioButton(th, &WindowMode, "fullscreen", "Fullscreen", wid.Do(onWinChange)),
 			wid.RadioButton(th, &WindowMode, "maximized", "Maximized", wid.Do(onWinChange)),
