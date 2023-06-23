@@ -216,7 +216,7 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 		wid.Separator(th, 2),
 		wid.Row(th, nil, []float32{1.0, 1.0, 1.0},
 			wid.Space(1),
-			wid.Button(th, "Update"),
+			wid.Button(th, "Update", wid.Hint("Click to update variables")),
 			wid.Space(1),
 		),
 	}
