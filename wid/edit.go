@@ -95,6 +95,8 @@ func (e *EditDef) Layout(gtx C) D {
 	paint.ColorOp{Color: e.th.SelectionColor}.Add(gtx.Ops)
 	selectionColor := selectionColorMacro.Stop()
 
+	e.updateValue()
+
 	// Move to offset the outside padding
 	defer op.Offset(image.Pt(
 		gtx.Dp(e.padding.Left),
@@ -179,7 +181,7 @@ func (e *EditDef) Layout(gtx C) D {
 // EditOption is options specific to Edits
 type EditOption func(w *EditDef)
 
-// Var is an option parameter to set the variable uptdated
+// Var is an option parameter to set the variable to be updated
 func Var(s *string) EditOption {
 	return func(w *EditDef) {
 		w.value = s

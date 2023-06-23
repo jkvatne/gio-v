@@ -48,18 +48,18 @@ type person struct {
 }
 
 var data = []person{
-	{Name: "Oleg Karlsen", Age: 21.333333, Address: "Storgata 3", Status: 1},
-	{Name: "Per Pedersen", Age: 22.111111111, Address: "Svenskveien 33", Selected: true, Status: 1},
-	{Name: "Nils Aure", Age: 23.4, Address: "Brogata 34"},
-	{Name: "Kai Oppdal", Age: 28, Address: "Soleieveien 12"},
-	{Name: "Gro Arneberg", Age: 29, Address: "Blomsterveien 22"},
-	{Name: "Ole Kolås", Age: 21, Address: "Blåklokkevikua 33"},
-	{Name: "Per Pedersen", Age: 22, Address: "Gamleveien 35"},
-	{Name: "Nils Vukubråten", Age: 23, Address: "Nygata 64"},
-	{Name: "Sindre Gratangen", Age: 28, Address: "Brosundet 34"},
-	{Name: "Gro Nilsasveen", Age: 29, Address: "Blomsterveien 22"},
-	{Name: "Petter Olsen", Age: 21, Address: "Katavågen 44"},
-	{Name: "Per Pedersen", Age: 22, Address: "Nidelva 43"},
+	{Name: "Oleg Karlsen", Age: 21, Address: "Storgata 1", Status: 1},
+	{Name: "Per Pedersen", Age: 22, Address: "Svenskveien 2", Selected: true, Status: 1},
+	{Name: "Nils Aure", Age: 23, Address: "Brogata 3"},
+	{Name: "Kai Oppdal", Age: 24, Address: "Soleieveien 4"},
+	{Name: "Gro Arneberg", Age: 25, Address: "Blomsterveien 5"},
+	{Name: "Ole Kolås", Age: 26, Address: "Blåklokkevikua 6"},
+	{Name: "Per Pedersen", Age: 27, Address: "Gamleveien 7"},
+	{Name: "Nils Vukubråten", Age: 28, Address: "Nygata 8"},
+	{Name: "Sindre Gratangen", Age: 29, Address: "Brosundet 9"},
+	{Name: "Gro Nilsasveen", Age: 30, Address: "Blomsterveien 10"},
+	{Name: "Petter Olsen", Age: 31, Address: "Katavågen 11"},
+	{Name: "Per Pedersen", Age: 32, Address: "Nidelva 12"},
 }
 
 func main() {
