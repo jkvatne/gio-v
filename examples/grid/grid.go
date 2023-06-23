@@ -23,6 +23,7 @@ var (
 	form        layout.Widget
 	theme       *wid.Theme
 	Alternative = "Fractional"
+	fontSize    = "Medium"
 	// Column widths are given in units of approximately one average character width (en).
 	// A witdth of zero means the widget's natural size should be used (f.ex. checkboxes)
 	wideColWidth  = []float32{0, 30, 30, 10, 20}
@@ -34,9 +35,6 @@ var (
 	addressIcon   *wid.Icon
 	ageIcon       *wid.Icon
 	dir           bool
-	// button        = new(widget.Clickable)
-	// mth           = material.NewTheme(gofont.Collection())
-	// test          = 1
 )
 
 type person struct {
@@ -146,6 +144,16 @@ func onCheck() {
 	}
 }
 
+func onFontChange() {
+	if fontSize == "Medium" {
+		theme.TextSize = 24
+	} else if fontSize == "Large" {
+		theme.TextSize = 32
+	} else if fontSize == "Small" {
+		theme.TextSize = 16
+	}
+}
+
 // gw is the grid line width
 const gw = 2.0 / 1.75
 
@@ -199,9 +207,9 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onWinChange)),
 			wid.Checkbox(th, "Scroll-bar occupy", wid.Bool(&doOccupy), wid.Do(onWinChange)),
 			wid.Label(th, ""),
-			// wid.RadioButton(th, &fontSize, "Large", "Large", wid.Do(onFontChange)),
-			// wid.RadioButton(th, &fontSize, "Medium", "Medium", wid.Do(onFontChange)),
-			// wid.RadioButton(th, &fontSize, "Small", "Small", wid.Do(onFontChange)),
+			wid.RadioButton(th, &fontSize, "Large", "Large", wid.Do(onFontChange)),
+			wid.RadioButton(th, &fontSize, "Medium", "Medium", wid.Do(onFontChange)),
+			wid.RadioButton(th, &fontSize, "Small", "Small", wid.Do(onFontChange)),
 		),
 		wid.Edit(th, wid.Hint("Line editor")),
 		wid.Table(th, anchor, header, gridLines...),
@@ -213,11 +221,9 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 		),
 	}
 
-	// return wid.List(th, wid.Occupy, f32.Point{1.0, 1.0}, lines...)
 	return func(gtx wid.C) wid.D {
 		bgColor := th.Bg(wid.Canvas)
 		paint.Fill(gtx.Ops, bgColor)
 		return wid.Col([]float32{0, 0, 0, 0, 1, 0}, lines...)(gtx)
-		// return wid.List(th, anchor, f32.Pt(1, 1), lines...)(gtx)
 	}
 }
