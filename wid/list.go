@@ -310,7 +310,7 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 			vBarWidth = 0
 		}
 	} else {
-		if totalHeight < gtx.Constraints.Max.Y {
+		if totalHeight < gtx.Constraints.Max.Y-hdim.Size.Y {
 			vBarWidth = 0
 		}
 	}
@@ -329,9 +329,9 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 	if l.Hpos+gtx.Constraints.Max.X > l.HorTotal {
 		l.Hpos = Max(l.HorTotal-gtx.Constraints.Max.X+vBarWidth, 0)
 	}
-	trans := op.Offset(image.Pt(-l.Hpos, 0)).Push(gtx.Ops)
+	// OBS trans := op.Offset(image.Pt(-l.Hpos, 0)).Push(gtx.Ops)
 	call.Add(gtx.Ops)
-	trans.Pop()
+	// OBS trans.Pop()
 	cl.Pop()
 	// Draw the Vertical scrollbar.
 	if vBarWidth > 0 {
@@ -342,7 +342,7 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 		}
 
 		c := gtx
-		start, end := fromListPosition(l.list.Position, length, listDims.Size.Y+hBarWidth)
+		start, end := fromListPosition(l.list.Position, length, listDims.Size.Y-hdim.Size.Y)
 		c.Constraints.Min = c.Constraints.Max
 		layout.E.Layout(c, func(gtx C) D {
 			return l.VScrollBar.Layout(gtx, layout.Vertical, start, end)

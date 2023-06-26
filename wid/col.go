@@ -71,6 +71,7 @@ func Col(weights []float32, widgets ...Wid) Wid {
 		}
 		var mainSize int
 		CurrentY = startY
+		// Now do the actual drawing, with offsets
 		for i := range widgets {
 			dims := dims[i]
 			offsets[i] = CurrentY
@@ -83,7 +84,7 @@ func Col(weights []float32, widgets ...Wid) Wid {
 				break
 			}
 		}
-		mainSize += Max(0, gtx.Constraints.Min.Y-size)
+		// mainSize += Max(0, gtx.Constraints.Min.Y-size)
 		sz := gtx.Constraints.Constrain(image.Pt(maxX, mainSize))
 		return D{Size: sz, Baseline: sz.Y}
 	}

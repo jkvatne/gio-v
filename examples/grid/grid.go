@@ -22,11 +22,11 @@ import (
 var (
 	form        layout.Widget
 	theme       *wid.Theme
-	Alternative = "Fractional"
+	Alternative = "Wide"
 	fontSize    = "Medium"
 	// Column widths are given in units of approximately one average character width (en).
 	// A witdth of zero means the widget's natural size should be used (f.ex. checkboxes)
-	wideColWidth  = []float32{0, 30, 30, 10, 20}
+	wideColWidth  = []float32{0, 60, 60, 10, 30}
 	smallColWidth = []float32{0, 13, 13, 12, 12}
 	fracColWidth  = []float32{0, 0.3, 0.3, .2, .2}
 	selectAll     bool
@@ -179,7 +179,6 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 		wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.Prim(), wid.BtnIcon(ageIcon), wid.Pads(0)),
 		wid.Label(th, "Gender", wid.Prim(), wid.Pads(0)),
 	)
-
 	for i := 0; i < len(data); i++ {
 		bgColor := wid.MulAlpha(th.Bg(wid.PrimaryContainer), 50)
 		if i%2 == 0 {
