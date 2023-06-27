@@ -54,14 +54,14 @@ func Col(weights []float32, widgets ...Wid) Wid {
 				flexSize = Min(flexSize, remaining)
 			}
 			macro := op.Record(gtx.Ops)
-			cgtx.Constraints = layout.Constraints{Min: image.Pt(gtx.Constraints.Min.X, 0), Max: image.Pt(gtx.Constraints.Max.X, flexSize)}
-			dim := child(cgtx)
-			c := macro.Stop()
-			sz := dim.Size.Y
-			size += sz
-			remaining = Max(0, remaining-sz)
-			calls[i] = c
-			dims[i] = dim
+			cgtx.Constraints = layout.Constraints{
+				Min: image.Pt(gtx.Constraints.Min.X, 0),
+				Max: image.Pt(gtx.Constraints.Max.X, flexSize)}
+			// Layout flex rows
+			dims[i] = child(cgtx)
+			calls[i] = macro.Stop()
+			size += dims[i].Size.Y
+			remaining = Max(0, remaining-dims[i].Size.Y)
 		}
 		maxX := gtx.Constraints.Min.X
 		for i := range widgets {

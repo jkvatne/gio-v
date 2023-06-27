@@ -64,7 +64,7 @@ func main() {
 	makePersons(12)
 	theme = wid.NewTheme(gofont.Collection(), 14)
 	onWinChange()
-	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500))), &form, theme)
+	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(400))), &form, theme)
 	app.Main()
 }
 
@@ -225,6 +225,6 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 		bgColor := th.Bg(wid.Canvas)
 		paint.Fill(gtx.Ops, bgColor)
 		// Use flexible row heights. Set 1 for the grid, so it will use all available space.
-		return wid.Col([]float32{0, 0, 0, 0, 1, 0}, lines...)(gtx)
+		return wid.Col([]float32{0, 0, 0, 0, 1, 0, 0}, lines...)(gtx)
 	}
 }

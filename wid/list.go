@@ -296,15 +296,17 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 
 	// Draw the list
 	macro := op.Record(gtx.Ops)
+	c.Constraints.Max.Y = gtx.Constraints.Max.Y
 	listDims := l.list.Layout(c, length, w)
 	call := macro.Stop()
+	// listDims.Size.Y += hdim.Size.Y
 
 	if l.HorVisible && l.AnchorStrategy == Occupy {
 		listDims.Size.Y += hBarWidth
 	}
 	l.HorTotal = listDims.Size.X
 	totalHeight := l.list.Position.Length
-	if l.HorTotal <= gtx.Constraints.Max.X {
+	if l.HorTotal < gtx.Constraints.Max.X {
 		hBarWidth = 0
 		if totalHeight < gtx.Constraints.Max.Y-hBarWidth {
 			vBarWidth = 0
@@ -315,6 +317,7 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 		}
 	}
 	l.HorVisible = hBarWidth > 0
+	gtx.Constraints.Max.Y += hdim.Size.Y
 
 	if l.AnchorStrategy == Occupy {
 		gtx.Constraints.Max.X -= vBarWidth
@@ -329,9 +332,9 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 	if l.Hpos+gtx.Constraints.Max.X > l.HorTotal {
 		l.Hpos = Max(l.HorTotal-gtx.Constraints.Max.X+vBarWidth, 0)
 	}
-	// OBS trans := op.Offset(image.Pt(-l.Hpos, 0)).Push(gtx.Ops)
+	trans := op.Offset(image.Pt(-l.Hpos, 0)).Push(gtx.Ops)
 	call.Add(gtx.Ops)
-	// OBS trans.Pop()
+	trans.Pop()
 	cl.Pop()
 	// Draw the Vertical scrollbar.
 	if vBarWidth > 0 {
@@ -363,6 +366,7 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 		c := gtx
 		start := float32(l.Hpos) / float32(l.HorTotal)
 		end := start + float32(c.Constraints.Max.X)/float32(l.HorTotal)
+		c.Constraints.Max.Y = listDims.Size.Y
 		if l.AnchorStrategy == Occupy {
 			c.Constraints.Max.Y += hBarWidth
 		}
@@ -374,6 +378,7 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 	}
 	// Increase the size to account for the space occupied by the scrollbar.
 	listDims.Size.X += vBarWidth
+	listDims.Size.Y += hdim.Size.Y
 	return listDims
 }
 
