@@ -348,6 +348,9 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 		c := gtx
 		c.Constraints.Max.Y -= hdim.Size.Y
 		c.Constraints.Max.Y += hBarWidth
+		if l.AnchorStrategy == Occupy {
+			c.Constraints.Max.Y -= hBarWidth
+		}
 		start, end := fromListPosition(l.list.Position, length, listDims.Size.Y-hdim.Size.Y)
 		c.Constraints.Min = c.Constraints.Max
 		layout.E.Layout(c, func(gtx C) D {
@@ -371,7 +374,7 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 		end := start + float32(c.Constraints.Max.X)/float32(l.HorTotal)
 		c.Constraints.Max.Y = listDims.Size.Y
 		if l.AnchorStrategy == Occupy {
-			// c.Constraints.Max.Y += hBarWidth
+			c.Constraints.Max.X -= vBarWidth
 		}
 		c.Constraints.Min = c.Constraints.Max
 		layout.S.Layout(c, func(gtx C) D {
