@@ -268,17 +268,12 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 	hBarWidth := gtx.Dp(l.HScrollBar.Width())
 	vBarWidth := gtx.Dp(l.VScrollBar.Width())
 
-	// Must set Max.X to infinity to allow rows wider than the frame.
 	c := gtx
 	if l.AnchorStrategy == Occupy {
 		c.Constraints.Min.X -= vBarWidth
 	}
-
-	// If a header is given, we allow long, scrollable rows
-	// If no header, horizontal scrolling wil normaly not be done.
-	if header != nil {
-		c.Constraints.Max.X = inf
-	}
+	// Must set Max.X to infinity to allow rows wider than the frame.
+	c.Constraints.Max.X = inf
 	if l.HorVisible && l.AnchorStrategy == Occupy {
 		c.Constraints.Max.Y -= hBarWidth
 	}
@@ -384,6 +379,7 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 	}
 	// Increase the size to account for the space occupied by the scrollbar.
 	listDims.Size.X += vBarWidth
+	// Increase the size to account for the space occupied by the header.
 	listDims.Size.Y += hdim.Size.Y
 	return listDims
 }
