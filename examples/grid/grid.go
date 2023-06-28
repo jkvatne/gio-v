@@ -31,7 +31,7 @@ var (
 	fracColWidth  = []float32{0, 0.3, 0.3, .2, .2}
 	selectAll     bool
 	doOccupy      bool
-	withHeader    bool
+	withoutHeader bool
 	nameIcon      *wid.Icon
 	addressIcon   *wid.Icon
 	ageIcon       *wid.Icon
@@ -180,7 +180,7 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 		wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.Prim(), wid.BtnIcon(ageIcon), wid.Pads(0)),
 		wid.Label(th, "Gender", wid.Prim(), wid.Pads(0)),
 	)
-	if !withHeader {
+	if withoutHeader {
 		header = nil
 	}
 	for i := 0; i < len(data); i++ {
@@ -210,7 +210,7 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 		wid.Row(th, nil, nil,
 			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onWinChange)),
 			wid.Checkbox(th, "Scroll-bar occupy", wid.Bool(&doOccupy), wid.Do(onWinChange)),
-			wid.Checkbox(th, "Use header", wid.Bool(&withHeader), wid.Do(onWinChange)),
+			wid.Checkbox(th, "No header", wid.Bool(&withoutHeader), wid.Do(onWinChange)),
 			wid.Label(th, ""),
 			wid.RadioButton(th, &fontSize, "Large", "Large", wid.Do(onFontChange)),
 			wid.RadioButton(th, &fontSize, "Medium", "Medium", wid.Do(onFontChange)),
@@ -219,7 +219,7 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 		wid.Edit(th, wid.Hint("Line editor")),
 		wid.Table(th, anchor, header, gridLines...),
 		wid.Separator(th, 2),
-		wid.Row(th, nil, []float32{1.0, 1.0, 1.0},
+		wid.Row(th, nil, []float32{1.0, 0.0, 1.0},
 			wid.Space(1),
 			wid.Button(th, "Update", wid.Hint("Click to update variables")),
 			wid.Space(1),
