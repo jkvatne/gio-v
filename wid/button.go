@@ -148,35 +148,33 @@ func (b *ButtonDef) Layout(gtx C) D {
 }
 
 func (b *ButtonDef) layout(gtx C) D {
-	// Render text to find button width
-	macro := op.Record(gtx.Ops)
+	// Make macro with text color
+	recorder := op.Record(gtx.Ops)
+	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
+	colorMacro := recorder.Stop()
+	// Allow zero size for text.
 	cgtx := gtx
 	cgtx.Constraints.Min.X = 0
 	cgtx.Constraints.Min.Y = 0
-	colMacro := op.Record(gtx.Ops)
-	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
-	dims := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontSize), *b.Text, colMacro.Stop())
-	call := macro.Stop()
-	// Icon size is equal to label height
+	// Render text to find button width
+	recorder = op.Record(gtx.Ops)
+	textDim := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontSize), *b.Text, colorMacro)
+	textMacro := recorder.Stop()
+	// Icon size is equal to label height *1.333
 	iconSize := 0
 	if b.Icon != nil {
-		iconSize = dims.Size.Y
+		iconSize = textDim.Size.Y * 4 / 3
 	}
-	height := Min(dims.Size.Y+gtx.Dp(b.internPad.Top)+gtx.Dp(b.internPad.Bottom), gtx.Constraints.Max.Y)
+	height := Min(textDim.Size.Y+gtx.Dp(b.internPad.Top)+gtx.Dp(b.internPad.Bottom), gtx.Constraints.Max.Y)
 	// Default button width when width is not given has padding=1.2 char heights.
-	contentWidth := dims.Size.X + iconSize*3/2
-	width := Min(gtx.Constraints.Max.X, Max(contentWidth+dims.Size.Y, gtx.Dp(b.width)))
+	contentWidth := textDim.Size.X + iconSize
+	width := Min(gtx.Constraints.Max.X, Max(contentWidth+textDim.Size.Y, gtx.Dp(b.width)))
 	if b.Style == Header {
 		width = gtx.Constraints.Max.X
 	}
-	dx := Max(0, (width-contentWidth)/2)
-	if b.internPad.Left > 0 && dx < gtx.Dp(b.internPad.Left) {
-		dx = gtx.Dp(b.internPad.Left)
-	}
+
 	if b.Style == Round {
-		width = iconSize * 3 / 2
-		height = iconSize * 3 / 2
-		dx = (iconSize + 2) / 4
+		width = height
 	}
 	// Limit corner radius
 	rr := Min(gtx.Dp(b.cornerRadius), height/2)
@@ -215,25 +213,36 @@ func (b *ButtonDef) layout(gtx C) D {
 	cgtx.Constraints.Min = image.Point{X: iconSize, Y: iconSize}
 
 	// Calculate internal paddings and move
-	dy := Max(0, (height-dims.Size.Y)/2)
+	dy := Max(0, (height-textDim.Size.Y)/2)
+	dx := Max(0, (width-contentWidth)/2)
+	if b.internPad.Left > 0 && dx < gtx.Dp(b.internPad.Left) {
+		dx = gtx.Dp(b.internPad.Left)
+	}
 	if b.Style == Header {
 		dx = gtx.Dp(b.internPad.Left)
 	}
-	defer op.Offset(image.Pt(dx, dy)).Push(gtx.Ops).Pop()
 
 	if b.Icon != nil && *b.Text != "" {
-		// Icon and text
+		// Draw Icon at given offset
+		dx += iconSize
+		ofs := op.Offset(image.Pt(dx-iconSize, (height-iconSize)/2)).Push(gtx.Ops)
 		_ = b.Icon.Layout(cgtx, b.Fg())
-		defer op.Offset(image.Pt(height/4+iconSize, 0)).Push(gtx.Ops).Pop()
+		ofs.Pop()
+		// Draw text at given offset
+		ofs = op.Offset(image.Pt(dx, dy)).Push(gtx.Ops)
 		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
-		call.Add(gtx.Ops)
+		textMacro.Add(gtx.Ops)
+		ofs.Pop()
 	} else if b.Icon != nil {
 		// Icon only
+		dx := (height - iconSize) / 2
+		defer op.Offset(image.Pt(dx, dx)).Push(gtx.Ops).Pop()
 		_ = b.Icon.Layout(cgtx, b.Fg())
 	} else {
 		// Text only
+		defer op.Offset(image.Pt(dx, dy)).Push(gtx.Ops).Pop()
 		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
-		call.Add(gtx.Ops)
+		textMacro.Add(gtx.Ops)
 	}
 	return D{Size: outline.Max}
 }
