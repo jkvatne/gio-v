@@ -283,9 +283,15 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 	// Draw the header
 	hdim := D{}
 	if header != nil {
+		r := gtx.Constraints.Max
+		if l.AnchorStrategy == Occupy {
+			r.X -= vBarWidth
+		}
+		cl := clip.Rect{Max: r}.Push(gtx.Ops)
 		trans := op.Offset(image.Pt(-l.Hpos, 0)).Push(gtx.Ops)
 		hdim = header(c)
 		trans.Pop()
+		cl.Pop()
 	}
 
 	gtx.Constraints.Max.Y -= hdim.Size.Y
