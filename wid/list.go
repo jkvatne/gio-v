@@ -333,17 +333,15 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 	call.Add(gtx.Ops)
 	trans.Pop()
 	cl.Pop()
+
 	// Draw the Vertical scrollbar.
 	if vBarWidth > 0 {
-		// Get vertical scroll info.
 		delta := l.VScrollBar.Scrollbar.ScrollDistance()
 		if delta != 0 {
 			l.list.Position.Offset += int(math.Round(float64(float32(totalHeight) * delta)))
 		}
 		c := gtx
-		c.Constraints.Max.Y -= hdim.Size.Y
-		c.Constraints.Max.Y += hBarWidth
-		if l.AnchorStrategy == Occupy {
+		if l.AnchorStrategy == Occupy && header != nil {
 			c.Constraints.Max.Y -= hBarWidth
 		}
 		start, end := fromListPosition(l.list.Position, length, listDims.Size.Y-hdim.Size.Y)
