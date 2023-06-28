@@ -310,7 +310,7 @@ func (t *Theme) UpdateFontSize(newFontSize unit.Sp) {
 	t.ScrollMajorPadding = 0
 	t.ScrollMinorPadding = 0
 	t.ScrollMajorMinLen = t.TextSize * 1.5
-	t.ScrollMinorWidth = t.TextSize * 2.5
+	t.ScrollMinorWidth = t.TextSize * 1.0
 	t.ScrollCornerRadius = t.TextSize / 4
 	t.TooltipInset = layout.UniformInset(v)
 }
@@ -327,7 +327,7 @@ func (t *Theme) UpdateColors() {
 	// Resizer
 	t.SashColor = WithAlpha(t.Fg(Surface), 0x80)
 	// Switch
-	t.TrackColor = WithAlpha(t.Fg(Primary), 0x40)
+	t.TrackColor = t.NeutralColor
 	t.DotColor = t.Fg(Primary)
 }
 

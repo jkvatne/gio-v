@@ -78,12 +78,14 @@ func MakeScrollbarStyle(th *Theme) ScrollbarStyle {
 	lightFg.A = 150
 	darkFg := lightFg
 	darkFg.A = 200
+	trackCol := lightFg
+	trackCol.A = 100
 	return ScrollbarStyle{
 		Scrollbar: &Scrollbar{},
 		Track: ScrollTrackStyle{
 			MajorPadding: unit.Dp(th.ScrollMajorPadding),
 			MinorPadding: unit.Dp(th.ScrollMinorPadding),
-			Color:        th.TrackColor,
+			Color:        trackCol,
 		},
 		Indicator: ScrollIndicatorStyle{
 			MajorMinLen:  unit.Dp(th.ScrollMajorMinLen),
@@ -157,7 +159,9 @@ func (s ScrollbarStyle) layout(gtx C, axis layout.Axis, viewportStart, viewportE
 			defer pointerArea.Push(gtx.Ops).Pop()
 			s.Scrollbar.AddTrack(gtx.Ops)
 			if s.Scrollbar.IndicatorHovered() {
-				paint.FillShape(gtx.Ops, s.Track.Color, clip.Rect(area).Op())
+				paint.FillShape(gtx.Ops, WithAlpha(s.Track.Color, 60), clip.Rect(area).Op())
+			} else {
+				paint.FillShape(gtx.Ops, WithAlpha(s.Track.Color, 50), clip.Rect(area).Op())
 			}
 			return D{}
 		}),
