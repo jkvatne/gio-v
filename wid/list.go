@@ -222,13 +222,16 @@ const (
 
 // ListStyle configures the presentation of a layout.List with a scrollbar.
 type ListStyle struct {
-	list       *layout.List
-	theme      *Theme
-	Hpos       int
-	HorTotal   int
-	HorVisible bool
-	VScrollBar ScrollbarStyle
-	HScrollBar ScrollbarStyle
+	list        *layout.List
+	theme       *Theme
+	Hpos        int
+	Vpos        int
+	HorTotal    int
+	VertTotal   int
+	HorVisible  bool
+	VertVisible bool
+	VScrollBar  ScrollbarStyle
+	HScrollBar  ScrollbarStyle
 	AnchorStrategy
 }
 
@@ -301,6 +304,7 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 	if l.HorVisible && l.AnchorStrategy == Occupy {
 		listDims.Size.Y += hBarWidth
 	}
+	l.VertTotal = listDims.Size.Y
 	l.HorTotal = listDims.Size.X
 	totalHeight := l.list.Position.Length
 	if l.HorTotal < gtx.Constraints.Max.X {
@@ -340,11 +344,9 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 		if delta != 0 {
 			l.list.Position.Offset += int(math.Round(float64(float32(totalHeight) * delta)))
 		}
-		c := gtx
-		if l.AnchorStrategy == Occupy && header != nil {
-			c.Constraints.Max.Y -= hBarWidth
-		}
-		start, end := fromListPosition(l.list.Position, length, listDims.Size.Y-hdim.Size.Y)
+		c.Constraints.Max.X = gtx.Constraints.Max.X
+		c.Constraints.Min.X = gtx.Constraints.Min.X
+		start, end := fromListPosition(l.list.Position, length, listDims.Size.Y)
 		c.Constraints.Min = c.Constraints.Max
 		layout.E.Layout(c, func(gtx C) D {
 			return l.VScrollBar.Layout(gtx, layout.Vertical, start, end)
