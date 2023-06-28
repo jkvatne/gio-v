@@ -128,7 +128,7 @@ func demo(th *wid.Theme) layout.Widget {
 		),
 		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.Button(th, "Change palette", wid.Do(onClick), wid.SecCont(), wid.W(450), wid.Large()),
-			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.FontSize(1.4), wid.Sec()),
+			wid.Button(th, "Big Check", wid.BtnIcon(checkIcon), wid.FontSize(2), wid.Sec()),
 		),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Button spaced closely, left adjusted"),

@@ -205,11 +205,11 @@ func (b *ButtonDef) layout(gtx C) D {
 
 	semantic.DisabledOp(gtx.Queue == nil).Add(gtx.Ops)
 
+	// Icon context
 	cgtx.Constraints.Min = image.Point{X: width, Y: height}
 	for _, pressed := range b.Clickable.History() {
 		drawInk(cgtx, pressed)
 	}
-	// Icon size
 	cgtx.Constraints.Min = image.Point{X: iconSize, Y: iconSize}
 
 	// Calculate internal paddings and move
@@ -224,12 +224,11 @@ func (b *ButtonDef) layout(gtx C) D {
 
 	if b.Icon != nil && *b.Text != "" {
 		// Draw Icon at given offset
-		dx += iconSize
-		ofs := op.Offset(image.Pt(dx-iconSize, (height-iconSize)/2)).Push(gtx.Ops)
+		ofs := op.Offset(image.Pt(dx, (height-iconSize)/2)).Push(gtx.Ops)
 		_ = b.Icon.Layout(cgtx, b.Fg())
 		ofs.Pop()
 		// Draw text at given offset
-		ofs = op.Offset(image.Pt(dx, dy)).Push(gtx.Ops)
+		ofs = op.Offset(image.Pt(dx+iconSize, dy)).Push(gtx.Ops)
 		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 		textMacro.Add(gtx.Ops)
 		ofs.Pop()
