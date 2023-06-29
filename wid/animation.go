@@ -163,7 +163,7 @@ const (
 )
 
 // Progress reports the current progress as a float between [0, 1].
-func (p Progress) Progress() float32 {
+func (p *Progress) Progress() float32 {
 	if p.progress < 0.0 {
 		return 0.0
 	}
@@ -174,7 +174,7 @@ func (p Progress) Progress() float32 {
 }
 
 // Absolute reports the absolute progress, ignoring direction.
-func (p Progress) Absolute() float32 {
+func (p *Progress) Absolute() float32 {
 	if p.direction == Forward {
 		return p.Progress()
 	}
@@ -182,17 +182,17 @@ func (p Progress) Absolute() float32 {
 }
 
 // Direction reports the current direction.
-func (p Progress) Direction() ProgressDirection {
+func (p *Progress) Direction() ProgressDirection {
 	return p.direction
 }
 
 // Started reports true if progression has started.
-func (p Progress) Started() bool {
+func (p *Progress) Started() bool {
 	return p.active
 }
 
 // Finished is true when animation is done
-func (p Progress) Finished() bool {
+func (p *Progress) Finished() bool {
 	switch p.direction {
 	case Forward:
 		return p.progress >= 1.0

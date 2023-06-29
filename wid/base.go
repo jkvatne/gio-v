@@ -296,7 +296,7 @@ func Pads(pads ...float32) BaseOption {
 	}
 }
 
-func (b Base) Fg() color.NRGBA {
+func (b *Base) Fg() color.NRGBA {
 	if b.fgColor == nil {
 		return b.th.Fg(b.role)
 	} else {
@@ -304,7 +304,7 @@ func (b Base) Fg() color.NRGBA {
 	}
 }
 
-func (b Base) Bg() color.NRGBA {
+func (b *Base) Bg() color.NRGBA {
 	if b.fgColor == nil {
 		return b.th.Bg(b.role)
 	} else {
@@ -312,7 +312,7 @@ func (b Base) Bg() color.NRGBA {
 	}
 }
 
-func (b Base) CheckDisable(gtx C) {
+func (b *Base) CheckDisable(gtx C) {
 	if b.disabler != nil {
 		GuiLock.RLock()
 		if *b.disabler {

@@ -25,8 +25,8 @@ var (
 	theme          *wid.Theme  // the theme selected
 	win            *app.Window // The main window
 	form           layout.Widget
-	name           "Jan Kåre Vatne"
-	address        "Blomsterveien 45"
+	name           = "Jan Kåre Vatne"
+	address        = "Blomsterveien 45"
 	homeIcon       *wid.Icon
 	checkIcon      *wid.Icon
 	greenFlag              = false // the state variable for the button color
