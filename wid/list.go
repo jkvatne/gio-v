@@ -288,7 +288,7 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 	hdim := D{}
 	if header != nil {
 		r := gtx.Constraints.Max
-		if l.AnchorStrategy == Occupy {
+		if l.AnchorStrategy == Occupy && l.VertVisible {
 			r.X -= vBarWidth
 		}
 		cl := clip.Rect{Max: r}.Push(gtx.Ops)
@@ -350,7 +350,6 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 	if vBarWidth > 0 {
 		l.list.Position.Offset += int(math.Round(float64(float32(totalHeight) * l.VScrollBar.Scrollbar.ScrollDistance())))
 		c.Constraints.Max.X = gtx.Constraints.Max.X
-		c.Constraints.Min.X = gtx.Constraints.Min.X
 		start, end := fromListPosition(l.list.Position, length, l.VertTotal)
 		c.Constraints.Min = c.Constraints.Max
 		layout.E.Layout(c, func(gtx C) D {
