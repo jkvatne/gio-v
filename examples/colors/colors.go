@@ -51,11 +51,53 @@ func showTones(th *wid.Theme, c color.NRGBA) layout.Widget {
 	)
 }
 
+func setDefault() {
+	theme = wid.NewTheme(gofont.Collection(), 14)
+	form = demo(theme)
+}
+
+func setPallete1() {
+	theme.PrimaryColor = wid.RGB(0x57624E)
+	theme.SecondaryColor = wid.RGB(0x57624E)
+	theme.TertiaryColor = wid.RGB(0x336669)
+	theme.ErrorColor = wid.RGB(0xAF2525)
+	theme.NeutralColor = wid.RGB(0x1D5D7D)
+	theme.NeutralVariantColor = wid.RGB(0x756057)
+	theme.UpdateColors()
+	form = demo(theme)
+}
+
+func setPallete2() {
+	theme.PrimaryColor = wid.RGB(0x17624E)
+	theme.SecondaryColor = wid.RGB(0x17624E)
+	theme.TertiaryColor = wid.RGB(0x136669)
+	theme.ErrorColor = wid.RGB(0xAF2535)
+	theme.NeutralColor = wid.RGB(0x1D4D7D)
+	theme.NeutralVariantColor = wid.RGB(0x356057)
+	theme.UpdateColors()
+	form = demo(theme)
+}
+func setPallete3() {
+	theme.PrimaryColor = wid.RGB(0x17329E)
+	theme.SecondaryColor = wid.RGB(0x17624E)
+	theme.TertiaryColor = wid.RGB(0x136669)
+	theme.ErrorColor = wid.RGB(0xAF2535)
+	theme.NeutralColor = wid.RGB(0x1D4D7D)
+	theme.NeutralVariantColor = wid.RGB(0x356057)
+	theme.UpdateColors()
+	form = demo(theme)
+}
+
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
 	return wid.List(th, wid.Overlay,
-		wid.Label(th, "Show all colors", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
+		wid.Label(th, "Show all tones for some palletes", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
+		wid.Row(th, nil, nil,
+			wid.Button(th, "Set default pallete", wid.Do(setDefault)),
+			wid.Button(th, "Set pallete 1", wid.Do(setPallete1)),
+			wid.Button(th, "Set pallete 2", wid.Do(setPallete2)),
+			wid.Button(th, "Set pallete 3", wid.Do(setPallete3))),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Primary", wid.Large()),
 		showTones(th, th.PrimaryColor),
