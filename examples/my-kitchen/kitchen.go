@@ -98,15 +98,12 @@ func colorBar(gtx wid.C) wid.D {
 
 func kitchen(th *wid.Theme) layout.Widget {
 	thb = th
-	return wid.List(th, wid.Occupy,
-
+	return wid.Col(nil,
 		wid.Label(th, topLabel, wid.Middle(), wid.FontSize(2.1)),
 
 		wid.Label(th, longText),
 
 		wid.Edit(th, wid.Hint("Value 1")),
-
-		// wid.Edit(th, wid.Hint("Value 2")),
 
 		wid.Row(th, nil, wid.SpaceClose,
 			wid.RoundButton(th, addIcon, wid.Hint("This is another dummy button"), wid.Role(wid.Primary)),
