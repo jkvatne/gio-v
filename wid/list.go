@@ -351,7 +351,11 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 		l.list.Position.Offset += int(math.Round(float64(float32(totalHeight) * l.VScrollBar.Scrollbar.ScrollDistance())))
 		c.Constraints.Max.X = gtx.Constraints.Max.X
 		c.Constraints.Min.X = gtx.Constraints.Min.X
-		start, end := fromListPosition(l.list.Position, length, listDims.Size.Y)
+		szY := listDims.Size.Y
+		if l.AnchorStrategy == Occupy {
+			szY -= hBarWidth
+		}
+		start, end := fromListPosition(l.list.Position, length, szY)
 		c.Constraints.Min = c.Constraints.Max
 		layout.E.Layout(c, func(gtx C) D {
 			return l.VScrollBar.Layout(gtx, layout.Vertical, start, end)
