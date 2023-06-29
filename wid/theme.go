@@ -21,7 +21,7 @@ import (
 type UIRole uint8
 
 const (
-	// Canvas is white/black. Used in edits, dropdowns etc to standouw
+	// Canvas is white/black. Used in edits, dropdowns etc. to standout
 	Canvas UIRole = iota
 	// Surface is the default surface for windows.
 	Surface
@@ -45,11 +45,9 @@ const (
 	ErrorContainer
 	// Outline is used for frames and buttons
 	Outline
-	// Undefined can be used to detect missing initializations
-	Undefined
 )
 
-// Tone is the google material tone implementation
+// Tone is the Google material tone implementation
 // See: https://m3.material.io/styles/color/the-color-system/key-colors-tones
 func Tone(c color.NRGBA, tone int) color.NRGBA {
 	h, s, _ := Rgb2hsl(c)
@@ -283,52 +281,52 @@ func mustIcon(ic *Icon, err error) *Icon {
 }
 
 func uniformPadding(p unit.Dp) layout.Inset {
-	return layout.Inset{p, p, p, p}
+	return layout.Inset{Top: p, Bottom: p, Left: p, Right: p}
 }
 
-func (t *Theme) UpdateFontSize(newFontSize unit.Sp) {
-	t.TextSize = newFontSize
-	t.FingerSize = unit.Dp(38)
-	v := unit.Dp(t.TextSize) / 10
-	t.IconInset = layout.Inset{Top: v, Right: v, Bottom: v, Left: v}
-	t.BorderThickness = unit.Dp(t.TextSize) * 0.08
-	t.BorderCornerRadius = v * 3
+func (th *Theme) UpdateFontSize(newFontSize unit.Sp) {
+	th.TextSize = newFontSize
+	th.FingerSize = unit.Dp(38)
+	v := unit.Dp(th.TextSize) / 10
+	th.IconInset = layout.Inset{Top: v, Right: v, Bottom: v, Left: v}
+	th.BorderThickness = unit.Dp(th.TextSize) * 0.08
+	th.BorderCornerRadius = v * 3
 	// Shadow
-	t.Elevation = unit.Dp(t.TextSize) * 0.5
+	th.Elevation = unit.Dp(th.TextSize) * 0.5
 	// Text
-	t.OutsidePadding = uniformPadding(2.5 * v)
-	t.InsidePadding = uniformPadding(2.5 * v)
-	t.ButtonPadding = uniformPadding(3 * v)
-	t.ButtonCornerRadius = t.BorderCornerRadius
-	t.ButtonLabelPadding = uniformPadding(5 * v)
-	t.IconSize = v * 20
-	t.TooltipCornerRadius = t.BorderCornerRadius
-	t.TooltipWidth = v * 250
-	t.SashWidth = v * 4
-	t.RowPadTop = t.TextSize * 0.0
-	t.RowPadBtm = t.TextSize * 0.0
-	t.ScrollMajorPadding = 0
-	t.ScrollMinorPadding = 0
-	t.ScrollMajorMinLen = t.TextSize * 1.5
-	t.ScrollMinorWidth = t.TextSize * 1.0
-	t.ScrollCornerRadius = t.TextSize / 4
-	t.TooltipInset = layout.UniformInset(v)
+	th.OutsidePadding = uniformPadding(2.5 * v)
+	th.InsidePadding = uniformPadding(2.5 * v)
+	th.ButtonPadding = uniformPadding(3 * v)
+	th.ButtonCornerRadius = th.BorderCornerRadius
+	th.ButtonLabelPadding = uniformPadding(5 * v)
+	th.IconSize = v * 20
+	th.TooltipCornerRadius = th.BorderCornerRadius
+	th.TooltipWidth = v * 250
+	th.SashWidth = v * 4
+	th.RowPadTop = th.TextSize * 0.0
+	th.RowPadBtm = th.TextSize * 0.0
+	th.ScrollMajorPadding = 0
+	th.ScrollMinorPadding = 0
+	th.ScrollMajorMinLen = th.TextSize * 1.5
+	th.ScrollMinorWidth = th.TextSize * 1.0
+	th.ScrollCornerRadius = th.TextSize / 4
+	th.TooltipInset = layout.UniformInset(v)
 }
 
-func (t *Theme) UpdateColors() {
+func (th *Theme) UpdateColors() {
 	// Borders around edit fields
-	t.BorderColor = t.Fg(Outline)
-	t.BorderColorHovered = t.Fg(Primary)
-	t.BorderColorActive = t.Fg(Primary)
-	t.SelectionColor = MulAlpha(t.Fg(Primary), 0x60)
+	th.BorderColor = th.Fg(Outline)
+	th.BorderColorHovered = th.Fg(Primary)
+	th.BorderColorActive = th.Fg(Primary)
+	th.SelectionColor = MulAlpha(th.Fg(Primary), 0x60)
 	// Tooltip
-	t.TooltipBackground = t.Bg(SecondaryContainer)
-	t.TooltipOnBackground = t.Fg(SecondaryContainer)
+	th.TooltipBackground = th.Bg(SecondaryContainer)
+	th.TooltipOnBackground = th.Fg(SecondaryContainer)
 	// Resizer
-	t.SashColor = WithAlpha(t.Fg(Surface), 0x80)
+	th.SashColor = WithAlpha(th.Fg(Surface), 0x80)
 	// Switch
-	t.TrackColor = t.NeutralColor
-	t.DotColor = t.Fg(Primary)
+	th.TrackColor = th.NeutralColor
+	th.DotColor = th.Fg(Primary)
 }
 
 // NewTheme creates a new theme with given font size and pallete

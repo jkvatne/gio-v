@@ -23,7 +23,7 @@ var (
 	theme       *wid.Theme
 	addIcon     *wid.Icon
 	checkIcon   *wid.Icon
-	group       string  = ""
+	group       string
 	sliderValue float32 = 0.1
 	win         *app.Window
 	progress    float32 = 0.1

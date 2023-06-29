@@ -33,7 +33,7 @@ const (
 	Outlined
 	// Round is a round button, usually with icon only
 	Round
-	// Header
+	// Header is used in tables to make them clickable
 	Header
 )
 

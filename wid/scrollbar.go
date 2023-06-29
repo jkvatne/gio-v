@@ -67,8 +67,8 @@ func (s *Scrollbar) Layout(gtx C, axis layout.Axis, viewportStart, viewportEnd f
 			continue
 		}
 		pos := axis.Convert(image.Point{
-			X: int(event.Position.X),
-			Y: int(event.Position.Y),
+			X: event.Position.X,
+			Y: event.Position.Y,
 		})
 		normalizedPos := float32(pos.X) / trackHeight
 		// Clicking on the indicator should not jump to that position on the track. The user might've just intended to

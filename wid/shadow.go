@@ -40,7 +40,7 @@ func DrawShadow(gtx C, outline image.Rectangle, rr int, elevation int) {
 	}
 }
 
-// Op returns the op for the rounded rectangle.
+// RrOp returns the op for the rounded rectangle.
 func RrOp(rr clip.RRect, d int, ops *op.Ops) clip.Op {
 	return clip.Outline{Path: ShadowPath(rr, d, ops)}.Op()
 }

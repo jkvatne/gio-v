@@ -8,7 +8,7 @@ This is a small demonstration of the package, with a scrollable grid and a few o
 
 See [gioui.org](https://gioui.org).
 
-This is a set of widgets made for my own use. They replaces (or complements) gioui.org/widget and
+This is a set of widgets made for my own use. They replace (or complements) gioui.org/widget and
 gioui.org/widget/material but the rest of the gio code is imported without modifications.
 
 The code is copied extensively from the following sources:

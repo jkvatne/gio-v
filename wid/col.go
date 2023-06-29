@@ -11,7 +11,7 @@ import (
 
 // Col makes a column of widgets. It is not scrollable, but
 // weights are used to split the available area.
-// Set weigth to 0 for fixed height widgets, and 1 for flexible widgets (like lists)
+// Set weight to 0 for fixed height widgets, and 1 for flexible widgets (like lists)
 func Col(weights []float32, widgets ...Wid) Wid {
 	offsets := make([]int, len(widgets))
 	return func(gtx C) D {

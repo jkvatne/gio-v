@@ -57,13 +57,13 @@ func (v *VisibilityAnimation) Revealed(gtx C) float32 {
 
 // Visible returns whether any part of the animated entity should be visible during the
 // current animation frame.
-func (v VisibilityAnimation) Visible() bool {
+func (v *VisibilityAnimation) Visible() bool {
 	return v.State != Invisible
 }
 
 // Animating returns whether the animation is either in the process of appearing or
 // disappearing.
-func (v VisibilityAnimation) Animating() bool {
+func (v *VisibilityAnimation) Animating() bool {
 	return v.State == Appearing || v.State == Disappearing
 }
 

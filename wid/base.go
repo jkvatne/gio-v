@@ -31,7 +31,7 @@ type (
 	Con = layout.Constraints
 )
 
-// UIState is the hovered/focusted etc. state
+// UIState is the hovered/focused etc. state
 type UIState uint8
 
 var (
@@ -384,7 +384,7 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 				GuiLock.Unlock()
 				mainForm(gtx)
 
-				// A hack to fetch mouse position and window size so we can avoid
+				// A hack to fetch mouse position and window size, so we can avoid
 				// tooltips going outside the main window area
 				p := pointer.PassOp{}.Push(gtx.Ops)
 				UpdateMousePos(gtx, win)

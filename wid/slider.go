@@ -189,7 +189,7 @@ func (s *SliderStyle) Layout(gtx C) D {
 	r := thumbRadius
 	ul := image.Pt(pt.X-r, pt.Y-r)
 	lr := image.Pt(pt.X+r, pt.Y+r)
-	paint.FillShape(gtx.Ops, s.th.Fg(Canvas), clip.Ellipse{ul, lr}.Op(gtx.Ops))
+	paint.FillShape(gtx.Ops, s.th.Fg(Canvas), clip.Ellipse{Min: ul, Max: lr}.Op(gtx.Ops))
 
 	return layout.Dimensions{Size: size}
 }

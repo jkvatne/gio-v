@@ -104,7 +104,7 @@ func (b *Clickable) SetupEventHandlers(gtx C, size image.Point) {
 	if !disabled {
 		keys := key.Set("")
 		if b.focused {
-			keys = key.Set("⏎|Space|←|→|↑|↓")
+			keys = "⏎|Space|←|→|↑|↓"
 		}
 		key.InputOp{Tag: &b.keyTag, Keys: keys}.Add(gtx.Ops)
 	} else {
@@ -162,7 +162,7 @@ func (b *Clickable) HandleEvents(gtx C) {
 			if (e.Name == key.NameSpace || e.Name == key.NameReturn) && b.focused {
 				if e.State == key.Press && !b.pressed {
 					b.history = append(b.history, Press{
-						Position: image.Point{0, 0},
+						Position: image.Point{},
 						Start:    gtx.Now,
 					})
 					b.pressed = true
@@ -184,7 +184,7 @@ func (b *Clickable) HandleEvents(gtx C) {
 	}
 }
 
-func (b Clickable) GetIndex(n int) int {
+func (b *Clickable) GetIndex(n int) int {
 	GuiLock.RLock()
 	idx := *b.index
 	GuiLock.RUnlock()

@@ -11,7 +11,6 @@ import (
 
 var (
 	theme *wid.Theme
-	value float32
 	form  layout.Widget
 )
 

@@ -103,10 +103,13 @@ func (s *SwitchDef) Layout(gtx C) D {
 		paint.FillShape(gtx.Ops, s.trackColorOn, clip.UniformRRect(trackRect, height/2).Op(gtx.Ops))
 		// Draw thumb,
 		paint.FillShape(gtx.Ops, s.thumbColorOn,
-			clip.Ellipse{image.Point{X: 3 * r, Y: r / 2}, image.Point{X: onSize + 3*r, Y: onSize + r/2}}.Op(gtx.Ops))
+			clip.Ellipse{Min: image.Point{X: 3 * r, Y: r / 2}, Max: image.Point{X: onSize + 3*r, Y: onSize + r/2}}.Op(gtx.Ops))
 		// Draw hover/focus shade.
-		paint.FillShape(gtx.Ops, s.hoverShadow,
-			clip.Ellipse{Min: image.Point{X: 2 * r, Y: -r / 2}, Max: image.Point{X: 7 * r, Y: 9 * r / 2}}.Op(gtx.Ops))
+		paint.FillShape(
+			gtx.Ops,
+			s.hoverShadow,
+			clip.Ellipse{Min: image.Point{X: 2 * r, Y: -r / 2}, Max: image.Point{X: 7 * r, Y: 9 * r / 2}}.Op(gtx.Ops),
+		)
 		// TODO: Draw icon
 	} else {
 		// First draw track in OFF position, outlined
@@ -115,14 +118,14 @@ func (s *SwitchDef) Layout(gtx C) D {
 			clip.Stroke{Path: clip.UniformRRect(trackRect, height/2).Path(gtx.Ops), Width: stroke}.Op())
 		// Draw thumb
 		paint.FillShape(gtx.Ops, s.thumbColorOff,
-			clip.Ellipse{image.Point{X: +r, Y: +r}, image.Point{X: offSize + r, Y: offSize + r}}.Op(gtx.Ops))
+			clip.Ellipse{Min: image.Point{X: +r, Y: +r}, Max: image.Point{X: offSize + r, Y: offSize + r}}.Op(gtx.Ops))
 		// Draw hover/focus shade.
 		paint.FillShape(gtx.Ops, s.hoverShadow,
 			clip.Ellipse{Min: image.Point{X: -r / 2, Y: -r / 2}, Max: image.Point{X: 9 * r / 2, Y: 9 * r / 2}}.Op(gtx.Ops))
 		// TODO: Draw icon
 	}
 	// Set up click area.
-	defer op.Offset(image.Point{-10, -10}).Push(gtx.Ops).Pop()
+	defer op.Offset(image.Point{X: -10, Y: -10}).Push(gtx.Ops).Pop()
 	sz := image.Pt(width+20, height+20)
 	clickRect := image.Rect(0, 0, width+20, height+20)
 	defer clip.UniformRRect(clickRect, height/2).Push(gtx.Ops).Pop()

@@ -112,7 +112,7 @@ func Luminance(c color.NRGBA) byte {
 	return byte((r*int(c.R) + g*int(c.G) + b*int(c.B)) / t)
 }
 
-// Internal implementation converting RGB to HSL, HSV, or HSI.
+// Rgb2hsl is internal implementation converting RGB to HSL, HSV, or HSI.
 // Basically a direct implementation of this: https://en.wikipedia.org/wiki/HSL_and_HSV#General_approach
 func Rgb2hsl(c color.NRGBA) (float64, float64, float64) {
 	var h, s, lvi float64
@@ -122,12 +122,12 @@ func Rgb2hsl(c color.NRGBA) (float64, float64, float64) {
 	b := float64(c.B) / 256.0
 	max := math.Max(math.Max(r, g), b)
 	min := math.Min(math.Min(r, g), b)
-	chroma := (max - min)
+	chroma := max - min
 	if chroma == 0 {
 		h = 0
 	} else {
 		if r == max {
-			huePrime = math.Mod(((g - b) / chroma), 6)
+			huePrime = math.Mod((g-b)/chroma, 6)
 		} else if g == max {
 			huePrime = ((b - r) / chroma) + 2
 
@@ -146,7 +146,7 @@ func Rgb2hsl(c color.NRGBA) (float64, float64, float64) {
 	if lvi == 1 {
 		s = 0
 	} else {
-		s = (chroma / (1 - math.Abs(2*lvi-1)))
+		s = chroma / (1 - math.Abs(2*lvi-1))
 	}
 
 	if math.IsNaN(s) {
@@ -160,7 +160,7 @@ func Rgb2hsl(c color.NRGBA) (float64, float64, float64) {
 	return h, s, lvi
 }
 
-// Internal HSV->RGB function for doing conversions using float inputs (saturation, value) and
+// Hsl2rgb is internal HSV->RGB function for doing conversions using float inputs (saturation, value) and
 // outputs (for R, G, and B).
 // Basically a direct implementation of this: https://en.wikipedia.org/wiki/HSL_and_HSV#Converting_to_RGB
 func Hsl2rgb(hueDegrees float64, saturation float64, light float64) color.NRGBA {
