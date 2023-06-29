@@ -334,14 +334,12 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 		gtx.Constraints.Max.X -= vBarWidth
 		gtx.Constraints.Min.X -= vBarWidth
 		gtx.Constraints.Max.Y -= hBarWidth
+		l.HorTotal += vBarWidth
 	}
 	cl := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
 	c.Constraints.Min = c.Constraints.Max
 	if l.AnchorStrategy == Occupy {
 		gtx.Constraints.Max.X += vBarWidth
-	}
-	if l.Hpos+gtx.Constraints.Max.X > l.HorTotal {
-		l.Hpos = Max(l.HorTotal-gtx.Constraints.Max.X+vBarWidth, 0)
 	}
 	trans := op.Offset(image.Pt(-l.Hpos, 0)).Push(gtx.Ops)
 	call.Add(gtx.Ops)
@@ -350,10 +348,7 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 
 	// Draw the Vertical scrollbar.
 	if vBarWidth > 0 {
-		delta := l.VScrollBar.Scrollbar.ScrollDistance()
-		if delta != 0 {
-			l.list.Position.Offset += int(math.Round(float64(float32(totalHeight) * delta)))
-		}
+		l.list.Position.Offset += int(math.Round(float64(float32(totalHeight) * l.VScrollBar.Scrollbar.ScrollDistance())))
 		c.Constraints.Max.X = gtx.Constraints.Max.X
 		c.Constraints.Min.X = gtx.Constraints.Min.X
 		start, end := fromListPosition(l.list.Position, length, listDims.Size.Y)
@@ -365,15 +360,7 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 
 	// Draw the Horizontal scrollbar
 	if hBarWidth > 0 {
-		delta := l.HScrollBar.Scrollbar.ScrollDistance()
-		if delta != 0 {
-			deltaPx := int(math.Round(float64(float32(l.HorTotal) * delta)))
-			if l.AnchorStrategy == Occupy {
-				l.Hpos = limit(l.Hpos+deltaPx, 0, l.HorTotal-gtx.Constraints.Max.X+vBarWidth)
-			} else {
-				l.Hpos = limit(l.Hpos+deltaPx, 0, l.HorTotal-gtx.Constraints.Max.X)
-			}
-		}
+		l.Hpos += int(math.Round(float64(float32(l.HorTotal) * l.HScrollBar.Scrollbar.ScrollDistance())))
 		c := gtx
 		start := float32(l.Hpos) / float32(l.HorTotal)
 		end := start + float32(c.Constraints.Max.X)/float32(l.HorTotal)
