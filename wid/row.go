@@ -3,6 +3,8 @@
 package wid
 
 import (
+	"gioui.org/op/clip"
+	"gioui.org/op/paint"
 	"image"
 	"image/color"
 
@@ -12,8 +14,6 @@ import (
 
 	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/op/clip"
-	"gioui.org/op/paint"
 )
 
 type rowDef struct {
@@ -28,18 +28,18 @@ type rowDef struct {
 var SpaceClose []float32
 
 // SpaceDistribute should disribute the widgets on a row evenly, with equal space for each
-var SpaceDistribute []float32 = nil
+var SpaceDistribute = []float32{1.0}
 
 // Calculate widths
 func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
 	w := make([]float32, len(widths))
 	for i := 0; i < len(w); i++ {
-		if weights == nil {
-			// If weights is nil it means all widgets distributed equaly (like 1,1,1,1...)
+		if len(weights) == 0 {
+			// If weights is nil, place all widgets as close as possible
+			w[i] = 0.0
+		} else if len(weights) == 1 {
+			// If weights are {1.0} then distribute equaly (like 1,1,1,1...)
 			w[i] = 1.0
-		} else if len(weights) == 0 {
-			// If weights has no values, it means use native size (like 0,0,0,0...)
-			w[i] = float32(widths[i])
 		} else if i < len(weights) && weights[i] > 1.0 {
 			// Weights > 1 is given in characters, do rescale to pixels
 			w[i] = float32(gtx.Sp(textSize * unit.Sp(weights[i]) / 2))
@@ -69,7 +69,7 @@ func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
 	}
 	for i := range w {
 		if w[i] <= 1.0 {
-			widths[i] = Max(1, int(w[i]*scale))
+			widths[i] = Max(0, int(w[i]*scale))
 		} else {
 			widths[i] = Min(int(w[i]), gtx.Constraints.Min.X)
 		}
@@ -110,18 +110,6 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, bgColor color.NRGBA, weights
 	call := make([]op.CallOp, len(widgets))
 	dim := make([]D, len(widgets))
 	widths := make([]int, len(widgets))
-	// Fill in size where width is given as zero
-	for i, child := range widgets {
-		if i < len(weights) && weights[i] == 0 || len(weights) == 0 {
-			c := gtx
-			macro := op.Record(c.Ops)
-			c.Constraints.Max.X = inf
-			c.Constraints.Min.X = 0
-			dim := child(c)
-			widths[i] = dim.Size.X
-			_ = macro.Stop()
-		}
-	}
 	calcWidths(gtx, textSize, weights, widths)
 	// Check child sizes and make macros for each widget in a row
 	yMax := 0

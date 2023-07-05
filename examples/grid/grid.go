@@ -25,7 +25,7 @@ var (
 	Alternative = "Wide"
 	fontSize    = "Medium"
 	// Column widths are given in units of approximately one average character width (en).
-	// A witdth of zero means the widget's natural size should be used (f.ex. checkboxes)
+	// A widtth of zero means the widget's natural size should be used (f.ex. checkboxes)
 	wideColWidth  = []float32{0, 60, 60, 10, 30}
 	smallColWidth = []float32{0, 13, 13, 12, 12}
 	fracColWidth  = []float32{0, 0.3, 0.3, .2, .2}
@@ -219,7 +219,7 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 		wid.Edit(th, wid.Hint("Line editor")),
 		wid.Table(th, anchor, header, gridLines...),
 		wid.Separator(th, 2),
-		wid.Row(th, nil, []float32{1.0, 0.0, 1.0},
+		wid.Row(th, nil, []float32{1.0, 10, 1.0},
 			wid.Space(1),
 			wid.Button(th, "Update", wid.Hint("Click to update variables")),
 			wid.Space(1),
