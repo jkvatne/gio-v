@@ -34,7 +34,7 @@ func aTone(c color.NRGBA, n int) *color.NRGBA {
 }
 
 func showTones(th *wid.Theme, c color.NRGBA) layout.Widget {
-	return wid.Row(th, nil, nil,
+	return wid.Row(th, nil, wid.SpaceDistribute,
 		wid.Label(th, "00", wid.Large(), wid.Fg(&wid.White), wid.Bg(aTone(c, 00))),
 		wid.Label(th, "10", wid.Large(), wid.Fg(&wid.White), wid.Bg(aTone(c, 10))),
 		wid.Label(th, "20", wid.Large(), wid.Fg(&wid.White), wid.Bg(aTone(c, 20))),
@@ -93,7 +93,7 @@ func setPallete3() {
 func demo(th *wid.Theme) layout.Widget {
 	return wid.List(th, wid.Overlay,
 		wid.Label(th, "Show all tones for some palletes", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.Button(th, "Set default pallete", wid.Do(setDefault)),
 			wid.Button(th, "Set pallete 1", wid.Do(setPallete1)),
 			wid.Button(th, "Set pallete 2", wid.Do(setPallete2)),
