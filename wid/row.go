@@ -87,9 +87,8 @@ func GridRow(th *Theme, pbgColor *color.NRGBA, gridLineWidth unit.Dp, weights []
 	r.padBtm = th.RowPadBtm
 	r.gridLineWidth = gridLineWidth
 	r.gridColor = th.Fg(Outline)
-	dims := make([]D, len(widgets))
 	return func(gtx C) D {
-		return r.rowLayout(gtx, th.TextSize, dims, bgColor, weights, widgets...)
+		return r.rowLayout(gtx, th.TextSize, bgColor, weights, widgets...)
 	}
 }
 
@@ -102,14 +101,14 @@ func Row(th *Theme, pbgColor *color.NRGBA, weights []float32, widgets ...layout.
 	}
 	r.padTop = th.RowPadTop
 	r.padBtm = th.RowPadBtm
-	dims := make([]D, len(widgets))
 	return func(gtx C) D {
-		return r.rowLayout(gtx, th.TextSize, dims, bgColor, weights, widgets...)
+		return r.rowLayout(gtx, th.TextSize, bgColor, weights, widgets...)
 	}
 }
 
-func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, dim []D, bgColor color.NRGBA, weights []float32, widgets ...layout.Widget) D {
+func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, bgColor color.NRGBA, weights []float32, widgets ...layout.Widget) D {
 	call := make([]op.CallOp, len(widgets))
+	dim := make([]D, len(widgets))
 	widths := make([]int, len(widgets))
 	// Fill in size where width is given as zero
 	for i, child := range widgets {
