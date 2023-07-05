@@ -137,7 +137,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 			b.HandleClick()
 			dims := b.layout(gtx)
 			b.SetupEventHandlers(gtx, dims.Size)
-			dims = b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
+			_ = b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
 				return dims
 			})
 			return dims
