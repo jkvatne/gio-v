@@ -200,14 +200,14 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 	}
 	var lines = []layout.Widget{
 		wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold()),
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.RadioButton(th, &Alternative, "Wide", "Wide Table", wid.Do(onWinChange)),
 			wid.RadioButton(th, &Alternative, "Narrow", "Narrow Table", wid.Do(onWinChange)),
 			wid.RadioButton(th, &Alternative, "Fractional", "Fractional", wid.Do(onWinChange)),
 			wid.RadioButton(th, &Alternative, "Equal", "Equal", wid.Do(onWinChange)),
 			wid.RadioButton(th, &Alternative, "Native", "Native", wid.Do(onWinChange)),
 		),
-		wid.Row(th, nil, nil,
+		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onWinChange)),
 			wid.Checkbox(th, "Scroll-bar occupy", wid.Bool(&doOccupy), wid.Do(onWinChange)),
 			wid.Checkbox(th, "No header", wid.Bool(&withoutHeader), wid.Do(onWinChange)),
@@ -219,6 +219,8 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 		wid.Edit(th, wid.Hint("Line editor")),
 		wid.Table(th, anchor, header, gridLines...),
 		wid.Separator(th, 2),
+		// Center button that is <10 em wide. The width should be close to the native width, or the
+		// button will not be centered.
 		wid.Row(th, nil, []float32{1.0, 10, 1.0},
 			wid.Space(1),
 			wid.Button(th, "Update", wid.Hint("Click to update variables")),

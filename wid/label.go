@@ -118,6 +118,8 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 
 	return func(gtx C) D {
 		macro := op.Record(gtx.Ops)
+		// Make sure that the calculated x-dimension is not larger than the Min.X
+		gtx.Constraints.Min.X -= gtx.Dp(w.padding.Left + w.padding.Right)
 		dim := w.padding.Layout(gtx, func(gtx C) D {
 			return w.Layout(gtx)
 		})

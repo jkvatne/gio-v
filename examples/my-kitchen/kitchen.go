@@ -124,7 +124,7 @@ func kitchen(th *wid.Theme) layout.Widget {
 			wid.Button(th, &enabledText, wid.En(&enabled)),
 		),
 
-		wid.Row(th, nil, wid.SpaceClose,
+		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.RadioButton(th, &group, "RadioButton1", "RadioButton1"),
 			wid.RadioButton(th, &group, "RadioButton2", "RadioButton2"),
 			wid.RadioButton(th, &group, "RadioButton3", "RadioButton3"),
