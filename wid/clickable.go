@@ -11,6 +11,10 @@ import (
 	"gioui.org/op/clip"
 )
 
+// ClickMovesFocus can be set true if you want clicking on a button
+// to move focus. If false, only Tab will move focus.
+var ClickMovesFocus bool = false
+
 // Clickable represents a clickable area.
 type Clickable struct {
 	click  gesture.Click
@@ -146,7 +150,9 @@ func (b *Clickable) HandleEvents(gtx C) {
 			}
 		case gesture.TypePress:
 			if e.Source == pointer.Mouse {
-				key.FocusOp{Tag: &b.keyTag}.Add(gtx.Ops)
+				if ClickMovesFocus {
+					key.FocusOp{Tag: b.keyTag}.Add(gtx.Ops)
+				}
 			}
 			b.history = append(b.history, Press{
 				Position: e.Position,
