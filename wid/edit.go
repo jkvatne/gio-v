@@ -119,9 +119,6 @@ func (e *EditDef) Layout(gtx C) D {
 	if w := gtx.Dp(e.width); w > gtx.Constraints.Min.X && w < gtx.Constraints.Max.X {
 		gtx.Constraints.Min.X = w
 	}
-	// And reduce the size to make space for the padding
-	gtx.Constraints.Min.X -= gtx.Dp(e.padding.Left + e.padding.Right + e.th.InsidePadding.Left + e.th.InsidePadding.Right)
-	gtx.Constraints.Max.X = gtx.Constraints.Min.X
 
 	border := image.Rectangle{Max: image.Pt(
 		gtx.Constraints.Max.X+gtx.Dp(e.th.InsidePadding.Left+e.th.InsidePadding.Right),

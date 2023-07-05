@@ -294,8 +294,8 @@ func (th *Theme) UpdateFontSize(newFontSize unit.Sp) {
 	// Shadow
 	th.Elevation = unit.Dp(th.TextSize) * 0.5
 	// Text
-	th.OutsidePadding = uniformPadding(2.5 * v)
-	th.InsidePadding = uniformPadding(2.5 * v)
+	th.OutsidePadding = uniformPadding(3.5 * v)
+	th.InsidePadding = uniformPadding(3.5 * v)
 	th.ButtonPadding = uniformPadding(3 * v)
 	th.ButtonCornerRadius = th.BorderCornerRadius
 	th.ButtonLabelPadding = uniformPadding(5 * v)
