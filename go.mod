@@ -3,7 +3,7 @@ module gio-v
 go 1.19
 
 require (
-	gioui.org v0.0.0-20230627103614-e5fe3a0732f4
+	gioui.org v0.1.0
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 	golang.org/x/exp/shiny v0.0.0-20220827204233-334a2380cb91
 )

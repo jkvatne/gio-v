@@ -18,7 +18,7 @@ type Resize struct {
 	ratio  float32
 	Length float32
 	drag   gesture.Drag
-	start  int
+	pos    float32
 }
 
 // SplitHorizontal is used to layout two widgets with a vertical splitter between.
@@ -39,46 +39,46 @@ func SplitVertical(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widget)
 
 // Layout displays w1 and w2 with handle in between.
 func (rs *Resize) Layout(gtx C, w1 layout.Widget, w2 layout.Widget) D {
-	return layout.Flex{
+	max := float32(gtx.Constraints.Max.Y)
+	if rs.axis == layout.Horizontal {
+		max = float32(gtx.Constraints.Max.X)
+	}
+	if rs.pos != 0 {
+		rs.ratio = rs.pos / max
+	}
+	// Clamp the handle position, leaving it always visible.
+	rs.ratio = Clamp(rs.ratio, 0.05, 0.95)
+	rs.pos = rs.ratio * max
+	f := layout.Flex{
 		Axis: rs.axis,
 	}.Layout(gtx,
 		layout.Flexed(rs.ratio, w1),
 		layout.Rigid(func(gtx C) D {
-			max := float32(gtx.Constraints.Max.Y)
-			if rs.axis == layout.Horizontal {
-				max = float32(gtx.Constraints.Max.X)
-			}
-			var dp int
-			pos := int(rs.ratio * max)
-			for _, e := range rs.drag.Events(gtx.Metric, gtx, gesture.Axis(rs.axis)) {
-				if rs.axis == layout.Horizontal {
-					dp = int(e.Position.X)
-				} else {
-					dp = int(e.Position.Y)
-				}
-				if e.Type == pointer.Drag {
-					pos += dp - rs.start
-				} else if e.Type == pointer.Press {
-					rs.start = dp
-				}
-			}
-			// Clamp the handle position, leaving it always visible.
-			rs.ratio = Clamp(float32(pos)/max, 0.05, 0.95)
-			// Draw the sash
-			dims := rs.drawSash(gtx)
-			// Setup drag to catch events within clip rect
-			defer clip.Rect(image.Rectangle{Max: dims}).Push(gtx.Ops).Pop()
-			rs.drag.Add(gtx.Ops)
-			// Setup cursor when within sash
-			if rs.axis == layout.Horizontal {
-				pointer.CursorColResize.Add(gtx.Ops)
-			} else {
-				pointer.CursorRowResize.Add(gtx.Ops)
-			}
-			return D{Size: dims}
+			return D{Size: rs.drawSash(gtx)}
 		}),
 		layout.Flexed(1-rs.ratio, w2),
 	)
+	for _, e := range rs.drag.Events(gtx.Metric, gtx, gesture.Axis(rs.axis)) {
+		rs.pos = e.Position.X
+		if rs.axis == layout.Vertical {
+			rs.pos = e.Position.Y
+		}
+	}
+	d := gtx.Dp(rs.Theme.SashWidth)/2 + 1
+	if rs.axis == layout.Vertical {
+		p := int(rs.ratio * float32(f.Size.Y))
+		defer clip.Rect(image.Rect(0, p-d, f.Size.X, p+d)).Push(gtx.Ops).Pop()
+	} else {
+		p := int(rs.ratio * float32(f.Size.X))
+		defer clip.Rect(image.Rect(p-d, 0, p+d, f.Size.X)).Push(gtx.Ops).Pop()
+	}
+	rs.drag.Add(gtx.Ops)
+	if rs.axis == layout.Horizontal {
+		pointer.CursorColResize.Add(gtx.Ops)
+	} else {
+		pointer.CursorRowResize.Add(gtx.Ops)
+	}
+	return f
 }
 
 func (rs *Resize) drawSash(gtx C) image.Point {

@@ -302,7 +302,7 @@ func (th *Theme) UpdateFontSize(newFontSize unit.Sp) {
 	th.IconSize = v * 20
 	th.TooltipCornerRadius = th.BorderCornerRadius
 	th.TooltipWidth = v * 250
-	th.SashWidth = v * 4
+	th.SashWidth = v * 8
 	th.RowPadTop = th.TextSize * 0.0
 	th.RowPadBtm = th.TextSize * 0.0
 	th.ScrollMajorPadding = 0
@@ -323,7 +323,7 @@ func (th *Theme) UpdateColors() {
 	th.TooltipBackground = th.Bg(SecondaryContainer)
 	th.TooltipOnBackground = th.Fg(SecondaryContainer)
 	// Resizer
-	th.SashColor = WithAlpha(th.Fg(Surface), 0x80)
+	th.SashColor = WithAlpha(th.Fg(Surface), 0x40)
 	// Switch
 	th.TrackColor = th.NeutralColor
 	th.DotColor = th.Fg(Primary)
