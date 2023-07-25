@@ -19,6 +19,7 @@ type Resize struct {
 	Length float32
 	drag   gesture.Drag
 	pos    float32
+	start  float32
 }
 
 // SplitHorizontal is used to layout two widgets with a vertical splitter between.
@@ -59,9 +60,14 @@ func (rs *Resize) Layout(gtx C, w1 layout.Widget, w2 layout.Widget) D {
 		layout.Flexed(1-rs.ratio, w2),
 	)
 	for _, e := range rs.drag.Events(gtx.Metric, gtx, gesture.Axis(rs.axis)) {
-		rs.pos = e.Position.X
+		p := e.Position.X
 		if rs.axis == layout.Vertical {
-			rs.pos = e.Position.Y
+			p = e.Position.Y
+		}
+		if e.Type == pointer.Press {
+			rs.start = p - rs.ratio*max
+		} else {
+			rs.pos = p - rs.start
 		}
 	}
 	d := gtx.Dp(rs.Theme.SashWidth)/2 + 1
