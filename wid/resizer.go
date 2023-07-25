@@ -38,17 +38,21 @@ func SplitVertical(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widget)
 	}
 }
 
+func (rs *Resize) get(r image.Point) float32 {
+	if rs.axis == layout.Horizontal {
+		return float32(r.X)
+	}
+	return float32(r.Y)
+}
+
 // Layout displays w1 and w2 with handle in between.
 func (rs *Resize) Layout(gtx C, w1 layout.Widget, w2 layout.Widget) D {
-	max := float32(gtx.Constraints.Max.Y)
-	if rs.axis == layout.Horizontal {
-		max = float32(gtx.Constraints.Max.X)
-	}
+	max := rs.get(gtx.Constraints.Max)
 	if rs.pos != 0 {
 		rs.ratio = rs.pos / max
 	}
 	// Clamp the handle position, leaving it always visible.
-	rs.ratio = Clamp(rs.ratio, 0.05, 0.95)
+	rs.ratio = Clamp(rs.ratio, 0, 1)
 	rs.pos = rs.ratio * max
 	f := layout.Flex{
 		Axis: rs.axis,
@@ -59,6 +63,7 @@ func (rs *Resize) Layout(gtx C, w1 layout.Widget, w2 layout.Widget) D {
 		}),
 		layout.Flexed(1-rs.ratio, w2),
 	)
+	// Handle drag events
 	for _, e := range rs.drag.Events(gtx.Metric, gtx, gesture.Axis(rs.axis)) {
 		p := e.Position.X
 		if rs.axis == layout.Vertical {
@@ -70,15 +75,16 @@ func (rs *Resize) Layout(gtx C, w1 layout.Widget, w2 layout.Widget) D {
 			rs.pos = p - rs.start
 		}
 	}
+	// Add drag gesture capture
 	d := gtx.Dp(rs.Theme.SashWidth)/2 + 1
+	p := int(rs.get(f.Size) * rs.ratio)
 	if rs.axis == layout.Vertical {
-		p := int(rs.ratio * float32(f.Size.Y))
 		defer clip.Rect(image.Rect(0, p-d, f.Size.X, p+d)).Push(gtx.Ops).Pop()
 	} else {
-		p := int(rs.ratio * float32(f.Size.X))
 		defer clip.Rect(image.Rect(p-d, 0, p+d, f.Size.X)).Push(gtx.Ops).Pop()
 	}
 	rs.drag.Add(gtx.Ops)
+	// Setup cursor for sash
 	if rs.axis == layout.Horizontal {
 		pointer.CursorColResize.Add(gtx.Ops)
 	} else {
@@ -88,17 +94,13 @@ func (rs *Resize) Layout(gtx C, w1 layout.Widget, w2 layout.Widget) D {
 }
 
 func (rs *Resize) drawSash(gtx C) image.Point {
-	var sashSize, dims image.Point
+	dims := gtx.Constraints.Max
 	if rs.axis == layout.Horizontal {
-		dims = gtx.Constraints.Max
 		dims.X = gtx.Dp(rs.Theme.SashWidth)
-		sashSize = image.Pt(gtx.Dp(rs.Theme.SashWidth), dims.Y)
 	} else {
-		dims = gtx.Constraints.Max
 		dims.Y = gtx.Dp(rs.Theme.SashWidth)
-		sashSize = image.Pt(dims.X, gtx.Dp(rs.Theme.SashWidth))
 	}
-	defer clip.Rect{Max: sashSize}.Push(gtx.Ops).Pop()
+	defer clip.Rect{Max: dims}.Push(gtx.Ops).Pop()
 	paint.ColorOp{Color: rs.Theme.SashColor}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
 	return dims
