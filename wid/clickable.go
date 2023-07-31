@@ -11,10 +11,6 @@ import (
 	"gioui.org/op/clip"
 )
 
-// ClickMovesFocus can be set true if you want clicking on a button
-// to move focus. If false, only Tab will move focus.
-var ClickMovesFocus bool = false
-
 // Clickable represents a clickable area.
 type Clickable struct {
 	click  gesture.Click
@@ -24,10 +20,17 @@ type Clickable struct {
 	// clicks bounded.
 	prevClicks int
 	history    []Press
-	keyTag     struct{}
-	focused    bool
-	pressed    bool
-	index      *int
+
+	keyTag       struct{}
+	requestFocus bool
+	focused      bool
+
+	pressed bool
+	index   *int
+	// ClickMovesFocus can be set true if you want clicking on a button
+	// to move focus. If false, only Tab will move focus.
+	// Dropdowns must have this set to true
+	ClickMovesFocus bool
 }
 
 // Click represents a click.
@@ -81,6 +84,11 @@ func (b *Clickable) Pressed() bool {
 	return b.click.Pressed()
 }
 
+// Focus requests the input focus for the element.
+func (b *Clickable) Focus() {
+	b.requestFocus = true
+}
+
 // Focused reports whether b has focus.
 func (b *Clickable) Focused() bool {
 	return b.focused
@@ -111,6 +119,10 @@ func (b *Clickable) SetupEventHandlers(gtx C, size image.Point) {
 			keys = "⏎|Space|←|→|↑|↓"
 		}
 		key.InputOp{Tag: &b.keyTag, Keys: keys}.Add(gtx.Ops)
+		if b.requestFocus {
+			key.FocusOp{Tag: &b.keyTag}.Add(gtx.Ops)
+			b.requestFocus = false
+		}
 	} else {
 		b.focused = false
 	}
@@ -141,6 +153,9 @@ func (b *Clickable) HandleEvents(gtx C) {
 			if l := len(b.history); l > 0 {
 				b.history[l-1].End = gtx.Now
 			}
+			if b.ClickMovesFocus {
+				b.Focus()
+			}
 		case gesture.TypeCancel:
 			for i := range b.history {
 				b.history[i].Cancelled = true
@@ -150,8 +165,8 @@ func (b *Clickable) HandleEvents(gtx C) {
 			}
 		case gesture.TypePress:
 			if e.Source == pointer.Mouse {
-				if ClickMovesFocus {
-					key.FocusOp{Tag: b.keyTag}.Add(gtx.Ops)
+				if b.ClickMovesFocus {
+					b.Focus()
 				}
 			}
 			b.history = append(b.history, Press{

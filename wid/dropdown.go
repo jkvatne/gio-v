@@ -46,6 +46,7 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 	b.items = items
 	b.labelSize = th.TextSize * 8
 	b.borderThickness = b.th.BorderThickness
+	b.ClickMovesFocus = true
 	for i := range items {
 		b.Items = append(b.Items, b.option(th, i))
 		b.itemHovered = append(b.itemHovered, false)
@@ -153,7 +154,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 	o.Pop()
 
 	oldVisible := d.listVisible
-	if !d.Focused() {
+	if d.listVisible && !d.Focused() {
 		d.listVisible = false
 	}
 	for d.Clicked() {
