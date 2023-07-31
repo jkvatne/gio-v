@@ -359,7 +359,9 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.RadioChecked = mustIcon(NewIcon(icons.ToggleRadioButtonChecked))
 	t.RadioUnchecked = mustIcon(NewIcon(icons.ToggleRadioButtonUnchecked))
 	// Setup font types
-	t.Shaper = text.NewShaper(fontCollection)
+	// Old version (v0.1.0) : t.Shaper = text.NewShaper(fontCollection)
+	t.Shaper = text.NewShaper(text.NoSystemFonts(), text.WithCollection(fontCollection))
+
 	// Scale all sizes from the given font size
 	t.UpdateFontSize(fontSize)
 	// Update all colors from the pallete
