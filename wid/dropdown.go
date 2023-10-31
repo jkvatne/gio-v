@@ -44,7 +44,7 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 	b.Font = &th.DefaultFont
 	b.index = index
 	b.items = items
-	b.labelSize = 0.333
+	b.labelSize = th.LabelSplit
 	b.borderThickness = b.th.BorderThickness
 	b.ClickMovesFocus = true
 	for i := range items {

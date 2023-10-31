@@ -271,6 +271,8 @@ type Theme struct {
 	ScrollMajorMinLen  unit.Sp
 	ScrollMinorWidth   unit.Sp
 	ScrollCornerRadius unit.Sp
+	// Default split between edit label and edit field
+	LabelSplit float32
 }
 
 func mustIcon(ic *Icon, err error) *Icon {
@@ -366,5 +368,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	t.UpdateFontSize(fontSize)
 	// Update all colors from the pallete
 	t.UpdateColors()
+	// Default to equal length for label and editor
+	t.LabelSplit = 0.5
 	return t
 }
