@@ -60,6 +60,7 @@ type Base struct {
 	description  string
 	Font         *font.Font
 	FontSize     float32
+	Dp           int
 }
 
 // BaseIf is the interface functions for widgets, used by options to set parameters
@@ -75,6 +76,7 @@ type BaseIf interface {
 	setDisabler(b *bool)
 	getTheme() *Theme
 	setFontSize(f float32)
+	setDp(dp int)
 }
 
 // BaseOption is a type for optional parameters when creating widgets
@@ -141,6 +143,15 @@ func (wid *Base) setDisabler(b *bool) {
 	wid.disabler = b
 }
 
+func (wid *Base) setDp(dp int) {
+	wid.Dp = dp
+}
+
+func Dp(dp int) BaseOption {
+	return func(w BaseIf) {
+		w.setDp(dp)
+	}
+}
 func En(b *bool) BaseOption {
 	return func(w BaseIf) {
 		w.setDisabler(b)
@@ -244,6 +255,13 @@ func Sec() BaseOption {
 func SecCont() BaseOption {
 	return func(w BaseIf) {
 		w.setRole(SecondaryContainer)
+	}
+}
+
+// FontSize set the font size for text in the widget
+func Font(v *font.Font) BaseOption {
+	return func(w BaseIf) {
+		w.setFont(v)
 	}
 }
 

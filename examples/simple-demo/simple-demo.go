@@ -7,11 +7,11 @@ package main
 // gio-v is maintained by Jan Kåre Vatne (jkvatne@online.no)
 
 import (
+	"gioui.org/font"
+	"gioui.org/font/gofont"
 	"github.com/jkvatne/gio-v/wid"
 	"image/color"
 	"time"
-
-	"gioui.org/font/gofont"
 
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
@@ -27,6 +27,7 @@ var (
 	form           layout.Widget
 	name           = "Jan Kåre Vatne"
 	address        = "Blomsterveien 45"
+	age            = 35
 	homeIcon       *wid.Icon
 	checkIcon      *wid.Icon
 	greenFlag              = false // the state variable for the button color
@@ -111,6 +112,7 @@ func onWinChange() {
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
+	ff := &font.Font{Typeface: "gomono"}
 	return wid.Col(nil,
 		wid.Label(th, "Demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Row(th, nil, []float32{.5, .9, .5, .5, .5},
@@ -153,9 +155,9 @@ func demo(th *wid.Theme) layout.Widget {
 		),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Row(th, nil, []float32{1, 1, 1},
-			wid.Edit(th, wid.Hint("Value 3")),
-			wid.Edit(th, wid.Hint("Value 4")),
-			wid.Edit(th, wid.Hint("Value 5")),
+			wid.Edit(th, wid.Hint("Value 3"), wid.Var(&name)),
+			wid.Edit(th, wid.Hint("Value 4"), wid.Var(&age)),
+			wid.Edit(th, wid.Hint("Value 5"), wid.Var(&name)),
 		),
 		wid.Row(th, nil, []float32{1, 1, 1},
 			wid.DropDown(th, &dropDownValue1, list1, wid.Hint("Value 3")),
@@ -166,7 +168,7 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.DropDown(th, &dropDownValue1, list1, wid.Lbl("Dropdown 1")),
 			wid.DropDown(th, &dropDownValue2, list2, wid.Lbl("Dropdown 2")),
 		),
-		wid.Edit(th, wid.Lbl("Value"), wid.Var(&name), wid.Ls(1/6.0)),
+		wid.Edit(th, wid.Lbl("Progress"), wid.Var(&progress), wid.Dp(4), wid.Ls(1/6.0)),
 		wid.Slider(th, &sliderValue, 0, 100),
 		wid.Row(th, nil, []float32{1, 1},
 			wid.Col([]float32{},
@@ -174,8 +176,8 @@ func demo(th *wid.Theme) layout.Widget {
 				wid.Edit(th, wid.Hint("Hint 7"), wid.Lbl("Label 7"), wid.Ls(0.2)),
 			),
 			wid.Col([]float32{},
-				wid.Edit(th, wid.Lbl("Name"), wid.Var(&name), wid.Ls(0.5)),
-				wid.Edit(th, wid.Lbl("Address"), wid.Var(&address), wid.Ls(0.5)),
+				wid.Edit(th, wid.Lbl("Name"), wid.Var(&name), wid.Ls(0.5), wid.Font(ff)),
+				wid.Edit(th, wid.Lbl("Age"), wid.Var(&age), wid.Ls(0.5)),
 			),
 		),
 		wid.ProgressBar(th, &progress, wid.Pads(5.0), wid.W(12.0)),

@@ -26,7 +26,6 @@ type LabelDef struct {
 	MaxLines int
 	TextSize unit.Sp
 	Stringer func(dp int) string
-	dp       int
 }
 
 // LabelOption is options specific to Edits.
@@ -60,12 +59,6 @@ func Right() LabelOption {
 	}
 }
 
-func Dp(n int) LabelOption {
-	return func(d *LabelDef) {
-		d.dp = n
-	}
-}
-
 func (e LabelOption) apply(cfg interface{}) {
 	e(cfg.(*LabelDef))
 }
@@ -80,7 +73,7 @@ func (l LabelDef) Layout(gtx C) D {
 		c.Constraints.Max.X = inf
 	}
 	GuiLock.RLock()
-	str := l.Stringer(l.dp)
+	str := l.Stringer(l.Dp)
 	GuiLock.RUnlock()
 	colMacro := op.Record(gtx.Ops)
 	paint.ColorOp{Color: l.Fg()}.Add(gtx.Ops)

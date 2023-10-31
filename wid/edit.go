@@ -3,9 +3,11 @@
 package wid
 
 import (
+	"fmt"
 	"gioui.org/text"
 	"image"
 	"image/color"
+	"strconv"
 
 	"gioui.org/io/pointer"
 
@@ -25,10 +27,59 @@ type EditDef struct {
 	selectionColor  color.NRGBA
 	CharLimit       uint
 	label           string
-	value           *string
+	value           interface{}
 	labelSize       float32
 	borderThickness unit.Dp
 	wasFocused      bool
+}
+
+func FloatToStr(x float64, dp int) string {
+	if dp == 1 {
+		return fmt.Sprintf("%0.1f", x)
+	} else if dp == 2 {
+		return fmt.Sprintf("%0.2f", x)
+	} else if dp == 3 {
+		return fmt.Sprintf("%0.3f", x)
+	} else if dp == 4 {
+		return fmt.Sprintf("%0.4f", x)
+	} else if dp == 5 {
+		return fmt.Sprintf("%0.3f", x)
+	} else if dp == 6 {
+		return fmt.Sprintf("%0.6f", x)
+	} else if dp == 7 {
+		return fmt.Sprintf("%0.7f", x)
+	} else {
+		return fmt.Sprintf("%0.0f", x)
+	}
+
+}
+
+func ValueToString(v interface{}, dp int) string {
+	if v == nil {
+		return "nil"
+	} else if x, ok := v.(*int); ok {
+		return fmt.Sprintf("%d", *x)
+	} else if x, ok := v.(*float32); ok {
+		return FloatToStr(float64(*x), dp)
+	} else if x, ok := v.(*float64); ok {
+		return FloatToStr(*x, dp)
+	} else if x, ok := v.(*string); ok {
+		return *x
+	}
+	return ""
+}
+
+func StringToValue(value interface{}, current string) {
+	if _, ok := value.(*int); ok {
+		*value.(*int), _ = strconv.Atoi(current)
+	} else if _, ok := value.(float32); ok {
+		f, _ := strconv.ParseFloat(current, 32)
+		*value.(*float32) = float32(f)
+	} else if _, ok := value.(float64); ok {
+		*value.(*float64), _ = strconv.ParseFloat(current, 64)
+	} else if _, ok := value.(*string); ok {
+		*value.(*string) = current
+	}
 }
 
 // Edit will return a widget (layout function) for a text editor
@@ -43,12 +94,13 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e.padding = th.OutsidePadding
 	e.outlineColor = th.Fg(Outline)
 	e.selectionColor = MulAlpha(th.Bg(Primary), 60)
+	e.value = ""
 	// Read in options to change from default values to something else.
 	for _, option := range options {
 		option.apply(e)
 	}
 	if e.value != nil {
-		e.Editor.SetText(*e.value)
+		e.Editor.SetText(ValueToString(e.value, e.Dp))
 	}
 	return func(gtx C) D {
 		return e.Layout(gtx)
@@ -61,15 +113,15 @@ func (e *EditDef) updateValue() {
 		if e.wasFocused {
 			// When the edit is loosing focus, we must update the underlying variable
 			GuiLock.Lock()
-			*e.value = current
+			StringToValue(e.value, current)
 			GuiLock.Unlock()
 		} else {
 			// When the underlying variable changes, update the edit buffer
 			GuiLock.RLock()
-			s := *e.value
+			s := e.value
 			GuiLock.RUnlock()
 			if s != current {
-				e.SetText(s)
+				e.SetText(ValueToString(e.value, e.Dp))
 			}
 		}
 	}
@@ -197,7 +249,7 @@ func (e *EditDef) Layout(gtx C) D {
 type EditOption func(w *EditDef)
 
 // Var is an option parameter to set the variable to be updated
-func Var(s *string) EditOption {
+func Var[V Value](s *V) EditOption {
 	return func(w *EditDef) {
 		w.value = s
 	}
