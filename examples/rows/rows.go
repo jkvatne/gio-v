@@ -7,7 +7,7 @@ package main
 // gio-v is maintained by Jan Kåre Vatne (jkvatne@online.no)
 
 import (
-	"gio-v/wid"
+	"github.com/jkvatne/gio-v/wid"
 	"image/color"
 
 	"gioui.org/font/gofont"

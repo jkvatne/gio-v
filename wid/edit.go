@@ -87,7 +87,7 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e := new(EditDef)
 	e.th = th
 	e.Font = &th.DefaultFont
-	e.labelSize = 0.333 // 1/3 of column width
+	e.labelSize = th.LabelSplit // 1/3 of column width
 	e.SingleLine = true
 	e.borderThickness = th.BorderThickness
 	e.width = unit.Dp(5000) // Default to max width that is possible

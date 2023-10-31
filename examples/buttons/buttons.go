@@ -2,20 +2,14 @@
 
 package main
 
-// A Gio program that demonstrates gio-v widgets.
-// See https://gioui.org for information on the gio
-// gio-v is maintained by Jan Kåre Vatne (jkvatne@online.no)
-
 import (
-	"gio-v/wid"
-	"image/color"
-
-	"golang.org/x/exp/shiny/materialdesign/icons"
-
 	"gioui.org/app"
 	"gioui.org/font/gofont"
 	"gioui.org/layout"
 	"gioui.org/unit"
+	"github.com/jkvatne/gio-v/wid"
+	"golang.org/x/exp/shiny/materialdesign/icons"
+	"image/color"
 )
 
 var (

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gio-v/wid"
+	"github.com/jkvatne/gio-v/wid"
 	"image"
 	"testing"
 

@@ -6,7 +6,7 @@ package main
 // It scrolls verticaly and horizontaly and implements highlighting of rows.
 
 import (
-	"gio-v/wid"
+	"github.com/jkvatne/gio-v/wid"
 	"sort"
 
 	"gioui.org/op/paint"
