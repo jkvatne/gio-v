@@ -1,4 +1,4 @@
-module gio-v
+module github.com/jkvatne/gio-v
 
 go 1.20
 
