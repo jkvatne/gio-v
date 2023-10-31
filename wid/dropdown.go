@@ -28,7 +28,7 @@ type DropDownStyle struct {
 	list            Wid
 	Items           []Wid
 	label           string
-	labelSize       unit.Sp
+	labelSize       float32
 	above           bool
 	borderThickness unit.Dp
 }
@@ -44,7 +44,7 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 	b.Font = &th.DefaultFont
 	b.index = index
 	b.items = items
-	b.labelSize = th.TextSize * 8
+	b.labelSize = 0.333
 	b.borderThickness = b.th.BorderThickness
 	b.ClickMovesFocus = true
 	for i := range items {
@@ -65,6 +65,10 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 
 func (d *DropDownStyle) setLabel(s string) {
 	d.label = s
+}
+
+func (d *DropDownStyle) setLabelSize(w float32) {
+	d.labelSize = w
 }
 
 func (d *DropDownStyle) setBorder(w unit.Dp) {
@@ -97,17 +101,18 @@ func (d *DropDownStyle) Layout(gtx C) D {
 	if d.label != "" {
 		o := op.Offset(image.Pt(0, gtx.Dp(d.th.InsidePadding.Top))).Push(gtx.Ops)
 		paint.ColorOp{Color: d.Fg()}.Add(gtx.Ops)
-		ctx := gtx
-		ctx.Constraints.Max.X = gtx.Sp(d.labelSize)
+		oldMaxX := gtx.Constraints.Max.X
+		ofs := int(float32(oldMaxX) * d.labelSize)
+		gtx.Constraints.Max.X = ofs - gtx.Dp(d.th.InsidePadding.Left)
+		gtx.Constraints.Min.X = gtx.Constraints.Max.X
 		colMacro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: d.Fg()}.Add(gtx.Ops)
-		_ = widget.Label{Alignment: text.End, MaxLines: 1}.Layout(ctx, d.th.Shaper, *d.Font, d.th.TextSize, d.label, colMacro.Stop())
+		ll := widget.Label{Alignment: text.End, MaxLines: 1}
+		ll.Layout(gtx, d.th.Shaper, *d.Font, d.th.TextSize, d.label, colMacro.Stop())
 		o.Pop()
-		ofs := gtx.Sp(d.labelSize) + gtx.Dp(d.th.InsidePadding.Left)
-		// Move space used by label
-		defer op.Offset(image.Pt(ofs, 0)).Push(gtx.Ops).Pop()
-		gtx.Constraints.Max.X -= ofs
+		gtx.Constraints.Max.X = oldMaxX - ofs
 		gtx.Constraints.Min.X = gtx.Constraints.Max.X
+		defer op.Offset(image.Pt(ofs, 0)).Push(gtx.Ops).Pop()
 	}
 
 	// Draw text with top/left padding offset

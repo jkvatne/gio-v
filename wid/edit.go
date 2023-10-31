@@ -3,6 +3,7 @@
 package wid
 
 import (
+	"gioui.org/text"
 	"image"
 	"image/color"
 
@@ -25,7 +26,7 @@ type EditDef struct {
 	CharLimit       uint
 	label           string
 	value           *string
-	labelSize       unit.Sp
+	labelSize       float32
 	borderThickness unit.Dp
 	wasFocused      bool
 }
@@ -35,7 +36,7 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e := new(EditDef)
 	e.th = th
 	e.Font = &th.DefaultFont
-	e.labelSize = th.TextSize * 8
+	e.labelSize = 0.333 // 1/3 of column width
 	e.SingleLine = true
 	e.borderThickness = th.BorderThickness
 	e.width = unit.Dp(5000) // Default to max width that is possible
@@ -115,6 +116,23 @@ func (e *EditDef) Layout(gtx C) D {
 	o.Pop()
 	callHint := macro.Stop()
 
+	// Add outside label to the left of the dropdown box
+	if e.label != "" {
+		o := op.Offset(image.Pt(0, gtx.Dp(e.th.InsidePadding.Top))).Push(gtx.Ops)
+		paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
+		oldMaxX := gtx.Constraints.Max.X
+		ofs := int(float32(oldMaxX) * e.labelSize)
+		gtx.Constraints.Max.X = ofs - gtx.Dp(e.th.InsidePadding.Left)
+		gtx.Constraints.Min.X = gtx.Constraints.Max.X
+		colMacro := op.Record(gtx.Ops)
+		paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
+		ll := widget.Label{Alignment: text.End, MaxLines: 1}
+		ll.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, e.label, colMacro.Stop())
+		o.Pop()
+		gtx.Constraints.Max.X = oldMaxX - ofs
+		gtx.Constraints.Min.X = gtx.Constraints.Max.X
+		defer op.Offset(image.Pt(ofs, 0)).Push(gtx.Ops).Pop()
+	}
 	// If a width is given, and it is within constraints, limit size
 	if w := gtx.Dp(e.width); w > gtx.Constraints.Min.X && w < gtx.Constraints.Max.X {
 		gtx.Constraints.Min.X = w
@@ -197,6 +215,10 @@ func (e EditOption) apply(cfg interface{}) {
 
 func (e *EditDef) setLabel(s string) {
 	e.label = s
+}
+
+func (e *EditDef) setLabelSize(w float32) {
+	e.labelSize = w
 }
 
 func rr(gtx C, radius unit.Dp, height int) int {
