@@ -22,11 +22,11 @@ import (
 
 var (
 	SmallFont      bool
+	ScaleFont      bool
 	theme          *wid.Theme  // the theme selected
 	win            *app.Window // The main window
 	form           layout.Widget
 	name           = "Jan Kåre Vatne"
-	address        = "Blomsterveien 45"
 	age            = 35
 	homeIcon       *wid.Icon
 	checkIcon      *wid.Icon
@@ -67,12 +67,17 @@ func ticker() {
 }
 
 func onSwitchFontSize() {
-	if SmallFont {
-		theme = wid.NewTheme(gofont.Collection(), 11)
+	if ScaleFont && SmallFont {
+		theme.SetLinesPrForm(60)
+	} else if ScaleFont && !SmallFont {
+		theme.SetLinesPrForm(40)
+	} else if SmallFont {
+		theme.SetLinesPrForm(0)
+		theme.UpdateFontSize(11)
 	} else {
-		theme = wid.NewTheme(gofont.Collection(), 14)
+		theme.SetLinesPrForm(0)
+		theme.UpdateFontSize(14)
 	}
-	form = demo(theme)
 }
 
 func onSwitchMode() {
@@ -115,9 +120,10 @@ func demo(th *wid.Theme) layout.Widget {
 	ff := &font.Font{Typeface: "gomono"}
 	return wid.Col(nil,
 		wid.Label(th, "Demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Row(th, nil, []float32{.5, .9, .5, .5, .5},
+		wid.Row(th, nil, []float32{.5, .5, .7, .5, .5},
 			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onSwitchMode)),
 			wid.Checkbox(th, "Small font", wid.Bool(&SmallFont), wid.Do(onSwitchFontSize)),
+			wid.Checkbox(th, "Scaleable", wid.Bool(&ScaleFont), wid.Do(onSwitchFontSize)),
 			wid.RadioButton(th, &WindowMode, "windowed", "Windowed", wid.Do(onWinChange)),
 			wid.RadioButton(th, &WindowMode, "fullscreen", "Fullscreen", wid.Do(onWinChange)),
 			wid.RadioButton(th, &WindowMode, "maximized", "Maximized", wid.Do(onWinChange)),

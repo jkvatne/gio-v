@@ -7,6 +7,7 @@ import (
 	"golang.org/x/exp/constraints"
 	"image"
 	"image/color"
+	"math"
 	"os"
 	"sync"
 
@@ -39,7 +40,6 @@ var (
 	MouseY     float32
 	WinX       int
 	WinY       int
-	CurrentX   int
 	CurrentY   int
 	GuiLock    sync.RWMutex
 	invalidate chan struct{}
@@ -59,7 +59,7 @@ type Base struct {
 	bgColor      *color.NRGBA
 	description  string
 	Font         *font.Font
-	FontSize     float32
+	FontScale    float32
 	Dp           int
 }
 
@@ -136,7 +136,7 @@ func (wid *Base) setHandler(h func()) {
 }
 
 func (wid *Base) setFontSize(h float32) {
-	wid.FontSize = h
+	wid.FontScale = h
 }
 
 func (wid *Base) setDisabler(b *bool) {
@@ -352,20 +352,6 @@ func (b *Base) CheckDisable(gtx C) {
 	}
 }
 
-// CalcMin will calculate the minimum size of widget.
-func CalcMin(gtx C, width unit.Dp) image.Point {
-	min := gtx.Constraints.Min
-	if width <= 1.0 {
-		min.X = gtx.Dp(width * unit.Dp(gtx.Constraints.Max.X))
-	} else if width != 0 {
-		min.X = gtx.Dp(width)
-	}
-	if min.X > gtx.Constraints.Max.X {
-		min.X = gtx.Constraints.Max.X
-	}
-	return min
-}
-
 // UpdateMousePos must be called from the main program in order to get mouse
 // position and window size. They are needed to avoid that the tooltip
 // is outside the window frame
@@ -389,6 +375,8 @@ func Invalidate() {
 	invalidate <- struct{}{}
 }
 
+var OldWinY int
+
 func Run(win *app.Window, form *layout.Widget, th *Theme) {
 	invalidate = make(chan struct{})
 	for {
@@ -403,7 +391,21 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 				WinX = e.Size.X
 				WinY = e.Size.Y
 				gtx := layout.NewContext(&ops, e)
-				CurrentY = 0
+				// This code scales the font according to the window size.
+				// Resizing the window will scale most settings to keep the
+				// look identical but smaller or larger
+				// The default is for theme.FontScale to be zero, so to have
+				// this functionality you must manualy set it to a value ca 50-200.
+				// The number is the number of characters verticaly.
+				if th.LinesPrForm > 0 {
+					if WinX != OldWinY {
+						OldWinY = WinY
+						// Font size is in units sp (like dp but for fonts) while WinY is in pixels
+						// So we have to rescale using PxToSp
+						NewFontSize := gtx.Metric.PxToSp(int(math.Round(float64(WinY) / th.LinesPrForm)))
+						th.UpdateFontSize(NewFontSize)
+					}
+				}
 				CurrentY = 0
 				paint.ColorOp{Color: th.Bg(Surface)}.Add(gtx.Ops)
 				paint.PaintOp{}.Add(gtx.Ops)

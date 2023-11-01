@@ -3,6 +3,7 @@
 package wid
 
 import (
+	"gioui.org/unit"
 	"image"
 	"image/color"
 
@@ -15,7 +16,6 @@ import (
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/unit"
 	"gioui.org/widget"
 )
 
@@ -27,7 +27,6 @@ type CheckBoxDef struct {
 	StrValue           *string
 	BoolValue          *bool
 	Checked            bool
-	TextSize           unit.Sp
 	checkedStateIcon   *Icon
 	uncheckedStateIcon *Icon
 	Key                string
@@ -38,12 +37,12 @@ func RadioButton(th *Theme, value *string, key string, label string, options ...
 	r := CheckBoxDef{
 		Label:              label,
 		StrValue:           value,
-		TextSize:           th.TextSize,
 		checkedStateIcon:   th.RadioChecked,
 		uncheckedStateIcon: th.RadioUnchecked,
 		Key:                key,
 	}
 	r.th = th
+	r.FontScale = 1.2
 	r.role = Surface
 	r.padding = th.OutsidePadding
 	r.Font = &th.DefaultFont
@@ -59,11 +58,11 @@ func RadioButton(th *Theme, value *string, key string, label string, options ...
 func Checkbox(th *Theme, label string, options ...Option) func(gtx C) D {
 	c := &CheckBoxDef{
 		Label:              label,
-		TextSize:           th.TextSize,
 		checkedStateIcon:   th.CheckBoxChecked,
 		uncheckedStateIcon: th.CheckBoxUnchecked,
 	}
 	c.th = th
+	c.FontScale = 1.2
 	c.role = Surface
 	c.padding = th.OutsidePadding
 	c.Font = &th.DefaultFont
@@ -112,7 +111,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	gtx.Constraints.Min.X = 0
 	colMacro := op.Record(gtx.Ops)
 	paint.ColorOp{Color: c.Fg()}.Add(gtx.Ops)
-	labelDim := widget.Label{MaxLines: 1}.Layout(gtx, c.th.Shaper, *c.Font, c.TextSize, c.Label, colMacro.Stop())
+	labelDim := widget.Label{MaxLines: 1}.Layout(gtx, c.th.Shaper, *c.Font, unit.Sp(c.FontScale)*c.th.TextSize, c.Label, colMacro.Stop())
 	drawLabel := macro.Stop()
 	dx := labelDim.Size.Y / 6
 	dy := gtx.Dp(c.padding.Top + 1)

@@ -273,6 +273,8 @@ type Theme struct {
 	ScrollCornerRadius unit.Sp
 	// Default split between edit label and edit field
 	LabelSplit float32
+	// If > 0, the font size will by form height divided by LinesPrForm
+	LinesPrForm float64
 }
 
 func mustIcon(ic *Icon, err error) *Icon {
@@ -284,6 +286,12 @@ func mustIcon(ic *Icon, err error) *Icon {
 
 func uniformPadding(p unit.Dp) layout.Inset {
 	return layout.Inset{Top: p, Bottom: p, Left: p, Right: p}
+}
+
+func (th *Theme) SetLinesPrForm(x float64) {
+	th.LinesPrForm = x
+	// Force recalculation of font size
+	OldWinY = 0
 }
 
 func (th *Theme) UpdateFontSize(newFontSize unit.Sp) {

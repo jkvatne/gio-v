@@ -24,7 +24,6 @@ type LabelDef struct {
 	Alignment text.Alignment
 	// MaxLines limits the number of lines. Zero means no limit.
 	MaxLines int
-	TextSize unit.Sp
 	Stringer func(dp int) string
 }
 
@@ -77,7 +76,7 @@ func (l LabelDef) Layout(gtx C) D {
 	GuiLock.RUnlock()
 	colMacro := op.Record(gtx.Ops)
 	paint.ColorOp{Color: l.Fg()}.Add(gtx.Ops)
-	dims := tl.Layout(c, l.th.Shaper, l.Font, l.TextSize*unit.Sp(l.FontSize), str, colMacro.Stop())
+	dims := tl.Layout(c, l.th.Shaper, l.Font, unit.Sp(l.FontScale)*l.th.TextSize, str, colMacro.Stop())
 	dims.Size.X = Min(gtx.Constraints.Max.X, dims.Size.X)
 	if dims.Size.Y > 100 {
 		dims.Size.Y++
@@ -89,7 +88,6 @@ func (l LabelDef) Layout(gtx C) D {
 func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx C) D {
 	w := LabelDef{
 		Stringer:  s,
-		TextSize:  th.TextSize,
 		Alignment: text.Start,
 		Font:      font.Font{Weight: font.Medium, Style: font.Regular},
 		MaxLines:  0,
@@ -100,7 +98,7 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 
 	// Default to Canvas role (typically black for LightMode and white for DarkMode
 	w.role = Canvas
-	w.FontSize = 1.0
+	w.FontScale = 1.0
 	for _, option := range options {
 		option.apply(&w)
 	}

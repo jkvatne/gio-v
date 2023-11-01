@@ -106,7 +106,7 @@ func aButton[V StrValue](style ButtonStyle, th *Theme, label V, options ...Optio
 	b.internPad = th.ButtonLabelPadding
 	// Apply standard padding on the outside of the button. Can be overridden by option function
 	b.padding = th.ButtonPadding
-	b.FontSize = 1.0
+	b.FontScale = 1.0
 	b.cornerRadius = th.ButtonCornerRadius
 	for _, option := range options {
 		option.apply(&b)
@@ -158,7 +158,7 @@ func (b *ButtonDef) layout(gtx C) D {
 	cgtx.Constraints.Min.Y = 0
 	// Render text to find button width
 	recorder = op.Record(gtx.Ops)
-	textDim := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontSize), *b.Text, colorMacro)
+	textDim := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontScale), *b.Text, colorMacro)
 	textMacro := recorder.Stop()
 	// Icon size is equal to label height *1.333
 	iconSize := 0
