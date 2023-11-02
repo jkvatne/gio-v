@@ -34,12 +34,14 @@ func Separator(th *Theme, thickness unit.Dp, options ...Option) layout.Widget {
 	s.th = th
 	return func(gtx C) D {
 		dim := gtx.Constraints.Min
-		dim.Y = gtx.Dp(s.thickness) + gtx.Dp(s.padding.Top) + gtx.Dp(s.padding.Bottom)
-		size := image.Pt(dim.X-gtx.Dp(s.padding.Left)-gtx.Dp(s.padding.Right), gtx.Dp(s.thickness))
-		if w := gtx.Dp(s.Base.width); w > size.X {
+		dim.Y = th.Px(gtx, s.thickness+s.padding.Top+s.padding.Bottom)
+		x := dim.X - th.Px(gtx, s.padding.Left+s.padding.Right)
+		y := th.Px(gtx, s.thickness)
+		size := image.Pt(x, y)
+		if w := th.Px(gtx, s.Base.width); w > size.X {
 			size.X = w
 		}
-		defer op.Offset(image.Pt(gtx.Dp(s.padding.Left), gtx.Dp(s.padding.Top))).Push(gtx.Ops).Pop()
+		defer op.Offset(image.Pt(th.Px(gtx, s.padding.Left), th.Px(gtx, s.padding.Top))).Push(gtx.Ops).Pop()
 		defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
 		paint.ColorOp{Color: s.Fg()}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)

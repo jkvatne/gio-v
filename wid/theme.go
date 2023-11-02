@@ -215,6 +215,7 @@ type Pallet struct {
 // Theme contains color/layout settings for all widgets
 type Theme struct {
 	Pallet
+	Scale               unit.Dp // Used for scaling forms
 	DarkMode            bool
 	Shaper              *text.Shaper
 	TextSize            unit.Sp
@@ -263,14 +264,14 @@ type Theme struct {
 	// FadeDuration is the amount of time it takes the tooltip to fade in
 	// and out.
 	FadeDuration time.Duration
-	RowPadTop    unit.Sp
-	RowPadBtm    unit.Sp
+	RowPadTop    unit.Dp
+	RowPadBtm    unit.Dp
 	// Scroll bar size
-	ScrollMajorPadding unit.Sp
-	ScrollMinorPadding unit.Sp
-	ScrollMajorMinLen  unit.Sp
-	ScrollMinorWidth   unit.Sp
-	ScrollCornerRadius unit.Sp
+	ScrollMajorPadding unit.Dp
+	ScrollMinorPadding unit.Dp
+	ScrollMajorMinLen  unit.Dp
+	ScrollMinorWidth   unit.Dp
+	ScrollCornerRadius unit.Dp
 	// Default split between edit label and edit field
 	LabelSplit float32
 	// If > 0, the font size will by form height divided by LinesPrForm
@@ -294,33 +295,41 @@ func (th *Theme) SetLinesPrForm(x float64) {
 	OldWinY = 0
 }
 
+func (th *Theme) Dp(x unit.Dp) unit.Dp {
+	return x * th.Scale
+}
+
+func (th *Theme) Px(gtx C, dp unit.Dp) int {
+	return gtx.Dp(dp * th.Scale)
+}
+
 func (th *Theme) UpdateFontSize(newFontSize unit.Sp) {
 	th.TextSize = newFontSize
 	th.FingerSize = unit.Dp(38)
-	v := unit.Dp(th.TextSize) / 10
-	th.IconInset = layout.Inset{Top: v, Right: v, Bottom: v, Left: v}
-	th.BorderThickness = unit.Dp(th.TextSize) * 0.08
-	th.BorderCornerRadius = v * 3
+	th.Scale = unit.Dp(th.TextSize) / 14
+	th.IconInset = layout.Inset{Top: th.Dp(1), Right: th.Dp(1), Bottom: th.Dp(1), Left: th.Dp(1)}
+	th.BorderThickness = th.Dp(0.5)
+	th.BorderCornerRadius = th.Dp(3)
 	// Shadow
-	th.Elevation = unit.Dp(th.TextSize) * 0.5
+	th.Elevation = th.Dp(0.5)
 	// Text
-	th.OutsidePadding = uniformPadding(3.5 * v)
-	th.InsidePadding = uniformPadding(3.5 * v)
-	th.ButtonPadding = uniformPadding(3 * v)
+	th.OutsidePadding = uniformPadding(th.Dp(3.5))
+	th.InsidePadding = uniformPadding(th.Dp(3.5))
+	th.ButtonPadding = uniformPadding(th.Dp(3.5))
 	th.ButtonCornerRadius = th.BorderCornerRadius
-	th.ButtonLabelPadding = uniformPadding(5 * v)
-	th.IconSize = v * 20
+	th.ButtonLabelPadding = uniformPadding(th.Dp(5))
+	th.IconSize = th.Dp(20)
 	th.TooltipCornerRadius = th.BorderCornerRadius
-	th.TooltipWidth = v * 250
-	th.SashWidth = v * 8
-	th.RowPadTop = th.TextSize * 0.0
-	th.RowPadBtm = th.TextSize * 0.0
+	th.TooltipWidth = th.Dp(250)
+	th.SashWidth = th.Dp(8)
+	th.RowPadTop = 0.0
+	th.RowPadBtm = 0.0
 	th.ScrollMajorPadding = 0
 	th.ScrollMinorPadding = 0
-	th.ScrollMajorMinLen = th.TextSize * 1.5
-	th.ScrollMinorWidth = th.TextSize * 1.0
-	th.ScrollCornerRadius = th.TextSize / 4
-	th.TooltipInset = layout.UniformInset(v)
+	th.ScrollMajorMinLen = th.Dp(15.5)
+	th.ScrollMinorWidth = th.Dp(15.5)
+	th.ScrollCornerRadius = th.Dp(4)
+	th.TooltipInset = layout.UniformInset(th.Dp(1))
 }
 
 func (th *Theme) UpdateColors() {

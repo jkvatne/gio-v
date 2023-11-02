@@ -59,7 +59,7 @@ type Base struct {
 	bgColor      *color.NRGBA
 	description  string
 	Font         *font.Font
-	FontScale    float32
+	FontScale    float64
 	Dp           int
 }
 
@@ -136,7 +136,7 @@ func (wid *Base) setHandler(h func()) {
 }
 
 func (wid *Base) setFontSize(h float32) {
-	wid.FontScale = h
+	wid.FontScale = float64(h)
 }
 
 func (wid *Base) setDisabler(b *bool) {

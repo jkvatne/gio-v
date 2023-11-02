@@ -18,8 +18,9 @@ import (
 
 type rowDef struct {
 	widget.Clickable
-	padTop        unit.Sp
-	padBtm        unit.Sp
+	th            *Theme
+	padTop        unit.Dp
+	padBtm        unit.Dp
 	gridLineWidth unit.Dp
 	gridColor     color.NRGBA
 }
@@ -99,6 +100,7 @@ func Row(th *Theme, pbgColor *color.NRGBA, weights []float32, widgets ...layout.
 	if (pbgColor != nil) && (*pbgColor != color.NRGBA{}) {
 		bgColor = *pbgColor
 	}
+	r.th = th
 	r.padTop = th.RowPadTop
 	r.padBtm = th.RowPadBtm
 	return func(gtx C) D {
@@ -145,7 +147,7 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, bgColor color.NRGBA, weights
 	macro := op.Record(gtx.Ops)
 	// Generate all the rendering commands for the children,
 	// translated to correct location.
-	yMax += gtx.Sp(r.padBtm + r.padTop)
+	yMax += r.th.Px(gtx, r.padBtm+r.padTop)
 	for i := range widgets {
 		trans := op.Offset(image.Pt(pos[i], 0)).Push(gtx.Ops)
 		call[i].Add(gtx.Ops)
@@ -171,7 +173,7 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, bgColor color.NRGBA, weights
 	paint.ColorOp{Color: bgColor}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
 	// Skip the top padding by offseting distance padTop
-	defer op.Offset(image.Pt(0, gtx.Sp(r.padTop))).Push(gtx.Ops).Pop()
+	defer op.Offset(image.Pt(0, r.th.Px(gtx, r.padTop))).Push(gtx.Ops).Pop()
 	// Then play the macro to draw all the children.
 	drawAll.Add(gtx.Ops)
 	return dims

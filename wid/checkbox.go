@@ -3,6 +3,7 @@
 package wid
 
 import (
+	"fmt"
 	"gioui.org/unit"
 	"image"
 	"image/color"
@@ -114,7 +115,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	labelDim := widget.Label{MaxLines: 1}.Layout(gtx, c.th.Shaper, *c.Font, unit.Sp(c.FontScale)*c.th.TextSize, c.Label, colMacro.Stop())
 	drawLabel := macro.Stop()
 	dx := labelDim.Size.Y / 6
-	dy := gtx.Dp(c.padding.Top + 1)
+	dy := c.th.Px(gtx, c.padding.Top)
 	defer op.Offset(image.Pt(dx, dy)).Push(gtx.Ops).Pop()
 	// The hover/focus shadow extends outside the checkbox by 25%
 	b := image.Rectangle{Min: image.Pt(-dx, -dx), Max: image.Pt(labelDim.Size.Y+dx, labelDim.Size.Y+dx)}
@@ -134,17 +135,20 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	}
 	cgtx := gtx
 	cgtx.Constraints.Min = image.Point{X: labelDim.Size.Y}
-	icon.Layout(cgtx, col)
+	id := icon.Layout(cgtx, col)
+	px := c.th.Px(gtx, c.padding.Left+c.padding.Right)
+	py := c.th.Px(gtx, c.padding.Top+c.padding.Bottom)
 	dims := layout.Dimensions{
 		Size: image.Point{
-			X: labelDim.Size.Y + gtx.Dp(c.padding.Left+c.padding.Right),
-			Y: labelDim.Size.Y + gtx.Dp(c.padding.Top+c.padding.Bottom)},
-	}
-	of := op.Offset(image.Pt(labelDim.Size.Y+gtx.Dp(c.padding.Left), 0)).Push(gtx.Ops)
+			X: labelDim.Size.X + px,
+			Y: labelDim.Size.Y + py,
+		}}
+	of := op.Offset(image.Pt(labelDim.Size.Y+c.th.Px(gtx, c.padding.Left), 0)).Push(gtx.Ops)
+	fmt.Println(labelDim.Size.Y, id.Size.Y, py, dims.Size.Y, WinY, dy, labelDim.Size.Y)
 	paint.ColorOp{Color: col}.Add(gtx.Ops)
 	drawLabel.Add(gtx.Ops)
 	if labelDim.Size.X > 0 {
-		dims.Size.X += labelDim.Size.X + gtx.Dp(c.padding.Right)
+		dims.Size.X += labelDim.Size.X + c.th.Px(gtx, c.padding.Right)
 	}
 	of.Pop()
 	c.SetupEventHandlers(gtx, dims.Size)
