@@ -75,7 +75,7 @@ func (l LabelDef) xxLayout(gtx C) D {
 	GuiLock.RUnlock()
 	colMacro := op.Record(gtx.Ops)
 	paint.ColorOp{Color: l.Fg()}.Add(gtx.Ops)
-	dims := tl.Layout(c, l.th.Shaper, l.Font, unit.Sp(l.FontScale)*l.th.TextSize, str, colMacro.Stop())
+	dims := tl.Layout(c, l.th.Shaper, l.Font, unit.Sp(l.FontScale)*l.th.FontSp(), str, colMacro.Stop())
 	dims.Size.X = Min(gtx.Constraints.Max.X, dims.Size.X)
 	if dims.Size.Y > 100 {
 		dims.Size.Y++
@@ -119,7 +119,7 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		tl := widget.Label{Alignment: w.Alignment, MaxLines: w.MaxLines}
 		colMacro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: w.Fg()}.Add(gtx.Ops)
-		dims := tl.Layout(gtx, w.th.Shaper, w.Font, unit.Sp(w.FontScale)*w.th.TextSize, str, colMacro.Stop())
+		dims := tl.Layout(gtx, w.th.Shaper, w.Font, unit.Sp(w.FontScale)*w.th.FontSp(), str, colMacro.Stop())
 		dims.Size.X = Min(gtx.Constraints.Max.X, dims.Size.X)
 		o.Pop()
 		dims.Size.Y += Px(gtx, w.padding.Bottom)

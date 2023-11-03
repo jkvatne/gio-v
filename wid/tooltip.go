@@ -54,7 +54,7 @@ func MobileTooltip(th *Theme) Tooltip {
 		Bgc:      th.TooltipBackground,
 		font:     font.Font{Weight: font.Medium},
 		shaper:   th.Shaper,
-		TextSize: th.TextSize * 0.9,
+		TextSize: th.FontSp() * 0.9,
 	}
 }
 
@@ -67,7 +67,7 @@ func DesktopTooltip(th *Theme) Tooltip {
 		TooltipRR: th.TooltipCornerRadius,
 		font:      font.Font{Weight: font.Medium},
 		shaper:    th.Shaper,
-		TextSize:  th.TextSize * 0.9,
+		TextSize:  th.FontSp() * 0.9,
 	}
 
 }

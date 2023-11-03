@@ -313,6 +313,10 @@ func Px(gtx C, dp interface{}) int {
 	return 0
 }
 
+func (th *Theme) FontSp() unit.Sp {
+	return th.TextSize * unit.Sp(Scale)
+}
+
 func (th *Theme) UpdateColors() {
 	// Borders around edit fields
 	th.BorderColor = th.Fg(Outline)
@@ -367,7 +371,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	th.FingerSize = unit.Dp(38)
 	th.IconInset = layout.Inset{Top: 1, Right: 1, Bottom: 1, Left: 1}
 	th.BorderThickness = 1.0
-	th.BorderCornerRadius = 3
+	th.BorderCornerRadius = 5
 	// Shadow
 	th.Elevation = 0.5
 	// Text

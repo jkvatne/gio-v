@@ -164,7 +164,7 @@ func (e *EditDef) Layout(gtx C) D {
 	o := op.Offset(image.Pt(Px(gtx, e.th.InsidePadding.Left), Px(gtx, e.th.InsidePadding.Top))).Push(gtx.Ops)
 	paint.ColorOp{Color: MulAlpha(e.Fg(), 110)}.Add(gtx.Ops)
 	tl := widget.Label{Alignment: e.Editor.Alignment, MaxLines: e.maxLines()}
-	LblDim := tl.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, e.hint, hintColor)
+	LblDim := tl.Layout(gtx, e.th.Shaper, *e.Font, e.th.FontSp(), e.hint, hintColor)
 	o.Pop()
 	callHint := macro.Stop()
 
@@ -179,7 +179,7 @@ func (e *EditDef) Layout(gtx C) D {
 		colMacro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
 		ll := widget.Label{Alignment: text.End, MaxLines: 1}
-		ll.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, e.label, colMacro.Stop())
+		ll.Layout(gtx, e.th.Shaper, *e.Font, e.th.FontSp(), e.label, colMacro.Stop())
 		o.Pop()
 		gtx.Constraints.Max.X = oldMaxX - ofs
 		gtx.Constraints.Min.X = gtx.Constraints.Max.X
@@ -203,7 +203,7 @@ func (e *EditDef) Layout(gtx C) D {
 	}
 
 	o = op.Offset(image.Pt(Px(gtx, e.th.InsidePadding.Left), Px(gtx, e.th.InsidePadding.Top))).Push(gtx.Ops)
-	EditDim := e.Editor.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, textColor, selectionColor)
+	EditDim := e.Editor.Layout(gtx, e.th.Shaper, *e.Font, e.th.FontSp(), textColor, selectionColor)
 	o.Pop()
 	if e.Editor.Len() == 0 {
 		callHint.Add(gtx.Ops)

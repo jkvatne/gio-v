@@ -106,7 +106,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 		icon = c.checkedStateIcon
 	}
 
-	iconSize := unit.Sp(c.FontScale) * c.th.TextSize
+	iconSize := unit.Sp(c.FontScale) * c.th.FontSp()
 	macro := op.Record(gtx.Ops)
 	gtx.Constraints.Min.Y = 0
 	gtx.Constraints.Min.X = 0

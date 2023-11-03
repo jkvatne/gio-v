@@ -403,7 +403,6 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 						// Font size is in units sp (like dp but for fonts) while WinY is in pixels
 						// So we have to rescale using PxToSp
 						Scale = float32(WinY) / float32(th.LinesPrForm) / float32(gtx.Dp(14))
-						th.TextSize = unit.Sp(Scale * 14.0)
 					}
 				}
 				CurrentY = 0

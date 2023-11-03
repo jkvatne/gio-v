@@ -98,8 +98,8 @@ func (s *SliderStyle) Layout(gtx C) D {
 	if w < gtx.Constraints.Min.X {
 		gtx.Constraints.Min.X = w
 	}
-	thumbRadius := Px(gtx, s.th.TextSize*0.5)
-	trackWidth := Px(gtx, s.th.TextSize*0.5)
+	thumbRadius := Px(gtx, s.th.FontSp()*0.5)
+	trackWidth := Px(gtx, s.th.FontSp()*0.5)
 
 	// Keep a minimum length so that the track is always visible.
 	minLength := thumbRadius + 3*thumbRadius + thumbRadius
@@ -107,7 +107,6 @@ func (s *SliderStyle) Layout(gtx C) D {
 	touchSizePx := Min(Px(gtx, s.th.FingerSize), s.axis.Convert(gtx.Constraints.Max).Y)
 	sizeMain := Max(s.axis.Convert(gtx.Constraints.Min).X, minLength)
 	sizeCross := Max(2*thumbRadius, touchSizePx)
-	// size := s.axis.Convert(image.Pt(sizeMain, sizeCross))
 
 	o := s.axis.Convert(image.Pt(thumbRadius, 0))
 	op.Offset(o).Add(gtx.Ops)

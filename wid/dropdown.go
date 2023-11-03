@@ -75,7 +75,6 @@ func (d *DropDownStyle) setBorder(w unit.Dp) {
 	d.borderThickness = w
 }
 
-// Layout adds padding to a dropdown box drawn with b.layout().
 func (d *DropDownStyle) Layout(gtx C) D {
 	d.CheckDisable(gtx)
 
@@ -108,7 +107,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		colMacro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: d.Fg()}.Add(gtx.Ops)
 		ll := widget.Label{Alignment: text.End, MaxLines: 1}
-		ll.Layout(gtx, d.th.Shaper, *d.Font, d.th.TextSize, d.label, colMacro.Stop())
+		ll.Layout(gtx, d.th.Shaper, *d.Font, d.th.FontSp(), d.label, colMacro.Stop())
 		o.Pop()
 		gtx.Constraints.Max.X = oldMaxX - ofs
 		gtx.Constraints.Min.X = gtx.Constraints.Max.X
@@ -122,7 +121,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 	tl := widget.Label{Alignment: text.Start, MaxLines: 1}
 	colMacro := op.Record(gtx.Ops)
 	paint.ColorOp{Color: d.Fg()}.Add(gtx.Ops)
-	dims := tl.Layout(gtx, d.th.Shaper, *d.Font, d.th.TextSize, d.items[*d.index], colMacro.Stop())
+	dims := tl.Layout(gtx, d.th.Shaper, *d.Font, d.th.FontSp(), d.items[*d.index], colMacro.Stop())
 	o.Pop()
 	drawTextMacro := textMacro.Stop()
 
@@ -279,7 +278,7 @@ func (d *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 			colMacro := m.Stop()
 			return widget.Label{Alignment: text.Start, MaxLines: 1}.Layout(gtx, th.Shaper, *d.Font, th.TextSize, d.items[i], colMacro)
 		}
-		dims := layout.Inset{Top: unit.Dp(4), Left: unit.Dp(th.TextSize * 0.4), Right: unit.Dp(0)}.Layout(gtx, lblWidget)
+		dims := layout.Inset{Top: unit.Dp(4), Left: unit.Dp(th.FontSp() * 0.4), Right: unit.Dp(0)}.Layout(gtx, lblWidget)
 		defer clip.Rect(image.Rect(0, 0, dims.Size.X, dims.Size.Y)).Push(gtx.Ops).Pop()
 		c := color.NRGBA{}
 		if *d.index == i {

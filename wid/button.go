@@ -126,28 +126,14 @@ func (b *ButtonDef) HandleClick() {
 
 // Layout will draw a button defined in b.
 func (b *ButtonDef) Layout(gtx C) D {
-	// Add an outer padding outside the button
-	dims := b.padding.Layout(gtx,
-		func(gtx C) D {
-			if b.disabler != nil && !*b.disabler {
-				gtx.Queue = nil
-			}
-			// Handle clickable pointer/keyboard inputs
-			b.HandleEvents(gtx)
-			b.HandleClick()
-			dims := b.layout(gtx)
-			b.SetupEventHandlers(gtx, dims.Size)
-			_ = b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
-				return dims
-			})
-			return dims
-		})
-	pointer.CursorPointer.Add(gtx.Ops)
-
-	return dims
-}
-
-func (b *ButtonDef) layout(gtx C) D {
+	if b.disabler != nil && !*b.disabler {
+		gtx.Queue = nil
+	}
+	gtx.Constraints.Max.X -= Px(gtx, b.padding.Right+b.padding.Left)
+	oo := op.Offset(image.Pt(Px(gtx, b.padding.Left), Px(gtx, b.padding.Top))).Push(gtx.Ops)
+	// Handle clickable pointer/keyboard inputs
+	b.HandleEvents(gtx)
+	b.HandleClick()
 	// Make macro with text color
 	recorder := op.Record(gtx.Ops)
 	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
@@ -158,7 +144,7 @@ func (b *ButtonDef) layout(gtx C) D {
 	cgtx.Constraints.Min.Y = 0
 	// Render text to find button width
 	recorder = op.Record(gtx.Ops)
-	textDim := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontScale), *b.Text, colorMacro)
+	textDim := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.FontSp()*unit.Sp(b.FontScale), *b.Text, colorMacro)
 	textMacro := recorder.Stop()
 	// Icon size is equal to label height *1.333
 	iconSize := 0
@@ -244,6 +230,13 @@ func (b *ButtonDef) layout(gtx C) D {
 		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 		textMacro.Add(gtx.Ops)
 	}
+
+	b.SetupEventHandlers(gtx, outline.Max)
+	// TODO  _ = b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
+	pointer.CursorPointer.Add(gtx.Ops)
+	outline.Max.X += Px(gtx, b.padding.Left+b.padding.Right)
+	outline.Max.Y += Px(gtx, b.padding.Top+b.padding.Bottom)
+	oo.Pop()
 	return D{Size: outline.Max}
 }
 

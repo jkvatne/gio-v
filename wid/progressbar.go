@@ -30,11 +30,11 @@ func ProgressBar(th *Theme, progress *float32, options ...Option) func(gtx C) D 
 	p.width = 10
 	p.th = th
 	return func(gtx C) D {
-		return p.layout(gtx)
+		return p.Layout(gtx)
 	}
 }
 
-func (p ProgressBarStyle) layout(gtx C) D {
+func (p ProgressBarStyle) Layout(gtx C) D {
 	progressBarWidth := gtx.Constraints.Min.X - Px(gtx, 4)
 	return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
 		GuiLock.RLock()

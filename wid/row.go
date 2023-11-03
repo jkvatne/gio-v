@@ -104,7 +104,7 @@ func Row(th *Theme, pbgColor *color.NRGBA, weights []float32, widgets ...layout.
 	r.padTop = th.RowPadTop
 	r.padBtm = th.RowPadBtm
 	return func(gtx C) D {
-		return r.rowLayout(gtx, th.TextSize, bgColor, weights, widgets...)
+		return r.rowLayout(gtx, th.FontSp(), bgColor, weights, widgets...)
 	}
 }
 
