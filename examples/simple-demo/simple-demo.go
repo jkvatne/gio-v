@@ -22,7 +22,7 @@ import (
 
 var (
 	SmallFont      bool
-	ScaleFont      bool
+	FixedFont      bool
 	theme          *wid.Theme  // the theme selected
 	win            *app.Window // The main window
 	form           layout.Widget
@@ -67,9 +67,9 @@ func ticker() {
 }
 
 func onSwitchFontSize() {
-	if ScaleFont && SmallFont {
+	if !FixedFont && SmallFont {
 		theme.SetLinesPrForm(60)
-	} else if ScaleFont && !SmallFont {
+	} else if !FixedFont && !SmallFont {
 		theme.SetLinesPrForm(40)
 	} else if SmallFont {
 		theme.SetLinesPrForm(0)
@@ -118,13 +118,14 @@ func onWinChange() {
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
 	ff := &font.Font{Typeface: "gomono"}
+	theme.SetLinesPrForm(40)
 	return wid.Col(nil,
 		wid.Label(th, "Demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Row(th, nil, []float32{.5, .5, .7, .5, .5},
 			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onSwitchMode)),
 			wid.Checkbox(th, "Small font", wid.Bool(&SmallFont), wid.Do(onSwitchFontSize)),
-			wid.Checkbox(th, "Scaleable", wid.Bool(&ScaleFont), wid.Do(onSwitchFontSize)),
+			wid.Checkbox(th, "Fixed size", wid.Bool(&FixedFont), wid.Do(onSwitchFontSize)),
 			wid.RadioButton(th, &WindowMode, "windowed", "Windowed", wid.Do(onWinChange)),
 			wid.RadioButton(th, &WindowMode, "fullscreen", "Fullscreen", wid.Do(onWinChange)),
 			wid.RadioButton(th, &WindowMode, "maximized", "Maximized", wid.Do(onWinChange)),
