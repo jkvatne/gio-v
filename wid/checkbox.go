@@ -3,7 +3,6 @@
 package wid
 
 import (
-	"fmt"
 	"gioui.org/unit"
 	"image"
 	"image/color"
@@ -135,7 +134,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	}
 	cgtx := gtx
 	cgtx.Constraints.Min = image.Point{X: labelDim.Size.Y}
-	id := icon.Layout(cgtx, col)
+	icon.Layout(cgtx, col)
 	px := c.th.Px(gtx, c.padding.Left+c.padding.Right)
 	py := c.th.Px(gtx, c.padding.Top+c.padding.Bottom)
 	dims := layout.Dimensions{
@@ -144,7 +143,6 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 			Y: labelDim.Size.Y + py,
 		}}
 	of := op.Offset(image.Pt(labelDim.Size.Y+c.th.Px(gtx, c.padding.Left), 0)).Push(gtx.Ops)
-	fmt.Println(labelDim.Size.Y, id.Size.Y, py, dims.Size.Y, WinY, dy, labelDim.Size.Y)
 	paint.ColorOp{Color: col}.Add(gtx.Ops)
 	drawLabel.Add(gtx.Ops)
 	if labelDim.Size.X > 0 {
