@@ -319,7 +319,7 @@ func (th *Theme) UpdateColors() {
 	th.BorderColor = th.Fg(Outline)
 	th.BorderColorHovered = th.Fg(Primary)
 	th.BorderColorActive = th.Fg(Primary)
-	th.SelectionColor = MulAlpha(th.Fg(Primary), 0x60)
+	th.SelectionColor = MulAlpha(th.Bg(Primary), 0x60)
 	// Tooltip
 	th.TooltipBackground = th.Bg(SecondaryContainer)
 	th.TooltipOnBackground = th.Fg(SecondaryContainer)
