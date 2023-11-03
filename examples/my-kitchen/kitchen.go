@@ -79,7 +79,7 @@ func onDisable() {
 }
 
 func colorBar(gtx wid.C) wid.D {
-	gtx.Constraints.Min.Y = gtx.Dp(unit.Dp(50))
+	gtx.Constraints.Min.Y = wid.Px(gtx, unit.Dp(50))
 	gtx.Constraints.Max.Y = gtx.Constraints.Min.Y
 
 	dr := image.Rectangle{Max: gtx.Constraints.Min}

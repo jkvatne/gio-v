@@ -178,11 +178,11 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 				dims := layout.Stack{}.Layout(
 					gtx,
 					layout.Expanded(func(gtx C) D {
-						rr := gtx.Dp(t.TooltipRR)
+						rr := Px(gtx, t.TooltipRR)
 						outline := image.Rectangle{Max: gtx.Constraints.Min}
 						paint.FillShape(gtx.Ops, bg, clip.UniformRRect(outline, rr).Op(gtx.Ops))
-						w := float32(gtx.Dp(0.5))
-						paintBorder(gtx, outline, MulAlpha(t.Fgc, 128), w, gtx.Dp(t.TooltipRR))
+						w := float32(Px(gtx, 0.5))
+						paintBorder(gtx, outline, MulAlpha(t.Fgc, 128), w, Px(gtx, t.TooltipRR))
 						return D{}
 					}),
 					layout.Stacked(func(gtx C) D {

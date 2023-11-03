@@ -35,7 +35,7 @@ func ProgressBar(th *Theme, progress *float32, options ...Option) func(gtx C) D 
 }
 
 func (p ProgressBarStyle) layout(gtx C) D {
-	progressBarWidth := gtx.Constraints.Min.X - gtx.Dp(4)
+	progressBarWidth := gtx.Constraints.Min.X - Px(gtx, 4)
 	return layout.UniformInset(unit.Dp(2)).Layout(gtx, func(gtx C) D {
 		GuiLock.RLock()
 		value := *p.Progress
@@ -45,13 +45,13 @@ func (p ProgressBarStyle) layout(gtx C) D {
 		if gtx.Queue == nil {
 			color = Disabled(color)
 		}
-		rr := p.th.Px(gtx, p.cornerRadius)
+		rr := Px(gtx, p.cornerRadius)
 		if p.cornerRadius > (p.width-1)/2 {
-			rr = p.th.Px(gtx, (p.width-1)/2)
+			rr = Px(gtx, (p.width-1)/2)
 		}
-		d := image.Point{X: width, Y: gtx.Dp(p.width)}
+		d := image.Point{X: width, Y: Px(gtx, p.width)}
 		height := p.width
-		defer clip.UniformRRect(image.Rectangle{Max: image.Pt(width, gtx.Dp(height))}, rr).Push(gtx.Ops).Pop()
+		defer clip.UniformRRect(image.Rectangle{Max: image.Pt(width, Px(gtx, height))}, rr).Push(gtx.Ops).Pop()
 		paint.ColorOp{Color: color}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
 		return D{Size: d}

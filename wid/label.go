@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"gioui.org/font"
 	"gioui.org/op"
-	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
@@ -63,7 +62,7 @@ func (e LabelOption) apply(cfg interface{}) {
 }
 
 // Layout will draw the label
-func (l LabelDef) Layout(gtx C) D {
+func (l LabelDef) xxLayout(gtx C) D {
 	paint.ColorOp{Color: l.Fg()}.Add(gtx.Ops)
 	tl := widget.Label{Alignment: l.Alignment, MaxLines: l.MaxLines}
 	c := gtx
@@ -108,19 +107,23 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 	w.padding.Right += th.InsidePadding.Right
 
 	return func(gtx C) D {
-		macro := op.Record(gtx.Ops)
-		// Make sure that the calculated x-dimension is not larger than the Min.X
-		gtx.Constraints.Min.X -= gtx.Dp(w.padding.Left + w.padding.Right)
-		dim := w.padding.Layout(gtx, func(gtx C) D {
-			return w.Layout(gtx)
-		})
-		call := macro.Stop()
-		defer clip.Rect(image.Rectangle{Max: dim.Size}).Push(gtx.Ops).Pop()
-		if w.bgColor != nil {
-			paint.Fill(gtx.Ops, w.Bg())
+		paint.ColorOp{Color: w.Fg()}.Add(gtx.Ops)
+		if w.MaxLines == 1 {
+			// This is a hack to avoid splitting the line when only one line is allowed
+			gtx.Constraints.Max.X = inf
 		}
-		call.Add(gtx.Ops)
-		return dim
+		GuiLock.RLock()
+		str := w.Stringer(w.Dp)
+		GuiLock.RUnlock()
+		o := op.Offset(image.Pt(Px(gtx, w.th.InsidePadding.Left), Px(gtx, w.th.InsidePadding.Top))).Push(gtx.Ops)
+		tl := widget.Label{Alignment: w.Alignment, MaxLines: w.MaxLines}
+		colMacro := op.Record(gtx.Ops)
+		paint.ColorOp{Color: w.Fg()}.Add(gtx.Ops)
+		dims := tl.Layout(gtx, w.th.Shaper, w.Font, unit.Sp(w.FontScale)*w.th.TextSize, str, colMacro.Stop())
+		dims.Size.X = Min(gtx.Constraints.Max.X, dims.Size.X)
+		o.Pop()
+		dims.Size.Y += Px(gtx, w.padding.Bottom)
+		return dims
 	}
 }
 

@@ -111,7 +111,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	gtx.Constraints.Min.Y = 0
 	gtx.Constraints.Min.X = 0
 	ctx := gtx
-	ctx.Constraints.Max.X -= c.th.Px(gtx, c.padding.Right+unit.Dp(iconSize))
+	ctx.Constraints.Max.X -= Px(gtx, c.padding.Right+unit.Dp(iconSize))
 	if ctx.Constraints.Max.X < 0 {
 		ctx.Constraints.Max.X = 0
 	}
@@ -120,7 +120,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	labelDim := widget.Label{MaxLines: 1}.Layout(ctx, c.th.Shaper, *c.Font, iconSize, c.Label, colMacro.Stop())
 	drawLabel := macro.Stop()
 	dx := labelDim.Size.Y / 6
-	dy := c.th.Px(gtx, c.padding.Top)
+	dy := Px(gtx, c.padding.Top)
 	defer op.Offset(image.Pt(dx, dy)).Push(gtx.Ops).Pop()
 	// The hover/focus shadow extends outside the checkbox by 25%
 	b := image.Rectangle{Min: image.Pt(-dx, -dx), Max: image.Pt(labelDim.Size.Y+dx, labelDim.Size.Y+dx)}
@@ -141,14 +141,14 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	cgtx := gtx
 	cgtx.Constraints.Min = image.Point{X: labelDim.Size.Y}
 	icon.Layout(cgtx, col)
-	px := c.th.Px(gtx, c.padding.Left+c.padding.Right)
-	py := c.th.Px(gtx, c.padding.Top+c.padding.Bottom)
+	px := Px(gtx, c.padding.Left+c.padding.Right)
+	py := Px(gtx, c.padding.Top+c.padding.Bottom)
 	dims := layout.Dimensions{
 		Size: image.Point{
 			X: labelDim.Size.X + px,
 			Y: labelDim.Size.Y + py,
 		}}
-	of := op.Offset(image.Pt(labelDim.Size.Y+c.th.Px(gtx, c.padding.Left), 0)).Push(gtx.Ops)
+	of := op.Offset(image.Pt(labelDim.Size.Y+Px(gtx, c.padding.Left), 0)).Push(gtx.Ops)
 	paint.ColorOp{Color: col}.Add(gtx.Ops)
 	drawLabel.Add(gtx.Ops)
 	of.Pop()

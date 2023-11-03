@@ -43,7 +43,7 @@ func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
 			w[i] = 1.0
 		} else if i < len(weights) && weights[i] > 1.0 {
 			// Weights > 1 is given in characters, do rescale to pixels
-			w[i] = float32(gtx.Sp(textSize * unit.Sp(weights[i]) / 2))
+			w[i] = float32(Px(gtx, textSize*unit.Sp(weights[i])/2))
 		} else if i < len(weights) {
 			w[i] = weights[i]
 		}
@@ -147,13 +147,13 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, bgColor color.NRGBA, weights
 	macro := op.Record(gtx.Ops)
 	// Generate all the rendering commands for the children,
 	// translated to correct location.
-	yMax += r.th.Px(gtx, r.padBtm+r.padTop)
+	yMax += Px(gtx, r.padBtm+r.padTop)
 	for i := range widgets {
 		trans := op.Offset(image.Pt(pos[i], 0)).Push(gtx.Ops)
 		call[i].Add(gtx.Ops)
 		// Draw a vertical separator
 		if r.gridLineWidth > 0 {
-			gw := gtx.Dp(r.gridLineWidth)
+			gw := Px(gtx, r.gridLineWidth)
 			outline := image.Rect(gw/2, gw/2, pos[i+1]-pos[i]-gw/2, yMax)
 			paint.FillShape(gtx.Ops,
 				Black,
@@ -173,7 +173,7 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, bgColor color.NRGBA, weights
 	paint.ColorOp{Color: bgColor}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
 	// Skip the top padding by offseting distance padTop
-	defer op.Offset(image.Pt(0, r.th.Px(gtx, r.padTop))).Push(gtx.Ops).Pop()
+	defer op.Offset(image.Pt(0, Px(gtx, r.padTop))).Push(gtx.Ops).Pop()
 	// Then play the macro to draw all the children.
 	drawAll.Add(gtx.Ops)
 	return dims

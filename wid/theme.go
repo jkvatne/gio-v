@@ -215,7 +215,6 @@ type Pallet struct {
 // Theme contains color/layout settings for all widgets
 type Theme struct {
 	Pallet
-	Scale               float32 // Used for scaling forms
 	DarkMode            bool
 	Shaper              *text.Shaper
 	TextSize            unit.Sp
@@ -304,12 +303,12 @@ type GuiUnit interface{ unit.Dp | unit.Sp }
 // Px will convert a size given in either Dp or Sp to pixels
 // It applies the theme's scaling factor in addition to
 // the gtx metric's PixelPrSp and PixelPrDp
-func (th *Theme) Px(gtx C, dp interface{}) int {
+func Px(gtx C, dp interface{}) int {
 	if u, ok := dp.(unit.Dp); ok {
-		return gtx.Dp(u * unit.Dp(th.Scale))
+		return gtx.Dp(u * unit.Dp(Scale))
 	}
 	if u, ok := dp.(unit.Sp); ok {
-		return gtx.Sp(u * unit.Sp(th.Scale))
+		return gtx.Sp(u * unit.Sp(Scale))
 	}
 	return 0
 }
@@ -366,7 +365,6 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	// Default to equal length for label and editor
 	th.LabelSplit = 0.5
 	th.FingerSize = unit.Dp(38)
-	th.Scale = float32(unit.Dp(th.TextSize) / 14)
 	th.IconInset = layout.Inset{Top: 1, Right: 1, Bottom: 1, Left: 1}
 	th.BorderThickness = 1.0
 	th.BorderCornerRadius = 3

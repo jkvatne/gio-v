@@ -165,10 +165,10 @@ func (b *ButtonDef) layout(gtx C) D {
 	if b.Icon != nil {
 		iconSize = textDim.Size.Y * 4 / 3
 	}
-	height := Min(textDim.Size.Y+gtx.Dp(b.internPad.Top)+gtx.Dp(b.internPad.Bottom), gtx.Constraints.Max.Y)
+	height := Min(textDim.Size.Y+Px(gtx, b.internPad.Top)+Px(gtx, b.internPad.Bottom), gtx.Constraints.Max.Y)
 	// Default button width when width is not given has padding=1.2 char heights.
 	contentWidth := textDim.Size.X + iconSize
-	width := Min(gtx.Constraints.Max.X, Max(contentWidth+textDim.Size.Y, gtx.Dp(b.width)))
+	width := Min(gtx.Constraints.Max.X, Max(contentWidth+textDim.Size.Y, Px(gtx, b.width)))
 	if b.Style == Header {
 		width = gtx.Constraints.Max.X
 	}
@@ -177,7 +177,7 @@ func (b *ButtonDef) layout(gtx C) D {
 		width = height
 	}
 	// Limit corner radius
-	rr := Min(gtx.Dp(b.cornerRadius), height/2)
+	rr := Min(Px(gtx, b.cornerRadius), height/2)
 
 	outline := image.Rect(0, 0, width, height)
 
@@ -189,7 +189,7 @@ func (b *ButtonDef) layout(gtx C) D {
 	defer clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
 
 	if b.Style == Outlined {
-		w := float32(b.th.Px(gtx, b.th.BorderThickness))
+		w := float32(Px(gtx, b.th.BorderThickness))
 		paintBorder(gtx, outline, b.th.Fg(Outline), w, rr)
 	} else if b.Style != Text && gtx.Queue == nil {
 		paint.Fill(gtx.Ops, Disabled(b.Bg()))
@@ -216,11 +216,11 @@ func (b *ButtonDef) layout(gtx C) D {
 	// Calculate internal paddings and move
 	dy := Max(0, (height-textDim.Size.Y)/2)
 	dx := Max(0, (width-contentWidth)/2)
-	if b.internPad.Left > 0 && dx < gtx.Dp(b.internPad.Left) {
-		dx = gtx.Dp(b.internPad.Left)
+	if b.internPad.Left > 0 && dx < Px(gtx, b.internPad.Left) {
+		dx = Px(gtx, b.internPad.Left)
 	}
 	if b.Style == Header {
-		dx = gtx.Dp(b.internPad.Left)
+		dx = Px(gtx, b.internPad.Left)
 	}
 
 	if b.Icon != nil && *b.Text != "" {

@@ -81,15 +81,15 @@ func (d *DropDownStyle) Layout(gtx C) D {
 
 	// Move to offset the external padding around both label and edit
 	defer op.Offset(image.Pt(
-		gtx.Dp(d.padding.Left),
-		gtx.Dp(d.padding.Top))).Push(gtx.Ops).Pop()
+		Px(gtx, d.padding.Left),
+		Px(gtx, d.padding.Top))).Push(gtx.Ops).Pop()
 
 	// If a width is given, and it is within constraints, limit size
-	if w := gtx.Dp(d.width); w > gtx.Constraints.Min.X && w < gtx.Constraints.Max.X {
+	if w := Px(gtx, d.width); w > gtx.Constraints.Min.X && w < gtx.Constraints.Max.X {
 		gtx.Constraints.Min.X = w
 	}
 	// And reduce the size to make space for the padding
-	gtx.Constraints.Min.X -= gtx.Dp(d.padding.Left + d.padding.Right + d.th.InsidePadding.Left + d.th.InsidePadding.Right)
+	gtx.Constraints.Min.X -= Px(gtx, d.padding.Left+d.padding.Right+d.th.InsidePadding.Left+d.th.InsidePadding.Right)
 	gtx.Constraints.Max.X = gtx.Constraints.Min.X
 
 	d.HandleEvents(gtx)
@@ -99,11 +99,11 @@ func (d *DropDownStyle) Layout(gtx C) D {
 
 	// Add outside label to the left of the dropdown box
 	if d.label != "" {
-		o := op.Offset(image.Pt(0, gtx.Dp(d.th.InsidePadding.Top))).Push(gtx.Ops)
+		o := op.Offset(image.Pt(0, Px(gtx, d.th.InsidePadding.Top))).Push(gtx.Ops)
 		paint.ColorOp{Color: d.Fg()}.Add(gtx.Ops)
 		oldMaxX := gtx.Constraints.Max.X
 		ofs := int(float32(oldMaxX) * d.labelSize)
-		gtx.Constraints.Max.X = ofs - gtx.Dp(d.th.InsidePadding.Left)
+		gtx.Constraints.Max.X = ofs - Px(gtx, d.th.InsidePadding.Left)
 		gtx.Constraints.Min.X = gtx.Constraints.Max.X
 		colMacro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: d.Fg()}.Add(gtx.Ops)
@@ -117,7 +117,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 
 	// Draw text with top/left padding offset
 	textMacro := op.Record(gtx.Ops)
-	o := op.Offset(image.Pt(gtx.Dp(d.th.InsidePadding.Left), gtx.Dp(d.th.InsidePadding.Top))).Push(gtx.Ops)
+	o := op.Offset(image.Pt(Px(gtx, d.th.InsidePadding.Left), Px(gtx, d.th.InsidePadding.Top))).Push(gtx.Ops)
 	paint.ColorOp{Color: d.Fg()}.Add(gtx.Ops)
 	tl := widget.Label{Alignment: text.Start, MaxLines: 1}
 	colMacro := op.Record(gtx.Ops)
@@ -130,16 +130,16 @@ func (d *DropDownStyle) Layout(gtx C) D {
 	dims.Size.X = gtx.Constraints.Max.X
 
 	border := image.Rectangle{Max: image.Pt(
-		gtx.Constraints.Max.X+gtx.Dp(d.th.InsidePadding.Left+d.th.InsidePadding.Right),
-		dims.Size.Y+gtx.Dp(d.th.InsidePadding.Bottom+d.th.InsidePadding.Top))}
+		gtx.Constraints.Max.X+Px(gtx, d.th.InsidePadding.Left+d.th.InsidePadding.Right),
+		dims.Size.Y+Px(gtx, d.th.InsidePadding.Bottom+d.th.InsidePadding.Top))}
 
 	// Draw border. Need to undo previous top padding offset first
-	r := gtx.Dp(d.cornerRadius)
+	r := Px(gtx, d.cornerRadius)
 	if r > border.Max.Y/2 {
 		r = border.Max.Y / 2
 	}
 	if d.borderThickness > 0 {
-		w := float32(d.th.Px(gtx, d.borderThickness))
+		w := float32(Px(gtx, d.borderThickness))
 		if d.Focused() {
 			paintBorder(gtx, border, d.outlineColor, w*2, r)
 		} else if d.Hovered() {
@@ -189,7 +189,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 			d.setHovered(idx)
 		}
 
-		dy := dims.Size.Y + gtx.Dp(d.padding.Top) + gtx.Dp(d.padding.Bottom)
+		dy := dims.Size.Y + Px(gtx, d.padding.Top) + Px(gtx, d.padding.Bottom)
 		if d.above {
 			dy = -o.Size.Y
 		}
@@ -225,7 +225,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		pass.Pop()
 
 		// Draw a border around all options
-		w := float32(d.th.Px(gtx, d.borderThickness))
+		w := float32(Px(gtx, d.borderThickness))
 		paintBorder(gtx, listClipRect, d.th.Fg(Outline), w, 0)
 		// Save and defer execution
 		dropDownListCall := dropdownMacro.Stop()
@@ -239,7 +239,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 
 	return D{Size: image.Pt(
 		gtx.Constraints.Max.X,
-		border.Max.Y-border.Min.Y+gtx.Dp(d.padding.Bottom+d.padding.Top))}
+		border.Max.Y-border.Min.Y+Px(gtx, d.padding.Bottom+d.padding.Top))}
 }
 
 func (d *DropDownStyle) setHovered(h int) {

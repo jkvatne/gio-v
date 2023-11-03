@@ -14,7 +14,7 @@ import (
 type Resize struct {
 	// ratio defines how much space is available to the first widget.
 	axis   layout.Axis
-	Theme  *Theme
+	th     *Theme
 	ratio  float32
 	Length float32
 	drag   gesture.Drag
@@ -24,7 +24,7 @@ type Resize struct {
 
 // SplitHorizontal is used to layout two widgets with a vertical splitter between.
 func SplitHorizontal(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widget) func(gtx C) D {
-	rs := Resize{Theme: th, ratio: ratio, axis: layout.Horizontal}
+	rs := Resize{th: th, ratio: ratio, axis: layout.Horizontal}
 	return func(gtx C) D {
 		return rs.Layout(gtx, w1, w2)
 	}
@@ -32,7 +32,7 @@ func SplitHorizontal(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widge
 
 // SplitVertical is used to layout two widgets with a vertical splitter between.
 func SplitVertical(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widget) func(gtx C) D {
-	rs := Resize{Theme: th, ratio: ratio, axis: layout.Vertical}
+	rs := Resize{th: th, ratio: ratio, axis: layout.Vertical}
 	return func(gtx C) D {
 		return rs.Layout(gtx, w1, w2)
 	}
@@ -76,7 +76,7 @@ func (rs *Resize) Layout(gtx C, w1 layout.Widget, w2 layout.Widget) D {
 		}
 	}
 	// Add drag gesture capture
-	d := gtx.Dp(rs.Theme.SashWidth)/2 + 1
+	d := Px(gtx, rs.th.SashWidth)/2 + 1
 	p := int(rs.get(f.Size) * rs.ratio)
 	if rs.axis == layout.Vertical {
 		defer clip.Rect(image.Rect(0, p-d, f.Size.X, p+d)).Push(gtx.Ops).Pop()
@@ -96,12 +96,12 @@ func (rs *Resize) Layout(gtx C, w1 layout.Widget, w2 layout.Widget) D {
 func (rs *Resize) drawSash(gtx C) image.Point {
 	dims := gtx.Constraints.Max
 	if rs.axis == layout.Horizontal {
-		dims.X = gtx.Dp(rs.Theme.SashWidth)
+		dims.X = Px(gtx, rs.th.SashWidth)
 	} else {
-		dims.Y = gtx.Dp(rs.Theme.SashWidth)
+		dims.Y = Px(gtx, rs.th.SashWidth)
 	}
 	defer clip.Rect{Max: dims}.Push(gtx.Ops).Pop()
-	paint.ColorOp{Color: rs.Theme.SashColor}.Add(gtx.Ops)
+	paint.ColorOp{Color: rs.th.SashColor}.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)
 	return dims
 }

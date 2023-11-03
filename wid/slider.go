@@ -94,17 +94,17 @@ func (s *SliderStyle) handleKeys(gtx C) {
 
 // Layout will draw the slider
 func (s *SliderStyle) Layout(gtx C) D {
-	w := gtx.Dp(s.width)
+	w := Px(gtx, s.width)
 	if w < gtx.Constraints.Min.X {
 		gtx.Constraints.Min.X = w
 	}
-	thumbRadius := gtx.Sp(s.th.TextSize * 0.5)
-	trackWidth := gtx.Sp(s.th.TextSize * 0.5)
+	thumbRadius := Px(gtx, s.th.TextSize*0.5)
+	trackWidth := Px(gtx, s.th.TextSize*0.5)
 
 	// Keep a minimum length so that the track is always visible.
 	minLength := thumbRadius + 3*thumbRadius + thumbRadius
 	// Try to expand to finger size, but only if the constraints allow for it.
-	touchSizePx := Min(gtx.Dp(s.th.FingerSize), s.axis.Convert(gtx.Constraints.Max).Y)
+	touchSizePx := Min(Px(gtx, s.th.FingerSize), s.axis.Convert(gtx.Constraints.Max).Y)
 	sizeMain := Max(s.axis.Convert(gtx.Constraints.Min).X, minLength)
 	sizeCross := Max(2*thumbRadius, touchSizePx)
 	// size := s.axis.Convert(image.Pt(sizeMain, sizeCross))

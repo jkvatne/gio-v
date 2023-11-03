@@ -81,12 +81,12 @@ func (s *SwitchDef) Layout(gtx C) D {
 		GuiLock.RUnlock()
 	}
 
-	width := gtx.Dp(s.trackLength)
-	height := gtx.Dp(s.trackWidth)
-	offSize := gtx.Dp(s.btnOffSize)
-	onSize := gtx.Dp(s.btnOnSize)
-	stroke := float32(gtx.Dp(s.trackStroke))
-	r := gtx.Dp(s.trackWidth / 4)
+	width := Px(gtx, s.trackLength)
+	height := Px(gtx, s.trackWidth)
+	offSize := Px(gtx, s.btnOffSize)
+	onSize := Px(gtx, s.btnOnSize)
+	stroke := float32(Px(gtx, s.trackStroke))
+	r := Px(gtx, s.trackWidth/4)
 	trackRect := image.Rect(0, 0, width, height)
 	if s.sw.Focused() && s.sw.Hovered() {
 		s.hoverShadow = MulAlpha(s.th.Bg(Primary), 120)

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Unlicense OR MIT
+// SPDX-License-Identifier: Unlicense OR MIT
 
 package wid
 
@@ -16,7 +17,6 @@ func Col(weights []float32, widgets ...Wid) Wid {
 	offsets := make([]int, len(widgets))
 	return func(gtx C) D {
 		size := 0
-		startY := CurrentY
 		var totalWeight float32
 		cgtx := gtx
 		cgtx.Constraints.Min.Y = 0
@@ -28,7 +28,6 @@ func Col(weights []float32, widgets ...Wid) Wid {
 			if i < len(weights) && weights[i] > 0 {
 				totalWeight += weights[i]
 			} else {
-				CurrentY = offsets[i]
 				macro := op.Record(gtx.Ops)
 				cgtx.Constraints.Max.Y = remaining
 				dims[i] = child(cgtx)
@@ -45,7 +44,6 @@ func Col(weights []float32, widgets ...Wid) Wid {
 			if len(weights) <= i || weights[i] == 0 {
 				continue
 			}
-			CurrentY = offsets[i]
 			var flexSize int
 			if remaining > 0 && totalWeight > 0 {
 				childSize := float32(flexTotal) * weights[i] / totalWeight
@@ -69,23 +67,19 @@ func Col(weights []float32, widgets ...Wid) Wid {
 				maxX = c
 			}
 		}
-		var mainSize int
-		CurrentY = startY
+		var y int
 		// Now do the actual drawing, with offsets
 		for i := range widgets {
-			dims := dims[i]
-			offsets[i] = CurrentY
-			trans := op.Offset(image.Pt(0, mainSize)).Push(gtx.Ops)
+			offsets[i] = y
+			trans := op.Offset(image.Pt(0, y)).Push(gtx.Ops)
 			calls[i].Add(gtx.Ops)
 			trans.Pop()
-			CurrentY += dims.Size.Y
-			mainSize += dims.Size.Y
-			if mainSize >= gtx.Constraints.Max.Y {
+			y += dims[i].Size.Y
+			if y >= gtx.Constraints.Max.Y {
 				break
 			}
 		}
-		// mainSize += Max(0, gtx.Constraints.Min.Y-size)
-		sz := gtx.Constraints.Constrain(image.Pt(maxX, mainSize))
+		sz := gtx.Constraints.Constrain(image.Pt(maxX, y))
 		return D{Size: sz, Baseline: sz.Y}
 	}
 }

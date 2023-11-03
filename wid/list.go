@@ -114,7 +114,7 @@ func (s ScrollbarStyle) Layout(gtx C, axis layout.Axis, viewportStart, viewportE
 	convert := axis.Convert
 	maxMajorAxis := convert(gtx.Constraints.Max).X
 	gtx.Constraints.Min.X = maxMajorAxis
-	gtx.Constraints.Min.Y = gtx.Dp(s.Width())
+	gtx.Constraints.Min.Y = Px(gtx, s.Width)
 	gtx.Constraints.Min = convert(gtx.Constraints.Min)
 	gtx.Constraints.Max = gtx.Constraints.Min
 
@@ -177,15 +177,15 @@ func (s ScrollbarStyle) layout(gtx C, axis layout.Axis, viewportStart, viewportE
 				trackLen := gtx.Constraints.Min.X
 				viewStart := int(math.Round(float64(viewportStart) * float64(trackLen)))
 				viewEnd := int(math.Round(float64(viewportEnd) * float64(trackLen)))
-				indicatorLen := Max(viewEnd-viewStart, gtx.Dp(s.Indicator.MajorMinLen))
+				indicatorLen := Max(viewEnd-viewStart, Px(gtx, s.Indicator.MajorMinLen))
 				if viewStart+indicatorLen > trackLen {
 					viewStart = trackLen - indicatorLen
 				}
 				indicatorDims := axis.Convert(image.Point{
 					X: indicatorLen,
-					Y: gtx.Dp(s.Indicator.MinorWidth),
+					Y: Px(gtx, s.Indicator.MinorWidth),
 				})
-				radius := gtx.Dp(s.Indicator.CornerRadius)
+				radius := Px(gtx, s.Indicator.CornerRadius)
 
 				// Lay out the indicator.
 				offset := axis.Convert(image.Pt(viewStart, 0))
@@ -272,8 +272,8 @@ func List(th *Theme, a AnchorStrategy, widgets ...layout.Widget) layout.Widget {
 // Layout the list and its scrollbar.
 func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.ListElement) D {
 	// Determine how much space the scrollbar occupies.
-	hBarWidth := gtx.Dp(l.HScrollBar.Width())
-	vBarWidth := gtx.Dp(l.VScrollBar.Width())
+	hBarWidth := Px(gtx, l.HScrollBar.Width())
+	vBarWidth := Px(gtx, l.VScrollBar.Width())
 
 	c := gtx
 	if l.AnchorStrategy == Occupy {

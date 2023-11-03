@@ -9,8 +9,6 @@ import (
 
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"gioui.org/unit"
-
 	"golang.org/x/exp/shiny/iconvg"
 )
 
@@ -22,8 +20,6 @@ type Icon struct {
 	imgSize  int
 	imgColor color.NRGBA
 }
-
-var defaultIconSize = unit.Dp(24)
 
 // NewIcon returns a new Icon from IconVG data.
 func NewIcon(data []byte) (*Icon, error) {
@@ -37,9 +33,6 @@ func NewIcon(data []byte) (*Icon, error) {
 // Layout displays the icon with its size set to the X minimum constraint.
 func (ic *Icon) Layout(gtx C, color color.NRGBA) D {
 	sz := gtx.Constraints.Min.X
-	if sz == 0 {
-		sz = gtx.Dp(defaultIconSize)
-	}
 	size := gtx.Constraints.Constrain(image.Pt(sz, sz))
 	defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
 
