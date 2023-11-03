@@ -314,35 +314,6 @@ func (th *Theme) Px(gtx C, dp interface{}) int {
 	return 0
 }
 
-func (th *Theme) UpdateFontSize(newFontSize unit.Sp) {
-	th.TextSize = newFontSize
-	th.FingerSize = unit.Dp(38)
-	th.Scale = float32(unit.Dp(th.TextSize) / 14)
-	th.IconInset = layout.Inset{Top: th.Dp(1), Right: th.Dp(1), Bottom: th.Dp(1), Left: th.Dp(1)}
-	th.BorderThickness = th.Dp(0.5)
-	th.BorderCornerRadius = th.Dp(3)
-	// Shadow
-	th.Elevation = th.Dp(0.5)
-	// Text
-	th.OutsidePadding = uniformPadding(th.Dp(3.5))
-	th.InsidePadding = uniformPadding(th.Dp(3.5))
-	th.ButtonPadding = uniformPadding(th.Dp(3.5))
-	th.ButtonCornerRadius = th.BorderCornerRadius
-	th.ButtonLabelPadding = uniformPadding(th.Dp(5))
-	th.IconSize = th.Dp(20)
-	th.TooltipCornerRadius = th.BorderCornerRadius
-	th.TooltipWidth = th.Dp(250)
-	th.SashWidth = th.Dp(8)
-	th.RowPadTop = 0.0
-	th.RowPadBtm = 0.0
-	th.ScrollMajorPadding = 0
-	th.ScrollMinorPadding = 0
-	th.ScrollMajorMinLen = th.Dp(15.5)
-	th.ScrollMinorWidth = th.Dp(15.5)
-	th.ScrollCornerRadius = th.Dp(4)
-	th.TooltipInset = layout.UniformInset(th.Dp(1))
-}
-
 func (th *Theme) UpdateColors() {
 	// Borders around edit fields
 	th.BorderColor = th.Fg(Outline)
@@ -362,41 +333,64 @@ func (th *Theme) UpdateColors() {
 // NewTheme creates a new theme with given font size and pallete
 // The pallet can be left out, to use the defaults - or include as many colors you like.
 func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.NRGBA) *Theme {
-	t := new(Theme)
+	th := new(Theme)
+	th.TextSize = fontSize
 	// Set up the default pallete
-	t.PrimaryColor = RGB(0x45682A)
-	t.SecondaryColor = RGB(0x57624E)
-	t.TertiaryColor = RGB(0x336669)
-	t.ErrorColor = RGB(0xAF2525)
-	t.NeutralColor = RGB(0x5D5D5D)
-	t.NeutralVariantColor = RGB(0x756057)
+	th.PrimaryColor = RGB(0x45682A)
+	th.SecondaryColor = RGB(0x57624E)
+	th.TertiaryColor = RGB(0x336669)
+	th.ErrorColor = RGB(0xAF2525)
+	th.NeutralColor = RGB(0x5D5D5D)
+	th.NeutralVariantColor = RGB(0x756057)
 	// Then replace the optional colors in the argument list
 	if len(colors) >= 1 {
-		t.PrimaryColor = colors[0]
+		th.PrimaryColor = colors[0]
 	}
 	if len(colors) >= 2 {
-		t.SecondaryColor = colors[1]
+		th.SecondaryColor = colors[1]
 	}
 	if len(colors) >= 3 {
-		t.TertiaryColor = colors[2]
+		th.TertiaryColor = colors[2]
 	}
 	if len(colors) >= 4 {
-		t.ErrorColor = colors[3]
+		th.ErrorColor = colors[3]
 	}
 	// Setup icons
-	t.CheckBoxChecked = mustIcon(NewIcon(icons.ToggleCheckBox))
-	t.CheckBoxUnchecked = mustIcon(NewIcon(icons.ToggleCheckBoxOutlineBlank))
-	t.RadioChecked = mustIcon(NewIcon(icons.ToggleRadioButtonChecked))
-	t.RadioUnchecked = mustIcon(NewIcon(icons.ToggleRadioButtonUnchecked))
+	th.CheckBoxChecked = mustIcon(NewIcon(icons.ToggleCheckBox))
+	th.CheckBoxUnchecked = mustIcon(NewIcon(icons.ToggleCheckBoxOutlineBlank))
+	th.RadioChecked = mustIcon(NewIcon(icons.ToggleRadioButtonChecked))
+	th.RadioUnchecked = mustIcon(NewIcon(icons.ToggleRadioButtonUnchecked))
 	// Setup font types
 	// Old version (v0.1.0) : t.Shaper = text.NewShaper(fontCollection)
-	t.Shaper = text.NewShaper(text.NoSystemFonts(), text.WithCollection(fontCollection))
-
-	// Scale all sizes from the given font size
-	t.UpdateFontSize(fontSize)
-	// Update all colors from the pallete
-	t.UpdateColors()
+	th.Shaper = text.NewShaper(text.NoSystemFonts(), text.WithCollection(fontCollection))
 	// Default to equal length for label and editor
-	t.LabelSplit = 0.5
-	return t
+	th.LabelSplit = 0.5
+	th.FingerSize = unit.Dp(38)
+	th.Scale = float32(unit.Dp(th.TextSize) / 14)
+	th.IconInset = layout.Inset{Top: 1, Right: 1, Bottom: 1, Left: 1}
+	th.BorderThickness = 1.0
+	th.BorderCornerRadius = 3
+	// Shadow
+	th.Elevation = 0.5
+	// Text
+	th.OutsidePadding = uniformPadding(3.5)
+	th.InsidePadding = uniformPadding(3.5)
+	th.ButtonPadding = uniformPadding(3.5)
+	th.ButtonCornerRadius = th.BorderCornerRadius
+	th.ButtonLabelPadding = uniformPadding(5)
+	th.IconSize = 20
+	th.TooltipCornerRadius = th.BorderCornerRadius
+	th.TooltipWidth = 250
+	th.SashWidth = 8
+	th.RowPadTop = 0.0
+	th.RowPadBtm = 0.0
+	th.ScrollMajorPadding = 0
+	th.ScrollMinorPadding = 0
+	th.ScrollMajorMinLen = 15.5
+	th.ScrollMinorWidth = 15.5
+	th.ScrollCornerRadius = 4
+	th.TooltipInset = layout.UniformInset(1)
+	// Update all colors from the pallete
+	th.UpdateColors()
+	return th
 }

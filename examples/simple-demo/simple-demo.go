@@ -73,10 +73,10 @@ func onSwitchFontSize() {
 		theme.SetLinesPrForm(40)
 	} else if SmallFont {
 		theme.SetLinesPrForm(0)
-		theme.UpdateFontSize(11)
+		theme.TextSize = 11
 	} else {
 		theme.SetLinesPrForm(0)
-		theme.UpdateFontSize(14)
+		theme.TextSize = 14
 	}
 }
 

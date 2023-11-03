@@ -147,11 +147,11 @@ func onCheck() {
 
 func onFontChange() {
 	if fontSize == "Medium" {
-		theme.UpdateFontSize(14)
+		theme.TextSize = 14
 	} else if fontSize == "Large" {
-		theme.UpdateFontSize(24)
+		theme.TextSize = 24
 	} else if fontSize == "Small" {
-		theme.UpdateFontSize(10)
+		theme.TextSize = 10
 	}
 	onWinChange()
 }

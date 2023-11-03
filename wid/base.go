@@ -402,8 +402,7 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 						OldWinY = WinY
 						// Font size is in units sp (like dp but for fonts) while WinY is in pixels
 						// So we have to rescale using PxToSp
-						NewFontSize := gtx.Metric.PxToSp(int(math.Round(float64(WinY) / th.LinesPrForm)))
-						th.UpdateFontSize(NewFontSize)
+						th.TextSize = gtx.Metric.PxToSp(int(math.Round(float64(WinY) / th.LinesPrForm)))
 					}
 				}
 				CurrentY = 0

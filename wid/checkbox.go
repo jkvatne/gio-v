@@ -42,7 +42,7 @@ func RadioButton(th *Theme, value *string, key string, label string, options ...
 		Key:                key,
 	}
 	r.th = th
-	r.FontScale = 1.2
+	r.FontScale = 1.0
 	r.role = Surface
 	r.padding = th.OutsidePadding
 	r.Font = &th.DefaultFont
@@ -62,7 +62,7 @@ func Checkbox(th *Theme, label string, options ...Option) func(gtx C) D {
 		uncheckedStateIcon: th.CheckBoxUnchecked,
 	}
 	c.th = th
-	c.FontScale = 1.2
+	c.FontScale = 1.0
 	c.role = Surface
 	c.padding = th.OutsidePadding
 	c.Font = &th.DefaultFont
