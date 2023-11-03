@@ -106,12 +106,18 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 		icon = c.checkedStateIcon
 	}
 
+	iconSize := unit.Sp(c.FontScale) * c.th.TextSize
 	macro := op.Record(gtx.Ops)
 	gtx.Constraints.Min.Y = 0
 	gtx.Constraints.Min.X = 0
+	ctx := gtx
+	ctx.Constraints.Max.X -= c.th.Px(gtx, c.padding.Right+unit.Dp(iconSize))
+	if ctx.Constraints.Max.X < 0 {
+		ctx.Constraints.Max.X = 0
+	}
 	colMacro := op.Record(gtx.Ops)
 	paint.ColorOp{Color: c.Fg()}.Add(gtx.Ops)
-	labelDim := widget.Label{MaxLines: 1}.Layout(gtx, c.th.Shaper, *c.Font, unit.Sp(c.FontScale)*c.th.TextSize, c.Label, colMacro.Stop())
+	labelDim := widget.Label{MaxLines: 1}.Layout(ctx, c.th.Shaper, *c.Font, iconSize, c.Label, colMacro.Stop())
 	drawLabel := macro.Stop()
 	dx := labelDim.Size.Y / 6
 	dy := c.th.Px(gtx, c.padding.Top)
@@ -145,9 +151,6 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	of := op.Offset(image.Pt(labelDim.Size.Y+c.th.Px(gtx, c.padding.Left), 0)).Push(gtx.Ops)
 	paint.ColorOp{Color: col}.Add(gtx.Ops)
 	drawLabel.Add(gtx.Ops)
-	if labelDim.Size.X > 0 {
-		dims.Size.X += labelDim.Size.X + c.th.Px(gtx, c.padding.Right)
-	}
 	of.Pop()
 	c.SetupEventHandlers(gtx, dims.Size)
 	pointer.CursorPointer.Add(gtx.Ops)
