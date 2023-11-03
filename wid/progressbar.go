@@ -45,7 +45,10 @@ func (p ProgressBarStyle) layout(gtx C) D {
 		if gtx.Queue == nil {
 			color = Disabled(color)
 		}
-		rr := rr(gtx, p.cornerRadius, gtx.Dp(p.width))
+		rr := p.th.Px(gtx, p.cornerRadius)
+		if p.cornerRadius > (p.width-1)/2 {
+			rr = p.th.Px(gtx, (p.width-1)/2)
+		}
 		d := image.Point{X: width, Y: gtx.Dp(p.width)}
 		height := p.width
 		defer clip.UniformRRect(image.Rectangle{Max: image.Pt(width, gtx.Dp(height))}, rr).Push(gtx.Ops).Pop()

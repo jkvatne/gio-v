@@ -215,7 +215,7 @@ type Pallet struct {
 // Theme contains color/layout settings for all widgets
 type Theme struct {
 	Pallet
-	Scale               unit.Dp // Used for scaling forms
+	Scale               float32 // Used for scaling forms
 	DarkMode            bool
 	Shaper              *text.Shaper
 	TextSize            unit.Sp
@@ -296,17 +296,28 @@ func (th *Theme) SetLinesPrForm(x float64) {
 }
 
 func (th *Theme) Dp(x unit.Dp) unit.Dp {
-	return x * th.Scale
+	return x
 }
 
-func (th *Theme) Px(gtx C, dp unit.Dp) int {
-	return gtx.Dp(dp * th.Scale)
+type GuiUnit interface{ unit.Dp | unit.Sp }
+
+// Px will convert a size given in either Dp or Sp to pixels
+// It applies the theme's scaling factor in addition to
+// the gtx metric's PixelPrSp and PixelPrDp
+func (th *Theme) Px(gtx C, dp interface{}) int {
+	if u, ok := dp.(unit.Dp); ok {
+		return gtx.Dp(u * unit.Dp(th.Scale))
+	}
+	if u, ok := dp.(unit.Sp); ok {
+		return gtx.Sp(u * unit.Sp(th.Scale))
+	}
+	return 0
 }
 
 func (th *Theme) UpdateFontSize(newFontSize unit.Sp) {
 	th.TextSize = newFontSize
 	th.FingerSize = unit.Dp(38)
-	th.Scale = unit.Dp(th.TextSize) / 14
+	th.Scale = float32(unit.Dp(th.TextSize) / 14)
 	th.IconInset = layout.Inset{Top: th.Dp(1), Right: th.Dp(1), Bottom: th.Dp(1), Left: th.Dp(1)}
 	th.BorderThickness = th.Dp(0.5)
 	th.BorderCornerRadius = th.Dp(3)

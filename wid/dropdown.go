@@ -139,12 +139,13 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		r = border.Max.Y / 2
 	}
 	if d.borderThickness > 0 {
+		w := float32(d.th.Px(gtx, d.borderThickness))
 		if d.Focused() {
-			paintBorder(gtx, border, d.outlineColor, d.borderThickness*2, r)
+			paintBorder(gtx, border, d.outlineColor, w*2, r)
 		} else if d.Hovered() {
-			paintBorder(gtx, border, d.outlineColor, d.borderThickness*3/2, r)
+			paintBorder(gtx, border, d.outlineColor, w*3/2, r)
 		} else {
-			paintBorder(gtx, border, d.Fg(), d.th.BorderThickness, r)
+			paintBorder(gtx, border, d.Fg(), w, r)
 		}
 	}
 	drawTextMacro.Add(gtx.Ops)
@@ -224,7 +225,8 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		pass.Pop()
 
 		// Draw a border around all options
-		paintBorder(gtx, listClipRect, d.th.Fg(Outline), d.th.BorderThickness, 0)
+		w := float32(d.th.Px(gtx, d.borderThickness))
+		paintBorder(gtx, listClipRect, d.th.Fg(Outline), w, 0)
 		// Save and defer execution
 		dropDownListCall := dropdownMacro.Stop()
 		op.Defer(gtx.Ops, dropDownListCall)

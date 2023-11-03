@@ -152,16 +152,16 @@ func (e *EditDef) Layout(gtx C) D {
 
 	// Move to offset the outside padding
 	defer op.Offset(image.Pt(
-		gtx.Dp(e.padding.Left),
-		gtx.Dp(e.padding.Top))).Push(gtx.Ops).Pop()
+		e.th.Px(gtx, e.padding.Left),
+		e.th.Px(gtx, e.padding.Top))).Push(gtx.Ops).Pop()
 
 	// And reduce the size to make space for the padding
-	gtx.Constraints.Min.X -= gtx.Dp(e.padding.Left + e.padding.Right + e.th.InsidePadding.Left + e.th.InsidePadding.Right)
+	gtx.Constraints.Min.X -= e.th.Px(gtx, e.padding.Left+e.padding.Right+e.th.InsidePadding.Left+e.th.InsidePadding.Right)
 	gtx.Constraints.Max.X = gtx.Constraints.Min.X
 
 	// Draw hint text with top/left padding offset
 	macro := op.Record(gtx.Ops)
-	o := op.Offset(image.Pt(gtx.Dp(e.th.InsidePadding.Left), gtx.Dp(e.th.InsidePadding.Top))).Push(gtx.Ops)
+	o := op.Offset(image.Pt(e.th.Px(gtx, e.th.InsidePadding.Left), e.th.Px(gtx, e.th.InsidePadding.Top))).Push(gtx.Ops)
 	paint.ColorOp{Color: MulAlpha(e.Fg(), 110)}.Add(gtx.Ops)
 	tl := widget.Label{Alignment: e.Editor.Alignment, MaxLines: e.maxLines()}
 	dims := tl.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, e.hint, hintColor)
@@ -170,11 +170,11 @@ func (e *EditDef) Layout(gtx C) D {
 
 	// Add outside label to the left of the dropdown box
 	if e.label != "" {
-		o := op.Offset(image.Pt(0, gtx.Dp(e.th.InsidePadding.Top))).Push(gtx.Ops)
+		o := op.Offset(image.Pt(0, e.th.Px(gtx, e.th.InsidePadding.Top))).Push(gtx.Ops)
 		paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
 		oldMaxX := gtx.Constraints.Max.X
 		ofs := int(float32(oldMaxX) * e.labelSize)
-		gtx.Constraints.Max.X = ofs - gtx.Dp(e.th.InsidePadding.Left)
+		gtx.Constraints.Max.X = ofs - e.th.Px(gtx, e.th.InsidePadding.Left)
 		gtx.Constraints.Min.X = gtx.Constraints.Max.X
 		colMacro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
@@ -186,15 +186,15 @@ func (e *EditDef) Layout(gtx C) D {
 		defer op.Offset(image.Pt(ofs, 0)).Push(gtx.Ops).Pop()
 	}
 	// If a width is given, and it is within constraints, limit size
-	if w := gtx.Dp(e.width); w > gtx.Constraints.Min.X && w < gtx.Constraints.Max.X {
+	if w := e.th.Px(gtx, e.width); w > gtx.Constraints.Min.X && w < gtx.Constraints.Max.X {
 		gtx.Constraints.Min.X = w
 	}
 
 	border := image.Rectangle{Max: image.Pt(
-		gtx.Constraints.Max.X+gtx.Dp(e.th.InsidePadding.Left+e.th.InsidePadding.Right),
-		dims.Size.Y+gtx.Dp(e.th.InsidePadding.Bottom+e.th.InsidePadding.Top))}
+		gtx.Constraints.Max.X+e.th.Px(gtx, e.th.InsidePadding.Left+e.th.InsidePadding.Right),
+		dims.Size.Y+e.th.Px(gtx, e.th.InsidePadding.Bottom+e.th.InsidePadding.Top))}
 
-	r := gtx.Dp(e.th.BorderCornerRadius)
+	r := e.th.Px(gtx, e.th.BorderCornerRadius)
 	if r > border.Max.Y/2 {
 		r = border.Max.Y / 2
 	}
@@ -202,19 +202,20 @@ func (e *EditDef) Layout(gtx C) D {
 		paint.FillShape(gtx.Ops, e.th.Bg(Canvas), clip.UniformRRect(border, r).Op(gtx.Ops))
 	}
 
-	o = op.Offset(image.Pt(gtx.Dp(e.th.InsidePadding.Left), gtx.Dp(e.th.InsidePadding.Top))).Push(gtx.Ops)
+	o = op.Offset(image.Pt(e.th.Px(gtx, e.th.InsidePadding.Left), e.th.Px(gtx, e.th.InsidePadding.Top))).Push(gtx.Ops)
 	dims = e.Editor.Layout(gtx, e.th.Shaper, *e.Font, e.th.TextSize, textColor, selectionColor)
 	o.Pop()
 	if e.Editor.Len() == 0 {
 		callHint.Add(gtx.Ops)
 	}
 	if e.borderThickness > 0 {
+		w := float32(e.th.Px(gtx, e.borderThickness))
 		if e.Focused() {
-			paintBorder(gtx, border, e.outlineColor, e.th.BorderThickness*2, r)
+			paintBorder(gtx, border, e.outlineColor, w*2, r)
 		} else if e.hovered {
-			paintBorder(gtx, border, e.outlineColor, e.th.BorderThickness*3/2, r)
+			paintBorder(gtx, border, e.outlineColor, w*3/2, r)
 		} else {
-			paintBorder(gtx, border, e.outlineColor, e.th.BorderThickness, r)
+			paintBorder(gtx, border, e.Fg(), w, r)
 		}
 	}
 
@@ -237,12 +238,12 @@ func (e *EditDef) Layout(gtx C) D {
 	}.Add(gtx.Ops)
 	eventArea.Pop()
 
-	defer op.Offset(image.Pt(gtx.Dp(e.th.InsidePadding.Left), 0)).Push(gtx.Ops).Pop()
+	defer op.Offset(image.Pt(e.th.Px(gtx, e.th.InsidePadding.Left), 0)).Push(gtx.Ops).Pop()
 	// callEdit.Add(gtx.Ops)
 
 	return D{Size: image.Pt(
 		gtx.Constraints.Max.X,
-		border.Max.Y-border.Min.Y+gtx.Dp(e.padding.Bottom+e.padding.Top))}
+		border.Max.Y-border.Min.Y+e.th.Px(gtx, e.padding.Bottom+e.padding.Top))}
 }
 
 // EditOption is options specific to Edits
@@ -273,20 +274,19 @@ func (e *EditDef) setLabelSize(w float32) {
 	e.labelSize = w
 }
 
-func rr(gtx C, radius unit.Dp, height int) int {
-	rr := gtx.Dp(radius)
-	if rr > (height-1)/2 {
+func rr(radius int, height int) int {
+	if radius > (height-1)/2 {
 		return (height - 1) / 2
 	}
-	return rr
+	return radius
 }
 
-func paintBorder(gtx C, outline image.Rectangle, col color.NRGBA, width unit.Dp, rr int) {
+func paintBorder(gtx C, outline image.Rectangle, col color.NRGBA, width float32, rr int) {
 	paint.FillShape(gtx.Ops,
 		col,
 		clip.Stroke{
 			Path:  clip.UniformRRect(outline, rr).Path(gtx.Ops),
-			Width: float32(gtx.Dp(width)),
+			Width: width,
 		}.Op(),
 	)
 }
