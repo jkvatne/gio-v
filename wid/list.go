@@ -114,7 +114,7 @@ func (s ScrollbarStyle) Layout(gtx C, axis layout.Axis, viewportStart, viewportE
 	convert := axis.Convert
 	maxMajorAxis := convert(gtx.Constraints.Max).X
 	gtx.Constraints.Min.X = maxMajorAxis
-	gtx.Constraints.Min.Y = Px(gtx, s.Width)
+	gtx.Constraints.Min.Y = Px(gtx, s.Width())
 	gtx.Constraints.Min = convert(gtx.Constraints.Min)
 	gtx.Constraints.Max = gtx.Constraints.Min
 

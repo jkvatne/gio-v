@@ -310,7 +310,7 @@ func Px(gtx C, dp interface{}) int {
 	if u, ok := dp.(unit.Sp); ok {
 		return gtx.Sp(u * unit.Sp(Scale))
 	}
-	return 0
+	panic("Px() called with illegal value")
 }
 
 func (th *Theme) FontSp() unit.Sp {
