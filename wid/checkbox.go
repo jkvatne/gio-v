@@ -140,12 +140,12 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	}
 	cgtx := gtx
 	cgtx.Constraints.Min = image.Point{X: labelDim.Size.Y}
-	icon.Layout(cgtx, col)
+	iconDim := icon.Layout(cgtx, col)
 	px := Px(gtx, c.padding.Left+c.padding.Right)
 	py := Px(gtx, c.padding.Top+c.padding.Bottom)
 	dims := layout.Dimensions{
 		Size: image.Point{
-			X: labelDim.Size.X + px,
+			X: labelDim.Size.X + px + iconDim.Size.X,
 			Y: labelDim.Size.Y + py,
 		}}
 	of := op.Offset(image.Pt(labelDim.Size.Y+Px(gtx, c.padding.Left), 0)).Push(gtx.Ops)
