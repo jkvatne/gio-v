@@ -405,6 +405,10 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 						Scale = float32(WinY) / float32(th.LinesPrForm) / float32(gtx.Dp(14))
 					}
 				}
+				if Scale == 0.0 {
+					Scale = 1.0
+				}
+
 				CurrentY = 0
 				paint.ColorOp{Color: th.Bg(Surface)}.Add(gtx.Ops)
 				paint.PaintOp{}.Add(gtx.Ops)

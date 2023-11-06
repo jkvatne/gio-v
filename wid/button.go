@@ -130,7 +130,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 		gtx.Queue = nil
 	}
 	gtx.Constraints.Max.X -= Px(gtx, b.padding.Right+b.padding.Left)
-	oo := op.Offset(image.Pt(Px(gtx, b.padding.Left), Px(gtx, b.padding.Top))).Push(gtx.Ops)
+	defer op.Offset(image.Pt(Px(gtx, b.padding.Left), Px(gtx, b.padding.Top))).Push(gtx.Ops).Pop()
 	// Handle clickable pointer/keyboard inputs
 	b.HandleEvents(gtx)
 	b.HandleClick()
@@ -236,7 +236,6 @@ func (b *ButtonDef) Layout(gtx C) D {
 	pointer.CursorPointer.Add(gtx.Ops)
 	outline.Max.X += Px(gtx, b.padding.Left+b.padding.Right)
 	outline.Max.Y += Px(gtx, b.padding.Top+b.padding.Bottom)
-	oo.Pop()
 	return D{Size: outline.Max}
 }
 

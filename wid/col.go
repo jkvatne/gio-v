@@ -4,17 +4,17 @@
 package wid
 
 import (
-	"image"
-
 	"gioui.org/layout"
 	"gioui.org/op"
+	"image"
+	"math"
 )
 
 // Col makes a column of widgets. It is not scrollable, but
 // weights are used to split the available area.
 // Set weight to 0 for fixed height widgets, and 1 for flexible widgets (like lists)
 func Col(weights []float32, widgets ...Wid) Wid {
-	offsets := make([]int, len(widgets))
+	// offsets := make([]int, len(widgets))
 	return func(gtx C) D {
 		size := 0
 		var totalWeight float32
@@ -22,7 +22,15 @@ func Col(weights []float32, widgets ...Wid) Wid {
 		cgtx.Constraints.Min.Y = 0
 		calls := make([]op.CallOp, len(widgets))
 		dims := make([]D, len(widgets))
+		minY := gtx.Constraints.Min.Y
 		remaining := gtx.Constraints.Max.Y
+		// Interpret the constant SpaceDistribute as many 1.0 weights
+		if len(weights) == 1 && weights[0] == 1.0 {
+			weights = make([]float32, len(widgets))
+			for i := 0; i < len(widgets); i++ {
+				weights[i] = 1.0
+			}
+		}
 		// Lay out Rigid children. (with weight==0.0)
 		for i, child := range widgets {
 			if i < len(weights) && weights[i] > 0 {
@@ -61,25 +69,26 @@ func Col(weights []float32, widgets ...Wid) Wid {
 			size += dims[i].Size.Y
 			remaining = Max(0, remaining-dims[i].Size.Y)
 		}
+		space := Max(0, minY-size)
 		maxX := gtx.Constraints.Min.X
 		for i := range widgets {
 			if c := dims[i].Size.X; c > maxX {
 				maxX = c
 			}
 		}
-		var y int
+		var y float32
 		// Now do the actual drawing, with offsets
 		for i := range widgets {
-			offsets[i] = y
-			trans := op.Offset(image.Pt(0, y)).Push(gtx.Ops)
+			// offsets[i] = y
+			trans := op.Offset(image.Pt(0, int(math.Round(float64(y))))).Push(gtx.Ops)
 			calls[i].Add(gtx.Ops)
 			trans.Pop()
-			y += dims[i].Size.Y
-			if y >= gtx.Constraints.Max.Y {
+			y += float32(dims[i].Size.Y) + float32(space)/float32(len(widgets))
+			if y >= float32(gtx.Constraints.Max.Y) {
 				break
 			}
 		}
-		sz := gtx.Constraints.Constrain(image.Pt(maxX, y))
+		sz := gtx.Constraints.Constrain(image.Pt(maxX, int(y)))
 		return D{Size: sz, Baseline: sz.Y}
 	}
 }

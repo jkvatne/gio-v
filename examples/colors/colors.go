@@ -19,12 +19,14 @@ import (
 var (
 	theme *wid.Theme // the theme selected
 	form  layout.Widget
+	win   *app.Window
 )
 
 func main() {
 	theme = wid.NewTheme(gofont.Collection(), 14)
 	form = demo(theme)
-	go wid.Run(app.NewWindow(app.Title("Colors"), app.Size(unit.Dp(900), unit.Dp(700))), &form, theme)
+	win = app.NewWindow(app.Title("Colors"), app.Maximized.Option())
+	go wid.Run(win, &form, theme)
 	app.Main()
 }
 
@@ -56,7 +58,7 @@ func setDefault() {
 	form = demo(theme)
 }
 
-func setPallete1() {
+func setpalette1() {
 	theme.PrimaryColor = wid.RGB(0x57624E)
 	theme.SecondaryColor = wid.RGB(0x57624E)
 	theme.TertiaryColor = wid.RGB(0x336669)
@@ -67,7 +69,7 @@ func setPallete1() {
 	form = demo(theme)
 }
 
-func setPallete2() {
+func setpalette2() {
 	theme.PrimaryColor = wid.RGB(0x17624E)
 	theme.SecondaryColor = wid.RGB(0x17624E)
 	theme.TertiaryColor = wid.RGB(0x136669)
@@ -77,7 +79,7 @@ func setPallete2() {
 	theme.UpdateColors()
 	form = demo(theme)
 }
-func setPallete3() {
+func setpalette3() {
 	theme.PrimaryColor = wid.RGB(0x17329E)
 	theme.SecondaryColor = wid.RGB(0x17624E)
 	theme.TertiaryColor = wid.RGB(0x136669)
@@ -91,13 +93,15 @@ func setPallete3() {
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
-	return wid.List(th, wid.Overlay,
-		wid.Label(th, "Show all tones for some palletes", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
+	theme.SetLinesPrForm(30)
+	return wid.Col(wid.SpaceDistribute,
+		wid.Label(th, "Show all tones for some palettes", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
+		wid.Label(th, "Also demonstrates a form that will fill the screen 100%", wid.Middle(), wid.Small(), wid.Role(wid.PrimaryContainer)),
 		wid.Row(th, nil, wid.SpaceDistribute,
-			wid.Button(th, "Set default pallete", wid.Do(setDefault)),
-			wid.Button(th, "Set pallete 1", wid.Do(setPallete1)),
-			wid.Button(th, "Set pallete 2", wid.Do(setPallete2)),
-			wid.Button(th, "Set pallete 3", wid.Do(setPallete3))),
+			wid.Button(th, "Set default palette", wid.Do(setDefault)),
+			wid.Button(th, "Set palette 1", wid.Do(setpalette1)),
+			wid.Button(th, "Set palette 2", wid.Do(setpalette2)),
+			wid.Button(th, "Set palette 3", wid.Do(setpalette3))),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Primary", wid.Large()),
 		showTones(th, th.PrimaryColor),

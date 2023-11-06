@@ -39,7 +39,7 @@ func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
 			// If weights is nil, place all widgets as close as possible
 			w[i] = 0.0
 		} else if len(weights) == 1 {
-			// If weights are {1.0} then distribute equaly (like 1,1,1,1...)
+			// If weights are {1.0} then distribute equaly (like equaly1,1,1,1...)
 			w[i] = 1.0
 		} else if i < len(weights) && weights[i] > 1.0 {
 			// Weights > 1 is given in characters, do rescale to pixels

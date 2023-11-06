@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gioui.org/font"
 	"gioui.org/op"
+	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
@@ -61,28 +62,6 @@ func (e LabelOption) apply(cfg interface{}) {
 	e(cfg.(*LabelDef))
 }
 
-// Layout will draw the label
-func (l LabelDef) xxLayout(gtx C) D {
-	paint.ColorOp{Color: l.Fg()}.Add(gtx.Ops)
-	tl := widget.Label{Alignment: l.Alignment, MaxLines: l.MaxLines}
-	c := gtx
-	if l.MaxLines == 1 {
-		// This is a hack to avoid splitting the line when only one line is allowed
-		c.Constraints.Max.X = inf
-	}
-	GuiLock.RLock()
-	str := l.Stringer(l.Dp)
-	GuiLock.RUnlock()
-	colMacro := op.Record(gtx.Ops)
-	paint.ColorOp{Color: l.Fg()}.Add(gtx.Ops)
-	dims := tl.Layout(c, l.th.Shaper, l.Font, unit.Sp(l.FontScale)*l.th.FontSp(), str, colMacro.Stop())
-	dims.Size.X = Min(gtx.Constraints.Max.X, dims.Size.X)
-	if dims.Size.Y > 100 {
-		dims.Size.Y++
-	}
-	return dims
-}
-
 // Value returns a widget for a value given by stringer function
 func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx C) D {
 	w := LabelDef{
@@ -107,6 +86,7 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 	w.padding.Right += th.InsidePadding.Right
 
 	return func(gtx C) D {
+		macro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: w.Fg()}.Add(gtx.Ops)
 		if w.MaxLines == 1 {
 			// This is a hack to avoid splitting the line when only one line is allowed
@@ -123,6 +103,13 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		dims.Size.X = Min(gtx.Constraints.Max.X, dims.Size.X)
 		o.Pop()
 		dims.Size.Y += Px(gtx, w.padding.Bottom)
+		call := macro.Stop()
+		// Color background into the calculated size
+		defer clip.Rect(image.Rectangle{Max: dims.Size}).Push(gtx.Ops).Pop()
+		if w.bgColor != nil {
+			paint.Fill(gtx.Ops, w.Bg())
+		}
+		call.Add(gtx.Ops)
 		return dims
 	}
 }
