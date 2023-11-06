@@ -84,6 +84,7 @@ func GridRow(th *Theme, pbgColor *color.NRGBA, gridLineWidth unit.Dp, weights []
 	if (pbgColor != nil) && (*pbgColor != color.NRGBA{}) {
 		bgColor = *pbgColor
 	}
+	r.th = th
 	r.padTop = th.RowPadTop
 	r.padBtm = th.RowPadBtm
 	r.gridLineWidth = gridLineWidth
