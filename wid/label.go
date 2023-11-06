@@ -80,11 +80,6 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 	for _, option := range options {
 		option.apply(&w)
 	}
-	w.padding.Bottom += th.InsidePadding.Bottom
-	w.padding.Top += th.InsidePadding.Top
-	w.padding.Left += th.InsidePadding.Left
-	w.padding.Right += th.InsidePadding.Right
-
 	return func(gtx C) D {
 		macro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: w.Fg()}.Add(gtx.Ops)
@@ -95,13 +90,14 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		GuiLock.RLock()
 		str := w.Stringer(w.Dp)
 		GuiLock.RUnlock()
-		o := op.Offset(image.Pt(Px(gtx, w.th.InsidePadding.Left), Px(gtx, w.th.InsidePadding.Top))).Push(gtx.Ops)
+		o := op.Offset(image.Pt(Px(gtx, w.padding.Left), Px(gtx, w.padding.Top))).Push(gtx.Ops)
 		tl := widget.Label{Alignment: w.Alignment, MaxLines: w.MaxLines}
 		colMacro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: w.Fg()}.Add(gtx.Ops)
 		dims := tl.Layout(gtx, w.th.Shaper, w.Font, unit.Sp(w.FontScale)*w.th.FontSp(), str, colMacro.Stop())
 		dims.Size.X = Min(gtx.Constraints.Max.X, dims.Size.X)
 		o.Pop()
+		dims.Size.X += Px(gtx, w.padding.Left+w.padding.Right)
 		dims.Size.Y += Px(gtx, w.padding.Bottom)
 		call := macro.Stop()
 		// Color background into the calculated size

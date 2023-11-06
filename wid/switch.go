@@ -136,7 +136,6 @@ func (s *SwitchDef) Layout(gtx C) D {
 		semantic.Switch.Add(gtx.Ops)
 		return layout.Dimensions{Size: sz}
 	})
-	// pointer.CursorPointer.Add(gtx.Ops)
 
 	return layout.Dimensions{Size: image.Point{X: width, Y: height}}
 }
