@@ -120,18 +120,18 @@ func Rgb2hsl(c color.NRGBA) (float64, float64, float64) {
 	r := float64(c.R) / 256.0
 	g := float64(c.G) / 256.0
 	b := float64(c.B) / 256.0
-	max := math.Max(math.Max(r, g), b)
-	min := math.Min(math.Min(r, g), b)
-	chroma := max - min
+	maxCol := math.Max(math.Max(r, g), b)
+	minCOl := math.Min(math.Min(r, g), b)
+	chroma := maxCol - minCOl
 	if chroma == 0 {
 		h = 0
 	} else {
-		if r == max {
+		if r == maxCol {
 			huePrime = math.Mod((g-b)/chroma, 6)
-		} else if g == max {
+		} else if g == maxCol {
 			huePrime = ((b - r) / chroma) + 2
 
-		} else if b == max {
+		} else if b == maxCol {
 			huePrime = ((r - g) / chroma) + 4
 
 		}
@@ -141,7 +141,7 @@ func Rgb2hsl(c color.NRGBA) (float64, float64, float64) {
 	if r == g && g == b {
 		lvi = r
 	} else {
-		lvi = (max + min) / 2
+		lvi = (maxCol + minCOl) / 2
 	}
 	if lvi == 1 {
 		s = 0

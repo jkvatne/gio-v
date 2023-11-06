@@ -90,14 +90,14 @@ func hello(th *wid.Theme) layout.Widget {
 
 # Immediate mode?
 
-This implementation does not follow the gio recomendations fully. The widgets are fully persistent, and callbacks and
+This implementation does not follow the gio recommendations fully. The widgets are fully persistent, and callbacks and
 pointers are
 used extensively. This is done to make it much more user-friendly, and it is primarily intended for
 desktop applications, where resources are plentiful.
 
 Switches and edits modify the corresponding variables directly, via pointers. When the variable is
-modified, the corresponding widget is emmediately uppdated without any acction from the program.
-This is typically done from an other go-routine.
+modified, the corresponding widget is immediately updated without any action from the program.
+This is typically done from another go-routine.
 
 Note that the program is not yet protected from race conditions.
 The plan is to include a global lock.

@@ -83,14 +83,14 @@ func MakeScrollbarStyle(th *Theme) ScrollbarStyle {
 	return ScrollbarStyle{
 		Scrollbar: &Scrollbar{},
 		Track: ScrollTrackStyle{
-			MajorPadding: unit.Dp(th.ScrollMajorPadding),
-			MinorPadding: unit.Dp(th.ScrollMinorPadding),
+			MajorPadding: th.ScrollMajorPadding,
+			MinorPadding: th.ScrollMinorPadding,
 			Color:        trackCol,
 		},
 		Indicator: ScrollIndicatorStyle{
-			MajorMinLen:  unit.Dp(th.ScrollMajorMinLen),
-			MinorWidth:   unit.Dp(th.ScrollMinorWidth),
-			CornerRadius: unit.Dp(th.ScrollCornerRadius),
+			MajorMinLen:  th.ScrollMajorMinLen,
+			MinorWidth:   th.ScrollMinorWidth,
+			CornerRadius: th.ScrollCornerRadius,
 			Color:        lightFg,
 			HoverColor:   darkFg,
 		},

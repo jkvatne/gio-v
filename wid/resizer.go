@@ -47,13 +47,13 @@ func (rs *Resize) get(r image.Point) float32 {
 
 // Layout displays w1 and w2 with handle in between.
 func (rs *Resize) Layout(gtx C, w1 layout.Widget, w2 layout.Widget) D {
-	max := rs.get(gtx.Constraints.Max)
+	maxPos := rs.get(gtx.Constraints.Max)
 	if rs.pos != 0 {
-		rs.ratio = rs.pos / max
+		rs.ratio = rs.pos / maxPos
 	}
 	// Clamp the handle position, leaving it always visible.
 	rs.ratio = Clamp(rs.ratio, 0, 1)
-	rs.pos = rs.ratio * max
+	rs.pos = rs.ratio * maxPos
 	f := layout.Flex{
 		Axis: rs.axis,
 	}.Layout(gtx,
@@ -70,7 +70,7 @@ func (rs *Resize) Layout(gtx C, w1 layout.Widget, w2 layout.Widget) D {
 			p = e.Position.Y
 		}
 		if e.Type == pointer.Press {
-			rs.start = p - rs.ratio*max
+			rs.start = p - rs.ratio*maxPos
 		} else {
 			rs.pos = p - rs.start
 		}

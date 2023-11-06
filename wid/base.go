@@ -199,7 +199,7 @@ func Bg(c *color.NRGBA) BaseOption {
 	}
 }
 
-// Role set the theme role for the widget (Primary, Secondary etc)
+// Role set the theme role for the widget (Primary, Secondary etc.)
 func Role(r UIRole) BaseOption {
 	return func(w BaseIf) {
 		w.setRole(r)
@@ -230,35 +230,35 @@ func Ls(x float32) BaseOption {
 	}
 }
 
-// P is a shortcut to set role=Primary
+// Prim is a shortcut to set role=Primary
 func Prim() BaseOption {
 	return func(w BaseIf) {
 		w.setRole(Primary)
 	}
 }
 
-// PC is a shortcut to set role=PrimaryContainer
+// PrimCont is a shortcut to set role=PrimaryContainer
 func PrimCont() BaseOption {
 	return func(w BaseIf) {
 		w.setRole(PrimaryContainer)
 	}
 }
 
-// S is a shortcut to set role=Secondary
+// Sec is a shortcut to set role=Secondary
 func Sec() BaseOption {
 	return func(w BaseIf) {
 		w.setRole(Secondary)
 	}
 }
 
-// SC is a shortcut to set role=SecondaryContainer
+// SecCont is a shortcut to set role=SecondaryContainer
 func SecCont() BaseOption {
 	return func(w BaseIf) {
 		w.setRole(SecondaryContainer)
 	}
 }
 
-// FontSize set the font size for text in the widget
+// Font set the font for text in the widget
 func Font(v *font.Font) BaseOption {
 	return func(w BaseIf) {
 		w.setFont(v)
@@ -326,26 +326,26 @@ func Pads(pads ...float32) BaseOption {
 	}
 }
 
-func (b *Base) Fg() color.NRGBA {
-	if b.fgColor == nil {
-		return b.th.Fg(b.role)
+func (wid *Base) Fg() color.NRGBA {
+	if wid.fgColor == nil {
+		return wid.th.Fg(wid.role)
 	} else {
-		return *b.fgColor
+		return *wid.fgColor
 	}
 }
 
-func (b *Base) Bg() color.NRGBA {
-	if b.fgColor == nil {
-		return b.th.Bg(b.role)
+func (wid *Base) Bg() color.NRGBA {
+	if wid.fgColor == nil {
+		return wid.th.Bg(wid.role)
 	} else {
-		return *b.bgColor
+		return *wid.bgColor
 	}
 }
 
-func (b *Base) CheckDisable(gtx C) {
-	if b.disabler != nil {
+func (wid *Base) CheckDisable(gtx C) {
+	if wid.disabler != nil {
 		GuiLock.RLock()
-		if *b.disabler {
+		if *wid.disabler {
 			_ = gtx.Disabled()
 		}
 		GuiLock.RUnlock()

@@ -58,7 +58,7 @@ func setDefault() {
 	form = demo(theme)
 }
 
-func setpalette1() {
+func setPalette1() {
 	theme.PrimaryColor = wid.RGB(0x57624E)
 	theme.SecondaryColor = wid.RGB(0x57624E)
 	theme.TertiaryColor = wid.RGB(0x336669)
@@ -69,7 +69,7 @@ func setpalette1() {
 	form = demo(theme)
 }
 
-func setpalette2() {
+func setPalette2() {
 	theme.PrimaryColor = wid.RGB(0x17624E)
 	theme.SecondaryColor = wid.RGB(0x17624E)
 	theme.TertiaryColor = wid.RGB(0x136669)
@@ -79,7 +79,7 @@ func setpalette2() {
 	theme.UpdateColors()
 	form = demo(theme)
 }
-func setpalette3() {
+func setPalette3() {
 	theme.PrimaryColor = wid.RGB(0x17329E)
 	theme.SecondaryColor = wid.RGB(0x17624E)
 	theme.TertiaryColor = wid.RGB(0x136669)
@@ -99,9 +99,9 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Label(th, "Also demonstrates a form that will fill the screen 100%", wid.Middle(), wid.Small(), wid.Role(wid.PrimaryContainer)),
 		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.Button(th, "Set default palette", wid.Do(setDefault)),
-			wid.Button(th, "Set palette 1", wid.Do(setpalette1)),
-			wid.Button(th, "Set palette 2", wid.Do(setpalette2)),
-			wid.Button(th, "Set palette 3", wid.Do(setpalette3))),
+			wid.Button(th, "Set palette 1", wid.Do(setPalette1)),
+			wid.Button(th, "Set palette 2", wid.Do(setPalette2)),
+			wid.Button(th, "Set palette 3", wid.Do(setPalette3))),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Primary", wid.Large()),
 		showTones(th, th.PrimaryColor),

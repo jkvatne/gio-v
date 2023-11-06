@@ -3,7 +3,7 @@
 package main
 
 // This file demonstrates a simple grid, trying to follow https://material.io/components/data-tables
-// It scrolls verticaly and horizontaly and implements highlighting of rows.
+// It scrolls vertically and horizontally and implements highlighting of rows.
 
 import (
 	"github.com/jkvatne/gio-v/wid"
@@ -25,7 +25,7 @@ var (
 	Alternative = "Wide"
 	fontSize    = "Medium"
 	// Column widths are given in units of approximately one average character width (en).
-	// A widtth of zero means the widget's natural size should be used (f.ex. checkboxes)
+	// A width of zero means the widget's natural size should be used (f.ex. checkboxes)
 	wideColWidth  = []float32{0, 60, 60, 10, 30}
 	smallColWidth = []float32{0, 13, 13, 12, 12}
 	fracColWidth  = []float32{0, 0.3, 0.3, .2, .2}

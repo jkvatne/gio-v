@@ -51,7 +51,7 @@ func Middle() LabelOption {
 	}
 }
 
-// End will align text to the end.
+// Right will align text to the end.
 func Right() LabelOption {
 	return func(d *LabelDef) {
 		d.Alignment = text.End
@@ -62,7 +62,7 @@ func (e LabelOption) apply(cfg interface{}) {
 	e(cfg.(*LabelDef))
 }
 
-// Value returns a widget for a value given by stringer function
+// StringerValue returns a widget for a value given by stringer function
 func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx C) D {
 	w := LabelDef{
 		Stringer:  s,
@@ -129,14 +129,14 @@ func Label[V Value](th *Theme, v V, options ...Option) func(gtx C) D {
 		return StringerValue(th, s, options...)
 	}
 	if x, ok := any(v).(float64); ok {
-		s := func(dp int) string { return strconv.FormatFloat(float64(x), 'f', dp, 64) }
+		s := func(dp int) string { return strconv.FormatFloat(x, 'f', dp, 64) }
 		return StringerValue(th, s, options...)
 	}
 	if x, ok := any(v).(*float64); ok {
 		s := func(dp int) string {
 			GuiLock.RLock()
 			defer GuiLock.RUnlock()
-			return strconv.FormatFloat(float64(*x), 'f', dp, 64)
+			return strconv.FormatFloat(*x, 'f', dp, 64)
 		}
 		return StringerValue(th, s, options...)
 	}

@@ -16,7 +16,7 @@ import (
 
 // UIRole describes the type of UI element
 // There are two colors for each UIRole, one for text/icon and one for background
-// Typicaly you specify a UIRole for each user element (button, checkbox etc).
+// Typicaly you specify a UIRole for each user element (button, checkbox etc.).
 // Default and Zero value is Canvas which gives black text/borders on white background.
 type UIRole uint8
 
@@ -273,7 +273,7 @@ type Theme struct {
 	ScrollCornerRadius unit.Dp
 	// Default split between edit label and edit field
 	LabelSplit float32
-	// If > 0, the font size will by form height divided by LinesPrForm
+	// If > 0, the font size will be form height divided by LinesPrForm
 	LinesPrForm float64
 }
 
