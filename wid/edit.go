@@ -203,7 +203,7 @@ func (e *EditDef) Layout(gtx C) D {
 	}
 
 	o = op.Offset(image.Pt(Px(gtx, e.th.InsidePadding.Left), Px(gtx, e.th.InsidePadding.Top))).Push(gtx.Ops)
-	EditDim := e.Editor.Layout(gtx, e.th.Shaper, *e.Font, e.th.FontSp(), textColor, selectionColor)
+	_ = e.Editor.Layout(gtx, e.th.Shaper, *e.Font, e.th.FontSp(), textColor, selectionColor)
 	o.Pop()
 	if e.Editor.Len() == 0 {
 		callHint.Add(gtx.Ops)
@@ -237,9 +237,7 @@ func (e *EditDef) Layout(gtx C) D {
 		Types: pointer.Enter | pointer.Leave,
 	}.Add(gtx.Ops)
 	eventArea.Pop()
-	if EditDim.Size.Y != LblDim.Size.Y {
-		fmt.Println("Error")
-	}
+
 	defer op.Offset(image.Pt(Px(gtx, e.th.InsidePadding.Left), 0)).Push(gtx.Ops).Pop()
 	dim := image.Pt(gtx.Constraints.Max.X, border.Max.Y+Px(gtx, e.padding.Bottom+e.padding.Top))
 	return D{Size: dim}
