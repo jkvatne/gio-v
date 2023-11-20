@@ -12,6 +12,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"image"
+	"math"
 	"strconv"
 )
 
@@ -129,26 +130,50 @@ func Label[V Value](th *Theme, v V, options ...Option) func(gtx C) D {
 		return StringerValue(th, s, options...)
 	}
 	if x, ok := any(v).(float64); ok {
-		s := func(dp int) string { return strconv.FormatFloat(x, 'f', dp, 64) }
+		s := func(dp int) string {
+			GuiLock.RLock()
+			defer GuiLock.RUnlock()
+			if x == math.MaxFloat64 {
+				return "---"
+			} else {
+				return strconv.FormatFloat(x, 'f', dp, 64)
+			}
+		}
 		return StringerValue(th, s, options...)
 	}
 	if x, ok := any(v).(*float64); ok {
 		s := func(dp int) string {
 			GuiLock.RLock()
 			defer GuiLock.RUnlock()
-			return strconv.FormatFloat(*x, 'f', dp, 64)
+			if *x == math.MaxFloat64 {
+				return "---"
+			} else {
+				return strconv.FormatFloat(*x, 'f', dp, 64)
+			}
 		}
 		return StringerValue(th, s, options...)
 	}
 	if x, ok := any(v).(float32); ok {
-		s := func(dp int) string { return strconv.FormatFloat(float64(x), 'f', dp, 32) }
+		s := func(dp int) string {
+			GuiLock.RLock()
+			defer GuiLock.RUnlock()
+			if x == math.MaxFloat32 {
+				return "---"
+			} else {
+				return strconv.FormatFloat(float64(x), 'f', dp, 32)
+			}
+		}
 		return StringerValue(th, s, options...)
 	}
 	if x, ok := any(v).(*float32); ok {
 		s := func(dp int) string {
 			GuiLock.RLock()
 			defer GuiLock.RUnlock()
-			return strconv.FormatFloat(float64(*x), 'f', dp, 32)
+			if *x == math.MaxFloat32 {
+				return "---"
+			} else {
+				return strconv.FormatFloat(float64(*x), 'f', dp, 32)
+			}
 		}
 		return StringerValue(th, s, options...)
 	}
