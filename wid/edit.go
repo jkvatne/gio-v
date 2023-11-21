@@ -7,6 +7,7 @@ import (
 	"gioui.org/text"
 	"image"
 	"image/color"
+	"math"
 	"strconv"
 
 	"gioui.org/io/pointer"
@@ -60,9 +61,17 @@ func ValueToString(v interface{}, dp int) string {
 	} else if x, ok := v.(*int); ok {
 		return fmt.Sprintf("%d", *x)
 	} else if x, ok := v.(*float32); ok {
-		return FloatToStr(float64(*x), dp)
+		if *x == math.MaxFloat32 {
+			return "---"
+		} else {
+			return FloatToStr(float64(*x), dp)
+		}
 	} else if x, ok := v.(*float64); ok {
-		return FloatToStr(*x, dp)
+		if *x == math.MaxFloat64 {
+			return "---"
+		} else {
+			return FloatToStr(*x, dp)
+		}
 	} else if x, ok := v.(*string); ok {
 		return *x
 	}
@@ -71,12 +80,20 @@ func ValueToString(v interface{}, dp int) string {
 
 func StringToValue(value interface{}, current string) {
 	if _, ok := value.(*int); ok {
-		*value.(*int), _ = strconv.Atoi(current)
+		x, err := strconv.Atoi(current)
+		if err == nil {
+			*value.(*int) = x
+		}
 	} else if _, ok := value.(float32); ok {
-		f, _ := strconv.ParseFloat(current, 32)
-		*value.(*float32) = float32(f)
+		f, err := strconv.ParseFloat(current, 32)
+		if err == nil {
+			*value.(*float32) = float32(f)
+		}
 	} else if _, ok := value.(float64); ok {
-		*value.(*float64), _ = strconv.ParseFloat(current, 64)
+		f, err := strconv.ParseFloat(current, 64)
+		if err == nil {
+			*value.(*float64) = f
+		}
 	} else if _, ok := value.(*string); ok {
 		*value.(*string) = current
 	}
