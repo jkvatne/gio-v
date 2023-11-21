@@ -60,9 +60,9 @@ func ValueToString(v interface{}, dp int) string {
 		return "nil"
 	} else if x, ok := v.(*int); ok {
 		if *x == math.MinInt {
-			return fmt.Sprintf("%d", *x)
-		} else {
 			return "---"
+		} else {
+			return fmt.Sprintf("%d", *x)
 		}
 	} else if x, ok := v.(*float32); ok {
 		if *x == math.MaxFloat32 {
