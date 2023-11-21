@@ -59,7 +59,11 @@ func ValueToString(v interface{}, dp int) string {
 	if v == nil {
 		return "nil"
 	} else if x, ok := v.(*int); ok {
-		return fmt.Sprintf("%d", *x)
+		if *x == math.MinInt {
+			return fmt.Sprintf("%d", *x)
+		} else {
+			return "---"
+		}
 	} else if x, ok := v.(*float32); ok {
 		if *x == math.MaxFloat32 {
 			return "---"

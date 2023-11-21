@@ -118,13 +118,21 @@ type Value interface {
 // Label returns a widget for a label showing a string
 func Label[V Value](th *Theme, v V, options ...Option) func(gtx C) D {
 	if x, ok := any(v).(int); ok {
-		s := func(dp int) string { return fmt.Sprintf("%d", x) }
+		s := func(dp int) string {
+			if x == math.MinInt {
+				return "---"
+			}
+			return fmt.Sprintf("%d", x)
+		}
 		return StringerValue(th, s, options...)
 	}
 	if x, ok := any(v).(*int); ok {
 		s := func(dp int) string {
 			GuiLock.RLock()
 			defer GuiLock.RUnlock()
+			if *x == math.MinInt {
+				return "---"
+			}
 			return fmt.Sprintf("%d", *x)
 		}
 		return StringerValue(th, s, options...)
