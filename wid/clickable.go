@@ -111,7 +111,7 @@ func (b *Clickable) History() []Press {
 func (b *Clickable) SetupEventHandlers(gtx C, size image.Point) {
 	defer clip.Rect(image.Rectangle{Max: size}).Push(gtx.Ops).Pop()
 	disabled := gtx.Queue == nil
-	semantic.DisabledOp(disabled).Add(gtx.Ops)
+	semantic.EnabledOp(disabled).Add(gtx.Ops)
 	b.click.Add(gtx.Ops)
 	if !disabled {
 		keys := key.Set("")
@@ -143,9 +143,9 @@ func (b *Clickable) HandleEvents(gtx C) {
 	b.clicks = b.clicks[:n]
 	b.prevClicks = n
 
-	for _, e := range b.click.Events(gtx) {
-		switch e.Type {
-		case gesture.TypeClick:
+	for _, e := range b.click.Update(gtx) {
+		switch e.Kind {
+		case gesture.KindClick:
 			b.clicks = append(b.clicks, Click{
 				Modifiers: e.Modifiers,
 				NumClicks: e.NumClicks,
@@ -156,14 +156,14 @@ func (b *Clickable) HandleEvents(gtx C) {
 			if b.ClickMovesFocus {
 				b.Focus()
 			}
-		case gesture.TypeCancel:
+		case gesture.KindCancel:
 			for i := range b.history {
 				b.history[i].Cancelled = true
 				if b.history[i].End.IsZero() {
 					b.history[i].End = gtx.Now
 				}
 			}
-		case gesture.TypePress:
+		case gesture.KindPress:
 			if e.Source == pointer.Mouse {
 				if b.ClickMovesFocus {
 					b.Focus()

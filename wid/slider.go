@@ -113,15 +113,15 @@ func (s *SliderStyle) Layout(gtx C) D {
 	gtx.Constraints.Min = s.axis.Convert(image.Pt(sizeMain-2*thumbRadius, sizeCross))
 
 	disabled := gtx.Queue == nil
-	semantic.DisabledOp(disabled).Add(gtx.Ops)
+	semantic.EnabledOp(disabled).Add(gtx.Ops)
 	semantic.Switch.Add(gtx.Ops)
 
 	size := gtx.Constraints.Min
 	s.length = float32(s.axis.Convert(size).X)
 
 	var de *pointer.Event
-	for _, e := range s.drag.Events(gtx.Metric, gtx, gesture.Axis(s.axis)) {
-		switch e.Type {
+	for _, e := range s.drag.Update(gtx.Metric, gtx, gesture.Axis(s.axis)) {
+		switch e.Kind {
 		case pointer.Press, pointer.Drag:
 			key.FocusOp{Tag: &s.keyTag}.Add(gtx.Ops)
 			de = &e

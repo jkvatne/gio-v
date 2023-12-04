@@ -99,7 +99,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 		c.Checked = *c.StrValue == c.Key
 		GuiLock.RUnlock()
 	}
-	semantic.DisabledOp(gtx.Queue == nil).Add(gtx.Ops)
+	semantic.EnabledOp(gtx.Queue == nil).Add(gtx.Ops)
 
 	icon := c.uncheckedStateIcon
 	if c.Checked {

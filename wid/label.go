@@ -96,9 +96,10 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		colMacro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: w.Fg()}.Add(gtx.Ops)
 		dims := tl.Layout(gtx, w.th.Shaper, w.Font, unit.Sp(w.FontScale)*w.th.FontSp(), str, colMacro.Stop())
+		gtx.Constraints.Min.X -= Px(gtx, w.padding.Left+w.padding.Right)
 		dims.Size.X = Min(gtx.Constraints.Max.X, dims.Size.X)
 		o.Pop()
-		dims.Size.X += Px(gtx, w.padding.Left+w.padding.Right)
+		// dims.Size.X += Px(gtx, w.padding.Left+w.padding.Right)
 		dims.Size.Y += Px(gtx, w.padding.Bottom)
 		call := macro.Stop()
 		// Color background into the calculated size

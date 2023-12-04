@@ -68,7 +68,7 @@ func Switch(th *Theme, statePtr *bool, options ...Option) func(gtx C) D {
 // Layout updates the switch and displays it.
 func (s *SwitchDef) Layout(gtx C) D {
 
-	if s.sw.Changed() {
+	if *s.StatePtr != s.sw.Value {
 		GuiLock.Lock()
 		*s.StatePtr = s.sw.Value
 		if s.onUserChange != nil {

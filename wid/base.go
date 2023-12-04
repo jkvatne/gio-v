@@ -358,7 +358,7 @@ func (wid *Base) CheckDisable(gtx C) {
 func UpdateMousePos(gtx C, win *app.Window) {
 	eventArea := clip.Rect(image.Rect(0, 0, 99999, 99999)).Push(gtx.Ops)
 	pointer.InputOp{
-		Types: pointer.Move,
+		Kinds: pointer.Move,
 		Tag:   win,
 	}.Add(gtx.Ops)
 	eventArea.Pop()
@@ -379,57 +379,58 @@ var OldWinY int
 
 func Run(win *app.Window, form *layout.Widget, th *Theme) {
 	invalidate = make(chan struct{})
-	for {
-		select {
-		case e := <-win.Events():
-			switch e := e.(type) {
-			case system.DestroyEvent:
-				os.Exit(0)
-			case system.FrameEvent:
-				var ops op.Ops
-				// Save window size for use by widgets. Must be done before drawing
-				WinX = e.Size.X
-				WinY = e.Size.Y
-				gtx := layout.NewContext(&ops, e)
-				// This code scales the font according to the window size.
-				// Resizing the window will scale most settings to keep the
-				// look identical but smaller or larger
-				// The default is for theme.FontScale to be zero, so to have
-				// this functionality you must manually set it to a value ca 50-200.
-				// The number is the number of characters vertically.
-				if th.LinesPrForm > 0 {
-					if WinY != OldWinY {
-						OldWinY = WinY
-						// Font size is in units sp (like dp but for fonts) while WinY is in pixels
-						// So we have to rescale using PxToSp
-						Scale = float32(WinY) / float32(th.LinesPrForm) / float32(gtx.Dp(14))
-					}
-				}
-				if Scale == 0.0 {
-					Scale = 1.0
-				}
-
-				CurrentY = 0
-				paint.ColorOp{Color: th.Bg(Surface)}.Add(gtx.Ops)
-				paint.PaintOp{}.Add(gtx.Ops)
-
-				// Draw widgets
-				GuiLock.Lock()
-				mainForm := *form
-				GuiLock.Unlock()
-				mainForm(gtx)
-
-				// A hack to fetch mouse position and window size, so we can avoid
-
-				// tooltips going outside the main window area
-				p := pointer.PassOp{}.Push(gtx.Ops)
-				UpdateMousePos(gtx, win)
-				p.Pop()
-				// Apply the actual screen drawing
-				e.Frame(gtx.Ops)
-			}
-		case <-invalidate:
+	go func() {
+		for range invalidate {
 			win.Invalidate()
+		}
+	}()
+
+	for {
+		switch e := win.NextEvent().(type) {
+		case system.DestroyEvent:
+			os.Exit(0)
+		case system.FrameEvent:
+			var ops op.Ops
+			// Save window size for use by widgets. Must be done before drawing
+			WinX = e.Size.X
+			WinY = e.Size.Y
+			gtx := layout.NewContext(&ops, e)
+			// This code scales the font according to the window size.
+			// Resizing the window will scale most settings to keep the
+			// look identical but smaller or larger
+			// The default is for theme.FontScale to be zero, so to have
+			// this functionality you must manually set it to a value ca 50-200.
+			// The number is the number of characters vertically.
+			if th.LinesPrForm > 0 {
+				if WinY != OldWinY {
+					OldWinY = WinY
+					// Font size is in units sp (like dp but for fonts) while WinY is in pixels
+					// So we have to rescale using PxToSp
+					Scale = float32(WinY) / float32(th.LinesPrForm) / float32(gtx.Dp(14))
+				}
+			}
+			if Scale == 0.0 {
+				Scale = 1.0
+			}
+
+			CurrentY = 0
+			paint.ColorOp{Color: th.Bg(Surface)}.Add(gtx.Ops)
+			paint.PaintOp{}.Add(gtx.Ops)
+
+			// Draw widgets
+			GuiLock.Lock()
+			mainForm := *form
+			GuiLock.Unlock()
+			mainForm(gtx)
+
+			// A hack to fetch mouse position and window size, so we can avoid
+			// tooltips going outside the main window area
+			p := pointer.PassOp{}.Push(gtx.Ops)
+			UpdateMousePos(gtx, win)
+			p.Pop()
+
+			// Apply the actual screen drawing
+			e.Frame(gtx.Ops)
 		}
 	}
 }

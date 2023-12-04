@@ -60,8 +60,8 @@ func (s *Scrollbar) Layout(gtx C, axis layout.Axis, viewportStart, viewportEnd f
 	}
 
 	// Jump to a click in the track.
-	for _, event := range s.track.Events(gtx) {
-		if event.Type != gesture.TypeClick ||
+	for _, event := range s.track.Update(gtx) {
+		if event.Kind != gesture.KindClick ||
 			event.Modifiers != key.Modifiers(0) ||
 			event.NumClicks > 1 {
 			continue
@@ -79,8 +79,8 @@ func (s *Scrollbar) Layout(gtx C, axis layout.Axis, viewportStart, viewportEnd f
 	}
 
 	// Offset to account for any drags.
-	for _, event := range s.drag.Events(gtx.Metric, gtx, gesture.Axis(axis)) {
-		switch event.Type {
+	for _, event := range s.drag.Update(gtx.Metric, gtx, gesture.Axis(axis)) {
+		switch event.Kind {
 		case pointer.Drag:
 		case pointer.Release:
 		case pointer.Cancel:
@@ -136,7 +136,7 @@ func (s *Scrollbar) Layout(gtx C, axis layout.Axis, viewportStart, viewportEnd f
 
 	// Process events from the indicator so that hover is
 	// detected properly.
-	_ = s.indicator.Events(gtx)
+	_ = s.indicator.Update(gtx)
 
 	return D{}
 }

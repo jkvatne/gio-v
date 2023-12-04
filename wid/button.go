@@ -190,7 +190,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 		paint.Fill(gtx.Ops, MulAlpha(b.Fg(), 15))
 	}
 
-	semantic.DisabledOp(gtx.Queue == nil).Add(gtx.Ops)
+	semantic.EnabledOp(gtx.Queue == nil).Add(gtx.Ops)
 
 	// Icon context
 	cgtx.Constraints.Min = image.Point{X: width, Y: height}

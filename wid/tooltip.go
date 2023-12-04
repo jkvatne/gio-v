@@ -128,7 +128,7 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 		}
 		t.position.X = int(e.Position.X)
 		t.position.Y = int(e.Position.Y)
-		switch e.Type {
+		switch e.Kind {
 		case pointer.Enter:
 			t.Hover.SetTarget(gtx.Now.Add(tipAreaHoverDelay))
 		case pointer.Leave:
@@ -163,7 +163,7 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 			r := clip.Rect(rect).Push(gtx.Ops)
 			pointer.InputOp{
 				Tag:   t,
-				Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave | pointer.Move,
+				Kinds: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave | pointer.Move,
 			}.Add(gtx.Ops)
 			r.Pop()
 			gtx.Constraints.Min = image.Point{}

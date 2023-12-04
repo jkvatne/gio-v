@@ -196,7 +196,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 
 		for _, ev := range gtx.Events(&d.role) {
 			if ev, ok := ev.(pointer.Event); ok {
-				switch ev.Type {
+				switch ev.Kind {
 				case pointer.Enter:
 					d.inList = true
 				case pointer.Leave:
@@ -218,7 +218,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		pass := pointer.PassOp{}.Push(gtx.Ops)
 		pointer.InputOp{
 			Tag:   &d.role,
-			Types: pointer.Enter | pointer.Leave,
+			Kinds: pointer.Enter | pointer.Leave,
 		}.Add(gtx.Ops)
 		cl.Pop()
 		pass.Pop()
@@ -252,7 +252,7 @@ func (d *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 	return func(gtx C) D {
 		for _, ev := range gtx.Events(&d.items[i]) {
 			if ev, ok := ev.(pointer.Event); ok {
-				switch ev.Type {
+				switch ev.Kind {
 				case pointer.Release:
 					GuiLock.Lock()
 					*d.index = i
@@ -291,7 +291,7 @@ func (d *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 
 		pointer.InputOp{
 			Tag:   &d.items[i],
-			Types: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave,
+			Kinds: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave,
 		}.Add(gtx.Ops)
 		return dims
 	}

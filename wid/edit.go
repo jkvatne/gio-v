@@ -244,7 +244,7 @@ func (e *EditDef) Layout(gtx C) D {
 	eventArea := clip.Rect(border).Push(gtx.Ops)
 	for _, ev := range gtx.Events(&e.hovered) {
 		if ev, ok := ev.(pointer.Event); ok {
-			switch ev.Type {
+			switch ev.Kind {
 			case pointer.Leave:
 				e.hovered = false
 			case pointer.Enter:
@@ -255,7 +255,7 @@ func (e *EditDef) Layout(gtx C) D {
 
 	pointer.InputOp{
 		Tag:   &e.hovered,
-		Types: pointer.Enter | pointer.Leave,
+		Kinds: pointer.Enter | pointer.Leave,
 	}.Add(gtx.Ops)
 	eventArea.Pop()
 
