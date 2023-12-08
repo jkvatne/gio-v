@@ -31,6 +31,7 @@ var (
 	homeIcon       *wid.Icon
 	checkIcon      *wid.Icon
 	greenFlag              = false // the state variable for the button color
+	otherPallete           = false
 	dropDownValue1         = 1
 	dropDownValue2         = 1
 	dropDownValue3         = 1
@@ -81,16 +82,28 @@ func onSwitchFontSize() {
 }
 
 func onSwitchMode() {
+	theme.UpdateColors()
 }
 
 func onClick() {
-	greenFlag = !greenFlag
-	if greenFlag {
-		theme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x00, G: 0x9d, B: 0x00}
+	otherPallete = !otherPallete
+	if otherPallete {
+		theme.PrimaryColor = wid.RGB(0x17624E)
+		theme.SecondaryColor = wid.RGB(0x17624E)
+		theme.TertiaryColor = wid.RGB(0x136669)
+		theme.ErrorColor = wid.RGB(0xAF2535)
+		theme.NeutralColor = wid.RGB(0x1D4D7D)
+		theme.NeutralVariantColor = wid.RGB(0x356057)
+		theme.NeutralVariantColor = wid.RGB(0x356057)
 	} else {
-		theme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
+		// Set up the default pallete
+		theme.PrimaryColor = wid.RGB(0x45682A)
+		theme.SecondaryColor = wid.RGB(0x57624E)
+		theme.TertiaryColor = wid.RGB(0x336669)
+		theme.ErrorColor = wid.RGB(0xAF2525)
+		theme.NeutralColor = wid.RGB(0x5D5D5D)
 	}
-	form = demo(theme)
+	theme.UpdateColors()
 }
 
 func swColor() {
@@ -99,6 +112,7 @@ func swColor() {
 	} else {
 		theme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
 	}
+	theme.UpdateColors()
 }
 
 func onWinChange() {
@@ -114,34 +128,13 @@ func onWinChange() {
 	}
 }
 
-func demo2(th *wid.Theme) layout.Widget {
-	theme.SetLinesPrForm(40)
-	return wid.Col(wid.SpaceDistribute,
-		wid.Label(th, "Row with flexible height 1", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Label(th, "Row with flexible height 2", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Label(th, "Row with flexible height 3", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Label(th, "Row with flexible height 4", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Label(th, "Row with flexible height 5", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Label(th, "Row with flexible height 6", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Label(th, "Row with flexible height 7", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Label(th, "Row with flexible height 8", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Label(th, "Row with flexible height 9", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Label(th, "Row with flexible height 10", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Label(th, "Row with flexible height 11", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Label(th, "Row with flexible height 12", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		// wid.Label(th, "Row with flexible height 13", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		// wid.Label(th, "Row with flexible height 14", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		// wid.Label(th, "Row with flexible height 15", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-	)
-}
-
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
 	ff := &font.Font{Typeface: "gomono"}
 	theme.SetLinesPrForm(40)
 	return wid.Col(wid.SpaceClose,
-		wid.Label(th, "Demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
+		wid.Label(th, "Demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer), wid.Pads(20)),
 		wid.Label(th, "Buttons scaled to fill the line width"),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Row(th, nil, []float32{.5, .5, .8, .5, .5, .5},
