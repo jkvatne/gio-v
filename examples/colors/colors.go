@@ -20,11 +20,12 @@ var (
 	theme *wid.Theme // the theme selected
 	form  layout.Widget
 	win   *app.Window
+	roles = true
 )
 
 func main() {
 	theme = wid.NewTheme(gofont.Collection(), 14)
-	form = demo(theme)
+	show()
 	win = app.NewWindow(app.Title("Colors"), app.Maximized.Option())
 	go wid.Run(win, &form, theme)
 	app.Main()
@@ -46,16 +47,17 @@ func showTones(th *wid.Theme, c color.NRGBA) layout.Widget {
 		wid.Label(th, "60", wid.Large(), wid.Fg(&wid.White), wid.Bg(aTone(c, 60))),
 		wid.Label(th, "70", wid.Large(), wid.Fg(&wid.Black), wid.Bg(aTone(c, 70))),
 		wid.Label(th, "80", wid.Large(), wid.Fg(&wid.Black), wid.Bg(aTone(c, 80))),
-		wid.Label(th, "90", wid.Large(), wid.Fg(&wid.Black), wid.Bg(aTone(c, 90))),
-		wid.Label(th, "95", wid.Large(), wid.Fg(&wid.Black), wid.Bg(aTone(c, 95))),
-		wid.Label(th, "99", wid.Large(), wid.Fg(&wid.Black), wid.Bg(aTone(c, 99))),
+		wid.Label(th, "90", wid.Large(), wid.Fg(&wid.Black), wid.Bg(aTone(c, 88))),
+		wid.Label(th, "94", wid.Large(), wid.Fg(&wid.Black), wid.Bg(aTone(c, 93))),
+		wid.Label(th, "98", wid.Large(), wid.Fg(&wid.Black), wid.Bg(aTone(c, 97))),
 		wid.Label(th, "100", wid.Large(), wid.Fg(&wid.Black), wid.Bg(aTone(c, 100))),
 	)
 }
 
 func setDefault() {
 	theme = wid.NewTheme(gofont.Collection(), 14)
-	form = demo(theme)
+	theme.NeutralVariantColor = wid.RGB(0x356057)
+	show()
 }
 
 func setPalette1() {
@@ -65,8 +67,8 @@ func setPalette1() {
 	theme.ErrorColor = wid.RGB(0xAF2525)
 	theme.NeutralColor = wid.RGB(0x1D5D7D)
 	theme.NeutralVariantColor = wid.RGB(0x756057)
-	theme.UpdateColors()
-	form = demo(theme)
+	theme.NeutralVariantColor = wid.RGB(0x356057)
+	show()
 }
 
 func setPalette2() {
@@ -76,9 +78,10 @@ func setPalette2() {
 	theme.ErrorColor = wid.RGB(0xAF2535)
 	theme.NeutralColor = wid.RGB(0x1D4D7D)
 	theme.NeutralVariantColor = wid.RGB(0x356057)
-	theme.UpdateColors()
-	form = demo(theme)
+	theme.NeutralVariantColor = wid.RGB(0x356057)
+	show()
 }
+
 func setPalette3() {
 	theme.PrimaryColor = wid.RGB(0x17329E)
 	theme.SecondaryColor = wid.RGB(0x17624E)
@@ -86,22 +89,99 @@ func setPalette3() {
 	theme.ErrorColor = wid.RGB(0xAF2535)
 	theme.NeutralColor = wid.RGB(0x1D4D7D)
 	theme.NeutralVariantColor = wid.RGB(0x356057)
-	theme.UpdateColors()
-	form = demo(theme)
+	show()
 }
 
-// Demo setup. Called from Setup(), only once - at start of showing it.
-// Returns a widget - i.e. a function: func(gtx C) D
-func demo(th *wid.Theme) layout.Widget {
-	theme.SetLinesPrForm(30)
+func setColorsRoles() {
+	roles = !roles
+	show()
+}
+
+func setDarkLight() {
+	theme.DarkMode = !theme.DarkMode
+	show()
+}
+
+func show() {
+	theme.UpdateColors()
+	if roles == true {
+		form = demo2(theme)
+	} else {
+		form = demo1(theme)
+	}
+}
+
+func demo2(th *wid.Theme) layout.Widget {
+	var ld string
+	var cr string
+	theme.SetLinesPrForm(35)
+	if theme.DarkMode {
+		ld = "Set light"
+	} else {
+		ld = "Set dark"
+	}
+	if roles {
+		cr = "Show Colors"
+	} else {
+		cr = "Show Roles"
+	}
 	return wid.Col(wid.SpaceDistribute,
-		wid.Label(th, "Show all tones for some palettes", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-		wid.Label(th, "Also demonstrates a form that will fill the screen 100%", wid.Middle(), wid.Small(), wid.Role(wid.PrimaryContainer)),
+		wid.Label(th, "Show all UI roles", wid.Middle(), wid.Heading(), wid.Bold()),
+		wid.Separator(th, unit.Dp(0.0), wid.Pads(10.0, 0)),
 		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.Button(th, "Set default palette", wid.Do(setDefault)),
 			wid.Button(th, "Set palette 1", wid.Do(setPalette1)),
 			wid.Button(th, "Set palette 2", wid.Do(setPalette2)),
-			wid.Button(th, "Set palette 3", wid.Do(setPalette3))),
+			wid.Button(th, "Set palette 3", wid.Do(setPalette3)),
+			wid.Button(th, cr, wid.Do(setColorsRoles)),
+			wid.Button(th, ld, wid.Do(setDarkLight)),
+		),
+		wid.Separator(th, unit.Dp(1.0), wid.Pads(10.0, 0)),
+		wid.Label(th, "Primary", wid.Large(), wid.Role(wid.Primary)),
+		wid.Label(th, "Secondary", wid.Large(), wid.Role(wid.Secondary)),
+		wid.Label(th, "Tertiary", wid.Large(), wid.Role(wid.Tertiary)),
+		wid.Label(th, "Error", wid.Large(), wid.Role(wid.Error)),
+		wid.Label(th, "Primary Container", wid.Large(), wid.Role(wid.PrimaryContainer)),
+		wid.Label(th, "Secondary Container", wid.Large(), wid.Role(wid.SecondaryContainer)),
+		wid.Label(th, "Tertiary Container", wid.Large(), wid.Role(wid.TertiaryContainer)),
+		wid.Label(th, "Error Containter", wid.Large(), wid.Role(wid.ErrorContainer)),
+		wid.Label(th, "Canvas", wid.Large(), wid.Role(wid.Canvas)),
+		wid.Label(th, "Surface Variant", wid.Large(), wid.Role(wid.SurfaceVariant)),
+		wid.Label(th, "Surface Highest", wid.Large(), wid.Role(wid.SurfaceHighest)),
+		wid.Label(th, "Surface High", wid.Large(), wid.Role(wid.SurfaceHigh)),
+		wid.Label(th, "Surface", wid.Large(), wid.Role(wid.Surface)),
+		wid.Label(th, "Surface Low", wid.Large(), wid.Role(wid.SurfaceLow)),
+		wid.Label(th, "Surface Lowest", wid.Large(), wid.Role(wid.SurfaceLowest)),
+	)
+}
+
+// Demo setup. Called from Setup(), only once - at start of showing it.
+// Returns a widget - i.e. a function: func(gtx C) D
+func demo1(th *wid.Theme) layout.Widget {
+	var ld string
+	var cr string
+	theme.SetLinesPrForm(31)
+	if theme.DarkMode {
+		ld = "Set light"
+	} else {
+		ld = "Set dark"
+	}
+	if roles {
+		cr = "Show Colors"
+	} else {
+		cr = "Show Roles"
+	}
+	return wid.Col(wid.SpaceDistribute,
+		wid.Label(th, "Show all tones for some palettes", wid.Middle(), wid.Heading(), wid.Bold()),
+		wid.Label(th, "Also demonstrates a form that will fill the screen 100%", wid.Middle(), wid.Small()),
+		wid.Row(th, nil, wid.SpaceDistribute,
+			wid.Button(th, "Set default palette", wid.Do(setDefault)),
+			wid.Button(th, "Set palette 1", wid.Do(setPalette1)),
+			wid.Button(th, "Set palette 2", wid.Do(setPalette2)),
+			wid.Button(th, "Set palette 3", wid.Do(setPalette3)),
+			wid.Button(th, cr, wid.Do(setColorsRoles)),
+			wid.Button(th, ld, wid.Do(setDarkLight)),
+		),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Primary"),
 		showTones(th, th.PrimaryColor),

@@ -88,7 +88,7 @@ func GridRow(th *Theme, pbgColor *color.NRGBA, gridLineWidth unit.Dp, weights []
 	r.padTop = th.RowPadTop
 	r.padBtm = th.RowPadBtm
 	r.gridLineWidth = gridLineWidth
-	r.gridColor = th.Fg(Outline)
+	r.gridColor = th.Fg[Outline]
 	return func(gtx C) D {
 		return r.rowLayout(gtx, th.TextSize, bgColor, weights, widgets...)
 	}

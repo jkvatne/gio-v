@@ -45,11 +45,11 @@ func Switch(th *Theme, statePtr *bool, options ...Option) func(gtx C) D {
 	s.trackLength = s.trackWidth * 13 / 8
 	s.btnOnSize = s.trackWidth * 3 / 4
 	s.btnOffSize = s.trackWidth / 2
-	s.trackColorOn = s.th.Bg(Primary)
-	s.trackColorOff = s.th.Bg(SurfaceVariant)
-	s.trackOutline = s.th.Fg(Outline)
-	s.thumbColorOn = s.th.Fg(Primary)
-	s.thumbColorOff = s.th.Fg(Outline)
+	s.trackColorOn = s.th.Bg[Primary]
+	s.trackColorOff = s.th.Bg[SurfaceVariant]
+	s.trackOutline = s.th.Fg[Outline]
+	s.thumbColorOn = s.th.Fg[Primary]
+	s.thumbColorOff = s.th.Fg[Outline]
 	s.trackStroke = s.th.BorderThickness
 	// Default padding. Can be changed with option Padds()
 	s.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
@@ -89,13 +89,13 @@ func (s *SwitchDef) Layout(gtx C) D {
 	r := Px(gtx, s.trackWidth/4)
 	trackRect := image.Rect(0, 0, width, height)
 	if s.sw.Focused() && s.sw.Hovered() {
-		s.hoverShadow = MulAlpha(s.th.Bg(Primary), 120)
+		s.hoverShadow = MulAlpha(s.th.Bg[Primary], 120)
 	} else if s.sw.Focused() {
-		s.hoverShadow = MulAlpha(s.th.Bg(Primary), 90)
+		s.hoverShadow = MulAlpha(s.th.Bg[Primary], 90)
 	} else if s.sw.Hovered() {
-		s.hoverShadow = MulAlpha(s.th.Bg(Primary), 60)
+		s.hoverShadow = MulAlpha(s.th.Bg[Primary], 60)
 	} else {
-		s.hoverShadow = MulAlpha(s.th.Bg(Primary), 0)
+		s.hoverShadow = MulAlpha(s.th.Bg[Primary], 0)
 	}
 
 	if s.sw.Value {

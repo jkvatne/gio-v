@@ -40,7 +40,7 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 	b := DropDownStyle{}
 	b.th = th
 	b.role = Canvas
-	b.outlineColor = th.Fg(Outline)
+	b.outlineColor = th.Fg[Outline]
 	b.Font = &th.DefaultFont
 	b.index = index
 	b.items = items
@@ -209,7 +209,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 
 		// Fill background and draw list
 		cl := clip.Rect{Max: listClipRect.Max}.Push(gtx.Ops)
-		paint.Fill(gtx.Ops, d.th.Bg(Canvas))
+		paint.Fill(gtx.Ops, d.th.Bg[Canvas])
 		theListMacro.Add(gtx.Ops)
 		cl.Pop()
 
@@ -225,7 +225,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 
 		// Draw a border around all options
 		w := float32(Px(gtx, d.borderThickness))
-		paintBorder(gtx, listClipRect, d.th.Fg(Outline), w, 0)
+		paintBorder(gtx, listClipRect, d.th.Fg[Outline], w, 0)
 		// Save and defer execution
 		dropDownListCall := dropdownMacro.Stop()
 		op.Defer(gtx.Ops, dropDownListCall)

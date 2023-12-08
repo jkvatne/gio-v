@@ -45,176 +45,32 @@ const (
 	ErrorContainer
 	// Outline is used for frames and buttons
 	Outline
+	OutlineVariant
+	// OutlineHighest is the grayest surface
+	SurfaceHighest
+	SurfaceHigh
+	SurfaceLow
+	// SurfaceLowest is almost white/black
+	SurfaceLowest
+	RoleCount
 )
 
 // Tone is the Google material tone implementation
-// See: https://m3.material.io/styles/color/the-color-system/key-colors-tones
 func Tone(c color.NRGBA, tone int) color.NRGBA {
 	h, s, _ := Rgb2hsl(c)
-	switch {
-	case tone < 5:
-		return Black
-	case tone < 15:
-		return Hsl2rgb(h, s, 0.1)
-	case tone < 25:
-		return Hsl2rgb(h, s, 0.2)
-	case tone < 35:
-		return Hsl2rgb(h, s, 0.3)
-	case tone < 45:
-		return Hsl2rgb(h, s, 0.35)
-	case tone < 55:
-		return Hsl2rgb(h, s, 0.4)
-	case tone < 65:
-		return Hsl2rgb(h, s, 0.45)
-	case tone < 75:
-		return Hsl2rgb(h, s, 0.6)
-	case tone < 85:
-		return Hsl2rgb(h, s, 0.68)
-	case tone < 94:
-		return Hsl2rgb(h, s, 0.75)
-	case tone < 96:
-		return Hsl2rgb(h, s, 0.85)
-	case tone < 100:
-		return Hsl2rgb(h, s, 0.95)
-	}
-	return White
+	return Hsl2rgb(h, s, float64(tone)/100.0)
 }
 
-// Fg returns the text/icon color. This is the OnPrimary, OnBackground... colors
-func (th *Theme) Fg(kind UIRole) color.NRGBA {
-	if !th.DarkMode {
-		switch kind {
-		case Canvas: // Black
-			return Tone(th.NeutralColor, 0)
-		case Surface: // Black
-			return Tone(th.NeutralColor, 0)
-		case SurfaceVariant: // Black
-			return Tone(th.NeutralVariantColor, 0)
-		case Outline:
-			return Tone(th.NeutralColor, 50)
-		case Primary:
-			return Tone(th.PrimaryColor, 100)
-		case Secondary:
-			return Tone(th.SecondaryColor, 100)
-		case Tertiary:
-			return Tone(th.TertiaryColor, 100)
-		case Error:
-			return Tone(th.TertiaryColor, 100)
-		case PrimaryContainer:
-			return Tone(th.PrimaryColor, 10)
-		case SecondaryContainer:
-			return Tone(th.SecondaryColor, 10)
-		case TertiaryContainer:
-			return Tone(th.TertiaryColor, 10)
-		case ErrorContainer:
-			return Tone(th.ErrorColor, 10)
-		default:
-			return Tone(th.NeutralColor, 10)
-		}
-	} else {
-		switch kind {
-		case Canvas: // White
-			return Tone(th.NeutralColor, 80)
-		case Surface: // Light silver
-			return Tone(th.NeutralColor, 100)
-		case SurfaceVariant: // Some other very light color
-			return Tone(th.NeutralVariantColor, 90)
-		case Outline:
-			return Tone(th.NeutralColor, 60)
-		case Primary:
-			return Tone(th.PrimaryColor, 20)
-		case Secondary:
-			return Tone(th.SecondaryColor, 20)
-		case Tertiary:
-			return Tone(th.TertiaryColor, 20)
-		case Error:
-			return Tone(th.ErrorColor, 20)
-		case PrimaryContainer:
-			return Tone(th.PrimaryColor, 90)
-		case SecondaryContainer:
-			return Tone(th.SecondaryColor, 90)
-		case TertiaryContainer:
-			return Tone(th.TertiaryColor, 90)
-		case ErrorContainer:
-			return Tone(th.TertiaryColor, 90)
-		default:
-			return Tone(th.NeutralColor, 90)
-		}
-	}
-}
-
-// Bg returns the background color used to fill the element.
-func (th *Theme) Bg(kind UIRole) color.NRGBA {
-	if !th.DarkMode {
-		switch kind {
-		case Canvas: // White background
-			return Tone(th.NeutralColor, 100)
-		case Surface: // Light silver background
-			return Tone(th.NeutralColor, 99)
-		case SurfaceVariant: // Some other light background
-			return Tone(th.NeutralVariantColor, 90)
-		case Primary:
-			return Tone(th.PrimaryColor, 40)
-		case Secondary:
-			return Tone(th.SecondaryColor, 40)
-		case Tertiary:
-			return Tone(th.TertiaryColor, 40)
-		case Error:
-			return Tone(th.ErrorColor, 40)
-		case PrimaryContainer:
-			return Tone(th.PrimaryColor, 90)
-		case SecondaryContainer:
-			return Tone(th.SecondaryColor, 90)
-		case TertiaryContainer:
-			return Tone(th.TertiaryColor, 90)
-		case ErrorContainer:
-			return Tone(th.ErrorColor, 90)
-		default:
-			return Tone(th.NeutralColor, 99)
-		}
-	} else {
-		switch kind {
-		case Canvas: // Black background
-			return Tone(th.NeutralColor, 0)
-		case Surface: // Dark gray background
-			return Tone(th.NeutralColor, 10)
-		case SurfaceVariant: // Another very dark background
-			return Tone(th.NeutralVariantColor, 20)
-		case Primary:
-			return Tone(th.PrimaryColor, 80)
-		case Secondary:
-			return Tone(th.SecondaryColor, 80)
-		case Tertiary:
-			return Tone(th.TertiaryColor, 80)
-		case Error:
-			return Tone(th.ErrorColor, 80)
-		case PrimaryContainer:
-			return Tone(th.PrimaryColor, 30)
-		case SecondaryContainer:
-			return Tone(th.SecondaryColor, 30)
-		case TertiaryContainer:
-			return Tone(th.TertiaryColor, 30)
-		case ErrorContainer:
-			return Tone(th.TertiaryColor, 30)
-		default:
-			return Tone(th.NeutralColor, 10)
-		}
-	}
-}
-
-// Pallet is the key colors. All other colors are derived from them
-type Pallet struct {
+// Theme contains color/layout settings for all widgets
+type Theme struct {
 	PrimaryColor        color.NRGBA
 	SecondaryColor      color.NRGBA
 	TertiaryColor       color.NRGBA
 	ErrorColor          color.NRGBA
 	NeutralColor        color.NRGBA
 	NeutralVariantColor color.NRGBA
-}
-
-// Theme contains color/layout settings for all widgets
-type Theme struct {
-	Pallet
+	Bg                  [RoleCount]color.NRGBA
+	Fg                  [RoleCount]color.NRGBA
 	DarkMode            bool
 	Shaper              *text.Shaper
 	TextSize            unit.Sp
@@ -318,19 +174,103 @@ func (th *Theme) FontSp() unit.Sp {
 }
 
 func (th *Theme) UpdateColors() {
+	if !th.DarkMode {
+		th.Fg[Canvas] = Tone(th.NeutralColor, 0)
+		th.Bg[Canvas] = Tone(th.NeutralColor, 100)
+
+		th.Fg[Primary] = Tone(th.PrimaryColor, 100)
+		th.Bg[Primary] = Tone(th.PrimaryColor, 40)
+		th.Fg[PrimaryContainer] = Tone(th.PrimaryColor, 10)
+		th.Bg[PrimaryContainer] = Tone(th.PrimaryColor, 90)
+
+		th.Fg[Secondary] = Tone(th.SecondaryColor, 100)
+		th.Bg[Secondary] = Tone(th.SecondaryColor, 40)
+		th.Fg[SecondaryContainer] = Tone(th.SecondaryColor, 10)
+		th.Bg[SecondaryContainer] = Tone(th.SecondaryColor, 90)
+
+		th.Fg[Tertiary] = Tone(th.TertiaryColor, 100)
+		th.Bg[Tertiary] = Tone(th.TertiaryColor, 40)
+		th.Fg[TertiaryContainer] = Tone(th.TertiaryColor, 10)
+		th.Bg[TertiaryContainer] = Tone(th.TertiaryColor, 90)
+
+		th.Fg[Error] = Tone(th.ErrorColor, 100)
+		th.Bg[Error] = Tone(th.ErrorColor, 40)
+		th.Fg[ErrorContainer] = Tone(th.ErrorColor, 10)
+		th.Bg[ErrorContainer] = Tone(th.ErrorColor, 90)
+
+		th.Fg[Outline] = Tone(th.NeutralVariantColor, 40)
+		th.Bg[Outline] = Tone(th.NeutralVariantColor, 40)
+		th.Fg[OutlineVariant] = Tone(th.NeutralVariantColor, 40)
+		th.Bg[OutlineVariant] = Tone(th.NeutralVariantColor, 40)
+
+		th.Fg[SurfaceVariant] = Tone(th.NeutralVariantColor, 40)
+		th.Bg[SurfaceVariant] = Tone(th.NeutralVariantColor, 93)
+		th.Fg[SurfaceHighest] = Tone(th.NeutralColor, 10)
+		th.Bg[SurfaceHighest] = Tone(th.NeutralColor, 92)
+		th.Fg[SurfaceHigh] = Tone(th.NeutralColor, 10)
+		th.Bg[SurfaceHigh] = Tone(th.NeutralColor, 94)
+		th.Fg[Surface] = Tone(th.NeutralColor, 10)
+		th.Bg[Surface] = Tone(th.NeutralColor, 96)
+		th.Fg[SurfaceLow] = Tone(th.NeutralColor, 10)
+		th.Bg[SurfaceLow] = Tone(th.NeutralColor, 98)
+		th.Fg[SurfaceLowest] = Tone(th.NeutralColor, 10)
+		th.Bg[SurfaceLowest] = Tone(th.NeutralColor, 100)
+	} else {
+		th.Fg[Canvas] = Tone(th.NeutralColor, 100)
+		th.Bg[Canvas] = Tone(th.NeutralColor, 0)
+
+		th.Fg[Primary] = Tone(th.PrimaryColor, 20)
+		th.Bg[Primary] = Tone(th.PrimaryColor, 80)
+		th.Fg[PrimaryContainer] = Tone(th.PrimaryColor, 90)
+		th.Bg[PrimaryContainer] = Tone(th.PrimaryColor, 30)
+
+		th.Fg[Secondary] = Tone(th.SecondaryColor, 20)
+		th.Bg[Secondary] = Tone(th.SecondaryColor, 80)
+		th.Fg[SecondaryContainer] = Tone(th.SecondaryColor, 90)
+		th.Bg[SecondaryContainer] = Tone(th.SecondaryColor, 30)
+
+		th.Fg[Tertiary] = Tone(th.TertiaryColor, 20)
+		th.Bg[Tertiary] = Tone(th.TertiaryColor, 80)
+		th.Fg[TertiaryContainer] = Tone(th.TertiaryColor, 90)
+		th.Bg[TertiaryContainer] = Tone(th.TertiaryColor, 30)
+
+		th.Fg[Error] = Tone(th.ErrorColor, 20)
+		th.Bg[Error] = Tone(th.ErrorColor, 80)
+		th.Fg[ErrorContainer] = Tone(th.ErrorColor, 90)
+		th.Bg[ErrorContainer] = Tone(th.ErrorColor, 30)
+
+		th.Fg[Outline] = Tone(th.NeutralVariantColor, 60)
+		th.Bg[Outline] = Tone(th.NeutralVariantColor, 60)
+		th.Fg[OutlineVariant] = Tone(th.NeutralVariantColor, 30)
+		th.Bg[OutlineVariant] = Tone(th.NeutralVariantColor, 30)
+
+		th.Fg[SurfaceVariant] = Tone(th.NeutralVariantColor, 90)
+		th.Bg[SurfaceVariant] = Tone(th.NeutralVariantColor, 30)
+
+		th.Fg[SurfaceHighest] = Tone(th.NeutralColor, 90)
+		th.Bg[SurfaceHighest] = Tone(th.NeutralColor, 22)
+		th.Fg[SurfaceHigh] = Tone(th.NeutralColor, 90)
+		th.Bg[SurfaceHigh] = Tone(th.NeutralColor, 17)
+		th.Fg[Surface] = Tone(th.NeutralColor, 90)
+		th.Bg[Surface] = Tone(th.NeutralColor, 12)
+		th.Fg[SurfaceLow] = Tone(th.NeutralColor, 90)
+		th.Bg[SurfaceLow] = Tone(th.NeutralColor, 10)
+		th.Fg[SurfaceLowest] = Tone(th.NeutralColor, 90)
+		th.Bg[SurfaceLowest] = Tone(th.NeutralColor, 4)
+	}
 	// Borders around edit fields
-	th.BorderColor = th.Fg(Outline)
-	th.BorderColorHovered = th.Fg(Primary)
-	th.BorderColorActive = th.Fg(Primary)
-	th.SelectionColor = MulAlpha(th.Bg(Primary), 0x60)
+	th.BorderColor = th.Fg[Outline]
+	th.BorderColorHovered = th.Fg[Primary]
+	th.BorderColorActive = th.Fg[Primary]
+	th.SelectionColor = MulAlpha(th.Bg[Primary], 0x60)
 	// Tooltip
-	th.TooltipBackground = th.Bg(SecondaryContainer)
-	th.TooltipOnBackground = th.Fg(SecondaryContainer)
+	th.TooltipBackground = th.Bg[SecondaryContainer]
+	th.TooltipOnBackground = th.Fg[SecondaryContainer]
 	// Resizer
-	th.SashColor = WithAlpha(th.Fg(Surface), 0x40)
+	th.SashColor = WithAlpha(th.Fg[Surface], 0x40)
 	// Switch
-	th.TrackColor = th.NeutralColor
-	th.DotColor = th.Fg(Primary)
+	th.TrackColor = th.Bg[Surface]
+	th.DotColor = th.Fg[Primary]
 }
 
 // NewTheme creates a new theme with given font size and pallete

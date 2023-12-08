@@ -29,7 +29,7 @@ func Space(size unit.Dp) layout.Widget {
 func Separator(th *Theme, thickness unit.Dp, options ...Option) layout.Widget {
 	s := SeparatorStyle{}
 	s.thickness = thickness
-	s.role = Canvas
+	s.role = Surface
 	s.Apply(options...)
 	s.th = th
 	return func(gtx C) D {

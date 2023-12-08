@@ -328,15 +328,15 @@ func Pads(pads ...float32) BaseOption {
 
 func (wid *Base) Fg() color.NRGBA {
 	if wid.fgColor == nil {
-		return wid.th.Fg(wid.role)
+		return wid.th.Fg[wid.role]
 	} else {
 		return *wid.fgColor
 	}
 }
 
 func (wid *Base) Bg() color.NRGBA {
-	if wid.fgColor == nil {
-		return wid.th.Bg(wid.role)
+	if wid.bgColor == nil {
+		return wid.th.Bg[wid.role]
 	} else {
 		return *wid.bgColor
 	}
@@ -414,7 +414,7 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 			}
 
 			CurrentY = 0
-			paint.ColorOp{Color: th.Bg(Surface)}.Add(gtx.Ops)
+			paint.ColorOp{Color: th.Bg[Surface]}.Add(gtx.Ops)
 			paint.PaintOp{}.Add(gtx.Ops)
 
 			// Draw widgets

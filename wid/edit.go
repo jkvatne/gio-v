@@ -4,6 +4,7 @@ package wid
 
 import (
 	"fmt"
+	"gioui.org/layout"
 	"gioui.org/text"
 	"image"
 	"image/color"
@@ -26,7 +27,6 @@ type EditDef struct {
 	hovered         bool
 	outlineColor    color.NRGBA
 	selectionColor  color.NRGBA
-	CharLimit       uint
 	label           string
 	value           interface{}
 	labelSize       float32
@@ -103,6 +103,50 @@ func StringToValue(value interface{}, current string) {
 	}
 }
 
+type CornerRadius unit.Dp
+
+func Ed[V Value](th *Theme, v V, opt ...any) func(gtx C) D {
+	e := EditDef{
+		Base: Base{
+			th:      th,
+			Font:    &th.DefaultFont,
+			padding: th.OutsidePadding,
+		},
+		Editor: widget.Editor{
+			SingleLine: true,
+		},
+		borderThickness: th.BorderThickness,
+		labelSize:       th.LabelSplit,
+		outlineColor:    th.Fg[Outline],
+		selectionColor:  MulAlpha(th.Bg[Primary], 60),
+		value:           v,
+	}
+	for _, o := range opt {
+		if v, ok := o.(string); ok {
+			e.label = v
+		} else if v, ok := o.(float32); ok {
+			e.borderThickness = th.BorderThickness * unit.Dp(v)
+		} else if v, ok := o.(float64); ok {
+			e.borderThickness = th.BorderThickness * unit.Dp(v)
+		} else if v, ok := o.(UIRole); ok {
+			e.role = v
+		} else if v, ok := o.(layout.Inset); ok {
+			e.padding = v
+		} else if v, ok := o.(CornerRadius); ok {
+			e.cornerRadius = unit.Dp(v)
+		}
+	}
+	return func(gtx C) D {
+		return e.Layout(gtx)
+	}
+}
+
+func testing(th *Theme) func(gtx C) D {
+	var x float64
+	// return Ed(th, x, "Hint", 2.0)
+	return Ed(th, x, 2.0)
+}
+
 // Edit will return a widget (layout function) for a text editor
 func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e := new(EditDef)
@@ -113,15 +157,18 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e.borderThickness = th.BorderThickness
 	e.width = unit.Dp(5000) // Default to max width that is possible
 	e.padding = th.OutsidePadding
-	e.outlineColor = th.Fg(Outline)
-	e.selectionColor = MulAlpha(th.Bg(Primary), 60)
+	e.outlineColor = th.Fg[Outline]
+	e.selectionColor = MulAlpha(th.Bg[Primary], 60)
 	e.value = ""
 	// Read in options to change from default values to something else.
 	for _, option := range options {
 		option.apply(e)
 	}
 	if e.value != nil {
+		GuiLock.Lock()
 		e.Editor.SetText(ValueToString(e.value, e.Dp))
+		GuiLock.Unlock()
+
 	}
 	return func(gtx C) D {
 		return e.Layout(gtx)
@@ -140,10 +187,10 @@ func (e *EditDef) updateValue() {
 			// When the underlying variable changes, update the edit buffer
 			GuiLock.RLock()
 			s := e.value
-			GuiLock.RUnlock()
 			if s != current {
 				e.SetText(ValueToString(e.value, e.Dp))
 			}
+			GuiLock.RUnlock()
 		}
 	}
 	e.wasFocused = e.Focused()
@@ -189,7 +236,7 @@ func (e *EditDef) Layout(gtx C) D {
 	o.Pop()
 	callHint := macro.Stop()
 
-	// Add outside label to the left of the dropdown box
+	// Add outside label to the left of the edit box
 	if e.label != "" {
 		o := op.Offset(image.Pt(0, Px(gtx, e.th.InsidePadding.Top))).Push(gtx.Ops)
 		paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
@@ -220,7 +267,7 @@ func (e *EditDef) Layout(gtx C) D {
 		r = border.Max.Y / 2
 	}
 	if e.Focused() {
-		paint.FillShape(gtx.Ops, e.th.Bg(Canvas), clip.UniformRRect(border, r).Op(gtx.Ops))
+		paint.FillShape(gtx.Ops, e.th.Bg[Canvas], clip.UniformRRect(border, r).Op(gtx.Ops))
 	}
 
 	o = op.Offset(image.Pt(Px(gtx, e.th.InsidePadding.Left), Px(gtx, e.th.InsidePadding.Top))).Push(gtx.Ops)

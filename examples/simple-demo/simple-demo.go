@@ -113,6 +113,7 @@ func onWinChange() {
 		win.Option(app.Maximized.Option())
 	}
 }
+
 func demo2(th *wid.Theme) layout.Widget {
 	theme.SetLinesPrForm(40)
 	return wid.Col(wid.SpaceDistribute,
@@ -178,9 +179,9 @@ func demo(th *wid.Theme) layout.Widget {
 		),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Row(th, nil, []float32{1, 1, 1},
-			wid.Edit(th, wid.Hint("Value 3"), wid.Var(&name)),
-			wid.Edit(th, wid.Hint("Value 4"), wid.Var(&age)),
-			wid.Edit(th, wid.Hint("Value 5"), wid.Var(&name)),
+			wid.Ed(th, &name, "Name", 2.0),
+			wid.Ed(th, &age, "Age", 3.0),
+			wid.Ed(th, &name, "Name"),
 		),
 		wid.Row(th, nil, []float32{1, 1, 1},
 			wid.DropDown(th, &dropDownValue1, list1, wid.Hint("Value 3")),

@@ -66,24 +66,24 @@ func (e LabelOption) apply(cfg interface{}) {
 // StringerValue returns a widget for a value given by stringer function
 func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx C) D {
 	w := LabelDef{
+		Base: Base{
+			th:        th,
+			role:      Surface,
+			padding:   th.OutsidePadding,
+			FontScale: 1.0,
+		},
 		Stringer:  s,
 		Alignment: text.Start,
-		Font:      font.Font{Weight: font.Medium, Style: font.Regular},
+		Font:      th.DefaultFont,
 		MaxLines:  0,
 	}
-	w.Font = th.DefaultFont
-	w.padding = th.OutsidePadding
-	w.th = th
 
-	// Default to Canvas role (typically black for LightMode and white for DarkMode
-	w.role = Canvas
-	w.FontScale = 1.0
+	// Apply options after initialization of LabelDef
 	for _, option := range options {
 		option.apply(&w)
 	}
+
 	return func(gtx C) D {
-		macro := op.Record(gtx.Ops)
-		paint.ColorOp{Color: w.Fg()}.Add(gtx.Ops)
 		if w.MaxLines == 1 {
 			// This is a hack to avoid splitting the line when only one line is allowed
 			gtx.Constraints.Max.X = inf
@@ -91,6 +91,7 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		GuiLock.RLock()
 		str := w.Stringer(w.Dp)
 		GuiLock.RUnlock()
+		macro := op.Record(gtx.Ops)
 		o := op.Offset(image.Pt(Px(gtx, w.padding.Left), Px(gtx, w.padding.Top))).Push(gtx.Ops)
 		tl := widget.Label{Alignment: w.Alignment, MaxLines: w.MaxLines}
 		colMacro := op.Record(gtx.Ops)
@@ -104,9 +105,8 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		call := macro.Stop()
 		// Color background into the calculated size
 		defer clip.Rect(image.Rectangle{Max: dims.Size}).Push(gtx.Ops).Pop()
-		if w.bgColor != nil {
-			paint.Fill(gtx.Ops, w.Bg())
-		}
+		paint.Fill(gtx.Ops, w.Bg())
+		// Then do the text painting (apply the "call" macro)
 		call.Add(gtx.Ops)
 		return dims
 	}

@@ -19,6 +19,7 @@ The code is copied extensively from the following sources:
 
 THIS IS WORK IN PROGRESS - ANYTHING CAN CHANGE AT ANY TIME
 
+Now updated to Gio V0.4.1
 # Features
 
 ## Material design

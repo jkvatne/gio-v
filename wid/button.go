@@ -176,7 +176,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 
 	if b.Style == Outlined {
 		w := float32(Px(gtx, b.th.BorderThickness))
-		paintBorder(gtx, outline, b.th.Fg(Outline), w, rr)
+		paintBorder(gtx, outline, b.th.Fg[Outline], w, rr)
 	} else if b.Style != Text && gtx.Queue == nil {
 		paint.Fill(gtx.Ops, Disabled(b.Bg()))
 	} else if b.Style != Text && b.Style != Header {
