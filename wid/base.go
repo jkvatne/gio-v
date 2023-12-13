@@ -50,11 +50,13 @@ type Base struct {
 	th           *Theme
 	hint         string
 	padding      layout.Inset
+	margin       layout.Inset
 	onUserChange func()
 	disabler     *bool
 	width        unit.Dp
 	role         UIRole
 	cornerRadius unit.Dp
+	borderWidth  unit.Dp
 	fgColor      *color.NRGBA
 	bgColor      *color.NRGBA
 	description  string
@@ -68,6 +70,7 @@ type BaseIf interface {
 	setWidth(width float32)
 	setHint(hint string)
 	setPadding(padding layout.Inset)
+	setMargin(margin layout.Inset)
 	setRole(role UIRole)
 	setBgColor(c *color.NRGBA)
 	setFgColor(c *color.NRGBA)
@@ -121,6 +124,10 @@ func (wid *Base) setFont(font *font.Font) {
 
 func (wid *Base) setPadding(padding layout.Inset) {
 	wid.padding = padding
+}
+
+func (wid *Base) setMargin(margin layout.Inset) {
+	wid.margin = margin
 }
 
 func (wid *Base) setFgColor(c *color.NRGBA) {
@@ -326,6 +333,27 @@ func Pads(pads ...float32) BaseOption {
 	}
 }
 
+// Pads is an option parameter to set customized padding. Noe that 1,2,3 or 4 paddings can be specified.
+// If 1 is supplied, it is used for left,right,top,bottom, all with the same padding
+// If 2 is supplied, the first is used for top/bottom, and the second for left and right padding
+// If 4 is supplied, it is used for top, right, bottom, left in that sequence.
+// All values are in Dp (float32 device independent pixels)
+func Margin(pads ...float32) BaseOption {
+	return func(w BaseIf) {
+		switch len(pads) {
+		case 0:
+			w.setMargin(layout.Inset{Top: unit.Dp(2), Bottom: unit.Dp(2), Left: unit.Dp(4), Right: unit.Dp(4)})
+		case 1:
+			w.setMargin(layout.Inset{Top: unit.Dp(pads[0]), Right: unit.Dp(pads[0]), Bottom: unit.Dp(pads[0]), Left: unit.Dp(pads[0])})
+		case 2:
+			w.setMargin(layout.Inset{Top: unit.Dp(pads[0]), Right: unit.Dp(pads[1]), Bottom: unit.Dp(pads[0]), Left: unit.Dp(pads[1])})
+		case 3:
+			w.setMargin(layout.Inset{Top: unit.Dp(pads[0]), Right: unit.Dp(pads[1]), Bottom: unit.Dp(pads[0]), Left: unit.Dp(pads[2])})
+		case 4:
+			w.setMargin(layout.Inset{Top: unit.Dp(pads[0]), Right: unit.Dp(pads[1]), Bottom: unit.Dp(pads[2]), Left: unit.Dp(pads[3])})
+		}
+	}
+}
 func (wid *Base) Fg() color.NRGBA {
 	if wid.fgColor == nil {
 		return wid.th.Fg[wid.role]

@@ -5,10 +5,9 @@ package wid
 import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
+	"gioui.org/unit"
 	"image"
 	"image/color"
-
-	"gioui.org/unit"
 
 	"gioui.org/widget"
 
@@ -31,9 +30,10 @@ var SpaceClose []float32
 // SpaceDistribute should disribute the widgets on a row evenly, with equal space for each
 var SpaceDistribute = []float32{1.0}
 
-// Calculate widths
-func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
-	w := make([]float32, len(widths))
+// calcWidths will calculate widths
+func calcWidths(gtx C, textSize unit.Sp, weights []float32, count int) (widths []int) {
+	w := make([]float32, count)
+	widths = make([]int, count)
 	for i := 0; i < len(w); i++ {
 		if len(weights) == 0 {
 			// If weights is nil, place all widgets as close as possible
@@ -75,6 +75,7 @@ func calcWidths(gtx C, textSize unit.Sp, weights []float32, widths []int) {
 			widths[i] = Min(int(w[i]), gtx.Constraints.Min.X)
 		}
 	}
+	return widths
 }
 
 // GridRow returns a widget grid row with a grid separating columns and rows
@@ -112,8 +113,7 @@ func Row(th *Theme, pbgColor *color.NRGBA, weights []float32, widgets ...layout.
 func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, bgColor color.NRGBA, weights []float32, widgets ...layout.Widget) D {
 	call := make([]op.CallOp, len(widgets))
 	dim := make([]D, len(widgets))
-	widths := make([]int, len(widgets))
-	calcWidths(gtx, textSize, weights, widths)
+	widths := calcWidths(gtx, textSize, weights, len(widgets))
 	// Check child sizes and make macros for each widget in a row
 	yMax := 0
 	c := gtx

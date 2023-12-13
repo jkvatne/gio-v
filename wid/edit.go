@@ -4,14 +4,13 @@ package wid
 
 import (
 	"fmt"
+	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/text"
 	"image"
 	"image/color"
 	"math"
 	"strconv"
-
-	"gioui.org/io/pointer"
 
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -88,18 +87,20 @@ func StringToValue(value interface{}, current string) {
 		if err == nil {
 			*value.(*int) = x
 		}
-	} else if _, ok := value.(float32); ok {
+	} else if _, ok := value.(*float32); ok {
 		f, err := strconv.ParseFloat(current, 32)
 		if err == nil {
 			*value.(*float32) = float32(f)
 		}
-	} else if _, ok := value.(float64); ok {
+	} else if _, ok := value.(*float64); ok {
 		f, err := strconv.ParseFloat(current, 64)
 		if err == nil {
 			*value.(*float64) = f
 		}
 	} else if _, ok := value.(*string); ok {
 		*value.(*string) = current
+	} else {
+		panic("Edit value should be pointer to value")
 	}
 }
 
@@ -186,10 +187,7 @@ func (e *EditDef) updateValue() {
 		} else {
 			// When the underlying variable changes, update the edit buffer
 			GuiLock.RLock()
-			s := e.value
-			if s != current {
-				e.SetText(ValueToString(e.value, e.Dp))
-			}
+			e.SetText(ValueToString(e.value, e.Dp))
 			GuiLock.RUnlock()
 		}
 	}

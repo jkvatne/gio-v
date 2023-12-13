@@ -71,18 +71,19 @@ func main() {
 
 func onWinChange() {
 	var f layout.Widget
+	theme.UpdateColors()
 	if Alternative == "Wide" {
-		f = Grid(theme, data, wideColWidth)
+		f = GridDemo(theme, data, wideColWidth)
 	} else if Alternative == "Narrow" {
-		f = Grid(theme, data, smallColWidth)
+		f = GridDemo(theme, data, smallColWidth)
 	} else if Alternative == "Fractional" {
-		f = Grid(theme, data, fracColWidth)
+		f = GridDemo(theme, data, fracColWidth)
 	} else if Alternative == "Equal" {
-		f = Grid(theme, data, wid.SpaceDistribute)
+		f = GridDemo(theme, data, wid.SpaceDistribute)
 	} else if Alternative == "Native" {
-		f = Grid(theme, data, wid.SpaceClose)
+		f = GridDemo(theme, data, wid.SpaceClose)
 	} else {
-		f = Grid(theme, data, wid.SpaceDistribute)
+		f = GridDemo(theme, data, wid.SpaceDistribute)
 	}
 	wid.GuiLock.Lock()
 	form = f
@@ -159,13 +160,13 @@ func onFontChange() {
 // gw is the grid line width
 const gw = 2.0 / 1.75
 
-// Grid is a widget that lays out the grid. This is all that is needed.
-func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
+// GridDemo is a widget that lays out the grid. This is all that is needed.
+func GridDemo(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 	anchor := wid.Overlay
 	if doOccupy {
 		anchor = wid.Occupy
 	}
-	bgColor := th.Bg(wid.Primary)
+	bgColor := th.Bg[wid.Primary]
 
 	nameIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
 	addressIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
@@ -184,22 +185,23 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 		header = nil
 	}
 	for i := 0; i < len(data); i++ {
-		bgColor := wid.MulAlpha(th.Bg(wid.PrimaryContainer), 50)
+		bgColor := wid.MulAlpha(th.Bg[wid.PrimaryContainer], 50)
 		if i%2 == 0 {
-			bgColor = wid.MulAlpha(th.Bg(wid.SecondaryContainer), 50)
+			bgColor = wid.MulAlpha(th.Bg[wid.SecondaryContainer], 50)
 		}
 		gridLines = append(gridLines,
 			wid.GridRow(th, &bgColor, gw, colWidths,
+				// One row of the grid is defined here, Name can not be edited
 				wid.Checkbox(th, "", wid.Bool(&data[i].Selected)),
 				wid.Label(th, &data[i].Name, wid.Pads(0)),
 				wid.Edit(th, wid.Var(&data[i].Address), wid.Border(0), wid.Pads(0)),
-				wid.Label(th, &data[i].Age, wid.Dp(2), wid.Right(), wid.Pads(0)),
+				wid.Edit(th, wid.Var(&data[i].Age), wid.Border(0), wid.Pads(0)),
 				wid.DropDown(th, &data[i].Status, []string{"Male", "Female", "Other"}, wid.Pads(0), wid.Border(0)),
 			))
 
 	}
 	var lines = []layout.Widget{
-		wid.Label(th, "Grid demo", wid.Middle(), wid.Heading(), wid.Bold()),
+		wid.Label(th, "GridDemo demo", wid.Middle(), wid.Heading(), wid.Bold()),
 		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.RadioButton(th, &Alternative, "Wide", "Wide Table", wid.Do(onWinChange)),
 			wid.RadioButton(th, &Alternative, "Narrow", "Narrow Table", wid.Do(onWinChange)),
@@ -229,7 +231,7 @@ func Grid(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 	}
 
 	return func(gtx wid.C) wid.D {
-		bgColor := th.Bg(wid.Canvas)
+		bgColor := th.Bg[wid.Surface]
 		paint.Fill(gtx.Ops, bgColor)
 		// Use flexible row heights. Set 1 for the grid, so it will use all available space.
 		return wid.Col([]float32{0, 0, 0, 0, 1, 0, 0}, lines...)(gtx)

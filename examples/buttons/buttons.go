@@ -38,6 +38,7 @@ func onClick() {
 	} else {
 		theme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
 	}
+	theme.UpdateColors()
 	form = demo(theme)
 }
 
@@ -45,7 +46,19 @@ func onClick() {
 // Returns a widget -- i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
 	return wid.List(th, wid.Overlay,
-		wid.Label(th, "Buttons demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
+		/*
+			wid.Label(th, "Label with large margins but no padding", wid.Middle(), wid.Heading(), wid.Bold(),
+				wid.Role(wid.PrimaryContainer), wid.Margin(20), wid.Pads(0)),
+				wid.Separator(th, unit.Dp(1.0)),
+				wid.Label(th, "Label with padding but no margins", wid.Middle(), wid.Heading(), wid.Bold(),
+					wid.Role(wid.PrimaryContainer), wid.Margin(0), wid.Pads(20)),
+				wid.Separator(th, unit.Dp(1.0)),
+				wid.Label(th, "Label with neither paddings nor margins", wid.Middle(), wid.Heading(), wid.Bold(),
+					wid.Role(wid.PrimaryContainer), wid.Margin(0), wid.Pads(0)),
+				wid.Separator(th, unit.Dp(1.0)),
+		*/
+		wid.Label(th, "Buttons demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer),
+			wid.Role(wid.PrimaryContainer), wid.Margin(10), wid.Pads(5)),
 		wid.Label(th, "Buttons with fixed length and large font"),
 		wid.Button(th, "Change color", wid.Do(onClick), wid.W(450), wid.Large()),
 		wid.Label(th, "Buttons with large font using primary container"),
@@ -99,5 +112,6 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.TextButton(th, "Text button"),
 			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")),
 		),
+		wid.Separator(th, unit.Dp(1.0)),
 	)
 }

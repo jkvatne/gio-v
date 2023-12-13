@@ -69,7 +69,8 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		Base: Base{
 			th:        th,
 			role:      Surface,
-			padding:   th.OutsidePadding,
+			padding:   uniformPadding(3.5), // th.InsidePadding,
+			margin:    uniformPadding(3.5), // th.OutsidePadding,
 			FontScale: 1.0,
 		},
 		Stringer:  s,
@@ -84,9 +85,10 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 	}
 
 	return func(gtx C) D {
+		c := gtx
 		if w.MaxLines == 1 {
 			// This is a hack to avoid splitting the line when only one line is allowed
-			gtx.Constraints.Max.X = inf
+			c.Constraints.Max.X = inf
 		}
 		GuiLock.RLock()
 		str := w.Stringer(w.Dp)
@@ -96,18 +98,23 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		tl := widget.Label{Alignment: w.Alignment, MaxLines: w.MaxLines}
 		colMacro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: w.Fg()}.Add(gtx.Ops)
-		dims := tl.Layout(gtx, w.th.Shaper, w.Font, unit.Sp(w.FontScale)*w.th.FontSp(), str, colMacro.Stop())
-		gtx.Constraints.Min.X -= Px(gtx, w.padding.Left+w.padding.Right)
-		dims.Size.X = Min(gtx.Constraints.Max.X, dims.Size.X)
+		c.Constraints.Min.X -= Px(gtx, w.margin.Left+w.margin.Right+w.padding.Left+w.padding.Right)
+		c.Constraints.Max.X -= Px(gtx, w.margin.Left+w.margin.Right+w.padding.Left+w.padding.Right)
+		c.Constraints.Min.Y = Max(0, c.Constraints.Min.Y-Px(gtx, w.margin.Top+w.margin.Bottom+w.padding.Top+w.padding.Bottom))
+		c.Constraints.Max.Y -= Px(gtx, w.margin.Top+w.margin.Bottom+w.padding.Top+w.padding.Bottom)
+		dims := tl.Layout(c, w.th.Shaper, w.Font, unit.Sp(w.FontScale)*w.th.FontSp(), str, colMacro.Stop())
 		o.Pop()
-		// dims.Size.X += Px(gtx, w.padding.Left+w.padding.Right)
-		dims.Size.Y += Px(gtx, w.padding.Bottom)
+		dims.Size.X += Px(gtx, w.padding.Left+w.padding.Right)
+		dims.Size.Y += Px(gtx, w.padding.Bottom+w.padding.Top)
 		call := macro.Stop()
-		// Color background into the calculated size
+		// Color background into the calculated size, with given margin
+		o = op.Offset(image.Pt(Px(gtx, w.margin.Left), Px(gtx, w.margin.Top))).Push(gtx.Ops)
 		defer clip.Rect(image.Rectangle{Max: dims.Size}).Push(gtx.Ops).Pop()
 		paint.Fill(gtx.Ops, w.Bg())
 		// Then do the text painting (apply the "call" macro)
 		call.Add(gtx.Ops)
+		o.Pop()
+		dims.Size.Y += Px(gtx, w.margin.Bottom+w.margin.Top)
 		return dims
 	}
 }

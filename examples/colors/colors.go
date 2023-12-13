@@ -25,8 +25,10 @@ var (
 
 func main() {
 	theme = wid.NewTheme(gofont.Collection(), 14)
+	theme.InsidePadding = layout.Inset{30, 30, 30, 30}
+	theme.OutsidePadding = layout.Inset{20, 20, 30, 30}
 	show()
-	win = app.NewWindow(app.Title("Colors"), app.Maximized.Option())
+	win = app.NewWindow(app.Title("Colors"), app.Size(1024, 600)) // , app.Maximized.Option())
 	go wid.Run(win, &form, theme)
 	app.Main()
 }
@@ -114,7 +116,7 @@ func show() {
 func demo2(th *wid.Theme) layout.Widget {
 	var ld string
 	var cr string
-	theme.SetLinesPrForm(35)
+	theme.SetLinesPrForm(28)
 	if theme.DarkMode {
 		ld = "Set light"
 	} else {
@@ -125,9 +127,8 @@ func demo2(th *wid.Theme) layout.Widget {
 	} else {
 		cr = "Show Roles"
 	}
-	return wid.Col(wid.SpaceDistribute,
+	return wid.Col(wid.SpaceClose,
 		wid.Label(th, "Show all UI roles", wid.Middle(), wid.Heading(), wid.Bold()),
-		wid.Separator(th, unit.Dp(0.0), wid.Pads(10.0, 0)),
 		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.Button(th, "Set default palette", wid.Do(setDefault)),
 			wid.Button(th, "Set palette 1", wid.Do(setPalette1)),
@@ -136,22 +137,26 @@ func demo2(th *wid.Theme) layout.Widget {
 			wid.Button(th, cr, wid.Do(setColorsRoles)),
 			wid.Button(th, ld, wid.Do(setDarkLight)),
 		),
-		wid.Separator(th, unit.Dp(1.0), wid.Pads(10.0, 0)),
-		wid.Label(th, "Primary", wid.Large(), wid.Role(wid.Primary)),
-		wid.Label(th, "Secondary", wid.Large(), wid.Role(wid.Secondary)),
-		wid.Label(th, "Tertiary", wid.Large(), wid.Role(wid.Tertiary)),
-		wid.Label(th, "Error", wid.Large(), wid.Role(wid.Error)),
-		wid.Label(th, "Primary Container", wid.Large(), wid.Role(wid.PrimaryContainer)),
-		wid.Label(th, "Secondary Container", wid.Large(), wid.Role(wid.SecondaryContainer)),
-		wid.Label(th, "Tertiary Container", wid.Large(), wid.Role(wid.TertiaryContainer)),
-		wid.Label(th, "Error Containter", wid.Large(), wid.Role(wid.ErrorContainer)),
-		wid.Label(th, "Canvas", wid.Large(), wid.Role(wid.Canvas)),
-		wid.Label(th, "Surface Variant", wid.Large(), wid.Role(wid.SurfaceVariant)),
-		wid.Label(th, "Surface Highest", wid.Large(), wid.Role(wid.SurfaceHighest)),
-		wid.Label(th, "Surface High", wid.Large(), wid.Role(wid.SurfaceHigh)),
-		wid.Label(th, "Surface", wid.Large(), wid.Role(wid.Surface)),
-		wid.Label(th, "Surface Low", wid.Large(), wid.Role(wid.SurfaceLow)),
-		wid.Label(th, "Surface Lowest", wid.Large(), wid.Role(wid.SurfaceLowest)),
+		wid.Separator(th, unit.Dp(1.0), wid.Pads(3.0, 0)),
+		wid.Row(th, nil, wid.SpaceDistribute,
+			wid.Col(wid.SpaceDistribute,
+				wid.Label(th, "Primary", wid.Large(), wid.Role(wid.Primary)),
+				wid.Label(th, "Secondary", wid.Large(), wid.Role(wid.Secondary)),
+				wid.Label(th, "Tertiary", wid.Large(), wid.Role(wid.Tertiary)),
+				wid.Label(th, "Error", wid.Large(), wid.Role(wid.Error)),
+				wid.Label(th, "Primary Container", wid.Large(), wid.Role(wid.PrimaryContainer)),
+				wid.Label(th, "Secondary Container", wid.Large(), wid.Role(wid.SecondaryContainer)),
+				wid.Label(th, "Tertiary Container", wid.Large(), wid.Role(wid.TertiaryContainer)),
+				wid.Label(th, "Error Containter", wid.Large(), wid.Role(wid.ErrorContainer))),
+			wid.Col(wid.SpaceDistribute,
+				wid.Label(th, "Surface Variant", wid.Large(), wid.Role(wid.SurfaceVariant)),
+				wid.Label(th, "Surface Highest", wid.Large(), wid.Role(wid.SurfaceHighest)),
+				wid.Label(th, "Surface High", wid.Large(), wid.Role(wid.SurfaceHigh)),
+				wid.Label(th, "Surface", wid.Large(), wid.Role(wid.Surface)),
+				wid.Label(th, "Surface Low", wid.Large(), wid.Role(wid.SurfaceLow)),
+				wid.Label(th, "Surface Lowest", wid.Large(), wid.Role(wid.SurfaceLowest)),
+				wid.Label(th, "Canvas", wid.Large(), wid.Role(wid.Canvas))),
+		),
 	)
 }
 
