@@ -111,7 +111,8 @@ func Ed[V Value](th *Theme, v V, opt ...any) func(gtx C) D {
 		Base: Base{
 			th:      th,
 			Font:    &th.DefaultFont,
-			padding: th.OutsidePadding,
+			margin:  th.DefaultMargin,
+			padding: th.DefaultPadding,
 		},
 		Editor: widget.Editor{
 			SingleLine: true,
@@ -157,7 +158,8 @@ func Edit(th *Theme, options ...Option) func(gtx C) D {
 	e.SingleLine = true
 	e.borderThickness = th.BorderThickness
 	e.width = unit.Dp(5000) // Default to max width that is possible
-	e.padding = th.OutsidePadding
+	e.padding = th.DefaultPadding
+	e.margin = th.DefaultMargin
 	e.outlineColor = th.Fg[Outline]
 	e.selectionColor = MulAlpha(th.Bg[Primary], 60)
 	e.value = ""
@@ -216,18 +218,18 @@ func (e *EditDef) Layout(gtx C) D {
 
 	e.updateValue()
 
-	// Move to offset the outside padding
+	// Move to offset the outside margin
 	defer op.Offset(image.Pt(
-		Px(gtx, e.padding.Left),
-		Px(gtx, e.padding.Top))).Push(gtx.Ops).Pop()
+		Px(gtx, e.margin.Left),
+		Px(gtx, e.margin.Top))).Push(gtx.Ops).Pop()
 
-	// And reduce the size to make space for the padding
-	gtx.Constraints.Min.X -= Px(gtx, e.padding.Left+e.padding.Right+e.th.InsidePadding.Left+e.th.InsidePadding.Right)
+	// And reduce the size to make space for the padding and margin
+	gtx.Constraints.Min.X -= Px(gtx, e.padding.Left+e.padding.Right+e.margin.Left+e.margin.Right)
 	gtx.Constraints.Max.X = gtx.Constraints.Min.X
 
 	// Draw hint text with top/left padding offset
 	macro := op.Record(gtx.Ops)
-	o := op.Offset(image.Pt(Px(gtx, e.th.InsidePadding.Left), Px(gtx, e.th.InsidePadding.Top))).Push(gtx.Ops)
+	o := op.Offset(image.Pt(Px(gtx, e.padding.Left), Px(gtx, e.padding.Top))).Push(gtx.Ops)
 	paint.ColorOp{Color: MulAlpha(e.Fg(), 110)}.Add(gtx.Ops)
 	tl := widget.Label{Alignment: e.Editor.Alignment, MaxLines: e.maxLines()}
 	LblDim := tl.Layout(gtx, e.th.Shaper, *e.Font, e.th.FontSp(), e.hint, hintColor)
@@ -236,11 +238,11 @@ func (e *EditDef) Layout(gtx C) D {
 
 	// Add outside label to the left of the edit box
 	if e.label != "" {
-		o := op.Offset(image.Pt(0, Px(gtx, e.th.InsidePadding.Top))).Push(gtx.Ops)
+		o := op.Offset(image.Pt(0, Px(gtx, e.padding.Top))).Push(gtx.Ops)
 		paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
 		oldMaxX := gtx.Constraints.Max.X
 		ofs := int(float32(oldMaxX) * e.labelSize)
-		gtx.Constraints.Max.X = ofs - Px(gtx, e.th.InsidePadding.Left)
+		gtx.Constraints.Max.X = ofs - Px(gtx, e.padding.Left)
 		gtx.Constraints.Min.X = gtx.Constraints.Max.X
 		colMacro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
@@ -257,8 +259,8 @@ func (e *EditDef) Layout(gtx C) D {
 	}
 
 	border := image.Rectangle{Max: image.Pt(
-		gtx.Constraints.Max.X+Px(gtx, e.th.InsidePadding.Left+e.th.InsidePadding.Right),
-		LblDim.Size.Y+Px(gtx, e.th.InsidePadding.Bottom+e.th.InsidePadding.Top))}
+		gtx.Constraints.Max.X+Px(gtx, e.padding.Left+e.padding.Right),
+		LblDim.Size.Y+Px(gtx, e.padding.Bottom+e.padding.Top))}
 
 	r := Px(gtx, e.th.BorderCornerRadius)
 	if r > border.Max.Y/2 {
@@ -268,7 +270,7 @@ func (e *EditDef) Layout(gtx C) D {
 		paint.FillShape(gtx.Ops, e.th.Bg[Canvas], clip.UniformRRect(border, r).Op(gtx.Ops))
 	}
 
-	o = op.Offset(image.Pt(Px(gtx, e.th.InsidePadding.Left), Px(gtx, e.th.InsidePadding.Top))).Push(gtx.Ops)
+	o = op.Offset(image.Pt(Px(gtx, e.padding.Left), Px(gtx, e.padding.Top))).Push(gtx.Ops)
 	_ = e.Editor.Layout(gtx, e.th.Shaper, *e.Font, e.th.FontSp(), textColor, selectionColor)
 	o.Pop()
 	if e.Editor.Len() == 0 {
@@ -304,7 +306,7 @@ func (e *EditDef) Layout(gtx C) D {
 	}.Add(gtx.Ops)
 	eventArea.Pop()
 
-	defer op.Offset(image.Pt(Px(gtx, e.th.InsidePadding.Left), 0)).Push(gtx.Ops).Pop()
+	defer op.Offset(image.Pt(Px(gtx, e.padding.Left), 0)).Push(gtx.Ops).Pop()
 	dim := image.Pt(gtx.Constraints.Max.X, border.Max.Y+Px(gtx, e.padding.Bottom+e.padding.Top))
 	return D{Size: dim}
 }

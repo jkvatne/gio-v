@@ -91,12 +91,12 @@ type Theme struct {
 	TooltipWidth        unit.Dp
 	TooltipBackground   color.NRGBA
 	TooltipOnBackground color.NRGBA
-	OutsidePadding      layout.Inset
-	InsidePadding       layout.Inset
+	DefaultMargin       layout.Inset
+	DefaultPadding      layout.Inset
 	IconInset           layout.Inset
 	ListInset           layout.Inset
 	ButtonPadding       layout.Inset
-	ButtonLabelPadding  layout.Inset
+	ButtonMargin        layout.Inset
 	ButtonCornerRadius  unit.Dp
 	IconSize            unit.Dp
 	// Elevation is the shadow width
@@ -315,11 +315,11 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	// Shadow
 	th.Elevation = 0.5
 	// Text
-	th.OutsidePadding = uniformPadding(3.5)
-	th.InsidePadding = uniformPadding(3.5)
+	th.DefaultMargin = uniformPadding(3.5)
+	th.DefaultPadding = uniformPadding(3.5)
 	th.ButtonPadding = uniformPadding(3.5)
 	th.ButtonCornerRadius = th.BorderCornerRadius
-	th.ButtonLabelPadding = uniformPadding(5)
+	th.ButtonMargin = uniformPadding(5)
 	th.IconSize = 20
 	th.TooltipCornerRadius = th.BorderCornerRadius
 	th.TooltipWidth = 250

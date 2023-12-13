@@ -44,7 +44,7 @@ func RadioButton(th *Theme, value *string, key string, label string, options ...
 	r.th = th
 	r.FontScale = 1.0
 	r.role = Surface
-	r.padding = th.OutsidePadding
+	r.margin = th.DefaultMargin
 	r.Font = &th.DefaultFont
 	for _, option := range options {
 		option.apply(&r)
@@ -64,7 +64,7 @@ func Checkbox(th *Theme, label string, options ...Option) func(gtx C) D {
 	c.th = th
 	c.FontScale = 1.0
 	c.role = Surface
-	c.padding = th.OutsidePadding
+	c.margin = th.DefaultMargin
 	c.Font = &th.DefaultFont
 	for _, option := range options {
 		option.apply(c)
@@ -111,7 +111,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	gtx.Constraints.Min.Y = 0
 	gtx.Constraints.Min.X = 0
 	ctx := gtx
-	ctx.Constraints.Max.X -= Px(gtx, c.padding.Right+unit.Dp(iconSize))
+	ctx.Constraints.Max.X -= Px(gtx, c.margin.Right+unit.Dp(iconSize))
 	if ctx.Constraints.Max.X < 0 {
 		ctx.Constraints.Max.X = 0
 	}
@@ -120,7 +120,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	labelDim := widget.Label{MaxLines: 1}.Layout(ctx, c.th.Shaper, *c.Font, iconSize, c.Label, colMacro.Stop())
 	drawLabel := macro.Stop()
 	dx := labelDim.Size.Y / 6
-	dy := Px(gtx, c.padding.Top)
+	dy := Px(gtx, c.margin.Top)
 	defer op.Offset(image.Pt(dx, dy)).Push(gtx.Ops).Pop()
 	// The hover/focus shadow extends outside the checkbox by 25%
 	b := image.Rectangle{Min: image.Pt(-dx, -dx), Max: image.Pt(labelDim.Size.Y+dx, labelDim.Size.Y+dx)}
@@ -141,14 +141,14 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	cgtx := gtx
 	cgtx.Constraints.Min = image.Point{X: labelDim.Size.Y}
 	iconDim := icon.Layout(cgtx, col)
-	px := Px(gtx, c.padding.Left+c.padding.Right)
-	py := Px(gtx, c.padding.Top+c.padding.Bottom)
+	px := Px(gtx, c.margin.Left+c.margin.Right)
+	py := Px(gtx, c.margin.Top+c.margin.Bottom)
 	dims := layout.Dimensions{
 		Size: image.Point{
 			X: labelDim.Size.X + px + iconDim.Size.X,
 			Y: labelDim.Size.Y + py,
 		}}
-	of := op.Offset(image.Pt(labelDim.Size.Y+Px(gtx, c.padding.Left), 0)).Push(gtx.Ops)
+	of := op.Offset(image.Pt(labelDim.Size.Y+Px(gtx, c.margin.Left), 0)).Push(gtx.Ops)
 	paint.ColorOp{Color: col}.Add(gtx.Ops)
 	drawLabel.Add(gtx.Ops)
 	of.Pop()

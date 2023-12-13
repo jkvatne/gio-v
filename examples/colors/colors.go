@@ -25,8 +25,6 @@ var (
 
 func main() {
 	theme = wid.NewTheme(gofont.Collection(), 14)
-	theme.InsidePadding = layout.Inset{30, 30, 30, 30}
-	theme.OutsidePadding = layout.Inset{20, 20, 30, 30}
 	show()
 	win = app.NewWindow(app.Title("Colors"), app.Size(1024, 600)) // , app.Maximized.Option())
 	go wid.Run(win, &form, theme)
@@ -165,7 +163,7 @@ func demo2(th *wid.Theme) layout.Widget {
 func demo1(th *wid.Theme) layout.Widget {
 	var ld string
 	var cr string
-	theme.SetLinesPrForm(31)
+	theme.SetLinesPrForm(37)
 	if theme.DarkMode {
 		ld = "Set light"
 	} else {
@@ -176,7 +174,7 @@ func demo1(th *wid.Theme) layout.Widget {
 	} else {
 		cr = "Show Roles"
 	}
-	return wid.Col(wid.SpaceDistribute,
+	return wid.Col([]float32{0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
 		wid.Label(th, "Show all tones for some palettes", wid.Middle(), wid.Heading(), wid.Bold()),
 		wid.Label(th, "Also demonstrates a form that will fill the screen 100%", wid.Middle(), wid.Small()),
 		wid.Row(th, nil, wid.SpaceDistribute,

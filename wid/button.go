@@ -46,10 +46,9 @@ type ButtonDef struct {
 	Base
 	Tooltip
 	Clickable
-	Text      *string
-	Icon      *Icon
-	Style     ButtonStyle
-	internPad layout.Inset
+	Text  *string
+	Icon  *Icon
+	Style ButtonStyle
 }
 
 // BtnOption is the options for buttons only
@@ -83,9 +82,9 @@ func HeaderButton(th *Theme, label string, options ...Option) layout.Widget {
 	options = append([]Option{Role(Canvas)}, options...)
 	b := aButton(Text, th, label, options...)
 	b.cornerRadius = 0
-	b.internPad = th.OutsidePadding
+	b.padding = th.DefaultPadding
+	b.margin = layout.Inset{}
 	b.Style = Header
-	b.padding = layout.Inset{}
 	return b.Layout
 }
 
@@ -103,9 +102,8 @@ func aButton[V StrValue](style ButtonStyle, th *Theme, label V, options ...Optio
 	b.Font = &th.DefaultFont
 	b.shaper = th.Shaper
 	b.Style = style
-	b.internPad = th.ButtonLabelPadding
-	// Apply standard padding on the outside of the button. Can be overridden by option function
 	b.padding = th.ButtonPadding
+	b.margin = th.ButtonMargin
 	b.FontScale = 1.0
 	b.cornerRadius = th.ButtonCornerRadius
 	for _, option := range options {
@@ -126,11 +124,9 @@ func (b *ButtonDef) HandleClick() {
 
 // Layout will draw a button defined in b.
 func (b *ButtonDef) Layout(gtx C) D {
-	if b.disabler != nil && !*b.disabler {
-		gtx.Queue = nil
-	}
-	gtx.Constraints.Max.X -= Px(gtx, b.padding.Right+b.padding.Left)
-	defer op.Offset(image.Pt(Px(gtx, b.padding.Left), Px(gtx, b.padding.Top))).Push(gtx.Ops).Pop()
+	b.CheckDisable(gtx)
+	// Move the whole button down/right margin offset
+	defer op.Offset(image.Pt(Px(gtx, b.margin.Left), Px(gtx, b.margin.Top))).Push(gtx.Ops).Pop()
 	// Handle clickable pointer/keyboard inputs
 	b.HandleEvents(gtx)
 	b.HandleClick()
@@ -142,6 +138,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 	cgtx := gtx
 	cgtx.Constraints.Min.X = 0
 	cgtx.Constraints.Min.Y = 0
+	cgtx.Constraints.Max.X -= Px(gtx, b.padding.Right+b.padding.Left+b.margin.Left+b.margin.Right)
 	// Render text to find button width
 	recorder = op.Record(gtx.Ops)
 	textDim := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.FontSp()*unit.Sp(b.FontScale), *b.Text, colorMacro)
@@ -151,7 +148,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 	if b.Icon != nil {
 		iconSize = textDim.Size.Y * 4 / 3
 	}
-	height := Min(textDim.Size.Y+Px(gtx, b.internPad.Top)+Px(gtx, b.internPad.Bottom), gtx.Constraints.Max.Y)
+	height := Min(textDim.Size.Y+Px(gtx, b.padding.Top)+Px(gtx, b.padding.Bottom), gtx.Constraints.Max.Y)
 	// Default button width when width is not given has padding=1.2 char heights.
 	contentWidth := textDim.Size.X + iconSize
 	width := Min(gtx.Constraints.Max.X, Max(contentWidth+textDim.Size.Y, Px(gtx, b.width)))
@@ -202,11 +199,11 @@ func (b *ButtonDef) Layout(gtx C) D {
 	// Calculate internal paddings and move
 	dy := Max(0, (height-textDim.Size.Y)/2)
 	dx := Max(0, (width-contentWidth)/2)
-	if b.internPad.Left > 0 && dx < Px(gtx, b.internPad.Left) {
-		dx = Px(gtx, b.internPad.Left)
+	if b.padding.Left > 0 && dx < Px(gtx, b.padding.Left) {
+		dx = Px(gtx, b.padding.Left)
 	}
 	if b.Style == Header {
-		dx = Px(gtx, b.internPad.Left)
+		dx = Px(gtx, b.padding.Left)
 	}
 
 	if b.Icon != nil && *b.Text != "" {
@@ -234,8 +231,8 @@ func (b *ButtonDef) Layout(gtx C) D {
 	b.SetupEventHandlers(gtx, outline.Max)
 	// TODO  _ = b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
 	pointer.CursorPointer.Add(gtx.Ops)
-	outline.Max.X += Px(gtx, b.padding.Left+b.padding.Right)
-	outline.Max.Y += Px(gtx, b.padding.Top+b.padding.Bottom)
+	outline.Max.X += Px(gtx, b.margin.Left+b.margin.Right)
+	outline.Max.Y += Px(gtx, b.margin.Top+b.margin.Bottom)
 	return D{Size: outline.Max}
 }
 
