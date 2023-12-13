@@ -24,7 +24,7 @@ func TestColors(t *testing.T) {
 		},
 		Queue: &r,
 	})
-	form = demo(theme)
+	form = demo2(theme)
 	form(gtx)
 }
 
@@ -35,7 +35,7 @@ func BenchmarkColors(b *testing.B) {
 
 	var ops op.Ops
 	var r router.Router
-	form = demo(theme)
+	form = demo1(theme)
 	for i := 0; i < b.N; i++ {
 		gtx := layout.NewContext(&ops, system.FrameEvent{
 			Size: image.Point{

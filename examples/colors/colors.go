@@ -61,10 +61,10 @@ func setDefault() {
 }
 
 func setPalette1() {
-	theme.PrimaryColor = wid.RGB(0x57624E)
-	theme.SecondaryColor = wid.RGB(0x57624E)
-	theme.TertiaryColor = wid.RGB(0x336669)
-	theme.ErrorColor = wid.RGB(0xAF2525)
+	theme.PrimaryColor = wid.RGB(0x67622E)
+	theme.SecondaryColor = wid.RGB(0x27622E)
+	theme.TertiaryColor = wid.RGB(0x316669)
+	theme.ErrorColor = wid.RGB(0xAF1515)
 	theme.NeutralColor = wid.RGB(0x1D5D7D)
 	theme.NeutralVariantColor = wid.RGB(0x756057)
 	theme.NeutralVariantColor = wid.RGB(0x356057)
@@ -73,9 +73,9 @@ func setPalette1() {
 
 func setPalette2() {
 	theme.PrimaryColor = wid.RGB(0x17624E)
-	theme.SecondaryColor = wid.RGB(0x17624E)
+	theme.SecondaryColor = wid.RGB(0x27624E)
 	theme.TertiaryColor = wid.RGB(0x136669)
-	theme.ErrorColor = wid.RGB(0xAF2535)
+	theme.ErrorColor = wid.RGB(0xAF1505)
 	theme.NeutralColor = wid.RGB(0x1D4D7D)
 	theme.NeutralVariantColor = wid.RGB(0x356057)
 	theme.NeutralVariantColor = wid.RGB(0x356057)
@@ -86,7 +86,7 @@ func setPalette3() {
 	theme.PrimaryColor = wid.RGB(0x17329E)
 	theme.SecondaryColor = wid.RGB(0x17624E)
 	theme.TertiaryColor = wid.RGB(0x136669)
-	theme.ErrorColor = wid.RGB(0xAF2535)
+	theme.ErrorColor = wid.RGB(0xBF0000)
 	theme.NeutralColor = wid.RGB(0x1D4D7D)
 	theme.NeutralVariantColor = wid.RGB(0x356057)
 	show()
@@ -128,8 +128,8 @@ func demo2(th *wid.Theme) layout.Widget {
 	return wid.Col(wid.SpaceClose,
 		wid.Label(th, "Show all UI roles", wid.Middle(), wid.Heading(), wid.Bold()),
 		wid.Row(th, nil, wid.SpaceDistribute,
-			wid.Button(th, "Set default palette", wid.Do(setDefault)),
-			wid.Button(th, "Set palette 1", wid.Do(setPalette1)),
+			wid.Button(th, "Set default palette", wid.Do(setDefault), wid.Hint("Set the default pallete on all widgets")),
+			wid.Button(th, "Set palette 1", wid.Do(setPalette1), wid.Hint("Use a pallete")),
 			wid.Button(th, "Set palette 2", wid.Do(setPalette2)),
 			wid.Button(th, "Set palette 3", wid.Do(setPalette3)),
 			wid.Button(th, cr, wid.Do(setColorsRoles)),
@@ -178,8 +178,8 @@ func demo1(th *wid.Theme) layout.Widget {
 		wid.Label(th, "Show all tones for some palettes", wid.Middle(), wid.Heading(), wid.Bold()),
 		wid.Label(th, "Also demonstrates a form that will fill the screen 100%", wid.Middle(), wid.Small()),
 		wid.Row(th, nil, wid.SpaceDistribute,
-			wid.Button(th, "Set default palette", wid.Do(setDefault)),
-			wid.Button(th, "Set palette 1", wid.Do(setPalette1)),
+			wid.Button(th, "Set default palette", wid.Do(setDefault), wid.Hint("Set the default pallete on all widgets")),
+			wid.Button(th, "Set palette 1", wid.Do(setPalette1), wid.Hint("Use a pallete")),
 			wid.Button(th, "Set palette 2", wid.Do(setPalette2)),
 			wid.Button(th, "Set palette 3", wid.Do(setPalette3)),
 			wid.Button(th, cr, wid.Do(setColorsRoles)),

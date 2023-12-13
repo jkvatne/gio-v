@@ -54,7 +54,7 @@ func MobileTooltip(th *Theme) Tooltip {
 		Bgc:      th.TooltipBackground,
 		font:     font.Font{Weight: font.Medium},
 		shaper:   th.Shaper,
-		TextSize: th.FontSp() * 0.9,
+		TextSize: th.TextSize * 0.9,
 	}
 }
 
@@ -67,7 +67,7 @@ func DesktopTooltip(th *Theme) Tooltip {
 		TooltipRR: th.TooltipCornerRadius,
 		font:      font.Font{Weight: font.Medium},
 		shaper:    th.Shaper,
-		TextSize:  th.FontSp() * 0.9,
+		TextSize:  th.TextSize * 0.9,
 	}
 
 }
@@ -181,7 +181,7 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 						rr := Px(gtx, t.TooltipRR)
 						outline := image.Rectangle{Max: gtx.Constraints.Min}
 						paint.FillShape(gtx.Ops, bg, clip.UniformRRect(outline, rr).Op(gtx.Ops))
-						w := float32(Px(gtx, 0.5))
+						w := float32(Px(gtx, unit.Dp(0.5)))
 						paintBorder(gtx, outline, MulAlpha(t.Fgc, 128), w, Px(gtx, t.TooltipRR))
 						return D{}
 					}),

@@ -229,10 +229,12 @@ func (b *ButtonDef) Layout(gtx C) D {
 	}
 
 	b.SetupEventHandlers(gtx, outline.Max)
-	// TODO  _ = b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
 	pointer.CursorPointer.Add(gtx.Ops)
 	outline.Max.X += Px(gtx, b.margin.Left+b.margin.Right)
 	outline.Max.Y += Px(gtx, b.margin.Top+b.margin.Bottom)
+	_ = b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
+		return D{Size: outline.Max}
+	})
 	return D{Size: outline.Max}
 }
 
