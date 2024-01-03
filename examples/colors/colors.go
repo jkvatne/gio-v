@@ -24,9 +24,9 @@ var (
 )
 
 func main() {
-	theme = wid.NewTheme(gofont.Collection(), 14)
+	theme = wid.NewTheme(gofont.Collection(), 20)
 	show()
-	win = app.NewWindow(app.Title("Colors"), app.Size(1024, 600)) // , app.Maximized.Option())
+	win = app.NewWindow(app.Title("Colors"), app.Size(1024, 510)) // , app.Maximized.Option())
 	go wid.Run(win, &form, theme)
 	app.Main()
 }
@@ -114,7 +114,6 @@ func show() {
 func demo2(th *wid.Theme) layout.Widget {
 	var ld string
 	var cr string
-	theme.SetLinesPrForm(28)
 	if theme.DarkMode {
 		ld = "Set light"
 	} else {
@@ -164,7 +163,6 @@ func demo2(th *wid.Theme) layout.Widget {
 func demo1(th *wid.Theme) layout.Widget {
 	var ld string
 	var cr string
-	theme.SetLinesPrForm(37)
 	if theme.DarkMode {
 		ld = "Set light"
 	} else {

@@ -130,8 +130,6 @@ type Theme struct {
 	ScrollCornerRadius unit.Dp
 	// Default split between edit label and edit field
 	LabelSplit float32
-	// If > 0, the font size will be form height divided by LinesPrForm
-	LinesPrForm float64
 }
 
 func mustIcon(ic *Icon, err error) *Icon {
@@ -146,12 +144,6 @@ func uniformPadding(p float64) layout.Inset {
 	return layout.Inset{Top: pp, Bottom: pp, Left: pp, Right: pp}
 }
 
-func (th *Theme) SetLinesPrForm(x float64) {
-	th.LinesPrForm = x
-	// Force recalculation of font size
-	OldWinY = 0
-}
-
 func (th *Theme) Dp(x unit.Dp) unit.Dp {
 	return x
 }
@@ -163,16 +155,16 @@ type GuiUnit interface{ unit.Dp | unit.Sp }
 // the gtx metric's PixelPrSp and PixelPrDp
 func Px(gtx C, dp interface{}) int {
 	if u, ok := dp.(unit.Dp); ok {
-		return gtx.Dp(u * unit.Dp(Scale))
+		return gtx.Dp(u)
 	}
 	if u, ok := dp.(unit.Sp); ok {
-		return gtx.Sp(u * unit.Sp(Scale))
+		return gtx.Sp(u)
 	}
 	panic("Px() called with illegal value")
 }
 
 func (th *Theme) FontSp() unit.Sp {
-	return th.TextSize * unit.Sp(Scale)
+	return th.TextSize
 }
 
 // See https://m3.material.io/styles/color/static/baseline
@@ -312,33 +304,32 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	th.RadioChecked = mustIcon(NewIcon(icons.ToggleRadioButtonChecked))
 	th.RadioUnchecked = mustIcon(NewIcon(icons.ToggleRadioButtonUnchecked))
 	// Setup font types
-	// Old version (v0.1.0) : t.Shaper = text.NewShaper(fontCollection)
 	th.Shaper = text.NewShaper(text.NoSystemFonts(), text.WithCollection(fontCollection))
 	// Default to equal length for label and editor
 	th.LabelSplit = 0.5
 	th.FingerSize = unit.Dp(38)
 	th.IconInset = layout.Inset{Top: 1, Right: 1, Bottom: 1, Left: 1}
 	th.BorderThickness = 1.0
-	th.BorderCornerRadius = unit.Dp(fontSize / 3)
+	th.BorderCornerRadius = 4.0
 	// Shadow
 	th.Elevation = 0.5
 	// Text
-	th.DefaultMargin = uniformPadding(float64(fontSize) / 3)
-	th.DefaultPadding = uniformPadding(float64(fontSize) / 3)
-	th.ButtonPadding = uniformPadding(float64(fontSize) / 3)
+	th.DefaultMargin = uniformPadding(4.0)
+	th.DefaultPadding = uniformPadding(4.0)
+	th.ButtonPadding = uniformPadding(4.0)
 	th.ButtonCornerRadius = th.BorderCornerRadius
-	th.ButtonMargin = uniformPadding(float64(fontSize) / 3)
-	th.IconSize = 20
+	th.ButtonMargin = uniformPadding(4.0)
+	th.IconSize = 20.0
 	th.TooltipCornerRadius = th.BorderCornerRadius
-	th.TooltipWidth = 250
-	th.SashWidth = 8
+	th.TooltipWidth = 250.0
+	th.SashWidth = 8.0
 	th.RowPadTop = 0.0
 	th.RowPadBtm = 0.0
-	th.ScrollMajorPadding = 0
-	th.ScrollMinorPadding = 0
+	th.ScrollMajorPadding = 2
+	th.ScrollMinorPadding = 2
 	th.ScrollMajorMinLen = 15.5
 	th.ScrollMinorWidth = 15.5
-	th.ScrollCornerRadius = 4
+	th.ScrollCornerRadius = 4.0
 	th.TooltipInset = layout.UniformInset(1)
 	// Update all colors from the pallete
 	th.UpdateColors()

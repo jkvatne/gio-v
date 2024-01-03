@@ -35,14 +35,15 @@ type (
 type UIState uint8
 
 var (
-	MouseX     float32
-	MouseY     float32
-	WinX       int
-	WinY       int
-	CurrentY   int
-	GuiLock    sync.RWMutex
-	invalidate chan struct{}
-	Scale      float32 // Scale all widgets on the form when resized
+	mouseX        float32
+	mouseY        float32
+	WinX          int
+	WinY          int
+	startWinY     int
+	FixedFontSize bool
+	CurrentY      int
+	GuiLock       sync.RWMutex
+	invalidate    chan struct{}
 )
 
 // Base is tha base structure for widgets. It contains variables that (almost) all widgets share
@@ -399,8 +400,8 @@ func UpdateMousePos(gtx C, win *app.Window) {
 	for _, gtxEvent := range gtx.Events(win) {
 		switch e := gtxEvent.(type) {
 		case pointer.Event:
-			MouseX = e.Position.X
-			MouseY = e.Position.Y
+			mouseX = e.Position.X
+			mouseY = e.Position.Y
 		}
 	}
 }
@@ -429,24 +430,17 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 			WinX = e.Size.X
 			WinY = e.Size.Y
 			gtx := layout.NewContext(&ops, e)
-			// This code scales the font according to the window size.
-			// Resizing the window will scale most settings to keep the
-			// look identical but smaller or larger
-			// The default is for theme.FontScale to be zero, so to have
-			// this functionality you must manually set it to a value ca 50-200.
-			// The number is the number of characters vertically.
-			if th.LinesPrForm > 0 {
-				if WinY != OldWinY {
-					OldWinY = WinY
-					// Font size is in units sp (like dp but for fonts) while WinY is in pixels
-					// So we have to rescale using PxToSp
-					Scale = float32(WinY) / float32(th.LinesPrForm) / float32(gtx.Dp(14))
-				}
-			}
-			if Scale == 0.0 {
-				Scale = 1.0
-			}
 
+			if startWinY == 0 {
+				startWinY = WinY
+			}
+			// Font size is in units sp (like dp but for fonts) while WinY is in pixels
+			// So we have to rescale using PxToSp
+			if !FixedFontSize {
+				scale := float32(WinY) / float32(startWinY)
+				gtx.Metric.PxPerDp = scale * gtx.Metric.PxPerDp
+				gtx.Metric.PxPerSp = scale * gtx.Metric.PxPerSp
+			}
 			CurrentY = 0
 			paint.ColorOp{Color: th.Bg[Surface]}.Add(gtx.Ops)
 			paint.PaintOp{}.Add(gtx.Ops)

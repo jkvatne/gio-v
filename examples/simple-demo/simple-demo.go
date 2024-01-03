@@ -48,7 +48,7 @@ var (
 func main() {
 	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
 	homeIcon, _ = wid.NewIcon(icons.ActionHome)
-	theme = wid.NewTheme(gofont.Collection(), 14)
+	theme = wid.NewTheme(gofont.Collection(), 20)
 	theme.DarkMode = false
 	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(1200), unit.Dp(800)))
 	form = demo(theme)
@@ -68,17 +68,12 @@ func ticker() {
 }
 
 func onSwitchFontSize() {
-	if !FixedFont && SmallFont {
-		theme.SetLinesPrForm(60)
-	} else if !FixedFont && !SmallFont {
-		theme.SetLinesPrForm(40)
-	} else if SmallFont {
-		theme.SetLinesPrForm(0)
+	if SmallFont {
 		theme.TextSize = 11
 	} else {
-		theme.SetLinesPrForm(0)
-		theme.TextSize = 14
+		theme.TextSize = 20
 	}
+	wid.FixedFontSize = FixedFont
 }
 
 func onSwitchMode() {
@@ -132,14 +127,13 @@ func onWinChange() {
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
 	ff := &font.Font{Typeface: "gomono"}
-	theme.SetLinesPrForm(40)
 	return wid.Col(wid.SpaceClose,
 		wid.Label(th, "Demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Row(th, nil, []float32{.5, .5, .8, .5, .5, .5},
 			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onSwitchMode)),
 			wid.Checkbox(th, "Small font", wid.Bool(&SmallFont), wid.Do(onSwitchFontSize)),
-			wid.Checkbox(th, "Fixed size", wid.Bool(&FixedFont), wid.Do(onSwitchFontSize)),
+			wid.Checkbox(th, "Fixed font", wid.Bool(&FixedFont), wid.Do(onSwitchFontSize)),
 			wid.RadioButton(th, &WindowMode, "windowed", "Windowed", wid.Do(onWinChange)),
 			wid.RadioButton(th, &WindowMode, "fullscreen", "Fullscreen", wid.Do(onWinChange)),
 			wid.RadioButton(th, &WindowMode, "maximized", "Maximized", wid.Do(onWinChange)),

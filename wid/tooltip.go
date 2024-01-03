@@ -194,11 +194,11 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 						})
 					}),
 				)
-				dx := int(MouseX) + CursorSizeX + dims.Size.X - WinX
+				dx := int(mouseX) + CursorSizeX + dims.Size.X - WinX
 				if dx < 0 {
 					dx = 0
 				}
-				dy := int(MouseY) + CursorSizeY + dims.Size.Y - WinY
+				dy := int(mouseY) + CursorSizeY + dims.Size.Y - WinY
 				if dy < 0 {
 					dy = 0
 				}
