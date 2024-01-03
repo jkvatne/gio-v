@@ -39,7 +39,6 @@ func main() {
 }
 
 func onClick() {
-	otherPallete = !otherPallete
 	if otherPallete {
 		theme.PrimaryColor = wid.RGB(0x17624E)
 		theme.SecondaryColor = wid.RGB(0x17624E)
@@ -59,40 +58,53 @@ func onClick() {
 	theme.UpdateColors()
 }
 
+func onSwitchFontSize() {
+	if SmallFont {
+		theme.TextSize = 11
+	} else {
+		theme.TextSize = 20
+	}
+	wid.FixedFontSize = FixedFont
+}
+
+func onSwitchMode() {
+	theme.UpdateColors()
+}
+
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
-	// wid.Col(wid.SpaceClose,
-	// wid.Label(th, "Material demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
-	// wid.Separator(th, unit.Dp(1.0)),
-	// wid.Row(th, nil, []float32{.5, .5, .8, .5, .5, .5},
-	//	wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onSwitchMode)),
-	//	wid.Checkbox(th, "Small font", wid.Bool(&SmallFont), wid.Do(onSwitchFontSize)),
-	//	wid.Checkbox(th, "Fixed size", wid.Bool(&FixedFont), wid.Do(onSwitchFontSize)),
-	// 	wid.Checkbox(th, "Alt.pallete", wid.Bool(&otherPallete), wid.Do(onClick)),
-	// ),
-	// wid.Separator(th, unit.Dp(1.0)),
-	return wid.Row(th, nil, []float32{0.3, 0.7},
-		// Menu column
-		wid.Container(th, wid.SurfaceContainerHigh, 15,
-			wid.Col(wid.SpaceClose,
-				wid.Label(th, "Items", wid.FontSize(1.5)),
-				wid.TextButton(th, "Freelance", wid.BtnIcon(homeIcon)),
-				wid.Button(th, "Contracts", wid.BtnIcon(homeIcon)),
-				wid.Space(9999),
-			),
+	return wid.Col(wid.SpaceClose,
+		wid.Label(th, "Material demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
+		wid.Separator(th, unit.Dp(1.0)),
+		wid.Row(th, nil, []float32{.5, .5, .8, .5, .5, .5},
+			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onSwitchMode)),
+			wid.Checkbox(th, "Small font", wid.Bool(&SmallFont), wid.Do(onSwitchFontSize)),
+			wid.Checkbox(th, "Fixed size", wid.Bool(&FixedFont), wid.Do(onSwitchFontSize)),
+			wid.Checkbox(th, "Alt.pallete", wid.Bool(&otherPallete), wid.Do(onClick)),
 		),
-		// Items
-		wid.Col(wid.SpaceClose,
-			wid.Container(th, wid.PrimaryContainer, 10,
-				wid.Label(th, "Folders", wid.FontSize(1.0), wid.Role(wid.PrimaryContainer)),
-				wid.Label(th, "Files", wid.FontSize(1.0), wid.Role(wid.PrimaryContainer)),
+		wid.Separator(th, unit.Dp(1.0)),
+		wid.Row(th, nil, []float32{0.3, 0.7},
+			// Menu column
+			wid.Container(th, wid.SurfaceContainerHigh, 15,
+				wid.Col(wid.SpaceClose,
+					wid.Label(th, "Items", wid.FontSize(1.5)),
+					wid.TextButton(th, "Freelance", wid.BtnIcon(homeIcon)),
+					wid.Button(th, "Contracts", wid.BtnIcon(homeIcon)),
+					wid.Space(9999),
+				),
 			),
-			wid.Container(th, wid.PrimaryContainer, 10,
-				wid.Label(th, "Folders", wid.FontSize(1.0), wid.Role(wid.PrimaryContainer)),
-				wid.Label(th, "Files", wid.FontSize(1.0), wid.Role(wid.PrimaryContainer)),
+			// Items
+			wid.Col(wid.SpaceClose,
+				wid.Container(th, wid.PrimaryContainer, 10,
+					wid.Label(th, "Folders", wid.FontSize(1.0), wid.Role(wid.PrimaryContainer)),
+					wid.Label(th, "Files", wid.FontSize(1.0), wid.Role(wid.PrimaryContainer)),
+				),
+				wid.Container(th, wid.PrimaryContainer, 10,
+					wid.Label(th, "Folders", wid.FontSize(1.0), wid.Role(wid.PrimaryContainer)),
+					wid.Label(th, "Files", wid.FontSize(1.0), wid.Role(wid.PrimaryContainer)),
+				),
 			),
 		),
 	)
-	// )
 }

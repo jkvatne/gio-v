@@ -252,9 +252,9 @@ func (th *Theme) UpdateColors() {
 		th.Fg[SurfaceContainerHigh] = Tone(th.NeutralColor, 90)
 		th.Bg[SurfaceContainerHigh] = Tone(th.NeutralColor, 17)
 		th.Fg[SurfaceContainer] = Tone(th.NeutralColor, 90)
-		th.Bg[SurfaceContainer] = Tone(th.NeutralColor, 12)
+		th.Bg[SurfaceContainer] = Tone(th.NeutralColor, 13)
 		th.Fg[SurfaceContainerLow] = Tone(th.NeutralColor, 90)
-		th.Bg[SurfaceContainerLow] = Tone(th.NeutralColor, 10)
+		th.Bg[SurfaceContainerLow] = Tone(th.NeutralColor, 9)
 		th.Fg[SurfaceContainerLowest] = Tone(th.NeutralColor, 90)
 		th.Bg[SurfaceContainerLowest] = Tone(th.NeutralColor, 4)
 	}
