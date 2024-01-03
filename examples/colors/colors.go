@@ -60,7 +60,7 @@ func setDefault() {
 	show()
 }
 
-func setPalette1() {
+func setPalett1() {
 	theme.PrimaryColor = wid.RGB(0x67622E)
 	theme.SecondaryColor = wid.RGB(0x27622E)
 	theme.TertiaryColor = wid.RGB(0x316669)
@@ -71,7 +71,7 @@ func setPalette1() {
 	show()
 }
 
-func setPalette2() {
+func setPalett2() {
 	theme.PrimaryColor = wid.RGB(0x17624E)
 	theme.SecondaryColor = wid.RGB(0x27624E)
 	theme.TertiaryColor = wid.RGB(0x136669)
@@ -82,7 +82,7 @@ func setPalette2() {
 	show()
 }
 
-func setPalette3() {
+func setPalett3() {
 	theme.PrimaryColor = wid.RGB(0x17329E)
 	theme.SecondaryColor = wid.RGB(0x17624E)
 	theme.TertiaryColor = wid.RGB(0x136669)
@@ -128,32 +128,33 @@ func demo2(th *wid.Theme) layout.Widget {
 	return wid.Col(wid.SpaceClose,
 		wid.Label(th, "Show all UI roles", wid.Middle(), wid.Heading(), wid.Bold()),
 		wid.Row(th, nil, wid.SpaceDistribute,
-			wid.Button(th, "Set default palette", wid.Do(setDefault), wid.Hint("Set the default pallete on all widgets")),
-			wid.Button(th, "Set palette 1", wid.Do(setPalette1), wid.Hint("Use a pallete")),
-			wid.Button(th, "Set palette 2", wid.Do(setPalette2)),
-			wid.Button(th, "Set palette 3", wid.Do(setPalette3)),
+			wid.Button(th, "Set default", wid.Do(setDefault), wid.Hint("Set the default pallet on all widgets")),
+			wid.Button(th, "Set palette 1", wid.Do(setPalett1), wid.Hint("Use a pallet")),
+			wid.Button(th, "Set palette 2", wid.Do(setPalett2)),
+			wid.Button(th, "Set palette 3", wid.Do(setPalett3)),
 			wid.Button(th, cr, wid.Do(setColorsRoles)),
 			wid.Button(th, ld, wid.Do(setDarkLight)),
 		),
 		wid.Separator(th, unit.Dp(1.0), wid.Pads(3.0, 0)),
 		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.Col(wid.SpaceDistribute,
-				wid.Label(th, "Primary", wid.Large(), wid.Role(wid.Primary)),
-				wid.Label(th, "Secondary", wid.Large(), wid.Role(wid.Secondary)),
-				wid.Label(th, "Tertiary", wid.Large(), wid.Role(wid.Tertiary)),
-				wid.Label(th, "Error", wid.Large(), wid.Role(wid.Error)),
-				wid.Label(th, "Primary Container", wid.Large(), wid.Role(wid.PrimaryContainer)),
-				wid.Label(th, "Secondary Container", wid.Large(), wid.Role(wid.SecondaryContainer)),
-				wid.Label(th, "Tertiary Container", wid.Large(), wid.Role(wid.TertiaryContainer)),
-				wid.Label(th, "Error Containter", wid.Large(), wid.Role(wid.ErrorContainer))),
+				wid.Container(th, wid.Primary, 0, wid.Label(th, "Primary", wid.Large(), wid.Role(wid.Primary))),
+				wid.Container(th, wid.Secondary, 0, wid.Label(th, "Secondary", wid.Large(), wid.Role(wid.Secondary))),
+				wid.Container(th, wid.Tertiary, 0, wid.Label(th, "Tertiary", wid.Large(), wid.Role(wid.Tertiary))),
+				wid.Container(th, wid.Error, 0, wid.Label(th, "Error", wid.Large(), wid.Role(wid.Error))),
+				wid.Container(th, wid.PrimaryContainer, 0, wid.Label(th, "PrimaryContainer", wid.Large(), wid.Role(wid.PrimaryContainer))),
+				wid.Container(th, wid.SecondaryContainer, 0, wid.Label(th, "SecondaryContainer", wid.Large(), wid.Role(wid.SecondaryContainer))),
+				wid.Container(th, wid.TertiaryContainer, 0, wid.Label(th, "TertiaryContainer", wid.Large(), wid.Role(wid.TertiaryContainer))),
+				wid.Container(th, wid.ErrorContainer, 0, wid.Label(th, "ErrorContainer", wid.Large(), wid.Role(wid.ErrorContainer)))),
 			wid.Col(wid.SpaceDistribute,
-				wid.Label(th, "Surface Variant", wid.Large(), wid.Role(wid.SurfaceVariant)),
-				wid.Label(th, "Surface Highest", wid.Large(), wid.Role(wid.SurfaceHighest)),
-				wid.Label(th, "Surface High", wid.Large(), wid.Role(wid.SurfaceHigh)),
-				wid.Label(th, "Surface", wid.Large(), wid.Role(wid.Surface)),
-				wid.Label(th, "Surface Low", wid.Large(), wid.Role(wid.SurfaceLow)),
-				wid.Label(th, "Surface Lowest", wid.Large(), wid.Role(wid.SurfaceLowest)),
-				wid.Label(th, "Canvas", wid.Large(), wid.Role(wid.Canvas))),
+				wid.Container(th, wid.SurfaceContainerHighest, 0, wid.Label(th, "SurfaceContainerHighest", wid.Large(), wid.Role(wid.SurfaceContainerHighest))),
+				wid.Container(th, wid.SurfaceContainerHigh, 0, wid.Label(th, "SurfaceContainerHigh", wid.Large(), wid.Role(wid.SurfaceContainerHigh))),
+				wid.Container(th, wid.SurfaceContainer, 0, wid.Label(th, "SurfaceContainer", wid.Large(), wid.Role(wid.SurfaceContainer))),
+				wid.Container(th, wid.SurfaceContainerLow, 0, wid.Label(th, "SurfaceContainerLow", wid.Large(), wid.Role(wid.SurfaceContainerLow))),
+				wid.Container(th, wid.SurfaceContainerLowest, 0, wid.Label(th, "SurfaceContainerLowest", wid.Large(), wid.Role(wid.SurfaceContainerLowest))),
+				wid.Container(th, wid.Canvas, 0, wid.Label(th, "Canvas", wid.Large(), wid.Role(wid.Canvas))),
+				wid.Container(th, wid.Surface, 0, wid.Label(th, "Surface", wid.Large(), wid.Role(wid.Surface))),
+				wid.Container(th, wid.SurfaceVariant, 0, wid.Label(th, "SurfaceVariant", wid.Large(), wid.Role(wid.SurfaceVariant)))),
 		),
 	)
 }
@@ -179,9 +180,9 @@ func demo1(th *wid.Theme) layout.Widget {
 		wid.Label(th, "Also demonstrates a form that will fill the screen 100%", wid.Middle(), wid.Small()),
 		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.Button(th, "Set default palette", wid.Do(setDefault), wid.Hint("Set the default pallete on all widgets")),
-			wid.Button(th, "Set palette 1", wid.Do(setPalette1), wid.Hint("Use a pallete")),
-			wid.Button(th, "Set palette 2", wid.Do(setPalette2)),
-			wid.Button(th, "Set palette 3", wid.Do(setPalette3)),
+			wid.Button(th, "Set palette 1", wid.Do(setPalett1), wid.Hint("Use a pallete")),
+			wid.Button(th, "Set palette 2", wid.Do(setPalett2)),
+			wid.Button(th, "Set palette 3", wid.Do(setPalett3)),
 			wid.Button(th, cr, wid.Do(setColorsRoles)),
 			wid.Button(th, ld, wid.Do(setDarkLight)),
 		),

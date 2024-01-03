@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"gioui.org/font"
 	"gioui.org/op"
-	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
@@ -69,8 +68,7 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		Base: Base{
 			th:        th,
 			role:      Surface,
-			padding:   uniformPadding(3.5), // th.InsidePadding,
-			margin:    uniformPadding(3.5), // th.OutsidePadding,
+			padding:   uniformPadding(3.5),
 			FontScale: 1.0,
 		},
 		Stringer:  s,
@@ -93,28 +91,18 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 		GuiLock.RLock()
 		str := w.Stringer(w.Dp)
 		GuiLock.RUnlock()
-		macro := op.Record(gtx.Ops)
 		o := op.Offset(image.Pt(Px(gtx, w.padding.Left), Px(gtx, w.padding.Top))).Push(gtx.Ops)
 		tl := widget.Label{Alignment: w.Alignment, MaxLines: w.MaxLines}
 		colMacro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: w.Fg()}.Add(gtx.Ops)
-		c.Constraints.Min.X -= Px(gtx, w.margin.Left+w.margin.Right+w.padding.Left+w.padding.Right)
-		c.Constraints.Max.X -= Px(gtx, w.margin.Left+w.margin.Right+w.padding.Left+w.padding.Right)
-		c.Constraints.Min.Y = Max(0, c.Constraints.Min.Y-Px(gtx, w.margin.Top+w.margin.Bottom+w.padding.Top+w.padding.Bottom))
-		c.Constraints.Max.Y -= Px(gtx, w.margin.Top+w.margin.Bottom+w.padding.Top+w.padding.Bottom)
+		c.Constraints.Min.X -= Px(gtx, w.padding.Left+w.padding.Right)
+		c.Constraints.Max.X -= Px(gtx, w.padding.Left+w.padding.Right)
+		c.Constraints.Min.Y = Max(0, c.Constraints.Min.Y-Px(gtx, w.padding.Top+w.padding.Bottom))
+		c.Constraints.Max.Y -= Px(gtx, w.padding.Top+w.padding.Bottom)
 		dims := tl.Layout(c, w.th.Shaper, w.Font, unit.Sp(w.FontScale)*w.th.FontSp(), str, colMacro.Stop())
 		o.Pop()
 		dims.Size.X += Px(gtx, w.padding.Left+w.padding.Right)
 		dims.Size.Y += Px(gtx, w.padding.Bottom+w.padding.Top)
-		call := macro.Stop()
-		// Color background into the calculated size, with given margin
-		o = op.Offset(image.Pt(Px(gtx, w.margin.Left), Px(gtx, w.margin.Top))).Push(gtx.Ops)
-		defer clip.Rect(image.Rectangle{Max: dims.Size}).Push(gtx.Ops).Pop()
-		paint.Fill(gtx.Ops, w.Bg())
-		// Then do the text painting (apply the "call" macro)
-		call.Add(gtx.Ops)
-		o.Pop()
-		dims.Size.Y += Px(gtx, w.margin.Bottom+w.margin.Top)
 		return dims
 	}
 }

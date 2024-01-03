@@ -81,9 +81,13 @@ func Col(weights []float32, widgets ...Wid) Wid {
 			trans := op.Offset(image.Pt(0, int(math.Round(float64(y))))).Push(gtx.Ops)
 			calls[i].Add(gtx.Ops)
 			trans.Pop()
-			y += float32(dims[i].Size.Y) + float32(space)/float32(len(widgets))
-			if y >= float32(gtx.Constraints.Max.Y) {
-				break
+			if weights[i] == 0 {
+				y += float32(dims[i].Size.Y)
+			} else {
+				y += float32(dims[i].Size.Y) + float32(space)/float32(len(widgets))
+				if y >= float32(gtx.Constraints.Max.Y) {
+					break
+				}
 			}
 		}
 		sz := gtx.Constraints.Constrain(image.Pt(maxX, int(y)))

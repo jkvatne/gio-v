@@ -193,7 +193,7 @@ func GridDemo(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 			wid.GridRow(th, &bgColor, gw, colWidths,
 				// One row of the grid is defined here, Name can not be edited
 				wid.Checkbox(th, "", wid.Bool(&data[i].Selected)),
-				wid.Label(th, &data[i].Name, wid.Pads(0)),
+				wid.Label(th, &data[i].Name, wid.Pad(th.DefaultPadding)),
 				wid.Edit(th, wid.Var(&data[i].Address), wid.Border(0), wid.Pads(0)),
 				wid.Edit(th, wid.Var(&data[i].Age), wid.Border(0), wid.Pads(0)),
 				wid.DropDown(th, &data[i].Status, []string{"Male", "Female", "Other"}, wid.Pads(0), wid.Border(0)),

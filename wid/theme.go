@@ -47,11 +47,12 @@ const (
 	Outline
 	OutlineVariant
 	// OutlineHighest is the grayest surface
-	SurfaceHighest
-	SurfaceHigh
-	SurfaceLow
-	// SurfaceLowest is almost white/black
-	SurfaceLowest
+	SurfaceContainerHighest
+	SurfaceContainerHigh
+	SurfaceContainer
+	SurfaceContainerLow
+	// SurfaceContainerLowest is almost white/black
+	SurfaceContainerLowest
 	RoleCount
 )
 
@@ -140,8 +141,9 @@ func mustIcon(ic *Icon, err error) *Icon {
 	return ic
 }
 
-func uniformPadding(p unit.Dp) layout.Inset {
-	return layout.Inset{Top: p, Bottom: p, Left: p, Right: p}
+func uniformPadding(p float64) layout.Inset {
+	pp := unit.Dp(p)
+	return layout.Inset{Top: pp, Bottom: pp, Left: pp, Right: pp}
 }
 
 func (th *Theme) SetLinesPrForm(x float64) {
@@ -173,48 +175,52 @@ func (th *Theme) FontSp() unit.Sp {
 	return th.TextSize * unit.Sp(Scale)
 }
 
+// See https://m3.material.io/styles/color/static/baseline
 func (th *Theme) UpdateColors() {
 	if !th.DarkMode {
 		th.Fg[Canvas] = Tone(th.NeutralColor, 0)
 		th.Bg[Canvas] = Tone(th.NeutralColor, 100)
 
-		th.Fg[Primary] = Tone(th.PrimaryColor, 100)
-		th.Bg[Primary] = Tone(th.PrimaryColor, 40)
-		th.Fg[PrimaryContainer] = Tone(th.PrimaryColor, 10)
-		th.Bg[PrimaryContainer] = Tone(th.PrimaryColor, 90)
+		th.Fg[Primary] = Tone(th.PrimaryColor, 100)         // #FFFFFF
+		th.Bg[Primary] = Tone(th.PrimaryColor, 48)          // #6750A4
+		th.Fg[PrimaryContainer] = Tone(th.PrimaryColor, 10) // #21005D
+		th.Bg[PrimaryContainer] = Tone(th.PrimaryColor, 90) // #EADDFF
 
 		th.Fg[Secondary] = Tone(th.SecondaryColor, 100)
 		th.Bg[Secondary] = Tone(th.SecondaryColor, 40)
-		th.Fg[SecondaryContainer] = Tone(th.SecondaryColor, 10)
-		th.Bg[SecondaryContainer] = Tone(th.SecondaryColor, 90)
+		th.Fg[SecondaryContainer] = Tone(th.SecondaryColor, 10) // #1D192B
+		th.Bg[SecondaryContainer] = Tone(th.SecondaryColor, 87) // #E8DEF8
 
 		th.Fg[Tertiary] = Tone(th.TertiaryColor, 100)
-		th.Bg[Tertiary] = Tone(th.TertiaryColor, 40)
-		th.Fg[TertiaryContainer] = Tone(th.TertiaryColor, 10)
-		th.Bg[TertiaryContainer] = Tone(th.TertiaryColor, 90)
+		th.Bg[Tertiary] = Tone(th.TertiaryColor, 41)
+		th.Fg[TertiaryContainer] = Tone(th.TertiaryColor, 10) // #1D192B
+		th.Bg[TertiaryContainer] = Tone(th.TertiaryColor, 87) // #FFD8E4
 
 		th.Fg[Error] = Tone(th.ErrorColor, 100)
 		th.Bg[Error] = Tone(th.ErrorColor, 40)
-		th.Fg[ErrorContainer] = Tone(th.ErrorColor, 10)
-		th.Bg[ErrorContainer] = Tone(th.ErrorColor, 90)
+		th.Fg[ErrorContainer] = Tone(th.ErrorColor, 10) // #410E0B
+		th.Bg[ErrorContainer] = Tone(th.ErrorColor, 90) // #F9DEDC
 
 		th.Fg[Outline] = Tone(th.NeutralVariantColor, 40)
 		th.Bg[Outline] = Tone(th.NeutralVariantColor, 40)
 		th.Fg[OutlineVariant] = Tone(th.NeutralVariantColor, 40)
 		th.Bg[OutlineVariant] = Tone(th.NeutralVariantColor, 40)
 
-		th.Fg[SurfaceVariant] = Tone(th.NeutralVariantColor, 40)
-		th.Bg[SurfaceVariant] = Tone(th.NeutralVariantColor, 93)
-		th.Fg[SurfaceHighest] = Tone(th.NeutralColor, 10)
-		th.Bg[SurfaceHighest] = Tone(th.NeutralColor, 92)
-		th.Fg[SurfaceHigh] = Tone(th.NeutralColor, 10)
-		th.Bg[SurfaceHigh] = Tone(th.NeutralColor, 94)
-		th.Fg[Surface] = Tone(th.NeutralColor, 10)
-		th.Bg[Surface] = Tone(th.NeutralColor, 96)
-		th.Fg[SurfaceLow] = Tone(th.NeutralColor, 10)
-		th.Bg[SurfaceLow] = Tone(th.NeutralColor, 98)
-		th.Fg[SurfaceLowest] = Tone(th.NeutralColor, 10)
-		th.Bg[SurfaceLowest] = Tone(th.NeutralColor, 100)
+		th.Fg[Surface] = Tone(th.NeutralColor, 10)               // #1D1B20
+		th.Bg[Surface] = Tone(th.NeutralColor, 98)               // #FEF7FF
+		th.Fg[SurfaceVariant] = Tone(th.NeutralVariantColor, 40) // #49454F
+		th.Bg[SurfaceVariant] = Tone(th.NeutralVariantColor, 93) // #E7E0EC
+
+		th.Fg[SurfaceContainerHighest] = Tone(th.NeutralColor, 10) // #1D1B20
+		th.Bg[SurfaceContainerHighest] = Tone(th.NeutralColor, 90) // #E6E0E9
+		th.Fg[SurfaceContainerHigh] = Tone(th.NeutralColor, 10)    // #1D1B20
+		th.Bg[SurfaceContainerHigh] = Tone(th.NeutralColor, 92)    // #ECE6F0
+		th.Fg[SurfaceContainer] = Tone(th.NeutralColor, 10)        // #1D1B20
+		th.Bg[SurfaceContainer] = Tone(th.NeutralColor, 94)        // #F3EDF7
+		th.Fg[SurfaceContainerLow] = Tone(th.NeutralColor, 10)     // #1D1B20
+		th.Bg[SurfaceContainerLow] = Tone(th.NeutralColor, 96)     // #F7F2FA
+		th.Fg[SurfaceContainerLowest] = Tone(th.NeutralColor, 10)  // #1D1B20
+		th.Bg[SurfaceContainerLowest] = Tone(th.NeutralColor, 100) // #FFFFFF
 	} else {
 		th.Fg[Canvas] = Tone(th.NeutralColor, 100)
 		th.Bg[Canvas] = Tone(th.NeutralColor, 0)
@@ -244,19 +250,21 @@ func (th *Theme) UpdateColors() {
 		th.Fg[OutlineVariant] = Tone(th.NeutralVariantColor, 30)
 		th.Bg[OutlineVariant] = Tone(th.NeutralVariantColor, 30)
 
+		th.Fg[Surface] = Tone(th.NeutralColor, 90)
+		th.Bg[Surface] = Tone(th.NeutralColor, 12)
 		th.Fg[SurfaceVariant] = Tone(th.NeutralVariantColor, 90)
 		th.Bg[SurfaceVariant] = Tone(th.NeutralVariantColor, 30)
 
-		th.Fg[SurfaceHighest] = Tone(th.NeutralColor, 90)
-		th.Bg[SurfaceHighest] = Tone(th.NeutralColor, 22)
-		th.Fg[SurfaceHigh] = Tone(th.NeutralColor, 90)
-		th.Bg[SurfaceHigh] = Tone(th.NeutralColor, 17)
-		th.Fg[Surface] = Tone(th.NeutralColor, 90)
-		th.Bg[Surface] = Tone(th.NeutralColor, 12)
-		th.Fg[SurfaceLow] = Tone(th.NeutralColor, 90)
-		th.Bg[SurfaceLow] = Tone(th.NeutralColor, 10)
-		th.Fg[SurfaceLowest] = Tone(th.NeutralColor, 90)
-		th.Bg[SurfaceLowest] = Tone(th.NeutralColor, 4)
+		th.Fg[SurfaceContainerHighest] = Tone(th.NeutralColor, 90)
+		th.Bg[SurfaceContainerHighest] = Tone(th.NeutralColor, 22)
+		th.Fg[SurfaceContainerHigh] = Tone(th.NeutralColor, 90)
+		th.Bg[SurfaceContainerHigh] = Tone(th.NeutralColor, 17)
+		th.Fg[SurfaceContainer] = Tone(th.NeutralColor, 90)
+		th.Bg[SurfaceContainer] = Tone(th.NeutralColor, 12)
+		th.Fg[SurfaceContainerLow] = Tone(th.NeutralColor, 90)
+		th.Bg[SurfaceContainerLow] = Tone(th.NeutralColor, 10)
+		th.Fg[SurfaceContainerLowest] = Tone(th.NeutralColor, 90)
+		th.Bg[SurfaceContainerLowest] = Tone(th.NeutralColor, 4)
 	}
 	// Borders around edit fields
 	th.BorderColor = th.Fg[Outline]
@@ -279,12 +287,12 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	th := new(Theme)
 	th.TextSize = fontSize
 	// Set up the default pallete
-	th.PrimaryColor = RGB(0x45682A)
-	th.SecondaryColor = RGB(0x57624E)
-	th.TertiaryColor = RGB(0x336669)
-	th.ErrorColor = RGB(0xAF2525)
-	th.NeutralColor = RGB(0x5D5D5D)
-	th.NeutralVariantColor = RGB(0x756057)
+	th.PrimaryColor = RGB(0x6750A4)
+	th.SecondaryColor = RGB(0x625B71)
+	th.TertiaryColor = RGB(0x7D5260)
+	th.ErrorColor = RGB(0xB3261E)
+	th.NeutralColor = RGB(0x79747E)
+	th.NeutralVariantColor = RGB(0x79747E)
 	// Then replace the optional colors in the argument list
 	if len(colors) >= 1 {
 		th.PrimaryColor = colors[0]
@@ -311,15 +319,15 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	th.FingerSize = unit.Dp(38)
 	th.IconInset = layout.Inset{Top: 1, Right: 1, Bottom: 1, Left: 1}
 	th.BorderThickness = 1.0
-	th.BorderCornerRadius = 5
+	th.BorderCornerRadius = unit.Dp(fontSize / 3)
 	// Shadow
 	th.Elevation = 0.5
 	// Text
-	th.DefaultMargin = uniformPadding(3.5)
-	th.DefaultPadding = uniformPadding(3.5)
-	th.ButtonPadding = uniformPadding(3.5)
+	th.DefaultMargin = uniformPadding(float64(fontSize) / 3)
+	th.DefaultPadding = uniformPadding(float64(fontSize) / 3)
+	th.ButtonPadding = uniformPadding(float64(fontSize) / 3)
 	th.ButtonCornerRadius = th.BorderCornerRadius
-	th.ButtonMargin = uniformPadding(5)
+	th.ButtonMargin = uniformPadding(float64(fontSize) / 3)
 	th.IconSize = 20
 	th.TooltipCornerRadius = th.BorderCornerRadius
 	th.TooltipWidth = 250
