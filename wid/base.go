@@ -410,8 +410,6 @@ func Invalidate() {
 	invalidate <- struct{}{}
 }
 
-var OldWinY int
-
 func Run(win *app.Window, form *layout.Widget, th *Theme) {
 	invalidate = make(chan struct{})
 	go func() {
@@ -437,7 +435,7 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 			// Font size is in units sp (like dp but for fonts) while WinY is in pixels
 			// So we have to rescale using PxToSp
 			if !FixedFontSize {
-				scale := float32(WinY) / float32(startWinY)
+				scale := float32(WinY) / float32(startWinY) * th.Scale
 				gtx.Metric.PxPerDp = scale * gtx.Metric.PxPerDp
 				gtx.Metric.PxPerSp = scale * gtx.Metric.PxPerSp
 			}

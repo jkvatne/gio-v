@@ -130,6 +130,8 @@ type Theme struct {
 	ScrollCornerRadius unit.Dp
 	// Default split between edit label and edit field
 	LabelSplit float32
+	// Extra scaling of the Dp unit
+	Scale float32
 }
 
 func mustIcon(ic *Icon, err error) *Icon {
@@ -277,6 +279,7 @@ func (th *Theme) UpdateColors() {
 // The pallet can be left out, to use the defaults - or include as many colors you like.
 func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.NRGBA) *Theme {
 	th := new(Theme)
+	th.Scale = 1.0
 	th.TextSize = fontSize
 	// Set up the default pallete
 	th.PrimaryColor = RGB(0x6750A4)
