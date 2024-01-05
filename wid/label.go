@@ -44,20 +44,6 @@ func Weight(weight font.Weight) LabelOption {
 	}
 }
 
-// Middle will align text in the middle.
-func Middle() LabelOption {
-	return func(d *LabelDef) {
-		d.Alignment = text.Middle
-	}
-}
-
-// Right will align text to the end.
-func Right() LabelOption {
-	return func(d *LabelDef) {
-		d.Alignment = text.End
-	}
-}
-
 func (e LabelOption) apply(cfg interface{}) {
 	e(cfg.(*LabelDef))
 }
@@ -70,11 +56,11 @@ func StringerValue(th *Theme, s func(dp int) string, options ...Option) func(gtx
 			role:      Surface,
 			padding:   uniformPadding(3.5),
 			FontScale: 1.0,
+			Alignment: text.Start,
 		},
-		Stringer:  s,
-		Alignment: text.Start,
-		Font:      th.DefaultFont,
-		MaxLines:  0,
+		Stringer: s,
+		Font:     th.DefaultFont,
+		MaxLines: 0,
 	}
 
 	// Apply options after initialization of LabelDef

@@ -3,6 +3,7 @@
 package wid
 
 import (
+	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
@@ -12,12 +13,15 @@ import (
 )
 
 // Container makes a container with given background
-func Container(th *Theme, role UIRole, rr unit.Dp, widgets ...Wid) Wid {
+func Container(th *Theme, role UIRole, rr unit.Dp, padding layout.Inset, margin layout.Inset, widgets ...Wid) Wid {
 	return func(gtx C) D {
 		size := 0
 		cgtx := gtx
 		cgtx.Constraints.Min.Y = 0
-		cgtx.Constraints.Max.X -= Px(gtx, th.DefaultPadding.Left+th.DefaultMargin.Left+th.DefaultPadding.Right+th.DefaultMargin.Right)
+		cgtx.Constraints.Max.X -= Px(gtx, padding.Left+margin.Left+padding.Right+margin.Right)
+		if cgtx.Constraints.Min.X > cgtx.Constraints.Max.X {
+			cgtx.Constraints.Min.X = cgtx.Constraints.Max.X
+		}
 		calls := make([]op.CallOp, len(widgets))
 		dims := make([]D, len(widgets))
 		remaining := gtx.Constraints.Max.Y
@@ -30,18 +34,18 @@ func Container(th *Theme, role UIRole, rr unit.Dp, widgets ...Wid) Wid {
 			remaining = Max(0, remaining-dims[i].Size.Y)
 		}
 		// Increase size by padding
-		size += Px(gtx, th.DefaultPadding.Top+th.DefaultPadding.Bottom)
+		size += Px(gtx, padding.Top+padding.Bottom)
 		// Offset by margin
-		defer op.Offset(image.Pt(Px(gtx, th.DefaultMargin.Left), Px(gtx, th.DefaultMargin.Top))).Push(gtx.Ops).Pop()
+		defer op.Offset(image.Pt(Px(gtx, margin.Left), Px(gtx, margin.Top))).Push(gtx.Ops).Pop()
 		// Draw surface
-		outline := image.Rect(0, 0, gtx.Constraints.Max.X-Px(gtx, th.DefaultMargin.Right+th.DefaultMargin.Left), size)
+		outline := image.Rect(0, 0, gtx.Constraints.Max.X-Px(gtx, margin.Right+margin.Left), size)
 		defer clip.UniformRRect(outline, Px(gtx, rr)).Push(gtx.Ops).Pop()
 		paint.Fill(gtx.Ops, th.Bg[role])
 
 		// Now do the actual drawing, with offsets
-		y := Px(gtx, th.DefaultPadding.Top)
+		y := Px(gtx, padding.Top)
 		for i := range widgets {
-			trans := op.Offset(image.Pt(Px(gtx, th.DefaultPadding.Left), int(math.Round(float64(y))))).Push(gtx.Ops)
+			trans := op.Offset(image.Pt(Px(gtx, padding.Left), int(math.Round(float64(y))))).Push(gtx.Ops)
 			calls[i].Add(gtx.Ops)
 			trans.Pop()
 			y += dims[i].Size.Y
@@ -49,8 +53,8 @@ func Container(th *Theme, role UIRole, rr unit.Dp, widgets ...Wid) Wid {
 				break
 			}
 		}
-		y += Px(gtx, th.DefaultPadding.Bottom)
-		y += Px(gtx, th.DefaultMargin.Bottom)
+		y += Px(gtx, padding.Bottom)
+		y += Px(gtx, margin.Bottom)
 		sz := gtx.Constraints.Constrain(image.Pt(gtx.Constraints.Max.X, int(y)))
 		return D{Size: sz, Baseline: sz.Y}
 	}

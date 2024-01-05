@@ -141,7 +141,7 @@ func mustIcon(ic *Icon, err error) *Icon {
 	return ic
 }
 
-func uniformPadding(p float64) layout.Inset {
+func uniformPadding(p float32) layout.Inset {
 	pp := unit.Dp(p)
 	return layout.Inset{Top: pp, Bottom: pp, Left: pp, Right: pp}
 }
@@ -172,6 +172,9 @@ func (th *Theme) FontSp() unit.Sp {
 // See https://m3.material.io/styles/color/static/baseline
 func (th *Theme) UpdateColors() {
 	if !th.DarkMode {
+
+		// Light mode
+
 		th.Fg[Canvas] = Tone(th.NeutralColor, 0)
 		th.Bg[Canvas] = Tone(th.NeutralColor, 100)
 
@@ -216,6 +219,9 @@ func (th *Theme) UpdateColors() {
 		th.Fg[SurfaceContainerLowest] = Tone(th.NeutralColor, 10)  // #1D1B20
 		th.Bg[SurfaceContainerLowest] = Tone(th.NeutralColor, 100) // #FFFFFF
 	} else {
+
+		// Dark mode
+
 		th.Fg[Canvas] = Tone(th.NeutralColor, 100)
 		th.Bg[Canvas] = Tone(th.NeutralColor, 0)
 
@@ -317,9 +323,9 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	// Shadow
 	th.Elevation = 0.5
 	// Text
-	th.DefaultMargin = uniformPadding(4.0)
-	th.DefaultPadding = uniformPadding(4.0)
-	th.ButtonPadding = uniformPadding(4.0)
+	th.DefaultMargin = uniformPadding(6.0)
+	th.DefaultPadding = uniformPadding(6.0)
+	th.ButtonPadding = uniformPadding(6.0)
 	th.ButtonCornerRadius = th.BorderCornerRadius
 	th.ButtonMargin = uniformPadding(4.0)
 	th.IconSize = 20.0

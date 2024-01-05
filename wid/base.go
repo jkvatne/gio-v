@@ -4,6 +4,7 @@ package wid
 
 import (
 	"gioui.org/font"
+	"gioui.org/text"
 	"golang.org/x/exp/constraints"
 	"image"
 	"image/color"
@@ -64,6 +65,7 @@ type Base struct {
 	Font         *font.Font
 	FontScale    float64
 	Dp           int
+	Alignment    text.Alignment
 }
 
 // BaseIf is the interface functions for widgets, used by options to set parameters
@@ -81,6 +83,7 @@ type BaseIf interface {
 	getTheme() *Theme
 	setFontSize(f float32)
 	setDp(dp int)
+	setAlignment(x text.Alignment)
 }
 
 // BaseOption is a type for optional parameters when creating widgets
@@ -155,11 +158,16 @@ func (wid *Base) setDp(dp int) {
 	wid.Dp = dp
 }
 
+func (wid *Base) setAlignment(x text.Alignment) {
+	wid.Alignment = x
+}
+
 func Dp(dp int) BaseOption {
 	return func(w BaseIf) {
 		w.setDp(dp)
 	}
 }
+
 func En(b *bool) BaseOption {
 	return func(w BaseIf) {
 		w.setDisabler(b)
@@ -179,6 +187,20 @@ func Do(f func()) BaseOption {
 	}
 }
 
+// Middle will align text in the middle.
+func Middle() BaseOption {
+	return func(d BaseIf) {
+		d.setAlignment(text.Middle)
+	}
+}
+
+// Right will align text to the end.
+func Right() BaseOption {
+	return func(d BaseIf) {
+		d.setAlignment(text.End)
+	}
+}
+
 // W is the option parameter for setting widget width
 func W(width float32) BaseOption {
 	return func(w BaseIf) {
@@ -193,10 +215,27 @@ func Hint(hint string) BaseOption {
 	}
 }
 
+type Color interface {
+	*color.NRGBA | color.NRGBA | UIRole
+}
+
 // Fg is an option parameter to set widget foreground color
-func Fg(c *color.NRGBA) BaseOption {
-	return func(w BaseIf) {
-		w.setFgColor(c)
+func Fg[V Color](v V) BaseOption {
+	if x, ok := any(v).(*color.NRGBA); ok {
+		return func(w BaseIf) {
+			w.setFgColor(x)
+		}
+	} else if x, ok := any(v).(color.NRGBA); ok {
+		return func(w BaseIf) {
+			w.setFgColor(&x)
+		}
+	} else if x, ok := any(v).(UIRole); ok {
+		return func(w BaseIf) {
+			c := w.getTheme().Fg[x]
+			w.setFgColor(&c)
+		}
+	} else {
+		return nil
 	}
 }
 

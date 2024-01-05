@@ -118,7 +118,7 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, bgColor color.NRGBA, weights
 	yMax := 0
 	c := gtx
 	pos := make([]int, len(widgets)+1)
-	// For each column in the row
+	// For each column in the row, make macros to draw the widget
 	for i, child := range widgets {
 		if len(widths) > i {
 			c.Constraints.Max.X = widths[i]

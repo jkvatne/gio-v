@@ -24,15 +24,17 @@ var (
 	form         layout.Widget
 	homeIcon     *wid.Icon
 	checkIcon    *wid.Icon
+	saveIcon     *wid.Icon
 	otherPallete = false
 )
 
 func main() {
 	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
 	homeIcon, _ = wid.NewIcon(icons.ActionHome)
-	theme = wid.NewTheme(gofont.Collection(), 24)
+	saveIcon, _ = wid.NewIcon(icons.ContentSave)
+	theme = wid.NewTheme(gofont.Collection(), 16)
 	theme.DarkMode = false
-	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(1200), unit.Dp(800)))
+	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(800), unit.Dp(800)))
 	form = demo(theme)
 	go wid.Run(win, &form, theme)
 	app.Main()
@@ -77,32 +79,40 @@ func demo(th *wid.Theme) layout.Widget {
 	return wid.Col(wid.SpaceClose,
 		wid.Label(th, "Material demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Separator(th, unit.Dp(1.0)),
-		wid.Row(th, nil, []float32{.5, .5, .8, .5, .5, .5},
-			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onSwitchMode)),
-			wid.Checkbox(th, "Small font", wid.Bool(&SmallFont), wid.Do(onSwitchFontSize)),
-			wid.Checkbox(th, "Fixed size", wid.Bool(&FixedFont), wid.Do(onSwitchFontSize)),
-			wid.Checkbox(th, "Alt.pallete", wid.Bool(&otherPallete), wid.Do(onClick)),
+		wid.Row(th, nil, []float32{.5, .8, .5, .5},
+			wid.Checkbox(th, "Dark mode", wid.Bool(&th.DarkMode), wid.Do(onSwitchMode), wid.Hint("Select light or dark mode")),
+			wid.Checkbox(th, "Alt.pallete", wid.Bool(&otherPallete), wid.Do(onClick), wid.Hint("Select an alternative font")),
+			wid.Checkbox(th, "Small font", wid.Bool(&SmallFont), wid.Do(onSwitchFontSize), wid.Hint("Select normal or small font size")),
+			wid.Checkbox(th, "Fixed font", wid.Bool(&FixedFont), wid.Do(onSwitchFontSize), wid.Hint("Keep font size when resizing window height")),
 		),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Row(th, nil, []float32{0.3, 0.7},
 			// Menu column
-			wid.Container(th, wid.SurfaceContainerHigh, 15,
+			wid.Container(th, wid.SurfaceContainerHigh, 15, th.DefaultPadding, th.DefaultMargin,
 				wid.Col(wid.SpaceClose,
 					wid.Label(th, "Items", wid.FontSize(1.5)),
-					wid.TextButton(th, "Freelance", wid.BtnIcon(homeIcon)),
-					wid.Button(th, "Contracts", wid.BtnIcon(homeIcon)),
+					wid.TextButton(th, "Classic", wid.BtnIcon(homeIcon)),
+					wid.TextButton(th, "Jazz", wid.BtnIcon(homeIcon)),
+					wid.TextButton(th, "Rock", wid.BtnIcon(homeIcon)),
+					wid.TextButton(th, "Hiphop", wid.BtnIcon(homeIcon)),
 					wid.Space(9999),
 				),
 			),
 			// Items
 			wid.Col(wid.SpaceClose,
-				wid.Container(th, wid.PrimaryContainer, 10,
-					wid.Label(th, "Folders", wid.FontSize(1.0), wid.Role(wid.PrimaryContainer)),
-					wid.Label(th, "Files", wid.FontSize(1.0), wid.Role(wid.PrimaryContainer)),
+				wid.Container(th, wid.PrimaryContainer, 15, th.DefaultPadding, th.DefaultMargin,
+					wid.Label(th, "Music", wid.FontSize(0.66), wid.Fg(th.PrimaryColor)),
+					wid.Label(th, "What Buttons are Artists Pushing When They Perform Live", wid.FontSize(1.5), wid.PrimCont()),
+					wid.Container(th, wid.PrimaryContainer, 15, layout.Inset{}, layout.Inset{0, 10, 0, 0},
+						wid.ImageFromJpgFile("music.jpg", wid.Contain)),
+					wid.Row(th, nil, wid.SpaceDistribute,
+						wid.Label(th, "12 hrs ago", wid.FontSize(0.66), wid.Fg(th.PrimaryColor)),
+						wid.Button(th, "Save", wid.BtnIcon(saveIcon), wid.RR(99), wid.Right()),
+					),
 				),
-				wid.Container(th, wid.PrimaryContainer, 10,
-					wid.Label(th, "Folders", wid.FontSize(1.0), wid.Role(wid.PrimaryContainer)),
-					wid.Label(th, "Files", wid.FontSize(1.0), wid.Role(wid.PrimaryContainer)),
+				wid.Container(th, wid.PrimaryContainer, 15, th.DefaultPadding, th.DefaultMargin,
+					wid.Label(th, "Folders", wid.FontSize(1.0), wid.PrimCont()),
+					wid.Label(th, "Files", wid.FontSize(1.0), wid.PrimCont()),
 				),
 			),
 		),
