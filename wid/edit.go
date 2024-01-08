@@ -19,6 +19,10 @@ import (
 	"gioui.org/widget"
 )
 
+type Value interface {
+	int | float64 | float32 | string | *int | *float64 | *float32 | *string
+}
+
 // EditDef is the parameters for the text editor
 type EditDef struct {
 	Base
@@ -33,27 +37,6 @@ type EditDef struct {
 	wasFocused      bool
 }
 
-func FloatToStr(x float64, dp int) string {
-	if dp == 1 {
-		return fmt.Sprintf("%0.1f", x)
-	} else if dp == 2 {
-		return fmt.Sprintf("%0.2f", x)
-	} else if dp == 3 {
-		return fmt.Sprintf("%0.3f", x)
-	} else if dp == 4 {
-		return fmt.Sprintf("%0.4f", x)
-	} else if dp == 5 {
-		return fmt.Sprintf("%0.3f", x)
-	} else if dp == 6 {
-		return fmt.Sprintf("%0.6f", x)
-	} else if dp == 7 {
-		return fmt.Sprintf("%0.7f", x)
-	} else {
-		return fmt.Sprintf("%0.0f", x)
-	}
-
-}
-
 func ValueToString(v interface{}, dp int) string {
 	if v == nil {
 		return "nil"
@@ -63,20 +46,52 @@ func ValueToString(v interface{}, dp int) string {
 		} else {
 			return fmt.Sprintf("%d", *x)
 		}
+	} else if x, ok := v.(int); ok {
+		if x == math.MinInt {
+			return "---"
+		} else {
+			return fmt.Sprintf("%d", x)
+		}
+	} else if x, ok := v.(*int32); ok {
+		if *x == math.MinInt32 {
+			return "---"
+		} else {
+			return fmt.Sprintf("%d", *x)
+		}
+	} else if x, ok := v.(int32); ok {
+		if x == math.MinInt32 {
+			return "---"
+		} else {
+			return fmt.Sprintf("%d", x)
+		}
+	} else if x, ok := v.(*int64); ok {
+		if *x == math.MinInt64 {
+			return "---"
+		} else {
+			return fmt.Sprintf("%d", *x)
+		}
+	} else if x, ok := v.(int64); ok {
+		if x == math.MinInt {
+			return "---"
+		} else {
+			return fmt.Sprintf("%d", x)
+		}
 	} else if x, ok := v.(*float32); ok {
 		if *x == math.MaxFloat32 {
 			return "---"
 		} else {
-			return FloatToStr(float64(*x), dp)
+			return fmt.Sprintf("%.*f", dp, *x)
 		}
 	} else if x, ok := v.(*float64); ok {
 		if *x == math.MaxFloat64 {
 			return "---"
 		} else {
-			return FloatToStr(*x, dp)
+			return fmt.Sprintf("%.*f", dp, *x)
 		}
 	} else if x, ok := v.(*string); ok {
 		return *x
+	} else if x, ok := v.(string); ok {
+		return x
 	}
 	return ""
 }
@@ -104,15 +119,15 @@ func StringToValue(value interface{}, current string) {
 	}
 }
 
-type CornerRadius unit.Dp
-
-func Ed[V Value](th *Theme, v V, opt ...any) func(gtx C) D {
+// Edit will return a widget (layout function) for a text editor
+func Edit(th *Theme, options ...any) func(gtx C) D {
 	e := EditDef{
 		Base: Base{
-			th:      th,
-			Font:    &th.DefaultFont,
-			margin:  th.DefaultMargin,
-			padding: th.DefaultPadding,
+			th:        th,
+			Font:      &th.DefaultFont,
+			FontScale: 1.0,
+			margin:    th.DefaultMargin,
+			padding:   th.DefaultPadding,
 		},
 		Editor: widget.Editor{
 			SingleLine: true,
@@ -121,55 +136,56 @@ func Ed[V Value](th *Theme, v V, opt ...any) func(gtx C) D {
 		labelSize:       th.LabelSplit,
 		outlineColor:    th.Fg[Outline],
 		selectionColor:  MulAlpha(th.Bg[Primary], 60),
-		value:           v,
 	}
-	for _, o := range opt {
-		if v, ok := o.(string); ok {
-			e.label = v
-		} else if v, ok := o.(float32); ok {
-			e.borderThickness = th.BorderThickness * unit.Dp(v)
-		} else if v, ok := o.(float64); ok {
-			e.borderThickness = th.BorderThickness * unit.Dp(v)
-		} else if v, ok := o.(UIRole); ok {
-			e.role = v
-		} else if v, ok := o.(layout.Inset); ok {
-			e.padding = v
-		} else if v, ok := o.(CornerRadius); ok {
-			e.cornerRadius = unit.Dp(v)
+
+	// The first option should be the value. Will panic if no option is used.
+	if v, ok := options[0].(*float64); ok {
+		e.value = v
+	} else if v, ok := options[0].(*float32); ok {
+		e.value = v
+	} else if v, ok := options[0].(*int32); ok {
+		e.value = v
+	} else if v, ok := options[0].(*int16); ok {
+		e.value = v
+	} else if v, ok := options[0].(*int); ok {
+		e.value = v
+	} else if v, ok := options[0].(*int64); ok {
+		e.value = v
+	} else if v, ok := options[0].(*string); ok {
+		e.value = v
+	}
+
+	i := 0
+	e.DpNo = &i
+	if len(options) >= 2 {
+		// Option 2 can be the number of decimals (if integer)
+		if v, ok := options[1].(int); ok {
+			i := v
+			e.DpNo = &i
+		} else if v, ok := options[1].(*int); ok {
+			e.DpNo = v
 		}
 	}
-	return func(gtx C) D {
-		return e.Layout(gtx)
-	}
-}
 
-func testing(th *Theme) func(gtx C) D {
-	var x float64
-	// return Ed(th, x, "Hint", 2.0)
-	return Ed(th, x, 2.0)
-}
-
-// Edit will return a widget (layout function) for a text editor
-func Edit(th *Theme, options ...Option) func(gtx C) D {
-	e := new(EditDef)
-	e.th = th
-	e.Font = &th.DefaultFont
-	e.labelSize = th.LabelSplit // 1/3 of column width
-	e.SingleLine = true
-	e.borderThickness = th.BorderThickness
-	e.width = unit.Dp(5000) // Default to max width that is possible
-	e.padding = th.DefaultPadding
-	e.margin = th.DefaultMargin
-	e.outlineColor = th.Fg[Outline]
-	e.selectionColor = MulAlpha(th.Bg[Primary], 60)
-	e.value = ""
 	// Read in options to change from default values to something else.
 	for _, option := range options {
-		option.apply(e)
+		if v, ok := option.(UIRole); ok {
+			e.role = v
+		} else if v, ok := option.(layout.Inset); ok {
+			e.padding = v
+		} else if v, ok := option.(Option); ok {
+			b := &e
+			v.apply(b)
+		}
 	}
-	if e.value != nil {
+
+	// Verify that the input value is a pointer and not a value
+	if e.value == nil {
+		panic("Editor value should be pointer to an integer or float or string value")
+	} else {
 		GuiLock.Lock()
-		e.Editor.SetText(ValueToString(e.value, e.Dp))
+		s := ValueToString(e.value, *e.DpNo)
+		e.Editor.SetText(s)
 		GuiLock.Unlock()
 
 	}
@@ -189,7 +205,7 @@ func (e *EditDef) updateValue() {
 		} else {
 			// When the underlying variable changes, update the edit buffer
 			GuiLock.RLock()
-			e.SetText(ValueToString(e.value, e.Dp))
+			e.SetText(ValueToString(e.value, *e.DpNo))
 			GuiLock.RUnlock()
 		}
 	}
@@ -232,7 +248,7 @@ func (e *EditDef) Layout(gtx C) D {
 	o := op.Offset(image.Pt(Px(gtx, e.padding.Left), Px(gtx, e.padding.Top))).Push(gtx.Ops)
 	paint.ColorOp{Color: MulAlpha(e.Fg(), 110)}.Add(gtx.Ops)
 	tl := widget.Label{Alignment: e.Editor.Alignment, MaxLines: e.maxLines()}
-	LblDim := tl.Layout(gtx, e.th.Shaper, *e.Font, e.th.FontSp(), e.hint, hintColor)
+	LblDim := tl.Layout(gtx, e.th.Shaper, *e.Font, e.th.FontSp()*unit.Sp(e.FontScale), e.hint, hintColor)
 	o.Pop()
 	callHint := macro.Stop()
 
@@ -247,7 +263,7 @@ func (e *EditDef) Layout(gtx C) D {
 		colMacro := op.Record(gtx.Ops)
 		paint.ColorOp{Color: e.Fg()}.Add(gtx.Ops)
 		ll := widget.Label{Alignment: text.End, MaxLines: 1}
-		ll.Layout(gtx, e.th.Shaper, *e.Font, e.th.FontSp(), e.label, colMacro.Stop())
+		ll.Layout(gtx, e.th.Shaper, *e.Font, e.th.FontSp()*unit.Sp(e.FontScale), e.label, colMacro.Stop())
 		o.Pop()
 		gtx.Constraints.Max.X = oldMaxX - ofs
 		gtx.Constraints.Min.X = gtx.Constraints.Max.X
@@ -271,7 +287,7 @@ func (e *EditDef) Layout(gtx C) D {
 	}
 
 	o = op.Offset(image.Pt(Px(gtx, e.padding.Left), Px(gtx, e.padding.Top))).Push(gtx.Ops)
-	_ = e.Editor.Layout(gtx, e.th.Shaper, *e.Font, e.th.FontSp(), textColor, selectionColor)
+	_ = e.Editor.Layout(gtx, e.th.Shaper, *e.Font, e.th.FontSp()*unit.Sp(e.FontScale), textColor, selectionColor)
 	o.Pop()
 	if e.Editor.Len() == 0 {
 		callHint.Add(gtx.Ops)

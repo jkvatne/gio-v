@@ -34,6 +34,7 @@ var (
 	homeBg      = wid.RGB(0x1288F2)
 	homeFg      = wid.RGB(0xFFFFFF)
 	btnText     = "Blue"
+	SomeText    = ""
 )
 
 func main() {
@@ -103,7 +104,7 @@ func kitchen(th *wid.Theme) layout.Widget {
 
 		wid.Label(th, longText),
 
-		wid.Edit(th, wid.Hint("Value 1")),
+		wid.Edit(th, &SomeText, wid.Hint("Value 1")),
 
 		wid.Row(th, nil, wid.SpaceClose,
 			wid.RoundButton(th, addIcon, wid.Hint("This is another dummy button"), wid.Role(wid.Primary)),

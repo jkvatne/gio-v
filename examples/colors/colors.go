@@ -26,7 +26,7 @@ var (
 func main() {
 	theme = wid.NewTheme(gofont.Collection(), 20)
 	show()
-	win = app.NewWindow(app.Title("Colors"), app.Size(1024, 510)) // , app.Maximized.Option())
+	win = app.NewWindow(app.Title("Colors"), app.Size(1024, 580)) // , app.Maximized.Option())
 	go wid.Run(win, &form, theme)
 	app.Main()
 }

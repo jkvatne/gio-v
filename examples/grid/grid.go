@@ -36,6 +36,7 @@ var (
 	addressIcon   *wid.Icon
 	ageIcon       *wid.Icon
 	dir           bool
+	line          string
 )
 
 type person struct {
@@ -218,7 +219,7 @@ func GridDemo(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 			wid.RadioButton(th, &fontSize, "Medium", "Medium", wid.Do(onFontChange)),
 			wid.RadioButton(th, &fontSize, "Small", "Small", wid.Do(onFontChange)),
 		),
-		wid.Edit(th, wid.Hint("Line editor")),
+		wid.Edit(th, &line, wid.Hint("Line editor")),
 		wid.Table(th, anchor, header, gridLines...),
 		wid.Separator(th, 2),
 		// Center button that is <10 em wide. The width should be close to the native width, or the

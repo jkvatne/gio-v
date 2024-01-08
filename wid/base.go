@@ -64,7 +64,7 @@ type Base struct {
 	description  string
 	Font         *font.Font
 	FontScale    float64
-	Dp           int
+	DpNo         *int
 	Alignment    text.Alignment
 }
 
@@ -82,7 +82,7 @@ type BaseIf interface {
 	setDisabler(b *bool)
 	getTheme() *Theme
 	setFontSize(f float32)
-	setDp(dp int)
+	setDp(dp *int)
 	setAlignment(x text.Alignment)
 }
 
@@ -154,17 +154,26 @@ func (wid *Base) setDisabler(b *bool) {
 	wid.disabler = b
 }
 
-func (wid *Base) setDp(dp int) {
-	wid.Dp = dp
+func (wid *Base) setDp(dp *int) {
+	wid.DpNo = dp
 }
 
 func (wid *Base) setAlignment(x text.Alignment) {
 	wid.Alignment = x
 }
 
-func Dp(dp int) BaseOption {
-	return func(w BaseIf) {
-		w.setDp(dp)
+func Dp[V int | *int](dp V) BaseOption {
+	if d, ok := any(dp).(int); ok {
+		return func(w BaseIf) {
+			i := d
+			w.setDp(&i)
+		}
+	} else if d, ok := any(dp).(*int); ok {
+		return func(w BaseIf) {
+			w.setDp(d)
+		}
+	} else {
+		panic("Option Dp() must have int or *int as argument")
 	}
 }
 

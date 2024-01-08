@@ -183,6 +183,9 @@ func (b *ButtonDef) Layout(gtx C) D {
 	}
 	defer clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
 
+	// Catch input from the whole button (same area that is painted with background color)
+	b.SetupEventHandlers(gtx, outline.Max)
+
 	if b.Style == Outlined {
 		w := float32(Px(gtx, b.th.BorderThickness))
 		paintBorder(gtx, outline, b.th.Fg[Outline], w, rr)
@@ -239,7 +242,6 @@ func (b *ButtonDef) Layout(gtx C) D {
 		textMacro.Add(gtx.Ops)
 	}
 
-	b.SetupEventHandlers(gtx, outline.Max)
 	pointer.CursorPointer.Add(gtx.Ops)
 	outline.Max.X += Px(gtx, b.margin.Left+b.margin.Right)
 	outline.Max.Y += Px(gtx, b.margin.Top+b.margin.Bottom)

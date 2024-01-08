@@ -43,6 +43,7 @@ func onClick() {
 	} else {
 		theme.PrimaryColor = color.NRGBA{A: 0xff, R: 0x10, G: 0x10, B: 0xff}
 	}
+	theme.UpdateColors()
 	form = demo(theme)
 }
 
