@@ -379,12 +379,3 @@ func (l *ListStyle) Layout(gtx C, length int, header layout.Widget, w layout.Lis
 	listDims.Size.Y += hdim.Size.Y
 	return listDims
 }
-
-func limit(x int, min int, max int) int {
-	if x < min {
-		return min
-	} else if x > max {
-		return max
-	}
-	return x
-}

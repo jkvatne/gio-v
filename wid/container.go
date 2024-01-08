@@ -55,7 +55,7 @@ func Container(th *Theme, role UIRole, rr unit.Dp, padding layout.Inset, margin 
 		}
 		y += Px(gtx, padding.Bottom)
 		y += Px(gtx, margin.Bottom)
-		sz := gtx.Constraints.Constrain(image.Pt(gtx.Constraints.Max.X, int(y)))
+		sz := gtx.Constraints.Constrain(image.Pt(gtx.Constraints.Max.X, y))
 		return D{Size: sz, Baseline: sz.Y}
 	}
 }

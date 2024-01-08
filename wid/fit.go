@@ -75,7 +75,7 @@ func (fit Fit) scale(cs layout.Constraints, pos layout.Direction, dims layout.Di
 			dims.Baseline += offset.Y
 			return dims, f32.Affine2D{}.Offset(layout.FPt(offset))
 		}
-	case Fill:
+	default:
 	}
 
 	var scaledSize image.Point

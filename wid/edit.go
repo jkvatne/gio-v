@@ -312,6 +312,7 @@ func (e *EditDef) Layout(gtx C) D {
 				e.hovered = false
 			case pointer.Enter:
 				e.hovered = true
+			default:
 			}
 		}
 	}

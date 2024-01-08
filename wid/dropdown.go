@@ -202,6 +202,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 					d.inList = true
 				case pointer.Leave:
 					d.inList = false
+				default:
 				}
 			}
 		}
@@ -267,7 +268,7 @@ func (d *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 					d.itemHovered[i] = true
 				case pointer.Leave:
 					d.itemHovered[i] = false
-				case pointer.Cancel:
+				default:
 				}
 			}
 		}

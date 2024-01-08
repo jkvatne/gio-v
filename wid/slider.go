@@ -129,6 +129,7 @@ func (s *SliderStyle) Layout(gtx C) D {
 			s.hovered = false
 		case pointer.Enter:
 			s.hovered = true
+		default:
 		}
 	}
 	if de != nil {

@@ -143,6 +143,7 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 		case pointer.Cancel:
 			t.Hover.ClearTarget()
 			t.Press.ClearTarget()
+		default:
 		}
 	}
 	if t.Hover.Process(gtx) {

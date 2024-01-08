@@ -20,15 +20,6 @@ type ShadowStyle struct {
 	Elevation    int
 }
 
-// Shadow defines a shadow cast by a rounded rectangle with the given
-// corner radius and elevation.
-func Shadow(radius int, elevation int) ShadowStyle {
-	return ShadowStyle{
-		CornerRadius: radius,
-		Elevation:    elevation,
-	}
-}
-
 var alpha = [7]byte{0, 82, 62, 42, 32, 14, 13}
 
 func DrawShadow(gtx C, outline image.Rectangle, rr int, elevation int) {

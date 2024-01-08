@@ -52,7 +52,7 @@ func NumDecPlaces(v float64) int {
 	return len(s) - i - 1
 }
 
-func clear() {
+func clearAcc() {
 	entry = 0
 	operand = 0
 	dpNo = 0
@@ -88,7 +88,7 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.Edit(th, &entry, &dpNo, wid.FontSize(1.8)),
 			wid.Row(th, nil, wid.SpaceClose,
 				wid.Button(th, "AC", wid.RR(999), wid.FontSize(1.4), wid.Pads(12, 1), wid.Role(wid.PrimaryContainer),
-					wid.Do(func() { clear() })),
+					wid.Do(func() { clearAcc() })),
 				wid.Button(th, "C", wid.RR(999), wid.FontSize(2), wid.Pads(7, 3), wid.Role(wid.SecondaryContainer)),
 				wid.Button(th, "%", wid.RR(999), wid.FontSize(2), wid.Pads(8, 1), wid.Role(wid.SecondaryContainer),
 					wid.Do(func() {

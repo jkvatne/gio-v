@@ -23,13 +23,11 @@ var (
 	win          *app.Window // The main window
 	form         layout.Widget
 	homeIcon     *wid.Icon
-	checkIcon    *wid.Icon
 	saveIcon     *wid.Icon
 	otherPallete = false
 )
 
 func main() {
-	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
 	homeIcon, _ = wid.NewIcon(icons.ActionHome)
 	saveIcon, _ = wid.NewIcon(icons.ContentSave)
 	theme = wid.NewTheme(gofont.Collection(), 16)
