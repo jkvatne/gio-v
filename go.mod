@@ -3,7 +3,7 @@ module github.com/jkvatne/gio-v
 go 1.20
 
 require (
-	gioui.org v0.4.1
+	gioui.org v0.4.2
 	golang.org/x/exp v0.0.0-20221012211006-4de253d81b95
 	golang.org/x/exp/shiny v0.0.0-20220827204233-334a2380cb91
 )
