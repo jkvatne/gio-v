@@ -102,6 +102,16 @@ func StringToValue(value interface{}, current string) {
 		if err == nil {
 			*value.(*int) = x
 		}
+	} else if _, ok := value.(*int32); ok {
+		x, err := strconv.Atoi(current)
+		if err == nil {
+			*value.(*int) = x
+		}
+	} else if _, ok := value.(*int64); ok {
+		x, err := strconv.ParseInt(current, 10, 64)
+		if err == nil {
+			*value.(*int64) = x
+		}
 	} else if _, ok := value.(*float32); ok {
 		f, err := strconv.ParseFloat(current, 32)
 		if err == nil {
@@ -354,13 +364,6 @@ func (e *EditDef) setLabel(s string) {
 
 func (e *EditDef) setLabelSize(w float32) {
 	e.labelSize = w
-}
-
-func rr(radius int, height int) int {
-	if radius > (height-1)/2 {
-		return (height - 1) / 2
-	}
-	return radius
 }
 
 func paintBorder(gtx C, outline image.Rectangle, col color.NRGBA, width float32, rr int) {
