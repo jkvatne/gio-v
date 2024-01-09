@@ -23,6 +23,7 @@ import (
 type CheckBoxDef struct {
 	Base
 	Clickable
+	Tooltip
 	Label              string
 	StrValue           *string
 	BoolValue          *bool
@@ -46,6 +47,7 @@ func RadioButton(th *Theme, value *string, key string, label string, options ...
 	r.role = Surface
 	r.margin = th.DefaultMargin
 	r.Font = &th.DefaultFont
+	r.Tooltip = PlatformTooltip(th)
 	for _, option := range options {
 		option.apply(&r)
 	}
@@ -66,6 +68,7 @@ func Checkbox(th *Theme, label string, options ...Option) func(gtx C) D {
 	c.role = Surface
 	c.margin = th.DefaultMargin
 	c.Font = &th.DefaultFont
+	c.Tooltip = PlatformTooltip(th)
 	for _, option := range options {
 		option.apply(c)
 	}
@@ -154,6 +157,9 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	of.Pop()
 	c.SetupEventHandlers(gtx, dims.Size)
 	pointer.CursorPointer.Add(gtx.Ops)
+	_ = c.Tooltip.Layout(gtx, c.hint, func(gtx C) D {
+		return D{Size: dims.Size}
+	})
 	return dims
 }
 
