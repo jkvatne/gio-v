@@ -46,7 +46,7 @@ const (
 	// Outline is used for frames and buttons
 	Outline
 	OutlineVariant
-	// OutlineHighest is the grayest surface
+	// SurfaceContainerHighest is the grayest surface
 	SurfaceContainerHighest
 	SurfaceContainerHigh
 	SurfaceContainer
@@ -169,6 +169,7 @@ func (th *Theme) FontSp() unit.Sp {
 	return th.TextSize
 }
 
+// UpdateColors must be called after changing the pallete
 // See https://m3.material.io/styles/color/static/baseline
 func (th *Theme) UpdateColors() {
 	if !th.DarkMode {
@@ -195,7 +196,7 @@ func (th *Theme) UpdateColors() {
 
 		th.Fg[Error] = Tone(th.ErrorColor, 100)
 		th.Bg[Error] = Tone(th.ErrorColor, 40)
-		th.Fg[ErrorContainer] = Tone(th.ErrorColor, 10) // #410E0B
+		th.Fg[ErrorContainer] = Tone(th.ErrorColor, 30) // #410E0B
 		th.Bg[ErrorContainer] = Tone(th.ErrorColor, 90) // #F9DEDC
 
 		th.Fg[Outline] = Tone(th.NeutralVariantColor, 40)
@@ -272,8 +273,8 @@ func (th *Theme) UpdateColors() {
 	th.BorderColorActive = th.Fg[Primary]
 	th.SelectionColor = MulAlpha(th.Bg[Primary], 0x60)
 	// Tooltip
-	th.TooltipBackground = th.Bg[SecondaryContainer]
-	th.TooltipOnBackground = th.Fg[SecondaryContainer]
+	th.TooltipBackground = th.Bg[TertiaryContainer]
+	th.TooltipOnBackground = th.Fg[TertiaryContainer]
 	// Resizer
 	th.SashColor = WithAlpha(th.Fg[Surface], 0x40)
 	// Switch
@@ -290,8 +291,8 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	// Set up the default pallete
 	th.PrimaryColor = RGB(0x6750A4)
 	th.SecondaryColor = RGB(0x625B71)
-	th.TertiaryColor = RGB(0x7D5260)
-	th.ErrorColor = RGB(0xB3261E)
+	th.TertiaryColor = RGB(0x567E3E)
+	th.ErrorColor = RGB(0xCF1010)
 	th.NeutralColor = RGB(0x79747E)
 	th.NeutralVariantColor = RGB(0x79747E)
 	// Then replace the optional colors in the argument list
