@@ -29,16 +29,23 @@ var SpaceClose []float32
 
 // SpaceDistribute should disribute the widgets on a row evenly, with equal space for each
 var SpaceDistribute = []float32{1.0}
+var SpaceRightAdjust = []float32{-1.0}
+var FlexInset = layout.Inset{-1, -1, -1, -1}
+var NoInset = layout.Inset{}
 
 // calcWidths will calculate widths
 func calcWidths(gtx C, textSize unit.Sp, weights []float32, count int) (widths []int) {
 	w := make([]float32, count)
 	widths = make([]int, count)
+	if len(weights) >= 1 && weights[0] == -1 {
+		widths[0] = -1
+		return widths
+	}
 	for i := 0; i < len(w); i++ {
 		if len(weights) == 0 {
 			// If weights is nil, place all widgets as close as possible
 			w[i] = 0.0
-		} else if len(weights) == 1 {
+		} else if len(weights) == 1 && weights[0] == 1.0 {
 			// If weights are {1.0} then distribute equaly (like equaly1,1,1,1...)
 			w[i] = 1.0
 		} else if i < len(weights) && weights[i] > 1.0 {
@@ -116,11 +123,14 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, bgColor color.NRGBA, weights
 	widths := calcWidths(gtx, textSize, weights, len(widgets))
 	// Check child sizes and make macros for each widget in a row
 	yMax := 0
+	totSize := 0
 	c := gtx
 	pos := make([]int, len(widgets)+1)
 	// For each column in the row, make macros to draw the widget
 	for i, child := range widgets {
-		if len(widths) > i {
+		if len(widths) >= 1 && widths[0] == -1.0 {
+			c.Constraints.Min.X = 0
+		} else if len(widths) > i {
 			c.Constraints.Max.X = widths[i]
 			if widths[i] == 0 {
 				c.Constraints.Max.X = inf
@@ -140,9 +150,16 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, bgColor color.NRGBA, weights
 		} else {
 			pos[i+1] = pos[i] + widths[i]
 		}
+		totSize = pos[i+1]
 		call[i] = macro.Stop()
 		if yMax < dim[i].Size.Y {
 			yMax = dim[i].Size.Y
+		}
+	}
+	if len(widths) >= 1 && widths[0] == -1.0 {
+		delta := Max(gtx.Constraints.Max.X-totSize, 0)
+		for i := 0; i < len(pos); i++ {
+			pos[i] += delta
 		}
 	}
 	macro := op.Record(gtx.Ops)

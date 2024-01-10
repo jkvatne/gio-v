@@ -25,17 +25,51 @@ var (
 	homeIcon     *wid.Icon
 	saveIcon     *wid.Icon
 	otherPallete = false
+	d            layout.Widget
 )
 
 func main() {
 	homeIcon, _ = wid.NewIcon(icons.ActionHome)
 	saveIcon, _ = wid.NewIcon(icons.ContentSave)
 	theme = wid.NewTheme(gofont.Collection(), 16)
-	theme.DarkMode = false
-	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(800), unit.Dp(800)))
+	d = wid.YesNoDialog(theme,
+		"Save data?",
+		"Click yes if you want to save the data to persitant memory or disk",
+		"No", "Yes",
+		onNo, onYes)
+	theme.Scale = 1
+	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(500), unit.Dp(600)))
 	form = demo(theme)
 	go wid.Run(win, &form, theme)
 	app.Main()
+}
+
+func onYes() {
+	wid.Hide()
+}
+
+func onNo() {
+	wid.Hide()
+}
+
+func myDialog(th *wid.Theme) layout.Widget {
+	return wid.Container(th, wid.TransparentSurface, 0, wid.FlexInset, wid.NoInset,
+		wid.Col(wid.SpaceDistribute,
+			wid.Container(th, wid.PrimaryContainer, 20, layout.Inset{22, 22, 22, 22}, layout.Inset{62, 62, 62, 62},
+				wid.Label(th, "Confirm", wid.Heading(), wid.Middle()),
+				wid.Label(th, "Do you want to save data?", wid.Middle()),
+				wid.Separator(th, 0, wid.Pads(10)),
+				wid.Row(th, nil, wid.SpaceDistribute,
+					wid.TextButton(th, "Yes", wid.Do(onYes), wid.Right(), wid.Margin(11)),
+					wid.TextButton(th, "No", wid.Do(onNo), wid.Margin(11)),
+				),
+			),
+		),
+	)
+}
+
+func onSave() {
+	wid.Show(d)
 }
 
 func onClick() {
@@ -74,6 +108,7 @@ func onSwitchMode() {
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
+	wid.Show(d)
 	return wid.Col(wid.SpaceClose,
 		wid.Label(th, "Material demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Separator(th, unit.Dp(1.0)),
@@ -105,7 +140,7 @@ func demo(th *wid.Theme) layout.Widget {
 						wid.ImageFromJpgFile("music.jpg", wid.Contain)),
 					wid.Row(th, nil, wid.SpaceDistribute,
 						wid.Label(th, "12 hrs ago", wid.FontSize(0.66), wid.Fg(th.PrimaryColor)),
-						wid.Button(th, "Save", wid.BtnIcon(saveIcon), wid.RR(99), wid.Right()),
+						wid.Button(th, "Save", wid.Do(onSave), wid.BtnIcon(saveIcon), wid.RR(99), wid.Right()),
 					),
 				),
 				wid.Container(th, wid.PrimaryContainer, 15, th.DefaultPadding, th.DefaultMargin,

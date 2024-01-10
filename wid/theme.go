@@ -53,6 +53,7 @@ const (
 	SurfaceContainerLow
 	// SurfaceContainerLowest is almost white/black
 	SurfaceContainerLowest
+	TransparentSurface
 	RoleCount
 )
 
@@ -219,6 +220,9 @@ func (th *Theme) UpdateColors() {
 		th.Bg[SurfaceContainerLow] = Tone(th.NeutralColor, 96)     // #F7F2FA
 		th.Fg[SurfaceContainerLowest] = Tone(th.NeutralColor, 10)  // #1D1B20
 		th.Bg[SurfaceContainerLowest] = Tone(th.NeutralColor, 100) // #FFFFFF
+		th.Bg[TransparentSurface] = MulAlpha(th.Fg[SurfaceContainer], 199)
+		th.Fg[TransparentSurface] = MulAlpha(th.Fg[SurfaceContainer], 100)
+
 	} else {
 
 		// Dark mode

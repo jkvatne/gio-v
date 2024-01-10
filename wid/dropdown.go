@@ -185,7 +185,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		theListMacro := listMacro.Stop()
 
 		if !oldVisible {
-			d.above = WinY-CurrentY < o.Size.Y+dims.Size.Y
+			d.above = WinY-currentY < o.Size.Y+dims.Size.Y
 			d.setHovered(idx)
 		}
 

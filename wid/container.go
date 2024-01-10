@@ -34,18 +34,33 @@ func Container(th *Theme, role UIRole, rr unit.Dp, padding layout.Inset, margin 
 			remaining = Max(0, remaining-dims[i].Size.Y)
 		}
 		// Increase size by padding
-		size += Px(gtx, padding.Top+padding.Bottom)
+		pt := Px(gtx, padding.Top)
+		pb := Px(gtx, padding.Bottom)
+		pl := Px(gtx, padding.Left)
+		ml := Px(gtx, margin.Left)
+		mr := Px(gtx, margin.Right)
+		mt := Px(gtx, margin.Top)
+		mb := Px(gtx, margin.Bottom)
+		free := gtx.Constraints.Max.Y - size
+		if free > 0 {
+			if pt < 0 {
+				pt = free / 2
+			}
+			if pb < 0 {
+				pb = free / 2
+			}
+		}
 		// Offset by margin
-		defer op.Offset(image.Pt(Px(gtx, margin.Left), Px(gtx, margin.Top))).Push(gtx.Ops).Pop()
+		defer op.Offset(image.Pt(ml, mt)).Push(gtx.Ops).Pop()
 		// Draw surface
-		outline := image.Rect(0, 0, gtx.Constraints.Max.X-Px(gtx, margin.Right+margin.Left), size)
+		outline := image.Rect(0, 0, gtx.Constraints.Max.X-mr-ml, size+pt+pb)
 		defer clip.UniformRRect(outline, Px(gtx, rr)).Push(gtx.Ops).Pop()
 		paint.Fill(gtx.Ops, th.Bg[role])
 
 		// Now do the actual drawing, with offsets
-		y := Px(gtx, padding.Top)
+		y := pt
 		for i := range widgets {
-			trans := op.Offset(image.Pt(Px(gtx, padding.Left), int(math.Round(float64(y))))).Push(gtx.Ops)
+			trans := op.Offset(image.Pt(pl, int(math.Round(float64(y))))).Push(gtx.Ops)
 			calls[i].Add(gtx.Ops)
 			trans.Pop()
 			y += dims[i].Size.Y
@@ -53,9 +68,7 @@ func Container(th *Theme, role UIRole, rr unit.Dp, padding layout.Inset, margin 
 				break
 			}
 		}
-		y += Px(gtx, padding.Bottom)
-		y += Px(gtx, margin.Bottom)
-		sz := gtx.Constraints.Constrain(image.Pt(gtx.Constraints.Max.X, y))
+		sz := gtx.Constraints.Constrain(image.Pt(gtx.Constraints.Max.X, size+mt+mb+pt+pb))
 		return D{Size: sz, Baseline: sz.Y}
 	}
 }
