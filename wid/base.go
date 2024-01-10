@@ -155,7 +155,11 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 			GuiLock.Lock()
 			mainForm := *form
 			GuiLock.Unlock()
-			mainForm(gtx)
+			ctx := gtx
+			if dialog != nil {
+				ctx.Queue = nil
+			}
+			mainForm(ctx)
 			if dialog != nil {
 				dialog(gtx)
 			}
