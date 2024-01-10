@@ -138,7 +138,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 	cgtx := gtx
 	cgtx.Constraints.Min.X = 0
 	cgtx.Constraints.Min.Y = 0
-	cgtx.Constraints.Max.X -= Px(gtx, b.padding.Right+b.padding.Left+b.margin.Left+b.margin.Right)
+	cgtx.Constraints.Max.X = Max(0, cgtx.Constraints.Max.X-Px(gtx, b.padding.Right+b.padding.Left+b.margin.Left+b.margin.Right))
 	// Render text to find text width (and save drawing commands in macro)
 	recorder = op.Record(gtx.Ops)
 	textDim := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.FontSp()*unit.Sp(b.FontScale), *b.Text, colorMacro)

@@ -176,24 +176,6 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 	}
 }
 
-func YesNoDialog(th *Theme, heading string, text string, lbl1, lbl2 string, on1, on2 func()) layout.Widget {
-	return Container(th, TransparentSurface, 0, FlexInset, NoInset,
-		Col(SpaceDistribute,
-			Container(th, PrimaryContainer, 20,
-				layout.Inset{22, 22, 22, 22}, // Inside Padding
-				layout.Inset{62, 62, 62, 62}, // OUtside Margin
-				Label(th, heading, Heading(), Middle()),
-				Label(th, text, Middle()),
-				Separator(th, 0, Pads(10)),
-				Row(th, nil, SpaceRightAdjust,
-					TextButton(th, lbl1, Do(on1)),
-					TextButton(th, lbl2, Do(on2)),
-				),
-			),
-		),
-	)
-}
-
 func Show(d layout.Widget) {
 	dialog = d
 }

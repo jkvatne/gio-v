@@ -54,6 +54,9 @@ func (ic *Icon) Update(data []byte) error {
 }
 
 func (ic *Icon) image(sz int, c color.NRGBA) paint.ImageOp {
+	if sz < 1 {
+		sz = 1
+	}
 	if sz == ic.imgSize && c == ic.imgColor {
 		return ic.op
 	}
