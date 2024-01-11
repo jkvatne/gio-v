@@ -132,8 +132,10 @@ type Theme struct {
 	// Default split between edit label and edit field
 	LabelSplit float32
 	// Extra scaling of the Dp unit
-	Scale         float32
-	DialogPadding layout.Inset
+	Scale           float32
+	DialogPadding   layout.Inset
+	DialogCorners   unit.Dp
+	DialogTextWidth unit.Sp
 }
 
 func mustIcon(ic *Icon, err error) *Icon {
@@ -347,6 +349,8 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	th.ScrollCornerRadius = 4.0
 	th.TooltipInset = layout.UniformInset(1)
 	th.DialogPadding = layout.Inset{33, 13, 33, 33}
+	th.DialogCorners = 20
+	th.DialogTextWidth = th.TextSize * 20
 	// Update all colors from the pallete
 	th.UpdateColors()
 	return th

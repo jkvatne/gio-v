@@ -5,7 +5,6 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"gioui.org/unit"
 	"image"
 	"math"
 	"time"
@@ -72,10 +71,9 @@ func Dialog(th *Theme, role UIRole, widgets ...Wid) Wid {
 		// Calculate dialog constraints
 		ctx := gtx
 		ctx.Constraints.Min.Y = 0
-		// Margins left and right for a constant maximum dialog size of 35 characters
-		ml := Max(12, (ctx.Constraints.Max.X-pl-pr-gtx.Metric.Sp(th.TextSize)*20)/2)
-		mr := Max(12, (ctx.Constraints.Max.X-pl-pr-gtx.Metric.Sp(th.TextSize)*20)/2)
-		ctx.Constraints.Max.X = gtx.Constraints.Max.X - ml - mr - pl - pr
+		// Margins left and right for a constant maximum dialog size
+		margin := Max(12, (ctx.Constraints.Max.X - pl - pr - Px(gtx, th.DialogTextWidth)))
+		ctx.Constraints.Max.X = gtx.Constraints.Max.X - margin - pl - pr
 		calls := make([]op.CallOp, len(widgets))
 		dims := make([]D, len(widgets))
 		size := 0
@@ -86,39 +84,29 @@ func Dialog(th *Theme, role UIRole, widgets ...Wid) Wid {
 			size += dims[i].Size.Y
 		}
 		mt := (gtx.Constraints.Max.Y - size) / 2
+		// Calculate posision and size of the dialog box
+		x := int(f*float64(margin/2) + (1-f)*float64(startX))
+		y := int(f*float64(mt) + (1-f)*float64(startY))
+		outline = image.Rect(0, 0, int(f*float64(gtx.Constraints.Max.X-margin)), int(f*float64(size+pt+pb)))
+		// Draw the dialog surface with caclculated margins
+		defer op.Offset(image.Pt(x, y)).Push(gtx.Ops).Pop()
+		defer clip.UniformRRect(outline, Px(gtx, th.DialogCorners)).Push(gtx.Ops).Pop()
+		paint.Fill(gtx.Ops, th.Bg[role])
 
-		// Make animated expansion
 		if f < 1.0 {
-			// Draw the dialog surface with caclculated margins
-			x := int(f*float64(ml) + (1-f)*float64(startX))
-			y := int(f*float64(mt) + (1-f)*float64(startY))
-			defer op.Offset(image.Pt(x, y)).Push(gtx.Ops).Pop()
-			dx := gtx.Constraints.Max.X - ml - mr
-			dy := size + pt + pb
-			dx = int(f * float64(dx))
-			dy = int(f * float64(dy))
-			outline = image.Rect(0, 0, dx, dy)
-			defer clip.UniformRRect(outline, Px(gtx, unit.Dp(20))).Push(gtx.Ops).Pop()
-			paint.Fill(gtx.Ops, th.Bg[role])
-			sz := gtx.Constraints.Constrain(image.Pt(gtx.Constraints.Max.X, size+pb+pt))
+			// While animating, no widgets are drawn, but we invalidate to force a new redraw
 			Invalidate()
-			return D{Size: sz, Baseline: sz.Y}
 		} else {
-			// Draw the dialog surface with caclculated margins
-			defer op.Offset(image.Pt(ml, mt)).Push(gtx.Ops).Pop()
-			outline = image.Rect(0, 0, gtx.Constraints.Max.X-ml-mr, size+pt+pb)
-			defer clip.UniformRRect(outline, Px(gtx, unit.Dp(20))).Push(gtx.Ops).Pop()
-			paint.Fill(gtx.Ops, th.Bg[role])
 			// Now do the actual drawing of the widgets, with offsets
-			y := 33
+			y := pt
 			for i := range widgets {
-				trans := op.Offset(image.Pt(33, int(math.Round(float64(y))))).Push(gtx.Ops)
+				trans := op.Offset(image.Pt(pl, int(math.Round(float64(y))))).Push(gtx.Ops)
 				calls[i].Add(gtx.Ops)
 				trans.Pop()
 				y += dims[i].Size.Y
 			}
-			sz := gtx.Constraints.Constrain(image.Pt(gtx.Constraints.Max.X, size+pb+pt))
-			return D{Size: sz, Baseline: sz.Y}
 		}
+		sz := gtx.Constraints.Constrain(image.Pt(gtx.Constraints.Max.X, size+pb+pt))
+		return D{Size: sz, Baseline: sz.Y}
 	}
 }
