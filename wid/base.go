@@ -4,14 +4,13 @@ package wid
 
 import (
 	"gioui.org/font"
+	"gioui.org/op/paint"
 	"gioui.org/text"
 	"golang.org/x/exp/constraints"
 	"image"
 	"image/color"
 	"os"
 	"sync"
-
-	"gioui.org/op/paint"
 
 	"gioui.org/app"
 	"gioui.org/io/pointer"
@@ -36,8 +35,8 @@ type (
 type UIState uint8
 
 var (
-	mouseX        float32
-	mouseY        float32
+	mouseX        int
+	mouseY        int
 	WinX          int
 	WinY          int
 	startWinY     int
@@ -45,7 +44,6 @@ var (
 	currentY      int
 	GuiLock       sync.RWMutex
 	invalidate    chan struct{}
-	dialog        layout.Widget
 )
 
 // Base is tha base structure for widgets. It contains variables that (almost) all widgets share
@@ -108,8 +106,8 @@ func UpdateMousePos(gtx C, win *app.Window) {
 	for _, gtxEvent := range gtx.Events(win) {
 		switch e := gtxEvent.(type) {
 		case pointer.Event:
-			mouseX = e.Position.X
-			mouseY = e.Position.Y
+			mouseX = int(e.Position.X)
+			mouseY = int(e.Position.Y)
 		}
 	}
 }
@@ -174,14 +172,6 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 			e.Frame(gtx.Ops)
 		}
 	}
-}
-
-func Show(d layout.Widget) {
-	dialog = d
-}
-
-func Hide() {
-	dialog = nil
 }
 
 func Min[T constraints.Ordered](x, y T) T {

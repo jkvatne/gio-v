@@ -108,7 +108,6 @@ func onSwitchMode() {
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
-	wid.Show(d)
 	return wid.Col(wid.SpaceClose,
 		wid.Label(th, "Material demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Separator(th, unit.Dp(1.0)),
