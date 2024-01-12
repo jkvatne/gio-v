@@ -28,7 +28,7 @@ type rowDef struct {
 var SpaceClose []float32
 
 // SpaceDistribute should disribute the widgets on a row evenly, with equal space for each
-var SpaceDistribute = []float32{1.0}
+var SpaceDistribute = []float32{1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0}
 var SpaceRightAdjust = []float32{-1.0}
 var FlexInset = layout.Inset{-1, -1, -1, -1}
 var NoInset = layout.Inset{}
@@ -120,7 +120,20 @@ func Row(th *Theme, pbgColor *color.NRGBA, weights []float32, widgets ...layout.
 func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, bgColor color.NRGBA, weights []float32, widgets ...layout.Widget) D {
 	call := make([]op.CallOp, len(widgets))
 	dim := make([]D, len(widgets))
-	widths := calcWidths(gtx, textSize, weights, len(widgets))
+	w := make([]float32, len(widgets))
+	copy(w, weights)
+	// Calculate fixed-width columns (with weight=0)
+	for i, child := range widgets {
+		if i < len(w) && w[i] == 0 {
+			macro := op.Record(gtx.Ops)
+			c := gtx
+			c.Constraints.Min.X = 0
+			dim[i] = child(c)
+			w[i] = 2 * float32(dim[i].Size.X) / float32(Px(gtx, textSize))
+			call[i] = macro.Stop()
+		}
+	}
+	widths := calcWidths(gtx, textSize, w, len(widgets))
 	// Check child sizes and make macros for each widget in a row
 	yMax := 0
 	totSize := 0

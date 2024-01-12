@@ -22,7 +22,7 @@ import (
 var (
 	form        layout.Widget
 	theme       *wid.Theme
-	Alternative = "Wide"
+	Alternative = "Fractional"
 	fontSize    = "Medium"
 	// Column widths are given in units of approximately one average character width (en).
 	// A width of zero means the widget's natural size should be used (f.ex. checkboxes)
@@ -31,7 +31,7 @@ var (
 	fracColWidth  = []float32{0, 0.3, 0.3, .2, .2}
 	selectAll     bool
 	doOccupy      bool
-	withoutHeader bool
+	withoutHeader bool = true
 	nameIcon      *wid.Icon
 	addressIcon   *wid.Icon
 	ageIcon       *wid.Icon
@@ -64,7 +64,7 @@ var data = []person{
 
 func main() {
 	makePersons(12)
-	theme = wid.NewTheme(gofont.Collection(), 14)
+	theme = wid.NewTheme(gofont.Collection(), 16)
 	onWinChange()
 	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(300))), &form, theme)
 	app.Main()
@@ -149,9 +149,9 @@ func onCheck() {
 
 func onFontChange() {
 	if fontSize == "Medium" {
-		theme.TextSize = 14
+		theme.TextSize = 16
 	} else if fontSize == "Large" {
-		theme.TextSize = 24
+		theme.TextSize = 26
 	} else if fontSize == "Small" {
 		theme.TextSize = 10
 	}
@@ -180,7 +180,8 @@ func GridDemo(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 		wid.HeaderButton(th, "Name", wid.Do(onNameClick), wid.Prim(), wid.BtnIcon(nameIcon), wid.Pads(0)),
 		wid.HeaderButton(th, "Address", wid.Do(onAddressClick), wid.Prim(), wid.BtnIcon(addressIcon), wid.Pads(0)),
 		wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.Prim(), wid.BtnIcon(ageIcon), wid.Pads(0)),
-		wid.Label(th, "Gender", wid.Prim(), wid.Pads(0)),
+		// When using a label, padding has to be added. It should be equal to the default button padding.
+		wid.Label(th, "Gender", wid.Prim()),
 	)
 	if withoutHeader {
 		header = nil
@@ -194,10 +195,10 @@ func GridDemo(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 			wid.GridRow(th, &bgColor, gw, colWidths,
 				// One row of the grid is defined here, Name can not be edited
 				wid.Checkbox(th, "", wid.Bool(&data[i].Selected)),
-				wid.Label(th, &data[i].Name, wid.Pad(th.DefaultPadding)),
-				wid.Edit(th, wid.Var(&data[i].Address), wid.Border(0), wid.Pads(0)),
-				wid.Edit(th, wid.Var(&data[i].Age), wid.Border(0), wid.Pads(0)),
-				wid.DropDown(th, &data[i].Status, []string{"Male", "Female", "Other"}, wid.Pads(0), wid.Border(0)),
+				wid.Label(th, &data[i].Name),
+				wid.Edit(th, wid.Var(&data[i].Address), wid.Border(0), wid.Margin(0)),
+				wid.Edit(th, wid.Var(&data[i].Age), wid.Border(0), wid.Margin(0)),
+				wid.DropDown(th, &data[i].Status, []string{"Male", "Female", "Other"}, wid.Margin(0), wid.Border(0)),
 			))
 
 	}
@@ -224,7 +225,7 @@ func GridDemo(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 		wid.Separator(th, 2),
 		// Center button that is <10 em wide. The width should be close to the native width, or the
 		// button will not be centered.
-		wid.Row(th, nil, []float32{1.0, 10, 1.0},
+		wid.Row(th, nil, []float32{1.0, 0.0, 1.0},
 			wid.Space(1),
 			wid.Button(th, "Update", wid.Hint("Click to update variables")),
 			wid.Space(1),

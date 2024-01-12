@@ -22,6 +22,7 @@ type BaseIf interface {
 	setDisabler(b *bool)
 	getTheme() *Theme
 	setFontSize(f float32)
+	setBorder(b unit.Dp)
 	setDp(dp *int)
 	setAlignment(x text.Alignment)
 }
@@ -100,6 +101,16 @@ func (wid *Base) setDp(dp *int) {
 
 func (wid *Base) setAlignment(x text.Alignment) {
 	wid.Alignment = x
+}
+
+func (d *Base) setBorder(w unit.Dp) {
+	d.borderWidth = w
+}
+
+func Border(b unit.Dp) BaseOption {
+	return func(w BaseIf) {
+		w.setBorder(b)
+	}
 }
 
 func Dp[V int | *int](dp V) BaseOption {
@@ -286,17 +297,6 @@ func Large() BaseOption {
 func Small() BaseOption {
 	return func(w BaseIf) {
 		w.setFontSize(0.8)
-	}
-}
-
-func Border(b unit.Dp) BaseOption {
-	return func(w BaseIf) {
-		if o, ok := w.(*DropDownStyle); ok {
-			o.setBorder(b)
-		}
-		if o, ok := w.(*EditDef); ok {
-			o.setBorder(b)
-		}
 	}
 }
 

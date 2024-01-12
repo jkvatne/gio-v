@@ -35,7 +35,6 @@ func (ic *Icon) Layout(gtx C, color color.NRGBA) D {
 	sz := gtx.Constraints.Min.X
 	size := gtx.Constraints.Constrain(image.Pt(sz, sz))
 	defer clip.Rect{Max: size}.Push(gtx.Ops).Pop()
-
 	ico := ic.image(size.X, color)
 	ico.Add(gtx.Ops)
 	paint.PaintOp{}.Add(gtx.Ops)

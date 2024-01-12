@@ -4,6 +4,7 @@ package wid
 
 import (
 	"gioui.org/font"
+	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/paint"
 	"gioui.org/text"
@@ -51,7 +52,8 @@ func Label[V Value](th *Theme, v V, options ...Option) func(gtx C) D {
 		Base: Base{
 			th:        th,
 			role:      Surface,
-			padding:   uniformPadding(3.5),
+			padding:   th.DefaultPadding,
+			margin:    layout.Inset{-1, -1, -1, -1},
 			FontScale: 1.0,
 			Alignment: text.Start,
 		},
@@ -62,6 +64,9 @@ func Label[V Value](th *Theme, v V, options ...Option) func(gtx C) D {
 	// Apply options after initialization of LabelDef
 	for _, option := range options {
 		option.apply(&w)
+	}
+	if w.margin.Top != -1 {
+		panic("Label does not use margin")
 	}
 
 	return func(gtx C) D {

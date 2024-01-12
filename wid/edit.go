@@ -251,8 +251,11 @@ func (e *EditDef) Layout(gtx C) D {
 
 	// And reduce the size to make space for the padding and margin
 	gtx.Constraints.Min.X -= Px(gtx, e.padding.Left+e.padding.Right+e.margin.Left+e.margin.Right)
-	gtx.Constraints.Max.X = gtx.Constraints.Min.X
 
+	gtx.Constraints.Max.X = gtx.Constraints.Min.X
+	if gtx.Constraints.Max.X < 100 {
+		gtx.Constraints.Max.X = 100
+	}
 	// Draw hint text with top/left padding offset
 	macro := op.Record(gtx.Ops)
 	o := op.Offset(image.Pt(Px(gtx, e.padding.Left), Px(gtx, e.padding.Top))).Push(gtx.Ops)
@@ -334,7 +337,7 @@ func (e *EditDef) Layout(gtx C) D {
 	eventArea.Pop()
 
 	defer op.Offset(image.Pt(Px(gtx, e.padding.Left), 0)).Push(gtx.Ops).Pop()
-	dim := image.Pt(gtx.Constraints.Max.X, border.Max.Y+Px(gtx, e.padding.Bottom+e.padding.Top))
+	dim := image.Pt(gtx.Constraints.Max.X, border.Max.Y+Px(gtx, e.margin.Bottom+e.margin.Top))
 	return D{Size: dim}
 }
 

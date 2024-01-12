@@ -332,7 +332,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	th.Elevation = 0.5
 	// Text
 	th.DefaultMargin = uniformPadding(6.0)
-	th.DefaultPadding = uniformPadding(6.0)
+	th.DefaultPadding = layout.Inset{4, 4, 4, 2}
 	th.ButtonPadding = uniformPadding(6.0)
 	th.ButtonCornerRadius = th.BorderCornerRadius
 	th.ButtonMargin = uniformPadding(4.0)
@@ -345,7 +345,7 @@ func NewTheme(fontCollection []text.FontFace, fontSize unit.Sp, colors ...color.
 	th.ScrollMajorPadding = 2
 	th.ScrollMinorPadding = 2
 	th.ScrollMajorMinLen = 15.5
-	th.ScrollMinorWidth = 15.5
+	th.ScrollMinorWidth = 10
 	th.ScrollCornerRadius = 4.0
 	th.TooltipInset = layout.UniformInset(1)
 	th.DialogPadding = layout.Inset{33, 13, 33, 33}

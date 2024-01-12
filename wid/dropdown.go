@@ -20,17 +20,16 @@ import (
 type DropDownStyle struct {
 	Base
 	Clickable
-	items           []string
-	itemHovered     []bool
-	outlineColor    color.NRGBA
-	listVisible     bool
-	inList          bool
-	list            Wid
-	Items           []Wid
-	label           string
-	labelSize       float32
-	above           bool
-	borderThickness unit.Dp
+	items        []string
+	itemHovered  []bool
+	outlineColor color.NRGBA
+	listVisible  bool
+	inList       bool
+	list         Wid
+	Items        []Wid
+	label        string
+	labelSize    float32
+	above        bool
 }
 
 var icon *Icon
@@ -45,7 +44,7 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 	b.index = index
 	b.items = items
 	b.labelSize = th.LabelSplit
-	b.borderThickness = b.th.BorderThickness
+	b.borderWidth = b.th.BorderThickness
 	b.ClickMovesFocus = true
 	for i := range items {
 		b.Items = append(b.Items, b.option(th, i))
@@ -70,10 +69,6 @@ func (d *DropDownStyle) setLabel(s string) {
 
 func (d *DropDownStyle) setLabelSize(w float32) {
 	d.labelSize = w
-}
-
-func (d *DropDownStyle) setBorder(w unit.Dp) {
-	d.borderThickness = w
 }
 
 func (d *DropDownStyle) Layout(gtx C) D {
@@ -138,8 +133,8 @@ func (d *DropDownStyle) Layout(gtx C) D {
 	if r > border.Max.Y/2 {
 		r = border.Max.Y / 2
 	}
-	if d.borderThickness > 0 {
-		w := float32(Px(gtx, d.borderThickness))
+	if d.borderWidth > 0 {
+		w := float32(Px(gtx, d.borderWidth))
 		if d.Focused() {
 			paintBorder(gtx, border, d.outlineColor, w*2, r)
 		} else if d.Hovered() {
@@ -193,7 +188,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		if d.above {
 			dy = -o.Size.Y
 		}
-		op.Offset(image.Pt(0, dy)).Add(gtx.Ops)
+		r := op.Offset(image.Pt(0, dy)).Push(gtx.Ops)
 
 		for _, ev := range gtx.Events(&d.role) {
 			if ev, ok := ev.(pointer.Event); ok {
@@ -210,10 +205,13 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		dropdownMacro := op.Record(gtx.Ops)
 
 		// Fill background and draw list
-		cl := clip.Rect{Max: listClipRect.Max}.Push(gtx.Ops)
+		bw := Px(gtx, unit.Dp(1.5))
+		cl := clip.Rect{Max: image.Pt(border.Max.X, o.Size.Y+bw)}.Push(gtx.Ops)
 		paint.Fill(gtx.Ops, d.th.Bg[Canvas])
 		theListMacro.Add(gtx.Ops)
 		cl.Pop()
+		// Draw frame
+		paintBorder(gtx, image.Rect(0, 0, listClipRect.Max.X, listClipRect.Max.Y) /*d.outlineColor*/, Blue, float32(bw), 0)
 
 		// Handle mouse enter/leave into list
 		cl = clip.Rect(listClipRect).Push(gtx.Ops)
@@ -226,21 +224,23 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		pass.Pop()
 
 		// Draw a border around all options
-		w := float32(Px(gtx, d.borderThickness))
+		w := float32(Px(gtx, d.borderWidth))
 		paintBorder(gtx, listClipRect, d.th.Fg[Outline], w, 0)
 		// Save and defer execution
 		dropDownListCall := dropdownMacro.Stop()
 		op.Defer(gtx.Ops, dropDownListCall)
-
+		r.Pop()
+		listClipRect.Min.Y = -20
 	} else {
 		d.setHovered(idx)
 	}
-	pointer.CursorPointer.Add(gtx.Ops)
-	d.SetupEventHandlers(gtx, dims.Size)
 
-	return D{Size: image.Pt(
-		gtx.Constraints.Max.X,
-		border.Max.Y-border.Min.Y+Px(gtx, d.padding.Bottom+d.padding.Top))}
+	sz := image.Pt(gtx.Constraints.Max.X, border.Max.Y-border.Min.Y+Px(gtx, d.margin.Bottom+d.margin.Top))
+	// defer clip.Rect{Max: sz}.Push(gtx.Ops).Pop()
+	d.SetupEventHandlers(gtx, dims.Size)
+	pointer.CursorPointer.Add(gtx.Ops)
+
+	return D{Size: sz}
 }
 
 func (d *DropDownStyle) setHovered(h int) {
@@ -261,6 +261,8 @@ func (d *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 					GuiLock.Unlock()
 					d.listVisible = false
 					d.itemHovered[i] = false
+					// Force redraw when item is clicked
+					Invalidate()
 				case pointer.Enter:
 					for j := 0; j < len(d.itemHovered); j++ {
 						d.itemHovered[j] = false

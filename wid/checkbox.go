@@ -14,7 +14,6 @@ import (
 	"gioui.org/io/semantic"
 
 	"gioui.org/io/pointer"
-	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/widget"
 )
@@ -45,7 +44,7 @@ func RadioButton(th *Theme, value *string, key string, label string, options ...
 	r.th = th
 	r.FontScale = 1.0
 	r.role = Surface
-	r.margin = th.DefaultMargin
+	r.padding = th.DefaultPadding
 	r.Font = &th.DefaultFont
 	r.Tooltip = PlatformTooltip(th)
 	for _, option := range options {
@@ -66,7 +65,7 @@ func Checkbox(th *Theme, label string, options ...Option) func(gtx C) D {
 	c.th = th
 	c.FontScale = 1.0
 	c.role = Surface
-	c.margin = th.DefaultMargin
+	c.padding = th.DefaultPadding
 	c.Font = &th.DefaultFont
 	c.Tooltip = PlatformTooltip(th)
 	for _, option := range options {
@@ -109,24 +108,29 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 		icon = c.checkedStateIcon
 	}
 
-	iconSize := unit.Sp(c.FontScale) * c.th.FontSp()
+	iconSize := Px(gtx, c.th.FontSp()*unit.Sp(c.FontScale))
 	macro := op.Record(gtx.Ops)
 	gtx.Constraints.Min.Y = 0
 	gtx.Constraints.Min.X = 0
 	ctx := gtx
-	ctx.Constraints.Max.X -= Px(gtx, c.margin.Right+unit.Dp(iconSize))
-	if ctx.Constraints.Max.X < 0 {
-		ctx.Constraints.Max.X = 0
+	ctx.Constraints.Max.X -= Px(gtx, c.padding.Right+c.padding.Left) + iconSize
+	if ctx.Constraints.Max.X < 10 {
+		ctx.Constraints.Max.X = 10
+	}
+	// Calculate color of text and checkbox
+	fgColor := c.Fg()
+	if gtx.Queue == nil {
+		fgColor = Disabled(fgColor)
 	}
 	colMacro := op.Record(gtx.Ops)
-	paint.ColorOp{Color: c.Fg()}.Add(gtx.Ops)
-	labelDim := widget.Label{MaxLines: 1}.Layout(ctx, c.th.Shaper, *c.Font, iconSize, c.Label, colMacro.Stop())
+	paint.ColorOp{Color: fgColor}.Add(gtx.Ops)
+	// Draw label into macro
+	labelDim := widget.Label{MaxLines: 1}.Layout(ctx, c.th.Shaper, *c.Font, c.th.FontSp()*unit.Sp(c.FontScale), c.Label, colMacro.Stop())
 	drawLabel := macro.Stop()
-	dx := labelDim.Size.Y / 6
-	dy := Px(gtx, c.margin.Top)
-	defer op.Offset(image.Pt(dx, dy)).Push(gtx.Ops).Pop()
-	// The hover/focus shadow extends outside the checkbox by 25%
-	b := image.Rectangle{Min: image.Pt(-dx, -dx), Max: image.Pt(labelDim.Size.Y+dx, labelDim.Size.Y+dx)}
+	pl := Px(gtx, c.padding.Left)
+	pt := Px(gtx, c.padding.Top)
+
+	// Calculate hover/focus background color
 	background := color.NRGBA{}
 	if c.Focused() && c.Hovered() {
 		background = MulAlpha(c.Fg(), 70)
@@ -135,32 +139,31 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	} else if c.Hovered() {
 		background = MulAlpha(c.Fg(), 35)
 	}
+	// The hover/focus shadow extends outside the checkbox by the padding size
+	b := image.Rectangle{Min: image.Pt(-pl, -pt), Max: image.Pt(iconSize+pl, iconSize+pt)}
 	paint.FillShape(gtx.Ops, background, clip.Ellipse(b).Op(gtx.Ops))
 
-	col := c.Fg()
-	if gtx.Queue == nil {
-		col = Disabled(col)
-	}
+	// Icon layout size will be equal to the min x constraint.
 	cgtx := gtx
-	cgtx.Constraints.Min = image.Point{X: labelDim.Size.Y}
-	iconDim := icon.Layout(cgtx, col)
-	px := Px(gtx, c.margin.Left+c.margin.Right)
-	py := Px(gtx, c.margin.Top+c.margin.Bottom)
-	dims := layout.Dimensions{
-		Size: image.Point{
-			X: labelDim.Size.X + px + iconDim.Size.X,
-			Y: labelDim.Size.Y + py,
-		}}
-	of := op.Offset(image.Pt(labelDim.Size.Y+Px(gtx, c.margin.Left), 0)).Push(gtx.Ops)
-	paint.ColorOp{Color: col}.Add(gtx.Ops)
+	cgtx.Constraints.Min = image.Point{X: iconSize}
+	// Offset for drawing icon
+	defer op.Offset(image.Pt(pl, pt+iconSize/9)).Push(gtx.Ops).Pop()
+	// Now draw icon
+	iconDim := icon.Layout(cgtx, fgColor)
+	size := image.Pt(labelDim.Size.X+pl+pl+iconDim.Size.X, labelDim.Size.Y+pt)
+	if c.Label != "" {
+		size.Y += iconSize / 9
+	}
+	// Handle events within the calculated size. Must be called before label offset
+	c.SetupEventHandlers(gtx, size)
+	// Extra offset for drawing label
+	defer op.Offset(image.Pt(iconSize+iconSize/9, -iconSize/9)).Push(gtx.Ops).Pop()
 	drawLabel.Add(gtx.Ops)
-	of.Pop()
-	c.SetupEventHandlers(gtx, dims.Size)
 	pointer.CursorPointer.Add(gtx.Ops)
 	_ = c.Tooltip.Layout(gtx, c.hint, func(gtx C) D {
-		return D{Size: dims.Size}
+		return D{Size: size}
 	})
-	return dims
+	return D{Size: size}
 }
 
 // CheckboxOption is options specific to Checkboxes
