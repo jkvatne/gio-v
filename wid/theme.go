@@ -169,10 +169,6 @@ func Px(gtx C, dp interface{}) int {
 	panic("Px() called with illegal value")
 }
 
-func (th *Theme) FontSp() unit.Sp {
-	return th.TextSize
-}
-
 // UpdateColors must be called after changing the pallete
 // See https://m3.material.io/styles/color/static/baseline
 func (th *Theme) UpdateColors() {

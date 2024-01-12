@@ -126,6 +126,7 @@ func onWinChange() {
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
+	// Use an auxilary font in some widgets
 	ff := &font.Font{Typeface: "gomono"}
 	return wid.Col(wid.SpaceClose,
 		wid.Label(th, "Demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),

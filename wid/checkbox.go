@@ -108,7 +108,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 		icon = c.checkedStateIcon
 	}
 
-	iconSize := Px(gtx, c.th.FontSp()*unit.Sp(c.FontScale))
+	iconSize := Px(gtx, c.th.TextSize*unit.Sp(c.FontScale))
 	macro := op.Record(gtx.Ops)
 	gtx.Constraints.Min.Y = 0
 	gtx.Constraints.Min.X = 0
@@ -125,7 +125,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	colMacro := op.Record(gtx.Ops)
 	paint.ColorOp{Color: fgColor}.Add(gtx.Ops)
 	// Draw label into macro
-	labelDim := widget.Label{MaxLines: 1}.Layout(ctx, c.th.Shaper, *c.Font, c.th.FontSp()*unit.Sp(c.FontScale), c.Label, colMacro.Stop())
+	labelDim := widget.Label{MaxLines: 1}.Layout(ctx, c.th.Shaper, *c.Font, c.th.TextSize*unit.Sp(c.FontScale), c.Label, colMacro.Stop())
 	drawLabel := macro.Stop()
 	pl := Px(gtx, c.padding.Left)
 	pt := Px(gtx, c.padding.Top)

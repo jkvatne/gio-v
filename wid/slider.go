@@ -98,8 +98,8 @@ func (s *SliderStyle) Layout(gtx C) D {
 	if w < gtx.Constraints.Min.X {
 		gtx.Constraints.Min.X = w
 	}
-	thumbRadius := Px(gtx, s.th.FontSp()*0.5)
-	trackWidth := Px(gtx, s.th.FontSp()*0.5)
+	thumbRadius := Px(gtx, s.th.TextSize*0.5)
+	trackWidth := thumbRadius
 
 	// Keep a minimum length so that the track is always visible.
 	minLength := thumbRadius + 3*thumbRadius + thumbRadius

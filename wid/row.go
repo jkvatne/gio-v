@@ -114,7 +114,7 @@ func Row(th *Theme, pbgColor *color.NRGBA, weights []float32, widgets ...layout.
 	r.padTop = th.RowPadTop
 	r.padBtm = th.RowPadBtm
 	return func(gtx C) D {
-		return r.rowLayout(gtx, th.FontSp(), bgColor, weights, widgets...)
+		return r.rowLayout(gtx, th.TextSize, bgColor, weights, widgets...)
 	}
 }
 
@@ -133,7 +133,8 @@ func (r *rowDef) rowLayout(gtx C, textSize unit.Sp, bgColor color.NRGBA, weights
 			c := gtx
 			c.Constraints.Min.X = 0
 			dim[i] = child(c)
-			w[i] = 2 * float32(dim[i].Size.X) / float32(Px(gtx, textSize))
+			// Back calculate equivalent width in char widths. Add 1 to avoid rounding errors.
+			w[i] = 1 + 2*float32(dim[i].Size.X)/float32(Px(gtx, textSize))
 			call[i] = macro.Stop()
 		}
 	}
