@@ -27,7 +27,7 @@ func main() {
 	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
 	theme = wid.NewTheme(gofont.Collection(), 14)
 	onClick()
-	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500))), &form, theme)
+	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(600))), &form, theme)
 	app.Main()
 }
 
@@ -116,5 +116,6 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.Button(th, "Save", wid.W(150), wid.Sec()),
 			wid.Button(th, "Cancel", wid.W(150), (wid.Prim())),
 		),
+		wid.Label(th, &wid.WinY),
 	)
 }

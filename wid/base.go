@@ -59,7 +59,6 @@ type Base struct {
 	borderWidth  unit.Dp
 	fgColor      *color.NRGBA
 	bgColor      *color.NRGBA
-	description  string
 	Font         *font.Font
 	FontScale    float64
 	DpNo         *int

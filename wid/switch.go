@@ -130,8 +130,8 @@ func (s *SwitchDef) Layout(gtx C) D {
 	clickRect := image.Rect(0, 0, width+20, height+20)
 	defer clip.UniformRRect(clickRect, height/2).Push(gtx.Ops).Pop()
 	s.sw.Layout(gtx, func(gtx C) D {
-		if s.description != "" {
-			semantic.DescriptionOp(s.description).Add(gtx.Ops)
+		if s.hint != "" {
+			semantic.DescriptionOp(s.hint).Add(gtx.Ops)
 		}
 		semantic.Switch.Add(gtx.Ops)
 		return layout.Dimensions{Size: sz}
