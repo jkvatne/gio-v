@@ -161,13 +161,6 @@ func (d *DropDownStyle) Layout(gtx C) D {
 	for d.Clicked() {
 		d.listVisible = !d.listVisible
 	}
-	ok := false
-	for i := 0; i < len(d.items); i++ {
-		ok = ok || d.itemHovered[i]
-	}
-	if !ok && !d.inList {
-		d.listVisible = false
-	}
 	if d.listVisible {
 		gtx.Constraints.Min = image.Pt(border.Max.X, dims.Size.Y)
 		// Limit list length to 8 times the gross size of the dropdown
@@ -180,7 +173,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		theListMacro := listMacro.Stop()
 
 		if !oldVisible {
-			d.above = WinY-currentY < o.Size.Y+dims.Size.Y
+			d.above = WinY-mouseY < o.Size.Y+dims.Size.Y
 			d.setHovered(idx)
 		}
 
@@ -188,21 +181,21 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		if d.above {
 			dy = -o.Size.Y
 		}
-		r := op.Offset(image.Pt(0, dy)).Push(gtx.Ops)
 
 		for _, ev := range gtx.Events(&d.role) {
 			if ev, ok := ev.(pointer.Event); ok {
 				switch ev.Kind {
 				case pointer.Enter:
-					d.inList = true
+					d.listVisible = true
 				case pointer.Leave:
-					d.inList = false
+					d.listVisible = false
 				default:
 				}
 			}
 		}
 
 		dropdownMacro := op.Record(gtx.Ops)
+		r := op.Offset(image.Pt(0, dy)).Push(gtx.Ops)
 
 		// Fill background and draw list
 		bw := Px(gtx, unit.Dp(1.5))
@@ -213,30 +206,30 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		// Draw frame
 		paintBorder(gtx, image.Rect(0, 0, listClipRect.Max.X, listClipRect.Max.Y) /*d.outlineColor*/, Blue, float32(bw), 0)
 
-		// Handle mouse enter/leave into list
-		cl = clip.Rect(listClipRect).Push(gtx.Ops)
+		// Handle mouse enter/leave into list area, inluding original value area
+		cr := listClipRect
+		cr.Min.Y = -dy
+		clr := clip.Rect(cr).Push(gtx.Ops)
 		pass := pointer.PassOp{}.Push(gtx.Ops)
 		pointer.InputOp{
 			Tag:   &d.role,
 			Kinds: pointer.Enter | pointer.Leave,
 		}.Add(gtx.Ops)
-		cl.Pop()
 		pass.Pop()
+		clr.Pop()
 
 		// Draw a border around all options
 		w := float32(Px(gtx, d.borderWidth))
 		paintBorder(gtx, listClipRect, d.th.Fg[Outline], w, 0)
+		r.Pop()
 		// Save and defer execution
 		dropDownListCall := dropdownMacro.Stop()
 		op.Defer(gtx.Ops, dropDownListCall)
-		r.Pop()
-		listClipRect.Min.Y = -20
 	} else {
 		d.setHovered(idx)
 	}
 
 	sz := image.Pt(gtx.Constraints.Max.X, border.Max.Y-border.Min.Y+Px(gtx, d.margin.Bottom+d.margin.Top))
-	// defer clip.Rect{Max: sz}.Push(gtx.Ops).Pop()
 	d.SetupEventHandlers(gtx, dims.Size)
 	pointer.CursorPointer.Add(gtx.Ops)
 

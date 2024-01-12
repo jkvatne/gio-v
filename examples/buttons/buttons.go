@@ -45,13 +45,14 @@ func onClick() {
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget -- i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
-	return wid.List(th, wid.Overlay,
+	return wid.Col(nil,
 		wid.Label(th, "Buttons demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer),
-			wid.Role(wid.PrimaryContainer), wid.Margin(10), wid.Pads(5)),
-		wid.Label(th, "Buttons with fixed length and large font"),
-		wid.Button(th, "Change color 1", wid.Do(onClick), wid.W(450), wid.Large()),
-		wid.Label(th, "Buttons with large font using primary container"),
-		wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.FontSize(1.4), wid.Role(wid.PrimaryContainer)),
+			wid.Role(wid.PrimaryContainer), wid.Pads(10)),
+		wid.Label(th, "Buttons with fixed length and large font, close together at left side, using wid.SpaceClose"),
+		wid.Row(th, nil, wid.SpaceClose,
+			wid.Button(th, "Change color 1", wid.Do(onClick), wid.W(450), wid.Large()),
+			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.FontSize(1.4), wid.Role(wid.PrimaryContainer)),
+		),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Button spaced closely, left adjusted"),
 		wid.Row(th, nil, wid.SpaceClose,
@@ -102,5 +103,18 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")),
 		),
 		wid.Separator(th, unit.Dp(1.0)),
+		wid.Label(th, "Two buttons, aligned right, using wid.SpaceRightAdjust"),
+
+		wid.Row(th, nil, wid.SpaceRightAdjust,
+			wid.Button(th, "Save", wid.W(150), wid.Sec()),
+			wid.Button(th, "Cancel", wid.W(150), (wid.Prim())),
+		),
+		wid.Separator(th, unit.Dp(1.0)),
+		wid.Label(th, "Two buttons, aligned center, using wid.SpaceRightAdjust"),
+
+		wid.Row(th, nil, wid.SpaceCenter,
+			wid.Button(th, "Save", wid.W(150), wid.Sec()),
+			wid.Button(th, "Cancel", wid.W(150), (wid.Prim())),
+		),
 	)
 }

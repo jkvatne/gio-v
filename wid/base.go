@@ -41,7 +41,6 @@ var (
 	WinY          int
 	startWinY     int
 	FixedFontSize bool
-	currentY      int
 	GuiLock       sync.RWMutex
 	invalidate    chan struct{}
 )
@@ -145,7 +144,6 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 				gtx.Metric.PxPerDp = scale * gtx.Metric.PxPerDp
 				gtx.Metric.PxPerSp = scale * gtx.Metric.PxPerSp
 			}
-			currentY = 0
 			paint.ColorOp{Color: th.Bg[Surface]}.Add(gtx.Ops)
 			paint.PaintOp{}.Add(gtx.Ops)
 
