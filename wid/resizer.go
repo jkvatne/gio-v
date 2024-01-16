@@ -23,7 +23,7 @@ type Resize struct {
 }
 
 // SplitHorizontal is used to layout two widgets with a vertical splitter between.
-func SplitHorizontal(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widget) func(gtx C) D {
+func SplitHorizontal(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widget) layout.Widget {
 	rs := Resize{th: th, ratio: ratio, axis: layout.Horizontal}
 	return func(gtx C) D {
 		return rs.Layout(gtx, w1, w2)
@@ -31,7 +31,7 @@ func SplitHorizontal(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widge
 }
 
 // SplitVertical is used to layout two widgets with a vertical splitter between.
-func SplitVertical(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widget) func(gtx C) D {
+func SplitVertical(th *Theme, ratio float32, w1 layout.Widget, w2 layout.Widget) layout.Widget {
 	rs := Resize{th: th, ratio: ratio, axis: layout.Vertical}
 	return func(gtx C) D {
 		return rs.Layout(gtx, w1, w2)

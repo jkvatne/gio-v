@@ -41,28 +41,31 @@ func Slider(th *Theme, value *float32, minV, maxV float32, options ...Option) la
 	}
 	s.th = th
 	s.width = unit.Dp(99999)
-	s.Apply(options...)
-
-	return func(gtx C) D {
-		s.handleKeys(gtx)
-		m := op.Record(gtx.Ops)
-		dims := s.Layout(gtx)
-		c := m.Stop()
-		defer clip.Rect{Max: dims.Size}.Push(gtx.Ops).Pop()
-		disabled := gtx.Queue == nil
-		keys := key.Set("")
-		if !disabled {
-			keys = "(Ctrl)-[→,↓,←,↑,0,9,↓]"
-			if !s.focused {
-				keys = ""
-			}
-			key.InputOp{Tag: &s.keyTag, Keys: keys}.Add(gtx.Ops)
-		} else {
-			s.focused = false
-		}
-		c.Add(gtx.Ops)
-		return dims
+	for _, option := range options {
+		option.apply(s)
 	}
+	return s.Layout
+}
+
+func (s SliderStyle) Layout(gtx C) D {
+	s.handleKeys(gtx)
+	m := op.Record(gtx.Ops)
+	dims := s.layout(gtx)
+	c := m.Stop()
+	defer clip.Rect{Max: dims.Size}.Push(gtx.Ops).Pop()
+	disabled := gtx.Queue == nil
+	keys := key.Set("")
+	if !disabled {
+		keys = "(Ctrl)-[→,↓,←,↑,0,9,↓]"
+		if !s.focused {
+			keys = ""
+		}
+		key.InputOp{Tag: &s.keyTag, Keys: keys}.Add(gtx.Ops)
+	} else {
+		s.focused = false
+	}
+	c.Add(gtx.Ops)
+	return dims
 }
 
 func (s *SliderStyle) handleKeys(gtx C) {
@@ -93,7 +96,7 @@ func (s *SliderStyle) handleKeys(gtx C) {
 }
 
 // Layout will draw the slider
-func (s *SliderStyle) Layout(gtx C) D {
+func (s *SliderStyle) layout(gtx C) D {
 	w := Px(gtx, s.width)
 	if w < gtx.Constraints.Min.X {
 		gtx.Constraints.Min.X = w

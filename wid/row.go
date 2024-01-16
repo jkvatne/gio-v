@@ -87,32 +87,33 @@ func calcWidths(gtx C, textSize unit.Sp, weights []float32, count int) (widths [
 }
 
 // GridRow returns a widget grid row with a grid separating columns and rows
-func GridRow(th *Theme, pbgColor *color.NRGBA, gridLineWidth unit.Dp, weights []float32, widgets ...layout.Widget) layout.Widget {
-	r := rowDef{}
-	bgColor := color.NRGBA{}
-	if (pbgColor != nil) && (*pbgColor != color.NRGBA{}) {
-		bgColor = *pbgColor
-	}
-	r.th = th
-	r.padTop = th.RowPadTop
-	r.padBtm = th.RowPadBtm
-	r.gridLineWidth = gridLineWidth
-	r.gridColor = th.Fg[Outline]
-	return func(gtx C) D {
-		return r.rowLayout(gtx, th.TextSize, bgColor, weights, widgets...)
-	}
+func GridRow(th *Theme, option ...interface{}) layout.Widget {
+	return Row(th, option...)
 }
 
 // Row returns a widget grid row with selectable color.
-func Row(th *Theme, pbgColor *color.NRGBA, weights []float32, widgets ...layout.Widget) layout.Widget {
-	r := rowDef{}
-	bgColor := color.NRGBA{}
-	if (pbgColor != nil) && (*pbgColor != color.NRGBA{}) {
-		bgColor = *pbgColor
+// func Row(th *Theme, pbgColor *color.NRGBA, weights []float32, widgets ...layout.Widget) layout.Widget {
+func Row(th *Theme, option ...interface{}) layout.Widget {
+	r := rowDef{
+		th:     th,
+		padTop: th.RowPadTop,
+		padBtm: th.RowPadBtm,
 	}
-	r.th = th
-	r.padTop = th.RowPadTop
-	r.padBtm = th.RowPadBtm
+	bgColor := color.NRGBA{}
+	var weights []float32
+	var widgets []layout.Widget
+	i := 0
+	for ; i < len(option); i++ {
+		if v, ok := option[i].(*color.NRGBA); ok {
+			bgColor = *v
+		} else if v, ok := option[i].([]float32); ok {
+			weights = v
+		} else if v, ok := option[i].(unit.Dp); ok {
+			r.gridLineWidth = v
+		} else if v, ok := option[i].(layout.Widget); ok {
+			widgets = append(widgets, v)
+		}
+	}
 	return func(gtx C) D {
 		return r.rowLayout(gtx, th.TextSize, bgColor, weights, widgets...)
 	}

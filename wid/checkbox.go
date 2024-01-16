@@ -3,6 +3,7 @@
 package wid
 
 import (
+	"gioui.org/layout"
 	"gioui.org/unit"
 	"image"
 	"image/color"
@@ -56,24 +57,24 @@ func RadioButton(th *Theme, value *string, key string, label string, options ...
 }
 
 // Checkbox returns a widget that can be checked, with label, initial state and handler function
-func Checkbox(th *Theme, label string, options ...Option) func(gtx C) D {
+func Checkbox(th *Theme, label string, options ...Option) layout.Widget {
 	c := &CheckBoxDef{
+		Base: Base{
+			th:        th,
+			FontScale: 1.0,
+			role:      Surface,
+			Font:      &th.DefaultFont,
+			padding:   th.DefaultPadding,
+		},
+		Tooltip:            PlatformTooltip(th),
 		Label:              label,
 		checkedStateIcon:   th.CheckBoxChecked,
 		uncheckedStateIcon: th.CheckBoxUnchecked,
 	}
-	c.th = th
-	c.FontScale = 1.0
-	c.role = Surface
-	c.padding = th.DefaultPadding
-	c.Font = &th.DefaultFont
-	c.Tooltip = PlatformTooltip(th)
 	for _, option := range options {
 		option.apply(c)
 	}
-	return func(gtx C) D {
-		return c.Layout(gtx)
-	}
+	return c.Layout
 }
 
 // Layout updates the checkBox and displays it.

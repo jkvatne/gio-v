@@ -130,7 +130,7 @@ func StringToValue(value interface{}, current string) {
 }
 
 // Edit will return a widget (layout function) for a text editor
-func Edit(th *Theme, options ...any) func(gtx C) D {
+func Edit(th *Theme, options ...any) layout.Widget {
 	e := EditDef{
 		Base: Base{
 			th:        th,

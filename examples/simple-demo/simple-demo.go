@@ -196,7 +196,7 @@ func demo(th *wid.Theme) layout.Widget {
 				wid.Edit(th, &age, wid.Lbl("Age"), wid.Ls(0.5)),
 			),
 		),
-		wid.ProgressBar(th, &progress, wid.Pads(5.0), wid.W(12.0)),
+		wid.ProgressBar(th, &progress, wid.Pads(5.0), wid.Thick(7), wid.Bg(&color.NRGBA{200, 200, 200, 200})),
 		wid.Separator(th, 0, wid.Pads(5.0)),
 		wid.ImageFromJpgFile("gopher.jpg", wid.Contain),
 	)

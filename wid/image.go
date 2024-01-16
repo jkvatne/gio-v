@@ -33,7 +33,7 @@ type ImageDef struct {
 	Scale float32
 }
 
-func ImageFromJpgFile(filename string, fit Fit) func(gtx C) D {
+func ImageFromJpgFile(filename string, fit Fit) layout.Widget {
 	f, err := os.Open(filename)
 	defer func() {
 		err := f.Close()
@@ -51,7 +51,7 @@ func ImageFromJpgFile(filename string, fit Fit) func(gtx C) D {
 	return Image(pict, fit)
 }
 
-func Image(img image.Image, fit Fit) func(gtx C) D {
+func Image(img image.Image, fit Fit) layout.Widget {
 	src := paint.NewImageOp(img)
 	im := ImageDef{}
 	im.Fit = fit

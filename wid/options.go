@@ -35,13 +35,6 @@ type Option interface {
 	apply(cfg interface{})
 }
 
-// Apply will apply all optional parameters. This can only be used when the widget has no own options.
-func (wid *Base) Apply(options ...Option) {
-	for _, option := range options {
-		option.apply(wid)
-	}
-}
-
 func (wid BaseOption) apply(cfg interface{}) {
 	cc := cfg.(BaseIf)
 	wid(cc)
@@ -346,6 +339,14 @@ func Margin(pads ...float32) BaseOption {
 			w.setMargin(layout.Inset{Top: unit.Dp(pads[0]), Right: unit.Dp(pads[1]), Bottom: unit.Dp(pads[0]), Left: unit.Dp(pads[2])})
 		case 4:
 			w.setMargin(layout.Inset{Top: unit.Dp(pads[0]), Right: unit.Dp(pads[1]), Bottom: unit.Dp(pads[2]), Left: unit.Dp(pads[3])})
+		}
+	}
+}
+
+func Thick(t unit.Dp) BaseOption {
+	return func(w BaseIf) {
+		if o, ok := w.(*ProgressBarDef); ok {
+			o.setThickness(t)
 		}
 	}
 }

@@ -193,7 +193,7 @@ func demo1(th *wid.Theme) layout.Widget {
 		wid.Label(th, "Show all tones for some palettes", wid.Middle(), wid.Heading(), wid.Bold()),
 		wid.Label(th, "Also demonstrates a form that will fill the screen 100%", wid.Middle(), wid.Small()),
 		wid.Row(th, nil, wid.SpaceDistribute,
-			wid.Button(th, "Set default palette", wid.Do(setDefault), wid.Hint("Set the default pallete on all widgets")),
+			wid.Button(th, "Set default", wid.Do(setDefault), wid.Hint("Set the default pallete on all widgets")),
 			wid.Button(th, "Set palette 1", wid.Do(setPalett1), wid.Hint("Use a pallete")),
 			wid.Button(th, "Set palette 2", wid.Do(setPalett2)),
 			wid.Button(th, "Set palette 3", wid.Do(setPalett3)),

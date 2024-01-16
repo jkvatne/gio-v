@@ -159,7 +159,7 @@ func onFontChange() {
 }
 
 // gw is the grid line width
-const gw = 2.0 / 1.75
+const gw = unit.Dp(2.0 / 1.75)
 
 // GridDemo is a widget that lays out the grid. This is all that is needed.
 func GridDemo(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
@@ -167,7 +167,7 @@ func GridDemo(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 	if doOccupy {
 		anchor = wid.Occupy
 	}
-	bgColor := th.Bg[wid.Primary]
+	// bgColor := th.Bg[wid.Primary]
 
 	nameIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
 	addressIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
@@ -175,24 +175,27 @@ func GridDemo(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 
 	// Configure a grid with headings and several rows
 	var gridLines []layout.Widget
-	header := wid.GridRow(th, &bgColor, gw, colWidths,
-		wid.Checkbox(th, "", wid.Bool(&selectAll), wid.Do(onCheck)),
-		wid.HeaderButton(th, "Name", wid.Do(onNameClick), wid.Prim(), wid.BtnIcon(nameIcon), wid.Pads(0)),
-		wid.HeaderButton(th, "Address", wid.Do(onAddressClick), wid.Prim(), wid.BtnIcon(addressIcon), wid.Pads(0)),
-		wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.Prim(), wid.BtnIcon(ageIcon), wid.Pads(0)),
-		// When using a label, padding has to be added. It should be equal to the default button padding.
-		wid.Label(th, "Gender", wid.Prim()),
-	)
-	if withoutHeader {
-		header = nil
-	}
+	/*
+		header := wid.Row(th, &bgColor, gw, colWidths,
+			wid.Checkbox(th, "", wid.Bool(&selectAll), wid.Do(onCheck)),
+			wid.HeaderButton(th, "Name", wid.Do(onNameClick), wid.Prim(), wid.BtnIcon(nameIcon), wid.Pads(0)),
+			wid.HeaderButton(th, "Address", wid.Do(onAddressClick), wid.Prim(), wid.BtnIcon(addressIcon), wid.Pads(0)),
+			wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.Prim(), wid.BtnIcon(ageIcon), wid.Pads(0)),
+			// When using a label, padding has to be added. It should be equal to the default button padding.
+			wid.Label(th, "Gender", wid.Prim()),
+		)
+		if withoutHeader {
+			header = nil
+		}
+	*/
+	header := layout.Widget(nil)
 	for i := 0; i < len(data); i++ {
 		bgColor := wid.MulAlpha(th.Bg[wid.PrimaryContainer], 50)
 		if i%2 == 0 {
 			bgColor = wid.MulAlpha(th.Bg[wid.SecondaryContainer], 50)
 		}
 		gridLines = append(gridLines,
-			wid.GridRow(th, &bgColor, gw, colWidths,
+			wid.Row(th, &bgColor, gw, colWidths,
 				// One row of the grid is defined here, Name can not be edited
 				wid.Checkbox(th, "", wid.Bool(&data[i].Selected)),
 				wid.Label(th, &data[i].Name),

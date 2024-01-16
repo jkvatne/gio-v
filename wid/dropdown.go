@@ -36,7 +36,7 @@ var icon *Icon
 
 // DropDown returns an initiated struct with drop-dow box setup info
 func DropDown(th *Theme, index *int, items []string, options ...Option) layout.Widget {
-	b := DropDownStyle{}
+	b := &DropDownStyle{}
 	b.th = th
 	b.role = Canvas
 	b.outlineColor = th.Fg[Outline]
@@ -55,7 +55,7 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 	b.margin = th.DefaultMargin
 	b.padding = th.DefaultPadding
 	for _, option := range options {
-		option.apply(&b)
+		option.apply(b)
 	}
 	if b.label == "" {
 		b.labelSize = 0
@@ -204,7 +204,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		theListMacro.Add(gtx.Ops)
 		cl.Pop()
 		// Draw frame
-		paintBorder(gtx, image.Rect(0, 0, listClipRect.Max.X, listClipRect.Max.Y) /*d.outlineColor*/, Blue, float32(bw), 0)
+		paintBorder(gtx, image.Rect(0, 0, listClipRect.Max.X, listClipRect.Max.Y), d.outlineColor, float32(bw), 0)
 
 		// Handle mouse enter/leave into list area, inluding original value area
 		cr := listClipRect

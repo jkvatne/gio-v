@@ -37,7 +37,7 @@ type SwitchDef struct {
 }
 
 // Switch returns a widget for a switch
-func Switch(th *Theme, statePtr *bool, options ...Option) func(gtx C) D {
+func Switch(th *Theme, statePtr *bool, options ...Option) layout.Widget {
 	s := &SwitchDef{}
 	s.th = th
 	// Calculate sizes
