@@ -44,7 +44,7 @@ type StrValue interface {
 // ButtonDef is the struct for buttons
 type ButtonDef struct {
 	Base
-	Tooltip
+	TooltipDef
 	Clickable
 	Text  *string
 	Icon  *Icon
@@ -100,7 +100,6 @@ func aButton[V StrValue](style ButtonStyle, th *Theme, label V, options ...Optio
 		b.Text = x
 	}
 	b.Font = &th.DefaultFont
-	b.shaper = th.Shaper
 	b.Style = style
 	b.padding = th.ButtonPadding
 	b.margin = th.ButtonMargin
@@ -109,7 +108,7 @@ func aButton[V StrValue](style ButtonStyle, th *Theme, label V, options ...Optio
 	for _, option := range options {
 		option.apply(&b)
 	}
-	b.Tooltip = PlatformTooltip(th)
+	b.TooltipDef = Tooltip(th)
 	return &b
 }
 
@@ -141,7 +140,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 	cgtx.Constraints.Max.X = Max(0, cgtx.Constraints.Max.X-Px(gtx, b.padding.Right+b.padding.Left+b.margin.Left+b.margin.Right))
 	// Render text to find text width (and save drawing commands in macro)
 	recorder = op.Record(gtx.Ops)
-	textDim := widget.Label{Alignment: text.Start}.Layout(cgtx, b.shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontScale), *b.Text, colorMacro)
+	textDim := widget.Label{Alignment: text.Start}.Layout(cgtx, b.th.Shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontScale), *b.Text, colorMacro)
 	textMacro := recorder.Stop()
 	// Icon size is equal to label height
 	iconSize := 0
@@ -181,7 +180,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 	if b.Clickable.Focused() {
 		DrawShadow(gtx, outline, rr, 20)
 	}
-	defer clip.UniformRRect(outline, rr).Push(gtx.Ops).Pop()
+	cl := clip.UniformRRect(outline, rr).Push(gtx.Ops)
 
 	// Catch input from the whole button (same area that is painted with background color)
 	b.SetupEventHandlers(gtx, outline.Max)
@@ -245,9 +244,9 @@ func (b *ButtonDef) Layout(gtx C) D {
 	pointer.CursorPointer.Add(gtx.Ops)
 	outline.Max.X += Px(gtx, b.margin.Left+b.margin.Right)
 	outline.Max.Y += Px(gtx, b.margin.Top+b.margin.Bottom)
-	_ = b.Tooltip.Layout(gtx, b.hint, func(gtx C) D {
-		return D{Size: outline.Max}
-	})
+	gtx.Constraints.Min = outline.Max
+	cl.Pop()
+	b.TooltipDef.Layout(gtx, b.hint, b.th)
 	return D{Size: outline.Max}
 }
 

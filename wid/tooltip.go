@@ -8,27 +8,24 @@ import (
 	"gioui.org/font"
 
 	"gioui.org/io/pointer"
-	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
 )
 
 const (
-	tipAreaHoverDelay        = time.Millisecond * 1200
-	tipAreaLongPressDuration = time.Millisecond * 1200
-	tipAreaFadeDuration      = time.Millisecond * 500
-	longPressDelay           = time.Millisecond * 1200
-	CursorSizeX              = 10
-	CursorSizeY              = 32
+	tipAreaHoverDelay   = time.Millisecond * 200
+	tipAreaFadeDuration = time.Millisecond * 500
+	longPressDelay      = time.Millisecond * 500
+	CursorSizeX         = 10
+	CursorSizeY         = 32
 )
 
 // Tooltip implements a material design tool tip as defined at:
 // https://material.io/components/tooltips#specs
-type Tooltip struct {
+type TooltipDef struct {
 	VisibilityAnimation
 	// MaxWidth is the maximum width of the tool-tip box. Should be less than form width.
 	MaxWidth unit.Dp
@@ -36,37 +33,22 @@ type Tooltip struct {
 	Text      widget.Label
 	position  image.Point
 	Hover     InvalidateDeadline
-	Press     InvalidateDeadline
-	LongPress InvalidateDeadline
 	Fgc       color.NRGBA
 	Bgc       color.NRGBA
 	TooltipRR unit.Dp
 	TextSize  unit.Sp
 	init      bool
-	shaper    *text.Shaper
 	font      font.Font
 }
 
-// MobileTooltip constructs a tooltip suitable for use on mobile devices.
-func MobileTooltip(th *Theme) Tooltip {
-	return Tooltip{
-		Fgc:      th.TooltipOnBackground,
-		Bgc:      th.TooltipBackground,
-		font:     font.Font{Weight: font.Medium},
-		shaper:   th.Shaper,
-		TextSize: th.TextSize * 0.9,
-	}
-}
-
 // DesktopTooltip constructs a tooltip suitable for use on desktop devices.
-func DesktopTooltip(th *Theme) Tooltip {
-	return Tooltip{
+func Tooltip(th *Theme) TooltipDef {
+	return TooltipDef{
 		Fgc:       th.TooltipOnBackground,
 		Bgc:       th.TooltipBackground,
 		MaxWidth:  th.TooltipWidth,
 		TooltipRR: th.TooltipCornerRadius,
 		font:      font.Font{Weight: font.Medium},
-		shaper:    th.Shaper,
 		TextSize:  th.TextSize * 0.9,
 	}
 
@@ -112,9 +94,9 @@ func (i *InvalidateDeadline) ClearTarget() {
 
 // Layout renders the provided widget with the provided tooltip. The tooltip
 // will be summoned if the widget is hovered or long-pressed.
-func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
+func (t *TooltipDef) Layout(gtx C, hint string, th *Theme) D {
 	if hint == "" {
-		return w(gtx)
+		return D{}
 	}
 	if !t.init {
 		t.init = true
@@ -136,81 +118,55 @@ func (t *Tooltip) Layout(gtx C, hint string, w layout.Widget) D {
 			t.Hover.ClearTarget()
 		case pointer.Press:
 			t.Hover.ClearTarget()
-			t.Press.SetTarget(gtx.Now.Add(longPressDelay))
+			t.Hover.SetTarget(gtx.Now.Add(longPressDelay))
 		case pointer.Release:
-			t.Hover.ClearTarget()
-			t.Press.ClearTarget()
 		case pointer.Cancel:
 			t.Hover.ClearTarget()
-			t.Press.ClearTarget()
 		default:
 		}
 	}
 	if t.Hover.Process(gtx) {
 		t.VisibilityAnimation.Appear(gtx.Now)
 	}
-	if t.Press.Process(gtx) {
-		t.VisibilityAnimation.Appear(gtx.Now)
-		t.LongPress.SetTarget(gtx.Now.Add(tipAreaLongPressDuration))
+	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
+	rect := image.Rectangle{Max: gtx.Constraints.Min}
+	r := clip.Rect(rect).Push(gtx.Ops)
+	pointer.InputOp{
+		Tag:   t,
+		Kinds: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave | pointer.Move,
+	}.Add(gtx.Ops)
+	r.Pop()
+	gtx.Constraints.Min = image.Point{}
+	if t.Visible() {
+		p := Px(gtx, unit.Dp(5))
+		macro1 := op.Record(gtx.Ops)
+		// Calculate colors according to visibility
+		v := t.VisibilityAnimation.Revealed(gtx)
+		bg := WithAlpha(t.Bgc, uint8(v*255))
+		t.Fgc = WithAlpha(t.Fgc, uint8(v*255))
+		gtx.Constraints.Max.X = gtx.Metric.Dp(t.MaxWidth)
+		rr := Px(gtx, t.TooltipRR)
+		macro2 := op.Record(gtx.Ops)
+		to := op.Offset(image.Pt(p, p)).Push(gtx.Ops)
+		fgCol := op.Record(gtx.Ops)
+		// Draw text
+		paint.ColorOp{Color: t.Fgc}.Add(gtx.Ops)
+		dims := t.Text.Layout(gtx, th.Shaper, t.font, t.TextSize, hint, fgCol.Stop())
+		to.Pop()
+		drawText := macro2.Stop()
+		dx := Max(0, mouseX+CursorSizeX+dims.Size.X-WinX)
+		dy := Max(0, mouseY+CursorSizeY+dims.Size.Y-WinY)
+		op.Offset(t.position.Add(image.Pt(-dx+CursorSizeX, -dy+CursorSizeY))).Add(gtx.Ops)
+		outline := image.Rectangle{Max: image.Pt(gtx.Metric.Dp(t.MaxWidth)+p, dims.Size.Y+p*2)}
+		// Fill background and border
+		paint.FillShape(gtx.Ops, bg, clip.UniformRRect(outline, rr).Op(gtx.Ops))
+		w := float32(Px(gtx, unit.Dp(0.5)))
+		paintBorder(gtx, outline, t.Fgc, w, Px(gtx, t.TooltipRR))
+		drawText.Add(gtx.Ops)
+		drawAll := macro1.Stop()
+		// Draw background and text after all other widgets, so they apear on top
+		op.Defer(gtx.Ops, drawAll)
 	}
-	if t.LongPress.Process(gtx) {
-		t.VisibilityAnimation.Disappear(gtx.Now)
-	}
-	return layout.Stack{}.Layout(gtx,
-		layout.Stacked(w),
-		layout.Expanded(func(gtx C) D {
-			defer pointer.PassOp{}.Push(gtx.Ops).Pop()
-			rect := image.Rectangle{Max: gtx.Constraints.Min}
-			r := clip.Rect(rect).Push(gtx.Ops)
-			pointer.InputOp{
-				Tag:   t,
-				Kinds: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave | pointer.Move,
-			}.Add(gtx.Ops)
-			r.Pop()
-			gtx.Constraints.Min = image.Point{}
-			if t.Visible() {
-				macro := op.Record(gtx.Ops)
-				v := t.VisibilityAnimation.Revealed(gtx)
-				bg := WithAlpha(t.Bgc, uint8(v*255))
-				t.Fgc = WithAlpha(t.Fgc, uint8(v*255))
-				gtx.Constraints.Max.X = gtx.Metric.Dp(t.MaxWidth)
-				p := unit.Dp(t.TextSize * 0.5)
-				inset := layout.Inset{Top: p, Right: p, Bottom: p, Left: p}
-				dims := layout.Stack{}.Layout(
-					gtx,
-					layout.Expanded(func(gtx C) D {
-						rr := Px(gtx, t.TooltipRR)
-						outline := image.Rectangle{Max: gtx.Constraints.Min}
-						paint.FillShape(gtx.Ops, bg, clip.UniformRRect(outline, rr).Op(gtx.Ops))
-						w := float32(Px(gtx, unit.Dp(0.5)))
-						paintBorder(gtx, outline, MulAlpha(t.Fgc, 128), w, Px(gtx, t.TooltipRR))
-						return D{}
-					}),
-					layout.Stacked(func(gtx C) D {
-						macro := op.Record(gtx.Ops)
-						paint.ColorOp{Color: t.Fgc}.Add(gtx.Ops)
-						colMacro := macro.Stop()
-						return inset.Layout(gtx, func(gtx C) D {
-							return t.Text.Layout(gtx, t.shaper, t.font, t.TextSize, hint, colMacro)
-						})
-					}),
-				)
-				dx := mouseX + CursorSizeX + dims.Size.X - WinX
-				if dx < 0 {
-					dx = 0
-				}
-				dy := mouseY + CursorSizeY + dims.Size.Y - WinY
-				if dy < 0 {
-					dy = 0
-				}
-				call := macro.Stop()
-				macro = op.Record(gtx.Ops)
-				op.Offset(t.position.Add(image.Pt(-dx+CursorSizeX, -dy+CursorSizeY))).Add(gtx.Ops)
-				call.Add(gtx.Ops)
-				call = macro.Stop()
-				op.Defer(gtx.Ops, call)
-			}
-			return D{}
-		}),
-	)
+	return D{}
+
 }
