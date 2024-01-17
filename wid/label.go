@@ -73,6 +73,7 @@ func Label[V Value](th *Theme, v V, options ...Option) layout.Widget {
 }
 
 func (w *LabelDef) Layout(gtx C) D {
+	pt, pb, pl, pr := ScaleInset(gtx, w.padding)
 	c := gtx
 	if w.MaxLines == 1 {
 		// This is a hack to avoid splitting the line when only one line is allowed
@@ -86,11 +87,11 @@ func (w *LabelDef) Layout(gtx C) D {
 		str = ValueToString(w.value, 0)
 	}
 	GuiLock.RUnlock()
-	defer op.Offset(image.Pt(Px(gtx, w.padding.Left), Px(gtx, w.padding.Top))).Push(gtx.Ops).Pop()
+	defer op.Offset(image.Pt(pl, pt)).Push(gtx.Ops).Pop()
 	tl := widget.Label{Alignment: w.Alignment, MaxLines: w.MaxLines}
-	c.Constraints.Min.X = Max(c.Constraints.Min.X-Px(gtx, w.padding.Left+w.padding.Right), 0)
-	c.Constraints.Max.X -= Px(gtx, w.padding.Left+w.padding.Right)
-	c.Constraints.Min.Y = Max(0, c.Constraints.Min.Y-Px(gtx, w.padding.Top+w.padding.Bottom))
+	c.Constraints.Min.X = Max(c.Constraints.Min.X-pl-pr, 0)
+	c.Constraints.Max.X -= pl + pr
+	c.Constraints.Min.Y = Max(0, c.Constraints.Min.Y-pt-pb)
 	// Fill background if bgColor is given
 	if w.bgColor != nil && (*w.bgColor).A != 0 {
 		paint.FillShape(gtx.Ops, *w.bgColor, clip.UniformRRect(image.Rectangle{Max: c.Constraints.Max}, 0).Op(gtx.Ops))
@@ -100,7 +101,7 @@ func (w *LabelDef) Layout(gtx C) D {
 	paint.ColorOp{Color: w.Fg()}.Add(gtx.Ops)
 	// Then lay out the text
 	dims := tl.Layout(c, w.th.Shaper, w.Font, unit.Sp(w.FontScale)*w.th.TextSize, str, colMacro.Stop())
-	dims.Size.X += Px(gtx, w.padding.Left+w.padding.Right)
-	dims.Size.Y += Px(gtx, w.padding.Bottom+w.padding.Top)
+	dims.Size.X += pl + pr
+	dims.Size.Y += pb + pt
 	return dims
 }

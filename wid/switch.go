@@ -36,38 +36,40 @@ type SwitchDef struct {
 	btnOffSize    unit.Dp
 }
 
+// DefaultSwitchDef returs a Switchdef with values from the theme
+func DefaultSwitchDef(th *Theme) *SwitchDef {
+	return &SwitchDef{
+		Base: Base{
+			th:     th,
+			margin: th.DefaultMargin,
+		},
+		trackWidth:    unit.Dp(th.TextSize) * 1.5,
+		trackLength:   unit.Dp(th.TextSize) * 2.4,
+		btnOnSize:     unit.Dp(th.TextSize) * 1.15,
+		btnOffSize:    unit.Dp(th.TextSize) * 0.8,
+		trackColorOn:  th.Bg[Primary],
+		trackColorOff: th.Bg[SurfaceVariant],
+		trackOutline:  th.Fg[Outline],
+		thumbColorOn:  th.Fg[Primary],
+		thumbColorOff: th.Fg[Outline],
+		trackStroke:   th.BorderThickness,
+	}
+}
+
 // Switch returns a widget for a switch
 func Switch(th *Theme, statePtr *bool, options ...Option) layout.Widget {
-	s := &SwitchDef{}
-	s.th = th
-	// Calculate sizes
-	s.trackWidth = unit.Dp(s.th.TextSize) * 1.5
-	s.trackLength = s.trackWidth * 13 / 8
-	s.btnOnSize = s.trackWidth * 3 / 4
-	s.btnOffSize = s.trackWidth / 2
-	s.trackColorOn = s.th.Bg[Primary]
-	s.trackColorOff = s.th.Bg[SurfaceVariant]
-	s.trackOutline = s.th.Fg[Outline]
-	s.thumbColorOn = s.th.Fg[Primary]
-	s.thumbColorOff = s.th.Fg[Outline]
-	s.trackStroke = s.th.BorderThickness
-	// Default padding. Can be changed with option Padds()
-	s.padding = layout.Inset{Top: unit.Dp(5), Bottom: unit.Dp(5), Left: unit.Dp(5), Right: unit.Dp(5)}
 	// The pointer to a variable receiving switch on/off state
+	s := DefaultSwitchDef(th)
 	s.StatePtr = statePtr
 	for _, option := range options {
 		option.apply(s)
 	}
-	return func(gtx C) D {
-		return s.padding.Layout(gtx, func(gtx C) D {
-			return s.Layout(gtx)
-		})
-	}
+	return s.Layout
 }
 
 // Layout updates the switch and displays it.
 func (s *SwitchDef) Layout(gtx C) D {
-
+	mt, mb, ml, mr := ScaleInset(gtx, s.margin)
 	if *s.StatePtr != s.sw.Value {
 		GuiLock.Lock()
 		*s.StatePtr = s.sw.Value
@@ -81,6 +83,9 @@ func (s *SwitchDef) Layout(gtx C) D {
 		GuiLock.RUnlock()
 	}
 
+	// Offset by margin
+	defer op.Offset(image.Pt(ml, mt)).Push(gtx.Ops).Pop()
+
 	width := Px(gtx, s.trackLength)
 	height := Px(gtx, s.trackWidth)
 	offSize := Px(gtx, s.btnOffSize)
@@ -91,9 +96,9 @@ func (s *SwitchDef) Layout(gtx C) D {
 	if s.sw.Focused() && s.sw.Hovered() {
 		s.hoverShadow = MulAlpha(s.th.Bg[Primary], 120)
 	} else if s.sw.Focused() {
-		s.hoverShadow = MulAlpha(s.th.Bg[Primary], 90)
+		s.hoverShadow = MulAlpha(s.th.Bg[Primary], 95)
 	} else if s.sw.Hovered() {
-		s.hoverShadow = MulAlpha(s.th.Bg[Primary], 60)
+		s.hoverShadow = MulAlpha(s.th.Bg[Primary], 75)
 	} else {
 		s.hoverShadow = MulAlpha(s.th.Bg[Primary], 0)
 	}
@@ -137,5 +142,5 @@ func (s *SwitchDef) Layout(gtx C) D {
 		return layout.Dimensions{Size: sz}
 	})
 
-	return layout.Dimensions{Size: image.Point{X: width, Y: height}}
+	return layout.Dimensions{Size: image.Point{X: width + ml + mr, Y: height + mt + mb}}
 }
