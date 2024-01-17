@@ -28,7 +28,7 @@ func hello(th *wid.Theme) wid.Wid {
 	return wid.Col(wid.SpaceClose,
 		wid.Label(th, "Enter user name and password", wid.Heading(), wid.Bold()),
 		wid.Edit(th, &UserName, wid.Ls(0.2), wid.Lbl("User name")),
-		wid.Edit(th, &Password, wid.Ls(0.2), wid.Lbl("Password")),
+		wid.Edit(th, &Password, '*', wid.Ls(0.2), wid.Lbl("Password")),
 		wid.Row(th, nil, []float32{25, 0, 0},
 			wid.Space(1),
 			wid.Button(theme, "Log in", wid.Do(onLogin), wid.W(20)),

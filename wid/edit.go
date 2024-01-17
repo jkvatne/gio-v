@@ -186,6 +186,8 @@ func Edit(th *Theme, options ...any) layout.Widget {
 		} else if v, ok := option.(Option); ok {
 			b := &e
 			v.apply(b)
+		} else if v, ok := option.(rune); ok {
+			e.Mask = v
 		}
 	}
 
