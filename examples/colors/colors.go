@@ -26,7 +26,7 @@ var (
 func main() {
 	theme = wid.NewTheme(gofont.Collection(), 20)
 	show()
-	win = app.NewWindow(app.Title("Colors"), app.Size(1024, 580)) // , app.Maximized.Option())
+	win = app.NewWindow(app.Title("Colors"), app.Size(1024, 620)) // , app.Maximized.Option())
 	go wid.Run(win, &form, theme)
 	app.Main()
 }
@@ -55,7 +55,7 @@ func showTones(th *wid.Theme, c color.NRGBA) layout.Widget {
 }
 
 func setDefault() {
-	theme = wid.NewTheme(gofont.Collection(), 14)
+	theme = wid.NewTheme(gofont.Collection(), 20)
 	theme.NeutralVariantColor = wid.RGB(0x356057)
 	show()
 }
@@ -127,12 +127,12 @@ func demo2(th *wid.Theme) layout.Widget {
 	return wid.Col(wid.SpaceClose,
 		wid.Label(th, "Show all UI roles", wid.Middle(), wid.Heading(), wid.Bold()),
 		wid.Row(th, nil, wid.SpaceDistribute,
-			wid.Button(th, "Set default", wid.Do(setDefault), wid.Hint("Set the default pallet on all widgets")),
-			wid.Button(th, "Set palette 1", wid.Do(setPalett1), wid.Hint("Use a pallet")),
-			wid.Button(th, "Set palette 2", wid.Do(setPalett2)),
-			wid.Button(th, "Set palette 3", wid.Do(setPalett3)),
-			wid.Button(th, cr, wid.Do(setColorsRoles)),
-			wid.Button(th, ld, wid.Do(setDarkLight)),
+			wid.Button(th, "Set default", wid.Do(setDefault), wid.Hint("Set the default pallete on all widgets")),
+			wid.Button(th, "Set palette 1", wid.Do(setPalett1), wid.Hint("Use a pallete 1")),
+			wid.Button(th, "Set palette 2", wid.Do(setPalett2), wid.Hint("Select pallete nr 2")),
+			wid.Button(th, "Set palette 3", wid.Do(setPalett3), wid.Hint("Select pallete nr. 3")),
+			wid.Button(th, cr, wid.Do(setColorsRoles), wid.Hint("Change between showing color tones and role pallete")),
+			wid.Button(th, ld, wid.Do(setDarkLight), wid.Hint("Select light or dark mode")),
 		),
 		wid.Separator(th, unit.Dp(1.0), wid.Pads(3.0, 0)),
 		wid.Row(th, nil, wid.SpaceDistribute,
@@ -171,6 +171,14 @@ func demo2(th *wid.Theme) layout.Widget {
 				wid.Container(th, wid.SurfaceVariant, 0, th.DefaultPadding, th.DefaultMargin,
 					wid.Label(th, "SurfaceVariant", wid.Large(), wid.Role(wid.SurfaceVariant)))),
 		),
+		wid.Row(th, nil, wid.SpaceDistribute,
+			wid.Button(th, "Set default", wid.Do(setDefault), wid.Hint("Set the default pallete on all widgets")),
+			wid.Button(th, "Set palette 1", wid.Do(setPalett1), wid.Hint("Use a pallete 1")),
+			wid.Button(th, "Set palette 2", wid.Do(setPalett2), wid.Hint("Select pallete nr 2")),
+			wid.Button(th, "Set palette 3", wid.Do(setPalett3), wid.Hint("Select pallete nr. 3")),
+			wid.Button(th, cr, wid.Do(setColorsRoles), wid.Hint("Change between showing color tones and role pallete")),
+			wid.Button(th, ld, wid.Do(setDarkLight), wid.Hint("Select light or dark mode")),
+		),
 	)
 }
 
@@ -194,11 +202,11 @@ func demo1(th *wid.Theme) layout.Widget {
 		wid.Label(th, "Also demonstrates a form that will fill the screen 100%", wid.Middle(), wid.Small()),
 		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.Button(th, "Set default", wid.Do(setDefault), wid.Hint("Set the default pallete on all widgets")),
-			wid.Button(th, "Set palette 1", wid.Do(setPalett1), wid.Hint("Use a pallete")),
-			wid.Button(th, "Set palette 2", wid.Do(setPalett2)),
-			wid.Button(th, "Set palette 3", wid.Do(setPalett3)),
-			wid.Button(th, cr, wid.Do(setColorsRoles)),
-			wid.Button(th, ld, wid.Do(setDarkLight)),
+			wid.Button(th, "Set palette 1", wid.Do(setPalett1), wid.Hint("Use a pallete 1")),
+			wid.Button(th, "Set palette 2", wid.Do(setPalett2), wid.Hint("Select pallete nr 2")),
+			wid.Button(th, "Set palette 3", wid.Do(setPalett3), wid.Hint("Select pallete nr. 3")),
+			wid.Button(th, cr, wid.Do(setColorsRoles), wid.Hint("Change between showing color tones and role pallete")),
+			wid.Button(th, ld, wid.Do(setDarkLight), wid.Hint("Select light or dark mode")),
 		),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Primary"),

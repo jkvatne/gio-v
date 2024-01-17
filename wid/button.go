@@ -123,9 +123,11 @@ func (b *ButtonDef) HandleClick() {
 
 // Layout will draw a button defined in b.
 func (b *ButtonDef) Layout(gtx C) D {
+	mt, mb, ml, mr := ScaleInset(gtx, b.margin)
+	pt, pb, pl, pr := ScaleInset(gtx, b.padding)
 	b.CheckDisable(gtx)
 	// Move the whole button down/right margin offset
-	defer op.Offset(image.Pt(Px(gtx, b.margin.Left), Px(gtx, b.margin.Top))).Push(gtx.Ops).Pop()
+	defer op.Offset(image.Pt(ml, mt)).Push(gtx.Ops).Pop()
 	// Handle clickable pointer/keyboard inputs
 	b.HandleEvents(gtx)
 	b.HandleClick()
@@ -137,7 +139,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 	cgtx := gtx
 	cgtx.Constraints.Min.X = 0
 	cgtx.Constraints.Min.Y = 0
-	cgtx.Constraints.Max.X = Max(0, cgtx.Constraints.Max.X-Px(gtx, b.padding.Right+b.padding.Left+b.margin.Left+b.margin.Right))
+	cgtx.Constraints.Max.X = Max(0, cgtx.Constraints.Max.X-pr+pl+ml+mr)
 	// Render text to find text width (and save drawing commands in macro)
 	recorder = op.Record(gtx.Ops)
 	textDim := widget.Label{Alignment: text.Start}.Layout(cgtx, b.th.Shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontScale), *b.Text, colorMacro)
@@ -149,7 +151,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 	}
 	iconPadding := iconSize / 3
 
-	height := Min(textDim.Size.Y+Px(gtx, b.padding.Top)+Px(gtx, b.padding.Bottom), gtx.Constraints.Max.Y)
+	height := Min(textDim.Size.Y+pt+pb, gtx.Constraints.Max.Y)
 	// Limit corner radius
 	rr := Min(Px(gtx, b.cornerRadius), height/2)
 	// Icon buttonDefault button width when width is not given has padding=0.5 times icon size
@@ -161,13 +163,13 @@ func (b *ButtonDef) Layout(gtx C) D {
 		width = height
 	} else {
 		// Width is maximum of user-specified width and actual content width
-		width = Max(contentWidth+Px(gtx, b.padding.Left+b.padding.Right)+rr, Px(gtx, b.width))
+		width = Max(contentWidth+pl+pr+rr, Px(gtx, b.width))
 		// But limited by gtx max constraint
 		width = Min(gtx.Constraints.Max.X, width)
 	}
 
 	if b.Alignment == text.End {
-		ofs := image.Pt(gtx.Constraints.Max.X-width-Px(gtx, b.margin.Right), 0)
+		ofs := image.Pt(gtx.Constraints.Max.X-width-mr, 0)
 		defer op.Offset(ofs).Push(gtx.Ops).Pop()
 	} else if b.Alignment == text.Middle {
 		defer op.Offset(image.Pt((gtx.Constraints.Max.X-width)/2, 0)).Push(gtx.Ops).Pop()
@@ -211,42 +213,46 @@ func (b *ButtonDef) Layout(gtx C) D {
 	cgtx.Constraints.Min = image.Point{X: iconSize, Y: iconSize}
 
 	// Calculate internal paddings and move
-	dy := Max(0, (height-textDim.Size.Y)/2)
-	dx := Max(0, (width-contentWidth)/2)
-	if b.padding.Left > 0 && dx < Px(gtx, b.padding.Left) {
-		dx = Px(gtx, b.padding.Left)
-	}
+	dy := Max(pt, (height-textDim.Size.Y)/2)
+	dx := Max(pl, (width-contentWidth)/2)
 	if b.Style == Header {
-		dx = Px(gtx, b.padding.Left)
+		dx = pl
 	}
 
 	if b.Icon != nil && *b.Text != "" {
 		// Button with icon and text
 		// First offset by dx
-		defer op.Offset(image.Pt(dx, (height-iconSize)/2)).Push(gtx.Ops).Pop()
+		o1 := op.Offset(image.Pt(dx, (height-iconSize)/2)).Push(gtx.Ops)
 		_ = b.Icon.Layout(cgtx, b.Fg())
 		// Draw text at given offset with an added padding between icon and text
-		defer op.Offset(image.Pt(iconPadding+iconSize, 0)).Push(gtx.Ops).Pop()
+		o2 := op.Offset(image.Pt(iconPadding+iconSize, 0)).Push(gtx.Ops)
 		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 		textMacro.Add(gtx.Ops)
+		o2.Pop()
+		o1.Pop()
 	} else if b.Icon != nil {
 		// Button with Icon only
 		dx := (height - iconSize) / 2
-		defer op.Offset(image.Pt(dx, dx)).Push(gtx.Ops).Pop()
+		o := op.Offset(image.Pt(dx, dx)).Push(gtx.Ops)
 		_ = b.Icon.Layout(cgtx, b.Fg())
+		o.Pop()
 	} else {
 		// Text only
-		defer op.Offset(image.Pt(dx, dy)).Push(gtx.Ops).Pop()
+		o := op.Offset(image.Pt(dx, dy)).Push(gtx.Ops)
 		paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
 		textMacro.Add(gtx.Ops)
+		o.Pop()
 	}
 
-	pointer.CursorPointer.Add(gtx.Ops)
-	outline.Max.X += Px(gtx, b.margin.Left+b.margin.Right)
-	outline.Max.Y += Px(gtx, b.margin.Top+b.margin.Bottom)
-	gtx.Constraints.Min = outline.Max
 	cl.Pop()
+	outline.Max.X += ml + mr
+	outline.Max.Y += mt + mb
+	gtx.Constraints.Min = outline.Max
+	gtx.Constraints.Max = outline.Max
 	b.TooltipDef.Layout(gtx, b.hint, b.th)
+
+	pointer.CursorPointer.Add(gtx.Ops)
+	// Return size with margins
 	return D{Size: outline.Max}
 }
 

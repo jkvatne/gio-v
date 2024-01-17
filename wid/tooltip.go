@@ -16,10 +16,10 @@ import (
 )
 
 const (
-	tipAreaHoverDelay   = time.Millisecond * 200
+	tipAreaHoverDelay   = time.Millisecond * 900
 	tipAreaFadeDuration = time.Millisecond * 500
 	longPressDelay      = time.Millisecond * 500
-	CursorSizeX         = 10
+	CursorSizeX         = 16
 	CursorSizeY         = 32
 )
 
@@ -29,8 +29,7 @@ type TooltipDef struct {
 	VisibilityAnimation
 	// MaxWidth is the maximum width of the tool-tip box. Should be less than form width.
 	MaxWidth unit.Dp
-	// Text defines the content of the tooltip.
-	Text      widget.Label
+	// Position of the last mouse pointer event
 	position  image.Point
 	Hover     InvalidateDeadline
 	Fgc       color.NRGBA
@@ -49,7 +48,7 @@ func Tooltip(th *Theme) TooltipDef {
 		MaxWidth:  th.TooltipWidth,
 		TooltipRR: th.TooltipCornerRadius,
 		font:      font.Font{Weight: font.Medium},
-		TextSize:  th.TextSize * 0.9,
+		TextSize:  th.TextSize,
 	}
 
 }
@@ -108,8 +107,10 @@ func (t *TooltipDef) Layout(gtx C, hint string, th *Theme) D {
 		if !ok {
 			continue
 		}
-		t.position.X = int(e.Position.X)
-		t.position.Y = int(e.Position.Y)
+		if !t.Visible() {
+			t.position.X = mouseX - int(e.Position.X)
+			t.position.Y = mouseY - int(e.Position.Y)
+		}
 		switch e.Kind {
 		case pointer.Enter:
 			t.Hover.SetTarget(gtx.Now.Add(tipAreaHoverDelay))
@@ -129,43 +130,50 @@ func (t *TooltipDef) Layout(gtx C, hint string, th *Theme) D {
 		t.VisibilityAnimation.Appear(gtx.Now)
 	}
 	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
-	rect := image.Rectangle{Max: gtx.Constraints.Min}
-	r := clip.Rect(rect).Push(gtx.Ops)
+	// Detect pointer movement within gtx.Constraints.Min
+	r := clip.Rect(image.Rectangle{Max: gtx.Constraints.Min}).Push(gtx.Ops)
 	pointer.InputOp{
 		Tag:   t,
 		Kinds: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave | pointer.Move,
 	}.Add(gtx.Ops)
 	r.Pop()
-	gtx.Constraints.Min = image.Point{}
+	extHeight := gtx.Constraints.Min.Y
 	if t.Visible() {
-		p := Px(gtx, unit.Dp(5))
-		macro1 := op.Record(gtx.Ops)
+		// p is the inside padding of the tooltip
+		p := Px(gtx, th.TextSize) / 2
+		tooltipMacro := op.Record(gtx.Ops)
 		// Calculate colors according to visibility
 		v := t.VisibilityAnimation.Revealed(gtx)
 		bg := WithAlpha(t.Bgc, uint8(v*255))
 		t.Fgc = WithAlpha(t.Fgc, uint8(v*255))
-		gtx.Constraints.Max.X = gtx.Metric.Dp(t.MaxWidth)
+		gtx.Constraints.Min = image.Point{}
+		gtx.Constraints.Max = image.Point{gtx.Metric.Dp(t.MaxWidth), 99999}
 		rr := Px(gtx, t.TooltipRR)
-		macro2 := op.Record(gtx.Ops)
-		to := op.Offset(image.Pt(p, p)).Push(gtx.Ops)
+		textMacro := op.Record(gtx.Ops)
+		textOffset := op.Offset(image.Pt(p, p)).Push(gtx.Ops)
 		fgCol := op.Record(gtx.Ops)
 		// Draw text
 		paint.ColorOp{Color: t.Fgc}.Add(gtx.Ops)
-		dims := t.Text.Layout(gtx, th.Shaper, t.font, t.TextSize, hint, fgCol.Stop())
-		to.Pop()
-		drawText := macro2.Stop()
-		dx := Max(0, mouseX+CursorSizeX+dims.Size.X-WinX)
-		dy := Max(0, mouseY+CursorSizeY+dims.Size.Y-WinY)
-		op.Offset(t.position.Add(image.Pt(-dx+CursorSizeX, -dy+CursorSizeY))).Add(gtx.Ops)
+		dims := widget.Label{}.Layout(gtx, th.Shaper, t.font, t.TextSize, hint, fgCol.Stop())
+		textOffset.Pop()
+		drawTextOp := textMacro.Stop()
 		outline := image.Rectangle{Max: image.Pt(gtx.Metric.Dp(t.MaxWidth)+p, dims.Size.Y+p*2)}
+		// Move the location to the left so it does not go outside the right edge of the form
+		dx := Min(0, WinX-t.position.X-outline.Max.X-10)
+		var dy int
+		if WinY-t.position.Y > extHeight+outline.Max.Y {
+			dy = Min(extHeight, WinY-t.position.Y)
+		} else {
+			dy = -outline.Max.Y - 5
+		}
+		op.Offset(image.Pt(dx, dy)).Add(gtx.Ops)
 		// Fill background and border
 		paint.FillShape(gtx.Ops, bg, clip.UniformRRect(outline, rr).Op(gtx.Ops))
-		w := float32(Px(gtx, unit.Dp(0.5)))
-		paintBorder(gtx, outline, t.Fgc, w, Px(gtx, t.TooltipRR))
-		drawText.Add(gtx.Ops)
-		drawAll := macro1.Stop()
-		// Draw background and text after all other widgets, so they apear on top
-		op.Defer(gtx.Ops, drawAll)
+		paintBorder(gtx, outline, t.Fgc, float32(Px(gtx, unit.Dp(0.75))), Px(gtx, t.TooltipRR))
+		// Then actually draw the text
+		drawTextOp.Add(gtx.Ops)
+		// End the tooltipMacro and defer drawing so they appear on top of everything else
+		op.Defer(gtx.Ops, tooltipMacro.Stop())
 	}
 	return D{}
 
