@@ -31,7 +31,7 @@ var (
 	fracColWidth  = []float32{0, 0.3, 0.3, .2, .2}
 	selectAll     bool
 	doOccupy      bool
-	withoutHeader bool = true
+	withoutHeader bool = false
 	nameIcon      *wid.Icon
 	addressIcon   *wid.Icon
 	ageIcon       *wid.Icon
@@ -167,7 +167,7 @@ func GridDemo(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 	if doOccupy {
 		anchor = wid.Occupy
 	}
-	// bgColor := th.Bg[wid.Primary]
+	bgColor := th.Bg[wid.PrimaryContainer]
 
 	nameIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
 	addressIcon, _ = wid.NewIcon(icons.NavigationUnfoldMore)
@@ -175,20 +175,18 @@ func GridDemo(th *wid.Theme, data []person, colWidths []float32) layout.Widget {
 
 	// Configure a grid with headings and several rows
 	var gridLines []layout.Widget
-	/*
-		header := wid.Row(th, &bgColor, gw, colWidths,
-			wid.Checkbox(th, "", wid.Bool(&selectAll), wid.Do(onCheck)),
-			wid.HeaderButton(th, "Name", wid.Do(onNameClick), wid.Prim(), wid.BtnIcon(nameIcon), wid.Pads(0)),
-			wid.HeaderButton(th, "Address", wid.Do(onAddressClick), wid.Prim(), wid.BtnIcon(addressIcon), wid.Pads(0)),
-			wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.Prim(), wid.BtnIcon(ageIcon), wid.Pads(0)),
-			// When using a label, padding has to be added. It should be equal to the default button padding.
-			wid.Label(th, "Gender", wid.Prim()),
-		)
-		if withoutHeader {
-			header = nil
-		}
-	*/
-	header := layout.Widget(nil)
+	header := wid.Row(th, &bgColor, gw, colWidths,
+		wid.Checkbox(th, "", wid.Bool(&selectAll), wid.Do(onCheck)),
+		wid.HeaderButton(th, "Name", wid.Do(onNameClick), wid.PrimCont(), wid.BtnIcon(nameIcon), wid.Pads(0)),
+		wid.HeaderButton(th, "Address", wid.Do(onAddressClick), wid.PrimCont(), wid.BtnIcon(addressIcon), wid.Pads(0)),
+		wid.HeaderButton(th, "Age", wid.Do(onAgeClick), wid.PrimCont(), wid.BtnIcon(ageIcon), wid.Pads(0)),
+		// When using a label, padding has to be added. It should be equal to the default button padding.
+		wid.Label(th, "Gender", wid.PrimCont()),
+	)
+	if withoutHeader {
+		header = nil
+	}
+
 	for i := 0; i < len(data); i++ {
 		bgColor := wid.MulAlpha(th.Bg[wid.PrimaryContainer], 50)
 		if i%2 == 0 {
