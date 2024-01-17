@@ -27,7 +27,7 @@ func main() {
 	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
 	theme = wid.NewTheme(gofont.Collection(), 14)
 	onClick()
-	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(1100), unit.Dp(600))), &form, theme)
+	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(1100), unit.Dp(520))), &form, theme)
 	app.Main()
 }
 
@@ -45,7 +45,7 @@ func onClick() {
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget -- i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
-	return wid.Col(wid.SpaceDistribute,
+	return wid.Col(wid.SpaceClose,
 		wid.Label(th, "Buttons demo page", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer),
 			wid.Role(wid.PrimaryContainer), wid.Pads(10)),
 		wid.Label(th, "Buttons with fixed length and large font, close together at left side, using wid.SpaceClose"),
@@ -110,6 +110,7 @@ func demo(th *wid.Theme) layout.Widget {
 			wid.Button(th, "Cancel", wid.W(150), (wid.Prim()),
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
 		),
+		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Two buttons, aligned right, using wid.SpaceRightAdjust"),
 		wid.Row(th, wid.SpaceRightAdjust,
 			wid.Button(th, "Save", wid.W(150), wid.Sec(),
