@@ -61,13 +61,11 @@ func Dialog(th *Theme, role UIRole, widgets ...Wid) Wid {
 		pl := Px(gtx, th.DialogPadding.Left)
 		pr := Px(gtx, th.DialogPadding.Right)
 		f := Min(1.0, float64(time.Since(dialogStartTime))/float64(time.Second/4))
-
 		// Shade underlying form
 		// Draw surface all over the underlying form with the transparent surface color
 		outline := image.Rect(0, 0, gtx.Constraints.Max.X, gtx.Constraints.Max.Y)
 		defer clip.Rect(outline).Push(gtx.Ops).Pop()
 		paint.Fill(gtx.Ops, WithAlpha(Black, uint8(f*200)))
-
 		// Calculate dialog constraints
 		ctx := gtx
 		ctx.Constraints.Min.Y = 0
@@ -92,7 +90,6 @@ func Dialog(th *Theme, role UIRole, widgets ...Wid) Wid {
 		defer op.Offset(image.Pt(x, y)).Push(gtx.Ops).Pop()
 		defer clip.UniformRRect(outline, Px(gtx, th.DialogCorners)).Push(gtx.Ops).Pop()
 		paint.Fill(gtx.Ops, th.Bg[role])
-
 		if f < 1.0 {
 			// While animating, no widgets are drawn, but we invalidate to force a new redraw
 			Invalidate()
