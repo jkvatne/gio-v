@@ -32,7 +32,10 @@ type DropDownStyle struct {
 	above        bool
 }
 
-var icon *Icon
+var (
+	dropUpIcon   *Icon
+	dropDownIcon *Icon
+)
 
 // DropDown returns an initiated struct with drop-dow box setup info
 func DropDown(th *Theme, index *int, items []string, options ...Option) layout.Widget {
@@ -151,7 +154,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 	c := gtx
 	c.Constraints.Max = iconSize
 	c.Constraints.Min = iconSize
-	icon.Layout(c, d.Fg())
+	dropDownIcon.Layout(c, d.Fg())
 	o.Pop()
 
 	oldVisible := d.listVisible
@@ -295,5 +298,6 @@ func (d *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 }
 
 func init() {
-	icon, _ = NewIcon(icons.NavigationArrowDropDown)
+	dropDownIcon, _ = NewIcon(icons.NavigationArrowDropDown)
+	dropUpIcon, _ = NewIcon(icons.NavigationArrowDropUp)
 }
