@@ -114,7 +114,7 @@ func Invalidate() {
 	invalidate <- struct{}{}
 }
 
-func Run(win *app.Window, form *layout.Widget, th *Theme) {
+func Run(win *app.Window, mainForm *layout.Widget, th *Theme) {
 	invalidate = make(chan struct{})
 	go func() {
 		for range invalidate {
@@ -148,13 +148,12 @@ func Run(win *app.Window, form *layout.Widget, th *Theme) {
 
 			// Draw widgets
 			GuiLock.Lock()
-			mainForm := *form
 			GuiLock.Unlock()
 			ctx := gtx
 			if dialog != nil {
 				ctx.Queue = nil
 			}
-			mainForm(ctx)
+			(*mainForm)(ctx)
 			if dialog != nil {
 				dialog(gtx)
 			}
