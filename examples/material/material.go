@@ -10,6 +10,9 @@ import (
 	"gioui.org/font/gofont"
 	"github.com/jkvatne/gio-v/wid"
 	"golang.org/x/exp/shiny/materialdesign/icons"
+	"strconv"
+	"sync/atomic"
+	"time"
 
 	"gioui.org/app"
 	"gioui.org/layout"
@@ -26,6 +29,7 @@ var (
 	saveIcon     *wid.Icon
 	otherPallete = false
 	d            layout.Widget
+	no           atomic.Int32
 )
 
 func main() {
@@ -38,10 +42,19 @@ func main() {
 		"No", "Yes",
 		onNo, onYes)
 	theme.Scale = 1
+	go ticker()
 	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(500), unit.Dp(600)))
 	form = demo(theme)
 	go wid.Run(win, &form, theme)
 	app.Main()
+}
+
+func ticker() {
+	for {
+		time.Sleep(time.Second)
+		no.Add(1)
+		wid.Invalidate()
+	}
 }
 
 func onYes() {
@@ -105,6 +118,39 @@ func onSwitchMode() {
 	theme.UpdateColors()
 }
 
+var entries = []string{"Classic", "Jazz", "Rock", "Hiphop", ""}
+
+// Menu demonstrates how to show a list that is generated while drawing it.
+func Menu(th *wid.Theme) wid.Wid {
+	return func(gtx wid.C) wid.D {
+		widgets := make([]wid.Wid, len(entries))
+		// Note that "no" has to be atomic because it is concurrently updated in "ticker"
+		entries[4] = strconv.Itoa(int(no.Load()))
+		for i, s := range entries {
+			widgets[i] = wid.TextButton(th, s, wid.BtnIcon(homeIcon))
+		}
+		return wid.Container(th, wid.SurfaceContainerHigh, 15, th.DefaultPadding, th.DefaultMargin, widgets...)(gtx)
+	}
+}
+
+func Items(th *wid.Theme) wid.Wid {
+	return wid.Col(wid.SpaceClose,
+		wid.Container(th, wid.PrimaryContainer, 15, th.DefaultPadding, th.DefaultMargin,
+			wid.Label(th, "Music", wid.FontSize(0.66), wid.Fg(th.PrimaryColor)),
+			wid.Label(th, "What Buttons are Artists Pushing When They Perform Live", wid.FontSize(1.5), wid.PrimCont()),
+			wid.Container(th, wid.PrimaryContainer, 15, layout.Inset{}, layout.Inset{0, 10, 0, 0},
+				wid.ImageFromJpgFile("music.jpg", wid.Contain)),
+			wid.Row(th, nil, wid.SpaceDistribute,
+				wid.Label(th, "12 hrs ago", wid.FontSize(0.66), wid.Fg(th.PrimaryColor)),
+				wid.Button(th, "Save", wid.Do(onSave), wid.BtnIcon(saveIcon), wid.RR(99), wid.Right()),
+			),
+		),
+		wid.Container(th, wid.PrimaryContainer, 15, th.DefaultPadding, th.DefaultMargin,
+			wid.Label(th, "Click Save button to test the confirmation dialog", wid.FontSize(1.0), wid.PrimCont()),
+		),
+	)
+}
+
 // Demo setup. Called from Setup(), only once - at start of showing it.
 // Returns a widget - i.e. a function: func(gtx C) D
 func demo(th *wid.Theme) layout.Widget {
@@ -120,32 +166,9 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Row(th, nil, []float32{0.3, 0.7},
 			// Menu column
-			wid.Container(th, wid.SurfaceContainerHigh, 15, th.DefaultPadding, th.DefaultMargin,
-				wid.Col(wid.SpaceClose,
-					wid.Label(th, "Items", wid.FontSize(1.5)),
-					wid.TextButton(th, "Classic", wid.BtnIcon(homeIcon)),
-					wid.TextButton(th, "Jazz", wid.BtnIcon(homeIcon)),
-					wid.TextButton(th, "Rock", wid.BtnIcon(homeIcon)),
-					wid.TextButton(th, "Hiphop", wid.BtnIcon(homeIcon)),
-					wid.Space(9999),
-				),
-			),
+			Menu(th),
 			// Items
-			wid.Col(wid.SpaceClose,
-				wid.Container(th, wid.PrimaryContainer, 15, th.DefaultPadding, th.DefaultMargin,
-					wid.Label(th, "Music", wid.FontSize(0.66), wid.Fg(th.PrimaryColor)),
-					wid.Label(th, "What Buttons are Artists Pushing When They Perform Live", wid.FontSize(1.5), wid.PrimCont()),
-					wid.Container(th, wid.PrimaryContainer, 15, layout.Inset{}, layout.Inset{0, 10, 0, 0},
-						wid.ImageFromJpgFile("music.jpg", wid.Contain)),
-					wid.Row(th, nil, wid.SpaceDistribute,
-						wid.Label(th, "12 hrs ago", wid.FontSize(0.66), wid.Fg(th.PrimaryColor)),
-						wid.Button(th, "Save", wid.Do(onSave), wid.BtnIcon(saveIcon), wid.RR(99), wid.Right()),
-					),
-				),
-				wid.Container(th, wid.PrimaryContainer, 15, th.DefaultPadding, th.DefaultMargin,
-					wid.Label(th, "Click Save button to test the confirmation dialog", wid.FontSize(1.0), wid.PrimCont()),
-				),
-			),
+			Items(th),
 		),
 	)
 }
