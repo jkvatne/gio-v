@@ -3,7 +3,7 @@
 package wid
 
 import (
-	"gioui.org/layout"
+	"gioui.org/io/semantic"
 	"gioui.org/unit"
 	"image"
 	"image/color"
@@ -11,8 +11,6 @@ import (
 	"gioui.org/op/clip"
 
 	"gioui.org/op/paint"
-
-	"gioui.org/io/semantic"
 
 	"gioui.org/io/pointer"
 	"gioui.org/op"
@@ -34,30 +32,30 @@ type CheckBoxDef struct {
 }
 
 // RadioButton returns a RadioButton with a label. The key specifies the initial value for the output
-func RadioButton(th *Theme, value *string, key string, label string, options ...Option) func(gtx C) D {
-	r := CheckBoxDef{
+func RadioButton(th *Theme, value *string, key string, label string, options ...Option) Wid {
+	r := &CheckBoxDef{
+		Base: Base{
+			th:        th,
+			FontScale: 1.0,
+			role:      Surface,
+			Font:      &th.DefaultFont,
+			padding:   th.DefaultPadding,
+		},
+		TooltipDef:         Tooltip(th),
 		Label:              label,
 		StrValue:           value,
 		checkedStateIcon:   th.RadioChecked,
 		uncheckedStateIcon: th.RadioUnchecked,
 		Key:                key,
 	}
-	r.th = th
-	r.FontScale = 1.0
-	r.role = Surface
-	r.padding = th.DefaultPadding
-	r.Font = &th.DefaultFont
-	r.TooltipDef = Tooltip(th)
 	for _, option := range options {
-		option.apply(&r)
+		option.apply(r)
 	}
-	return func(gtx C) D {
-		return r.Layout(gtx)
-	}
+	return r.Layout
 }
 
 // Checkbox returns a widget that can be checked, with label, initial state and handler function
-func Checkbox(th *Theme, label string, options ...Option) layout.Widget {
+func Checkbox(th *Theme, label string, options ...Option) Wid {
 	c := &CheckBoxDef{
 		Base: Base{
 			th:        th,
@@ -79,7 +77,7 @@ func Checkbox(th *Theme, label string, options ...Option) layout.Widget {
 
 // Layout updates the checkBox and displays it.
 func (c *CheckBoxDef) Layout(gtx C) D {
-	c.HandleEvents(gtx)
+	c.HandleEvents(&c.Clickable, gtx)
 	for c.Clicked() {
 		c.Checked = !c.Checked
 		GuiLock.Lock()
@@ -102,8 +100,6 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 		c.Checked = *c.StrValue == c.Key
 		GuiLock.RUnlock()
 	}
-	semantic.EnabledOp(gtx.Queue == nil).Add(gtx.Ops)
-
 	icon := c.uncheckedStateIcon
 	if c.Checked {
 		icon = c.checkedStateIcon
@@ -120,7 +116,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	}
 	// Calculate color of text and checkbox
 	fgColor := c.Fg()
-	if gtx.Queue == nil {
+	if !gtx.Enabled() {
 		fgColor = Disabled(fgColor)
 	}
 	colMacro := op.Record(gtx.Ops)
@@ -132,9 +128,9 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 
 	// Calculate hover/focus background color
 	background := color.NRGBA{}
-	if c.Focused() && c.Hovered() {
+	if gtx.Focused(&c.Clickable) && c.Hovered() {
 		background = MulAlpha(c.Fg(), 90)
-	} else if c.Focused() {
+	} else if gtx.Focused(&c.Clickable) {
 		background = MulAlpha(c.Fg(), 85)
 	} else if c.Hovered() {
 		background = MulAlpha(c.Fg(), 65)
@@ -156,6 +152,8 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	}
 	// Handle events within the calculated size. Must be called before label offset
 	c.SetupEventHandlers(gtx, size)
+	semantic.CheckBox.Add(gtx.Ops)
+	semantic.SelectedOp(c.Checked).Add(gtx.Ops)
 	// Extra offset for drawing label
 	defer op.Offset(image.Pt(iconSize+iconSize/9, -iconSize/9)).Push(gtx.Ops).Pop()
 	drawLabel.Add(gtx.Ops)

@@ -3,6 +3,7 @@
 package wid
 
 import (
+	"gioui.org/io/event"
 	"image"
 
 	"gioui.org/io/key"
@@ -47,43 +48,42 @@ func Slider(th *Theme, value *float32, minV, maxV float32, options ...Option) la
 	return s.Layout
 }
 
-func (s SliderStyle) Layout(gtx C) D {
+func (s *SliderStyle) Layout(gtx C) D {
 	s.handleKeys(gtx)
 	m := op.Record(gtx.Ops)
 	dims := s.layout(gtx)
 	c := m.Stop()
 	defer clip.Rect{Max: dims.Size}.Push(gtx.Ops).Pop()
-	disabled := gtx.Queue == nil
-	keys := key.Set("")
-	if !disabled {
-		keys = "(Ctrl)-[→,↓,←,↑,0,9,↓]"
-		if !s.focused {
-			keys = ""
-		}
-		key.InputOp{Tag: &s.keyTag, Keys: keys}.Add(gtx.Ops)
-	} else {
-		s.focused = false
-	}
+	event.Op(gtx.Ops, s)
 	c.Add(gtx.Ops)
 	return dims
 }
 
 func (s *SliderStyle) handleKeys(gtx C) {
-	for _, ev := range gtx.Events(&s.keyTag) {
-		switch ke := ev.(type) {
+	for {
+		e, ok := gtx.Event(
+			key.FocusFilter{Target: s},
+			key.Filter{Focus: s, Name: key.NameUpArrow, Optional: key.ModCtrl},
+			key.Filter{Focus: s, Name: key.NameDownArrow, Optional: key.ModCtrl},
+			key.Filter{Focus: s, Name: key.NameLeftArrow, Optional: key.ModCtrl},
+			key.Filter{Focus: s, Name: key.NameRightArrow, Optional: key.ModCtrl},
+		)
+		if !ok {
+			break
+		}
+		if !ok {
+			continue
+		}
+		switch e := e.(type) {
 		case key.FocusEvent:
-			s.focused = ke.Focus
+			s.focused = e.Focus
 		case key.Event:
-			if ke.State == key.Press {
+			if e.State == key.Press {
 				d := float32(0.01)
-				if ke.Modifiers.Contain(key.ModCtrl) {
+				if e.Modifiers.Contain(key.ModCtrl) {
 					d = 0.1
 				}
-				switch ke.Name {
-				case "0":
-					s.pos = 0
-				case "9":
-					s.pos = 1.0
+				switch e.Name {
 				case key.NameUpArrow, key.NameLeftArrow:
 					s.pos -= d
 				case key.NameDownArrow, key.NameRightArrow:
@@ -115,35 +115,31 @@ func (s *SliderStyle) layout(gtx C) D {
 	op.Offset(o).Add(gtx.Ops)
 	gtx.Constraints.Min = s.axis.Convert(image.Pt(sizeMain-2*thumbRadius, sizeCross))
 
-	disabled := gtx.Queue == nil
+	disabled := !gtx.Enabled()
 	semantic.EnabledOp(disabled).Add(gtx.Ops)
 	semantic.Switch.Add(gtx.Ops)
 
 	size := gtx.Constraints.Min
 	s.length = float32(s.axis.Convert(size).X)
 
-	var de *pointer.Event
-	for _, e := range s.drag.Update(gtx.Metric, gtx, gesture.Axis(s.axis)) {
-		switch e.Kind {
-		case pointer.Press, pointer.Drag:
-			key.FocusOp{Tag: &s.keyTag}.Add(gtx.Ops)
-			de = &e
-		case pointer.Leave, pointer.Cancel:
+	for {
+		e, ok := s.drag.Update(gtx.Metric, gtx.Source, gesture.Axis(s.axis))
+		if !ok {
+			break
+		}
+		if s.length > 0 && (e.Kind == pointer.Press || e.Kind == pointer.Drag) {
+			xy := e.Position.X
+			if s.axis == layout.Vertical {
+				xy = s.length - e.Position.Y
+			}
+			s.pos = xy / (float32(thumbRadius) + s.length)
+			s.setValue()
+		} else if e.Kind == pointer.Leave {
 			s.hovered = false
-		case pointer.Enter:
+		} else if e.Kind == pointer.Enter {
 			s.hovered = true
-		default:
 		}
 	}
-	if de != nil {
-		xy := de.Position.X
-		if s.axis == layout.Vertical {
-			xy = de.Position.Y
-		}
-		s.pos = xy / (float32(thumbRadius) + s.length)
-	}
-
-	s.setValue()
 
 	margin := s.axis.Convert(image.Pt(thumbRadius, 0))
 	rect := image.Rectangle{
@@ -157,7 +153,7 @@ func (s *SliderStyle) layout(gtx C) D {
 	thumbPos := thumbRadius + int(s.pos*(float32(sizeMain-thumbRadius*5)))
 
 	color := WithAlpha(s.th.Fg[Canvas], 175)
-	if gtx.Queue == nil {
+	if !gtx.Enabled() {
 		color = Disabled(color)
 	}
 
@@ -183,7 +179,7 @@ func (s *SliderStyle) layout(gtx C) D {
 
 	// Draw thumb.
 	pt := s.axis.Convert(image.Pt(thumbPos, sizeCross/2))
-	if s.hovered || s.focused {
+	if s.hovered || gtx.Focused(s) {
 		r := int(float32(thumbRadius) * 1.35)
 		ul := image.Pt(pt.X-r, pt.Y-r)
 		lr := image.Pt(pt.X+r, pt.Y+r)

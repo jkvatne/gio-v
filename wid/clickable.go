@@ -1,13 +1,13 @@
 package wid
 
 import (
+	"gioui.org/io/event"
 	"image"
 	"time"
 
 	"gioui.org/gesture"
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
-	"gioui.org/io/semantic"
 	"gioui.org/op/clip"
 )
 
@@ -25,12 +25,14 @@ type Clickable struct {
 	requestFocus bool
 	focused      bool
 
-	pressed bool
-	index   *int
+	requestClicks int
+	pressed       bool
+	pressedKey    key.Name
 	// ClickMovesFocus can be set true if you want clicking on a button
 	// to move focus. If false, only Tab will move focus.
 	// Dropdowns must have this set to true
 	ClickMovesFocus bool
+	index           *int
 }
 
 // Click represents a click.
@@ -50,14 +52,6 @@ type Press struct {
 	End time.Time
 	// Cancelled is true for cancelled presses.
 	Cancelled bool
-}
-
-// Click executes a simple programmatic click
-func (b *Clickable) Click() {
-	b.clicks = append(b.clicks, Click{
-		Modifiers: 0,
-		NumClicks: 1,
-	})
 }
 
 // Clicked reports whether there are pending clicks as would be
@@ -89,19 +83,6 @@ func (b *Clickable) Focus() {
 	b.requestFocus = true
 }
 
-// Focused reports whether b has focus.
-func (b *Clickable) Focused() bool {
-	return b.focused
-}
-
-// Clicks returns and clear the clicks since the last call to Clicks.
-func (b *Clickable) Clicks() []Click {
-	clicks := b.clicks
-	b.clicks = nil
-	b.prevClicks = 0
-	return clicks
-}
-
 // History is the past pointer presses useful for drawing markers.
 // History is retained for a short duration (about a second).
 func (b *Clickable) History() []Press {
@@ -110,22 +91,12 @@ func (b *Clickable) History() []Press {
 
 func (b *Clickable) SetupEventHandlers(gtx C, size image.Point) {
 	defer clip.Rect(image.Rectangle{Max: size}).Push(gtx.Ops).Pop()
-	disabled := gtx.Queue == nil
-	semantic.EnabledOp(disabled).Add(gtx.Ops)
 	b.click.Add(gtx.Ops)
-	if !disabled {
-		keys := key.Set("")
-		if b.focused {
-			keys = "⏎|Space|←|→|↑|↓"
-		}
-		key.InputOp{Tag: &b.keyTag, Keys: keys}.Add(gtx.Ops)
-		if b.requestFocus {
-			key.FocusOp{Tag: &b.keyTag}.Add(gtx.Ops)
-			b.requestFocus = false
-		}
-	} else {
-		b.focused = false
-	}
+	event.Op(gtx.Ops, b)
+}
+
+// HandleEvents the button state by processing events.
+func (b *Clickable) HandleEvents(t event.Tag, gtx C) {
 	for len(b.history) > 0 {
 		c := b.history[0]
 		if c.End.IsZero() || gtx.Now.Sub(c.End) < 1*time.Second {
@@ -134,16 +105,11 @@ func (b *Clickable) SetupEventHandlers(gtx C, size image.Point) {
 		n := copy(b.history, b.history[1:])
 		b.history = b.history[:n]
 	}
-}
-
-// HandleEvents the button state by processing events.
-func (b *Clickable) HandleEvents(gtx C) {
-	// Flush clicks from before the last HandleEvents.
-	n := copy(b.clicks, b.clicks[b.prevClicks:])
-	b.clicks = b.clicks[:n]
-	b.prevClicks = n
-
-	for _, e := range b.click.Update(gtx) {
+	for {
+		e, ok := b.click.Update(gtx.Source)
+		if !ok {
+			break
+		}
 		switch e.Kind {
 		case gesture.KindClick:
 			b.clicks = append(b.clicks, Click{
@@ -165,9 +131,7 @@ func (b *Clickable) HandleEvents(gtx C) {
 			}
 		case gesture.KindPress:
 			if e.Source == pointer.Mouse {
-				if b.ClickMovesFocus {
-					b.Focus()
-				}
+				gtx.Execute(key.FocusCmd{Tag: t})
 			}
 			b.history = append(b.history, Press{
 				Position: e.Position,
@@ -175,31 +139,48 @@ func (b *Clickable) HandleEvents(gtx C) {
 			})
 		}
 	}
-	for _, e := range gtx.Events(&b.keyTag) {
+
+	for {
+		e, ok := gtx.Event(
+			key.FocusFilter{Target: t},
+			key.Filter{Focus: t, Name: key.NameReturn},
+			key.Filter{Focus: t, Name: key.NameSpace},
+		)
+		if !ok {
+			break
+		}
 		switch e := e.(type) {
 		case key.FocusEvent:
-			b.focused = e.Focus
+			if e.Focus {
+				b.pressedKey = ""
+			}
 		case key.Event:
-			if (e.Name == key.NameSpace || e.Name == key.NameReturn) && b.focused {
-				if e.State == key.Press && !b.pressed {
+			if !gtx.Focused(t) {
+				break
+			}
+			if e.Name != key.NameReturn && e.Name != key.NameSpace {
+				break
+			}
+			switch e.State {
+			case key.Press:
+				if !b.pressed {
+					b.pressedKey = e.Name
 					b.history = append(b.history, Press{
-						Position: image.Point{},
-						Start:    gtx.Now,
+						Start: gtx.Now,
 					})
 					b.pressed = true
-				} else if e.State == key.Release {
-					b.pressed = false
-					b.clicks = append(b.clicks, Click{Modifiers: e.Modifiers, NumClicks: 1})
-					if l := len(b.history); l > 0 {
-						b.history[l-1].End = gtx.Now
-					}
 				}
-			} else if b.index != nil && e.State == key.Release {
-				if e.Name == key.NameDownArrow || e.Name == key.NameRightArrow {
-					*b.index++
-				} else if e.Name == key.NameUpArrow || e.Name == key.NameLeftArrow {
-					*b.index--
+			case key.Release:
+				if b.pressedKey != e.Name {
+					break
 				}
+				b.pressed = false
+				// only register a key as a click if the key was pressed and released while this button was focused
+				b.pressedKey = ""
+				if l := len(b.history); l > 0 {
+					b.history[l-1].End = gtx.Now
+				}
+				b.clicks = append(b.clicks, Click{Modifiers: e.Modifiers, NumClicks: 1})
 			}
 		}
 	}

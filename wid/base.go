@@ -4,6 +4,7 @@ package wid
 
 import (
 	"gioui.org/font"
+	"gioui.org/io/event"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"golang.org/x/exp/constraints"
@@ -14,7 +15,6 @@ import (
 
 	"gioui.org/app"
 	"gioui.org/io/pointer"
-	"gioui.org/io/system"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 
@@ -85,7 +85,7 @@ func (wid *Base) CheckDisable(gtx C) {
 	if wid.disabler != nil {
 		GuiLock.RLock()
 		if *wid.disabler {
-			_ = gtx.Disabled()
+			gtx = gtx.Disabled()
 		}
 		GuiLock.RUnlock()
 	}
@@ -96,17 +96,27 @@ func (wid *Base) CheckDisable(gtx C) {
 // is outside the window frame
 func UpdateMousePos(gtx C, win *app.Window) {
 	eventArea := clip.Rect(image.Rect(0, 0, 99999, 99999)).Push(gtx.Ops)
-	pointer.InputOp{
-		Kinds: pointer.Move,
-		Tag:   win,
-	}.Add(gtx.Ops)
+	// pointer.InputOp{Kinds: pointer.Move,Tag:   win,}.Add(gtx.Ops)
+	event.Op(gtx.Ops, win)
 	eventArea.Pop()
-	for _, gtxEvent := range gtx.Events(win) {
-		switch e := gtxEvent.(type) {
-		case pointer.Event:
-			mouseX = int(e.Position.X)
-			mouseY = int(e.Position.Y)
+	// for _, gtxEvent := range gtx.Events(win) {
+	for {
+		event, ok := gtx.Event(pointer.Filter{
+			Target: win,
+			Kinds:  pointer.Move,
+		})
+		if !ok {
+			break
 		}
+		ev, ok := event.(pointer.Event)
+		if !ok {
+			continue
+		}
+		//		switch ev := gtxEvent.(type) {
+		//		case pointer.Event:
+		mouseX = int(ev.Position.X)
+		mouseY = int(ev.Position.Y)
+		//		}
 	}
 }
 
@@ -124,14 +134,14 @@ func Run(win *app.Window, mainForm *layout.Widget, th *Theme) {
 
 	for {
 		switch e := win.NextEvent().(type) {
-		case system.DestroyEvent:
+		case app.DestroyEvent:
 			os.Exit(0)
-		case system.FrameEvent:
+		case app.FrameEvent:
 			var ops op.Ops
 			// Save window size for use by widgets. Must be done before drawing
 			WinX = e.Size.X
 			WinY = e.Size.Y
-			gtx := layout.NewContext(&ops, e)
+			gtx := app.NewContext(&ops, e)
 
 			if startWinY == 0 {
 				startWinY = WinY
@@ -151,7 +161,7 @@ func Run(win *app.Window, mainForm *layout.Widget, th *Theme) {
 			GuiLock.Unlock()
 			ctx := gtx
 			if dialog != nil {
-				ctx.Queue = nil
+				ctx = gtx.Disabled()
 			}
 			(*mainForm)(ctx)
 			if dialog != nil {

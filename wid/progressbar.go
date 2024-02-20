@@ -55,9 +55,7 @@ func (p *ProgressBarDef) Layout(gtx C) D {
 	width := int(float32(progressBarWidth) * Clamp(value, 0, 1))
 	thickness := Px(gtx, p.Thickness)
 	color := p.Fg()
-	if gtx.Queue == nil {
-		color = Disabled(color)
-	}
+	gtx = gtx.Disabled()
 	rr := Px(gtx, p.cornerRadius)
 	if p.cornerRadius > (p.width-1)/2 {
 		rr = Px(gtx, (p.width-1)/2)

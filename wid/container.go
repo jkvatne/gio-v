@@ -3,6 +3,7 @@
 package wid
 
 import (
+	"gioui.org/io/event"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -42,13 +43,15 @@ func Container(th *Theme, role UIRole, rr unit.Dp, padding layout.Inset, margin 
 		defer op.Offset(image.Pt(ml, mt)).Push(gtx.Ops).Pop()
 
 		if collapsed {
-			d := widgets[1](c)
-			size = d.Size.Y
-			// Draw surface
-			outline := image.Rect(0, 0, gtx.Constraints.Max.X-mr-ml, size+pt+pb)
-			defer clip.UniformRRect(outline, Px(gtx, rr)).Push(gtx.Ops).Pop()
-			paint.Fill(gtx.Ops, th.Bg[role])
-			widgets[1](c)
+			if len(widgets) > 1 {
+				d := widgets[1](c)
+				size = d.Size.Y
+				// Draw surface
+				outline := image.Rect(0, 0, gtx.Constraints.Max.X-mr-ml, size+pt+pb)
+				defer clip.UniformRRect(outline, Px(gtx, rr)).Push(gtx.Ops).Pop()
+				paint.Fill(gtx.Ops, th.Bg[role])
+				widgets[1](c)
+			}
 		} else {
 			// Negative padding is used for flexible insets
 			// The container will center the contents
@@ -81,22 +84,23 @@ func Container(th *Theme, role UIRole, rr unit.Dp, padding layout.Inset, margin 
 		} else {
 			dropUpIcon.Layout(c, th.Fg[role])
 		}
-		// Handle events
-		for _, ev := range gtx.Events(&tag) {
-			if ev, ok := ev.(pointer.Event); ok {
-				switch ev.Kind {
-				case pointer.Release:
-					collapsed = !collapsed
-				}
-			}
-		}
+
 		// Setup event handler
 		defer clip.UniformRRect(image.Rect(0, 0, 50, 50), 0).Push(gtx.Ops).Pop()
-		pointer.InputOp{
-			Tag:   &tag,
-			Kinds: pointer.Release,
-		}.Add(gtx.Ops)
+		event.Op(gtx.Ops, &tag)
 
+		for {
+			event, ok := gtx.Event(pointer.Filter{
+				Target: &tag,
+				Kinds:  pointer.Release,
+			})
+			if !ok {
+				break
+			}
+			if _, ok := event.(pointer.Event); ok {
+				collapsed = !collapsed
+			}
+		}
 		return D{Size: sz, Baseline: sz.Y}
 	}
 }

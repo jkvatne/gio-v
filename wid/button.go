@@ -5,11 +5,10 @@ package wid
 
 import (
 	"gioui.org/io/pointer"
+	"gioui.org/io/semantic"
 	"image"
 	"image/color"
 	"math"
-
-	"gioui.org/io/semantic"
 
 	"gioui.org/unit"
 
@@ -113,8 +112,8 @@ func aButton[V StrValue](style ButtonStyle, th *Theme, label V, options ...Optio
 }
 
 // HandleClick will call the callback function
-func (b *ButtonDef) HandleClick() {
-	for b.Clickable.Clicked() {
+func (b *ButtonDef) HandleClicks(gtx C) {
+	for b.Clicked() {
 		if b.onUserChange != nil {
 			b.onUserChange()
 		}
@@ -129,8 +128,8 @@ func (b *ButtonDef) Layout(gtx C) D {
 	// Move the whole button down/right margin offset
 	defer op.Offset(image.Pt(ml, mt)).Push(gtx.Ops).Pop()
 	// Handle clickable pointer/keyboard inputs
-	b.HandleEvents(gtx)
-	b.HandleClick()
+	b.HandleEvents(&b.Clickable, gtx)
+	b.HandleClicks(gtx)
 	// Make macro with text color
 	recorder := op.Record(gtx.Ops)
 	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)
@@ -179,7 +178,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 
 	// Draw shadow if pressed. Must be done before clipping
 	// because the shadow is outside the button
-	if b.Clickable.Focused() {
+	if gtx.Focused(&b.Clickable) {
 		DrawShadow(gtx, outline, rr, 20)
 	}
 	cl := clip.UniformRRect(outline, rr).Push(gtx.Ops)
@@ -190,20 +189,20 @@ func (b *ButtonDef) Layout(gtx C) D {
 	if b.Style == Outlined {
 		w := float32(Px(gtx, b.th.BorderThickness))
 		paintBorder(gtx, outline, b.th.Fg[Outline], w, rr)
-	} else if b.Style != Text && gtx.Queue == nil {
+	} else if b.Style != Text && !gtx.Enabled() {
 		paint.Fill(gtx.Ops, Disabled(b.Bg()))
 	} else if b.Style != Text && b.Style != Header {
 		paint.Fill(gtx.Ops, b.Bg())
 	}
-	if b.Clickable.Focused() && b.Clickable.Hovered() {
+	if gtx.Focused(&b.Clickable) && b.Clickable.Hovered() {
 		paint.Fill(gtx.Ops, MulAlpha(b.Fg(), 30))
-	} else if b.Clickable.Focused() {
+	} else if gtx.Focused(&b.Clickable) {
 		paint.Fill(gtx.Ops, MulAlpha(b.Fg(), 20))
 	} else if b.Clickable.Hovered() {
 		paint.Fill(gtx.Ops, MulAlpha(b.Fg(), 15))
 	}
 
-	semantic.EnabledOp(gtx.Queue == nil).Add(gtx.Ops)
+	semantic.EnabledOp(gtx.Enabled()).Add(gtx.Ops)
 
 	// Icon context
 	cgtx.Constraints.Min = image.Point{X: width, Y: height}
@@ -323,7 +322,7 @@ func drawInk(gtx C, c Press) {
 	sizet /= expandDuration
 	// Animate only ended presses, and presses that are fading in.
 	if !c.End.IsZero() || sizet <= 1.0 {
-		op.InvalidateOp{}.Add(gtx.Ops)
+		gtx.Execute(op.InvalidateCmd{})
 	}
 	if sizet > 1.0 {
 		sizet = 1.0

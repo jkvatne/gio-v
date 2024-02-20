@@ -64,7 +64,11 @@ func (rs *Resize) Layout(gtx C, w1 layout.Widget, w2 layout.Widget) D {
 		layout.Flexed(1-rs.ratio, w2),
 	)
 	// Handle drag events
-	for _, e := range rs.drag.Update(gtx.Metric, gtx, gesture.Axis(rs.axis)) {
+	for {
+		e, ok := rs.drag.Update(gtx.Metric, gtx.Source, gesture.Axis(rs.axis))
+		if !ok {
+			break
+		}
 		p := e.Position.X
 		if rs.axis == layout.Vertical {
 			p = e.Position.Y

@@ -3,6 +3,7 @@
 package wid
 
 import (
+	"gioui.org/io/event"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -88,8 +89,8 @@ func Edit(th *Theme, options ...any) layout.Widget {
 	}
 }
 
-func (e *EditDef) updateValue() {
-	if !e.Focused() && e.value != nil {
+func (e *EditDef) updateValue(gtx C) {
+	if !gtx.Focused(&e.Editor) && e.value != nil {
 		current := e.Text()
 		if e.wasFocused {
 			// When the edit is loosing focus, we must update the underlying variable
@@ -103,7 +104,7 @@ func (e *EditDef) updateValue() {
 			GuiLock.RUnlock()
 		}
 	}
-	e.wasFocused = e.Focused()
+	e.wasFocused = gtx.Focused(&e.Editor)
 }
 
 func (e *EditDef) Layout(gtx C) D {
@@ -124,7 +125,7 @@ func (e *EditDef) Layout(gtx C) D {
 	paint.ColorOp{Color: e.th.SelectionColor}.Add(gtx.Ops)
 	selectionColorOps := macro.Stop()
 	// Update value
-	e.updateValue()
+	e.updateValue(gtx)
 	// Move to offset the outside margin
 	defer op.Offset(image.Pt(pl, pt)).Push(gtx.Ops).Pop()
 	// And reduce the size to make space for the padding and margin
@@ -162,7 +163,7 @@ func (e *EditDef) Layout(gtx C) D {
 	// Calculate border size and fill it with white/black when focused
 	border := image.Rectangle{Max: image.Pt(gtx.Constraints.Max.X+pl+pr, LblDim.Size.Y+pb+pt)}
 	rr := Min(Px(gtx, e.th.BorderCornerRadius), border.Max.Y/2)
-	if e.Focused() {
+	if gtx.Focused(&e.Editor) {
 		paint.FillShape(gtx.Ops, e.th.Bg[Canvas], clip.UniformRRect(border, rr).Op(gtx.Ops))
 	}
 	// Move to get the padding needed
@@ -177,7 +178,7 @@ func (e *EditDef) Layout(gtx C) D {
 	// Draw the border, if present
 	if e.borderThickness > 0 {
 		w := float32(Px(gtx, e.borderThickness))
-		if e.Focused() {
+		if gtx.Focused(&e.Editor) {
 			paintBorder(gtx, border, e.outlineColor, w*2, rr)
 		} else if e.hovered {
 			paintBorder(gtx, border, e.outlineColor, w*3/2, rr)
@@ -188,23 +189,28 @@ func (e *EditDef) Layout(gtx C) D {
 	// Setup the pointer event handling
 	defer pointer.PassOp{}.Push(gtx.Ops).Pop()
 	eventArea := clip.Rect(border).Push(gtx.Ops)
-	for _, ev := range gtx.Events(&e.hovered) {
-		if ev, ok := ev.(pointer.Event); ok {
-			switch ev.Kind {
-			case pointer.Leave:
-				e.hovered = false
-			case pointer.Enter:
-				e.hovered = true
-			default:
-			}
+	event.Op(gtx.Ops, e)
+	eventArea.Pop()
+	for {
+		event, ok := gtx.Event(pointer.Filter{
+			Target: e,
+			Kinds:  pointer.Enter | pointer.Leave,
+		})
+		if !ok {
+			break
+		}
+		ev, ok := event.(pointer.Event)
+		if !ok {
+			continue
+		}
+		switch ev.Kind {
+		case pointer.Leave:
+			e.hovered = false
+		case pointer.Enter:
+			e.hovered = true
 		}
 	}
-	// Handle pointer events
-	pointer.InputOp{
-		Tag:   &e.hovered,
-		Kinds: pointer.Enter | pointer.Leave,
-	}.Add(gtx.Ops)
-	eventArea.Pop()
+
 	// Calculate size, including margins
 	dim := image.Pt(gtx.Constraints.Max.X, border.Max.Y+mb+mt)
 	return D{Size: dim}

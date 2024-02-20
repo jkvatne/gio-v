@@ -1,6 +1,7 @@
 package wid
 
 import (
+	"gioui.org/io/event"
 	"image"
 	"image/color"
 
@@ -90,7 +91,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 	gtx.Constraints.Min.X -= Px(gtx, d.padding.Left+d.padding.Right+d.margin.Left+d.margin.Right)
 	gtx.Constraints.Max.X = gtx.Constraints.Min.X
 
-	d.HandleEvents(gtx)
+	d.HandleEvents(d, gtx)
 
 	// Check for index range, because tha HandleEvents() function does not know the limits.
 	idx := d.GetIndex(len(d.items))
@@ -138,7 +139,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 	}
 	if d.borderWidth > 0 {
 		w := float32(Px(gtx, d.borderWidth))
-		if d.Focused() {
+		if gtx.Focused(d) {
 			paintBorder(gtx, border, d.outlineColor, w*2, r)
 		} else if d.Hovered() {
 			paintBorder(gtx, border, d.outlineColor, w*3/2, r)
@@ -158,7 +159,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 	o.Pop()
 
 	oldVisible := d.listVisible
-	if d.listVisible && !d.Focused() {
+	if d.listVisible && !gtx.Focused(d) {
 		d.listVisible = false
 	}
 	for d.Clicked() {
@@ -185,15 +186,24 @@ func (d *DropDownStyle) Layout(gtx C) D {
 			dy = -o.Size.Y
 		}
 
-		for _, ev := range gtx.Events(&d.role) {
-			if ev, ok := ev.(pointer.Event); ok {
-				switch ev.Kind {
-				case pointer.Enter:
-					d.listVisible = true
-				case pointer.Leave:
-					d.listVisible = false
-				default:
-				}
+		for {
+			event, ok := gtx.Event(pointer.Filter{
+				Target: d,
+				Kinds:  pointer.Enter | pointer.Leave,
+			})
+			if !ok {
+				break
+			}
+			ev, ok := event.(pointer.Event)
+			if !ok {
+				continue
+			}
+			switch ev.Kind {
+			case pointer.Enter:
+				d.listVisible = true
+			case pointer.Leave:
+				d.listVisible = false
+			default:
 			}
 		}
 
@@ -213,12 +223,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		cr := listClipRect
 		cr.Min.Y = -dy
 		clr := clip.Rect(cr).Push(gtx.Ops)
-		pass := pointer.PassOp{}.Push(gtx.Ops)
-		pointer.InputOp{
-			Tag:   &d.role,
-			Kinds: pointer.Enter | pointer.Leave,
-		}.Add(gtx.Ops)
-		pass.Pop()
+		event.Op(gtx.Ops, d)
 		clr.Pop()
 
 		// Draw a border around all options
@@ -248,28 +253,38 @@ func (d *DropDownStyle) setHovered(h int) {
 
 func (d *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 	return func(gtx C) D {
-		for _, ev := range gtx.Events(&d.items[i]) {
-			if ev, ok := ev.(pointer.Event); ok {
-				switch ev.Kind {
-				case pointer.Release:
-					GuiLock.Lock()
-					*d.index = i
-					GuiLock.Unlock()
-					d.listVisible = false
-					d.itemHovered[i] = false
-					// Force redraw when item is clicked
-					Invalidate()
-				case pointer.Enter:
-					for j := 0; j < len(d.itemHovered); j++ {
-						d.itemHovered[j] = false
-					}
-					d.itemHovered[i] = true
-				case pointer.Leave:
-					d.itemHovered[i] = false
-				default:
+		for {
+			event, ok := gtx.Event(pointer.Filter{
+				Target: d,
+				Kinds:  pointer.Release | pointer.Enter | pointer.Leave,
+			})
+			if !ok {
+				break
+			}
+			ev, ok := event.(pointer.Event)
+			if !ok {
+				continue
+			}
+			switch ev.Kind {
+			case pointer.Release:
+				GuiLock.Lock()
+				*d.index = i
+				GuiLock.Unlock()
+				d.listVisible = false
+				d.itemHovered[i] = false
+				// Force redraw when item is clicked
+				Invalidate()
+			case pointer.Enter:
+				for j := 0; j < len(d.itemHovered); j++ {
+					d.itemHovered[j] = false
 				}
+				d.itemHovered[i] = true
+			case pointer.Leave:
+				d.itemHovered[i] = false
+			default:
 			}
 		}
+
 		gtx.Constraints.Max.X = gtx.Constraints.Min.X
 		paint.ColorOp{Color: d.Fg()}.Add(gtx.Ops)
 		lblWidget := func(gtx C) D {
@@ -289,10 +304,7 @@ func (d *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 		paint.ColorOp{Color: c}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
 
-		pointer.InputOp{
-			Tag:   &d.items[i],
-			Kinds: pointer.Press | pointer.Release | pointer.Enter | pointer.Leave,
-		}.Add(gtx.Ops)
+		event.Op(gtx.Ops, d)
 		return dims
 	}
 }

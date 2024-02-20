@@ -8,8 +8,6 @@ import (
 
 	"gioui.org/op"
 
-	"gioui.org/io/semantic"
-
 	"gioui.org/widget"
 
 	"gioui.org/layout"
@@ -93,9 +91,9 @@ func (s *SwitchDef) Layout(gtx C) D {
 	stroke := float32(Px(gtx, s.trackStroke))
 	r := Px(gtx, s.trackWidth/4)
 	trackRect := image.Rect(0, 0, width, height)
-	if s.sw.Focused() && s.sw.Hovered() {
+	if gtx.Focused(&s.sw) && s.sw.Hovered() {
 		s.hoverShadow = MulAlpha(s.th.Bg[Primary], 120)
-	} else if s.sw.Focused() {
+	} else if gtx.Focused(&s.sw) {
 		s.hoverShadow = MulAlpha(s.th.Bg[Primary], 95)
 	} else if s.sw.Hovered() {
 		s.hoverShadow = MulAlpha(s.th.Bg[Primary], 75)
@@ -136,9 +134,9 @@ func (s *SwitchDef) Layout(gtx C) D {
 	defer clip.UniformRRect(clickRect, height/2).Push(gtx.Ops).Pop()
 	s.sw.Layout(gtx, func(gtx C) D {
 		if s.hint != "" {
-			semantic.DescriptionOp(s.hint).Add(gtx.Ops)
+			// semantic.DescriptionOp(s.hint).Add(gtx.Ops)
 		}
-		semantic.Switch.Add(gtx.Ops)
+		// semantic.Switch.Add(gtx.Ops)
 		return layout.Dimensions{Size: sz}
 	})
 
