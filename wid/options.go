@@ -96,8 +96,8 @@ func (wid *Base) setAlignment(x text.Alignment) {
 	wid.Alignment = x
 }
 
-func (d *Base) setBorder(w unit.Dp) {
-	d.borderWidth = w
+func (wid *Base) setBorder(w unit.Dp) {
+	wid.borderWidth = w
 }
 
 func Border(b unit.Dp) BaseOption {

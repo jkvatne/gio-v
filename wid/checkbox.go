@@ -91,15 +91,14 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 			c.onUserChange()
 		}
 	}
+	GuiLock.RLock()
 	if c.BoolValue != nil {
-		GuiLock.RLock()
 		c.Checked = *c.BoolValue
-		GuiLock.RUnlock()
 	} else if c.StrValue != nil {
-		GuiLock.RLock()
 		c.Checked = *c.StrValue == c.Key
-		GuiLock.RUnlock()
 	}
+	GuiLock.RUnlock()
+
 	icon := c.uncheckedStateIcon
 	if c.Checked {
 		icon = c.checkedStateIcon
@@ -119,12 +118,12 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 	if !gtx.Enabled() {
 		fgColor = Disabled(fgColor)
 	}
+
+	// Draw label into macro
 	colMacro := op.Record(gtx.Ops)
 	paint.ColorOp{Color: fgColor}.Add(gtx.Ops)
-	// Draw label into macro
 	labelDim := widget.Label{MaxLines: 1}.Layout(ctx, c.th.Shaper, *c.Font, c.th.TextSize*unit.Sp(c.FontScale), c.Label, colMacro.Stop())
 	drawLabel := macro.Stop()
-	pt, pb, pl, pr := ScaleInset(gtx, c.padding)
 
 	// Calculate hover/focus background color
 	background := color.NRGBA{}
@@ -136,6 +135,7 @@ func (c *CheckBoxDef) Layout(gtx C) D {
 		background = MulAlpha(c.Fg(), 65)
 	}
 	// The hover/focus shadow extends outside the checkbox by the padding size
+	pt, pb, pl, pr := ScaleInset(gtx, c.padding)
 	b := image.Rectangle{Min: image.Pt(0, 0), Max: image.Pt(iconSize*10/9+pl+pr, iconSize*10/9+pt+pb)}
 	paint.FillShape(gtx.Ops, background, clip.Ellipse(b).Op(gtx.Ops))
 

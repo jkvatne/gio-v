@@ -47,14 +47,14 @@ func (e LabelOption) apply(cfg interface{}) {
 	e(cfg.(*LabelDef))
 }
 
-// StringerValue returns a widget for a value given by stringer function
+// Label returns a widget for a value of any type
 func Label[V Value](th *Theme, v V, options ...Option) layout.Widget {
 	w := LabelDef{
 		Base: Base{
 			th:        th,
 			role:      Surface,
 			padding:   th.DefaultPadding,
-			margin:    layout.Inset{-1, -1, -1, -1},
+			margin:    layout.Inset{Top: -1, Bottom: -1, Left: -1, Right: -1},
 			FontScale: 1.0,
 			Alignment: text.Start,
 		},

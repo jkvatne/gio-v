@@ -76,7 +76,7 @@ func (d *DropDownStyle) setLabelSize(w float32) {
 }
 
 func (d *DropDownStyle) Layout(gtx C) D {
-	d.CheckDisable(gtx)
+	d.CheckDisabler(gtx)
 
 	// Move to offset the external margin around both label and edit
 	defer op.Offset(image.Pt(

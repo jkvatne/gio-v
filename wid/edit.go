@@ -108,7 +108,7 @@ func (e *EditDef) updateValue(gtx C) {
 }
 
 func (e *EditDef) Layout(gtx C) D {
-	e.CheckDisable(gtx)
+	e.CheckDisabler(gtx)
 	// Precalculate margin and pdding in pixels
 	mt, mb, ml, mr := ScaleInset(gtx, e.margin)
 	pt, pb, pl, pr := ScaleInset(gtx, e.padding)

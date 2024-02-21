@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Unlicense OR MIT
 
-// Package wid is an alternative implementation of gio's material widgets
+// Package wid is an alternative implementation of gio material widgets
 package wid
 
 import (
@@ -111,25 +111,20 @@ func aButton[V StrValue](style ButtonStyle, th *Theme, label V, options ...Optio
 	return &b
 }
 
-// HandleClick will call the callback function
-func (b *ButtonDef) HandleClicks(gtx C) {
+// Layout will draw a button defined in b.
+func (b *ButtonDef) Layout(gtx C) D {
+	mt, mb, ml, mr := ScaleInset(gtx, b.margin)
+	pt, pb, pl, pr := ScaleInset(gtx, b.padding)
+	b.CheckDisabler(gtx)
+	// Move the whole button down/right margin offset
+	defer op.Offset(image.Pt(ml, mt)).Push(gtx.Ops).Pop()
+	// Handle clickable pointer/keyboard inputs
+	b.HandleEvents(&b.Clickable, gtx)
 	for b.Clicked() {
 		if b.onUserChange != nil {
 			b.onUserChange()
 		}
 	}
-}
-
-// Layout will draw a button defined in b.
-func (b *ButtonDef) Layout(gtx C) D {
-	mt, mb, ml, mr := ScaleInset(gtx, b.margin)
-	pt, pb, pl, pr := ScaleInset(gtx, b.padding)
-	b.CheckDisable(gtx)
-	// Move the whole button down/right margin offset
-	defer op.Offset(image.Pt(ml, mt)).Push(gtx.Ops).Pop()
-	// Handle clickable pointer/keyboard inputs
-	b.HandleEvents(&b.Clickable, gtx)
-	b.HandleClicks(gtx)
 	// Make macro with text color
 	recorder := op.Record(gtx.Ops)
 	paint.ColorOp{Color: b.Fg()}.Add(gtx.Ops)

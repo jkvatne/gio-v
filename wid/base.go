@@ -28,7 +28,6 @@ type (
 	// D is a shortcut for layout.Dimensions
 	D   = layout.Dimensions
 	Wid = layout.Widget
-	Con = layout.Constraints
 )
 
 // UIState is the hovered/focused etc. state
@@ -65,6 +64,8 @@ type Base struct {
 	Alignment    text.Alignment
 }
 
+// Fg returns the foreground color of a widget, either from
+// its role or from the widget specific fgColor field.
 func (wid *Base) Fg() color.NRGBA {
 	if wid.fgColor == nil {
 		return wid.th.Fg[wid.role]
@@ -73,6 +74,8 @@ func (wid *Base) Fg() color.NRGBA {
 	}
 }
 
+// Bg returns the background color of a widget, either from
+// its role or from the widget specific bgColor field.
 func (wid *Base) Bg() color.NRGBA {
 	if wid.bgColor == nil {
 		return wid.th.Bg[wid.role]
@@ -81,7 +84,8 @@ func (wid *Base) Bg() color.NRGBA {
 	}
 }
 
-func (wid *Base) CheckDisable(gtx C) {
+// CheckDisabler is used when a variable controls the disabling of a widget.
+func (wid *Base) CheckDisabler(gtx C) {
 	if wid.disabler != nil {
 		GuiLock.RLock()
 		if *wid.disabler {
@@ -99,31 +103,24 @@ func UpdateMousePos(gtx C, win *app.Window) {
 	// pointer.InputOp{Kinds: pointer.Move,Tag:   win,}.Add(gtx.Ops)
 	event.Op(gtx.Ops, win)
 	eventArea.Pop()
-	// for _, gtxEvent := range gtx.Events(win) {
 	for {
-		event, ok := gtx.Event(pointer.Filter{
-			Target: win,
-			Kinds:  pointer.Move,
-		})
-		if !ok {
+		if e, ok := gtx.Event(pointer.Filter{Target: win, Kinds: pointer.Move}); ok {
+			if ev, ok := e.(pointer.Event); ok {
+				mouseX = int(ev.Position.X)
+				mouseY = int(ev.Position.Y)
+			}
+		} else {
 			break
 		}
-		ev, ok := event.(pointer.Event)
-		if !ok {
-			continue
-		}
-		//		switch ev := gtxEvent.(type) {
-		//		case pointer.Event:
-		mouseX = int(ev.Position.X)
-		mouseY = int(ev.Position.Y)
-		//		}
 	}
 }
 
+// Invalidate will force a redraw of the current form
 func Invalidate() {
 	invalidate <- struct{}{}
 }
 
+// Run is the main event handler, called with "go run" from main()
 func Run(win *app.Window, mainForm *layout.Widget, th *Theme) {
 	invalidate = make(chan struct{})
 	go func() {
@@ -180,6 +177,7 @@ func Run(win *app.Window, mainForm *layout.Widget, th *Theme) {
 	}
 }
 
+// Min is a generic minimum function. Can be removed when go includes it
 func Min[T constraints.Ordered](x, y T) T {
 	if x < y {
 		return x
@@ -187,6 +185,7 @@ func Min[T constraints.Ordered](x, y T) T {
 	return y
 }
 
+// Max is a generic maximum function. Can be removed when go includes it
 func Max[T constraints.Ordered](x, y T) T {
 	if x >= y {
 		return x
@@ -194,6 +193,7 @@ func Max[T constraints.Ordered](x, y T) T {
 	return y
 }
 
+// Clamp will return the first argument clamped between argument 2 and 3.
 func Clamp[T constraints.Ordered](v T, lo T, hi T) T {
 	if v < lo {
 		return lo
