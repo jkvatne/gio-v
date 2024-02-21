@@ -18,13 +18,9 @@ type Clickable struct {
 	// prevClicks is the index into clicks that marks the clicks
 	// from the most recent Layout call. prevClicks is used to keep
 	// clicks bounded.
-	prevClicks int
-	history    []Press
-
-	keyTag       struct{}
-	requestFocus bool
-	focused      bool
-
+	prevClicks    int
+	history       []Press
+	focused       bool
 	requestClicks int
 	pressed       bool
 	pressedKey    key.Name
@@ -33,6 +29,7 @@ type Clickable struct {
 	// Dropdowns must have this set to true
 	ClickMovesFocus bool
 	index           *int
+	maxIndex        int
 }
 
 // Click represents a click.
@@ -78,11 +75,6 @@ func (b *Clickable) Pressed() bool {
 	return b.click.Pressed()
 }
 
-// Focus requests the input focus for the element.
-func (b *Clickable) Focus() {
-	b.requestFocus = true
-}
-
 // History is the past pointer presses useful for drawing markers.
 // History is retained for a short duration (about a second).
 func (b *Clickable) History() []Press {
@@ -96,7 +88,7 @@ func (b *Clickable) SetupEventHandlers(gtx C, size image.Point) {
 }
 
 // HandleEvents the button state by processing events.
-func (b *Clickable) HandleEvents(t event.Tag, gtx C) {
+func (b *Clickable) HandleEvents(gtx C) {
 	for len(b.history) > 0 {
 		c := b.history[0]
 		if c.End.IsZero() || gtx.Now.Sub(c.End) < 1*time.Second {
@@ -119,9 +111,6 @@ func (b *Clickable) HandleEvents(t event.Tag, gtx C) {
 			if l := len(b.history); l > 0 {
 				b.history[l-1].End = gtx.Now
 			}
-			if b.ClickMovesFocus {
-				b.Focus()
-			}
 		case gesture.KindCancel:
 			for i := range b.history {
 				b.history[i].Cancelled = true
@@ -131,7 +120,7 @@ func (b *Clickable) HandleEvents(t event.Tag, gtx C) {
 			}
 		case gesture.KindPress:
 			if e.Source == pointer.Mouse {
-				gtx.Execute(key.FocusCmd{Tag: t})
+				gtx.Execute(key.FocusCmd{Tag: b})
 			}
 			b.history = append(b.history, Press{
 				Position: e.Position,
@@ -142,9 +131,9 @@ func (b *Clickable) HandleEvents(t event.Tag, gtx C) {
 
 	for {
 		e, ok := gtx.Event(
-			key.FocusFilter{Target: t},
-			key.Filter{Focus: t, Name: key.NameReturn},
-			key.Filter{Focus: t, Name: key.NameSpace},
+			key.FocusFilter{Target: b},
+			key.Filter{Focus: b, Name: key.NameReturn},
+			key.Filter{Focus: b, Name: key.NameSpace},
 		)
 		if !ok {
 			break
@@ -155,7 +144,7 @@ func (b *Clickable) HandleEvents(t event.Tag, gtx C) {
 				b.pressedKey = ""
 			}
 		case key.Event:
-			if !gtx.Focused(t) {
+			if !gtx.Focused(b) {
 				break
 			}
 			if e.Name != key.NameReturn && e.Name != key.NameSpace {
@@ -171,35 +160,31 @@ func (b *Clickable) HandleEvents(t event.Tag, gtx C) {
 					b.pressed = true
 				}
 			case key.Release:
+				// Only handle release from same key as was pressed
 				if b.pressedKey != e.Name {
 					break
 				}
 				b.pressed = false
-				// only register a key as a click if the key was pressed and released while this button was focused
 				b.pressedKey = ""
-				if l := len(b.history); l > 0 {
-					b.history[l-1].End = gtx.Now
+				// Clicking via keyboard
+				if e.Name == key.NameSpace || e.Name == key.NameReturn {
+					if l := len(b.history); l > 0 {
+						b.history[l-1].End = gtx.Now
+					}
+					b.clicks = append(b.clicks, Click{Modifiers: e.Modifiers, NumClicks: 1})
+				} else if e.Name == key.NameDownArrow || e.Name == key.NameRightArrow {
+					GuiLock.Lock()
+					*b.index++
+					GuiLock.Unlock()
+				} else if e.Name == key.NameUpArrow || e.Name == key.NameLeftArrow {
+					GuiLock.Lock()
+					*b.index--
+					if *b.index < 0 {
+						*b.index = 0
+					}
+					GuiLock.Unlock()
 				}
-				b.clicks = append(b.clicks, Click{Modifiers: e.Modifiers, NumClicks: 1})
 			}
 		}
 	}
-}
-
-func (b *Clickable) GetIndex(n int) int {
-	GuiLock.RLock()
-	idx := *b.index
-	GuiLock.RUnlock()
-	if idx < 0 {
-		idx = 0
-		GuiLock.Lock()
-		*b.index = idx
-		GuiLock.Unlock()
-	} else if idx >= n {
-		idx = n - 1
-		GuiLock.Lock()
-		*b.index = idx
-		GuiLock.Unlock()
-	}
-	return idx
 }

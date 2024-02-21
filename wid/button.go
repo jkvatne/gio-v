@@ -119,7 +119,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 	// Move the whole button down/right margin offset
 	defer op.Offset(image.Pt(ml, mt)).Push(gtx.Ops).Pop()
 	// Handle clickable pointer/keyboard inputs
-	b.HandleEvents(&b.Clickable, gtx)
+	b.HandleEvents(gtx)
 	for b.Clicked() {
 		if b.onUserChange != nil {
 			b.onUserChange()

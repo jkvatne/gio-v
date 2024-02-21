@@ -77,7 +77,7 @@ func Checkbox(th *Theme, label string, options ...Option) Wid {
 
 // Layout updates the checkBox and displays it.
 func (c *CheckBoxDef) Layout(gtx C) D {
-	c.HandleEvents(&c.Clickable, gtx)
+	c.HandleEvents(gtx)
 	for c.Clicked() {
 		c.Checked = !c.Checked
 		GuiLock.Lock()

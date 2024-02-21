@@ -51,7 +51,7 @@ func DropDown(th *Theme, index *int, items []string, options ...Option) layout.W
 	b.borderWidth = b.th.BorderThickness
 	b.ClickMovesFocus = true
 	for i := range items {
-		b.Items = append(b.Items, b.option(th, i))
+		b.Items = append(b.Items, b.optionWidget(th, i))
 		b.itemHovered = append(b.itemHovered, false)
 	}
 	b.list = List(th, Overlay, b.Items...)
@@ -77,7 +77,7 @@ func (d *DropDownStyle) setLabelSize(w float32) {
 
 func (d *DropDownStyle) Layout(gtx C) D {
 	d.CheckDisabler(gtx)
-
+	d.maxIndex = len(d.items)
 	// Move to offset the external margin around both label and edit
 	defer op.Offset(image.Pt(
 		Px(gtx, d.margin.Left),
@@ -91,10 +91,11 @@ func (d *DropDownStyle) Layout(gtx C) D {
 	gtx.Constraints.Min.X -= Px(gtx, d.padding.Left+d.padding.Right+d.margin.Left+d.margin.Right)
 	gtx.Constraints.Max.X = gtx.Constraints.Min.X
 
-	d.HandleEvents(d, gtx)
+	d.HandleEvents(gtx)
 
-	// Check for index range, because tha HandleEvents() function does not know the limits.
-	idx := d.GetIndex(len(d.items))
+	GuiLock.RLock()
+	idx := *d.index
+	GuiLock.RUnlock()
 
 	// Add outside label to the left of the dropdown box
 	if d.label != "" {
@@ -139,7 +140,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 	}
 	if d.borderWidth > 0 {
 		w := float32(Px(gtx, d.borderWidth))
-		if gtx.Focused(d) {
+		if gtx.Focused(&d.Clickable) {
 			paintBorder(gtx, border, d.outlineColor, w*2, r)
 		} else if d.Hovered() {
 			paintBorder(gtx, border, d.outlineColor, w*3/2, r)
@@ -159,7 +160,7 @@ func (d *DropDownStyle) Layout(gtx C) D {
 	o.Pop()
 
 	oldVisible := d.listVisible
-	if d.listVisible && !gtx.Focused(d) {
+	if d.listVisible && !gtx.Focused(&d.Clickable) {
 		d.listVisible = false
 	}
 	for d.Clicked() {
@@ -223,7 +224,9 @@ func (d *DropDownStyle) Layout(gtx C) D {
 		cr := listClipRect
 		cr.Min.Y = -dy
 		clr := clip.Rect(cr).Push(gtx.Ops)
+		pass := pointer.PassOp{}.Push(gtx.Ops)
 		event.Op(gtx.Ops, d)
+		pass.Pop()
 		clr.Pop()
 
 		// Draw a border around all options
@@ -251,11 +254,11 @@ func (d *DropDownStyle) setHovered(h int) {
 	d.itemHovered[h] = true
 }
 
-func (d *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
+func (d *DropDownStyle) optionWidget(th *Theme, i int) func(gtx C) D {
 	return func(gtx C) D {
 		for {
 			event, ok := gtx.Event(pointer.Filter{
-				Target: d,
+				Target: &d.itemHovered[i],
 				Kinds:  pointer.Release | pointer.Enter | pointer.Leave,
 			})
 			if !ok {
@@ -284,7 +287,6 @@ func (d *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 			default:
 			}
 		}
-
 		gtx.Constraints.Max.X = gtx.Constraints.Min.X
 		paint.ColorOp{Color: d.Fg()}.Add(gtx.Ops)
 		lblWidget := func(gtx C) D {
@@ -304,7 +306,7 @@ func (d *DropDownStyle) option(th *Theme, i int) func(gtx C) D {
 		paint.ColorOp{Color: c}.Add(gtx.Ops)
 		paint.PaintOp{}.Add(gtx.Ops)
 
-		event.Op(gtx.Ops, d)
+		event.Op(gtx.Ops, &d.itemHovered[i])
 		return dims
 	}
 }
