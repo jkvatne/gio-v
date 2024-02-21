@@ -129,13 +129,14 @@ func Menu(th *wid.Theme) wid.Wid {
 		for i, s := range entries {
 			widgets[i] = wid.TextButton(th, s, wid.BtnIcon(homeIcon))
 		}
-		return wid.Container(th, wid.SurfaceContainerHigh, 15, th.DefaultPadding, th.DefaultMargin, widgets...)(gtx)
+		return wid.Container(th, wid.SurfaceContainerHigh, 15, th.DefaultPadding, th.DefaultMargin, widgets)(gtx)
 	}
 }
 
 func Items(th *wid.Theme) wid.Wid {
 	return wid.Col(wid.SpaceClose,
-		wid.Container(th, wid.PrimaryContainer, 15, th.DefaultPadding, th.DefaultMargin,
+		wid.Container(th, true, wid.PrimaryContainer, 8, th.DefaultPadding, th.DefaultMargin,
+			"What Buttons are Artists Pushing...",
 			wid.Label(th, "Music", wid.FontSize(0.66), wid.Fg(th.PrimaryColor)),
 			wid.Label(th, "What Buttons are Artists Pushing When They Perform Live", wid.FontSize(1.5), wid.PrimCont()),
 			wid.Container(th, wid.PrimaryContainer, 15, layout.Inset{}, layout.Inset{0, 10, 0, 0},
