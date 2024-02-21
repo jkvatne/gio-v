@@ -134,6 +134,11 @@ func (b *Clickable) HandleEvents(gtx C) {
 			key.FocusFilter{Target: b},
 			key.Filter{Focus: b, Name: key.NameReturn},
 			key.Filter{Focus: b, Name: key.NameSpace},
+			key.Filter{Focus: b, Name: key.NameDownArrow},
+			key.Filter{Focus: b, Name: key.NameUpArrow},
+			key.Filter{Focus: b, Name: key.NameLeftArrow},
+			key.Filter{Focus: b, Name: key.NameRightArrow},
+			key.Filter{Focus: b, Name: key.NameEscape},
 		)
 		if !ok {
 			break
@@ -147,30 +152,10 @@ func (b *Clickable) HandleEvents(gtx C) {
 			if !gtx.Focused(b) {
 				break
 			}
-			if e.Name != key.NameReturn && e.Name != key.NameSpace {
-				break
-			}
 			switch e.State {
-			case key.Press:
-				if !b.pressed {
-					b.pressedKey = e.Name
-					b.history = append(b.history, Press{
-						Start: gtx.Now,
-					})
-					b.pressed = true
-				}
 			case key.Release:
-				// Only handle release from same key as was pressed
-				if b.pressedKey != e.Name {
-					break
-				}
-				b.pressed = false
-				b.pressedKey = ""
 				// Clicking via keyboard
-				if e.Name == key.NameSpace || e.Name == key.NameReturn {
-					if l := len(b.history); l > 0 {
-						b.history[l-1].End = gtx.Now
-					}
+				if e.Name == key.NameSpace || e.Name == key.NameReturn || e.Name == key.NameEscape {
 					b.clicks = append(b.clicks, Click{Modifiers: e.Modifiers, NumClicks: 1})
 				} else if e.Name == key.NameDownArrow || e.Name == key.NameRightArrow {
 					GuiLock.Lock()
