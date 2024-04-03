@@ -133,7 +133,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 	cgtx := gtx
 	cgtx.Constraints.Min.X = 0
 	cgtx.Constraints.Min.Y = 0
-	cgtx.Constraints.Max.X = Max(0, cgtx.Constraints.Max.X-pr+pl+ml+mr)
+	cgtx.Constraints.Max.X = Max(0, cgtx.Constraints.Max.X-pr-pl-ml-mr)
 	// Render text to find text width (and save drawing commands in macro)
 	recorder = op.Record(gtx.Ops)
 	textDim := widget.Label{Alignment: text.Start}.Layout(cgtx, b.th.Shaper, *b.Font, b.th.TextSize*unit.Sp(b.FontScale), *b.Text, colorMacro)
@@ -143,7 +143,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 	if b.Icon != nil {
 		iconSize = textDim.Size.Y
 	}
-	iconPadding := iconSize / 3
+	iconPadding := iconSize / 8
 
 	height := Min(textDim.Size.Y+pt+pb, gtx.Constraints.Max.Y)
 	// Limit corner radius
@@ -208,7 +208,7 @@ func (b *ButtonDef) Layout(gtx C) D {
 
 	// Calculate internal paddings and move
 	dy := Max(pt, (height-textDim.Size.Y)/2)
-	dx := Max(pl, (width-contentWidth)/2)
+	dx := Max(pl+rr/2, (width-contentWidth)/2)
 	if b.Style == Header {
 		dx = pl
 	}

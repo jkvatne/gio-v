@@ -50,7 +50,7 @@ func main() {
 	homeIcon, _ = wid.NewIcon(icons.ActionHome)
 	theme = wid.NewTheme(gofont.Collection(), 20)
 	theme.DarkMode = false
-	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(1200), unit.Dp(800)))
+	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(1200), unit.Dp(700)))
 	form = demo(theme)
 	go wid.Run(win, &form, theme)
 	go ticker()
@@ -142,10 +142,14 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Label(th, "Buttons with fixed size"),
 		wid.Row(th, nil, wid.SpaceDistribute,
-			wid.Button(th, "Big Check", wid.BtnIcon(checkIcon), wid.FontSize(2), wid.Sec(), wid.W(250)),
-			wid.Button(th, "Change palette", wid.Do(onClick), wid.SecCont(), wid.W(250), wid.Large()),
+			wid.Button(th, "Big Check", wid.BtnIcon(checkIcon), wid.FontSize(2), wid.Sec(), wid.W(500)),
+			wid.Button(th, "Change palette", wid.Do(onClick), wid.SecCont(), wid.W(500), wid.Large()),
 		),
 		wid.Label(th, "Buttons scaled to fill the row width"),
+		wid.Row(th, nil, wid.SpaceDistribute,
+			wid.Button(th, "Change palette", wid.BtnIcon(checkIcon), wid.Do(onClick), wid.SecCont(), wid.Large(), wid.W(9999)),
+			wid.Button(th, "Change palette", wid.BtnIcon(checkIcon), wid.Do(onClick), wid.SecCont(), wid.Large(), wid.W(9999)),
+		),
 		wid.Row(th, nil, wid.SpaceDistribute,
 			wid.Button(th, "Change palette", wid.BtnIcon(checkIcon), wid.Do(onClick), wid.SecCont(), wid.Large(), wid.W(9999)),
 			wid.Button(th, "Change palette", wid.BtnIcon(checkIcon), wid.Do(onClick), wid.SecCont(), wid.Large(), wid.W(9999)),
@@ -156,13 +160,13 @@ func demo(th *wid.Theme) layout.Widget {
 		wid.Row(th, nil, wid.SpaceClose,
 			wid.RoundButton(th, homeIcon, wid.Prim(),
 				wid.Hint("This is another dummy button - it has no function except displaying this text, testing long help texts. Perhaps breaking into several lines")),
-			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(&homeBg), wid.Fg(&homeFg),
+			wid.Button(th, "Home", wid.BtnIcon(homeIcon), wid.Bg(&homeBg), wid.Fg(&homeFg), wid.RR(20),
 				wid.Hint("This is another hint")),
 			wid.Button(th, "Check", wid.BtnIcon(checkIcon), wid.Role(wid.Secondary)),
-			wid.Button(th, "Change color", wid.Do(onClick)),
+			wid.Button(th, "Change color", wid.Do(onClick), wid.RR(90)),
 			wid.TextButton(th, "Text button"),
 			wid.OutlineButton(th, "Outline button", wid.Hint("An outlined button")),
-			wid.Label(th, "Change color", wid.Pads(10)),
+			wid.Label(th, "Changes color", wid.Pads(10)),
 			wid.Switch(th, &greenFlag, wid.Do(swColor)),
 		),
 		wid.Separator(th, unit.Dp(1.0)),
