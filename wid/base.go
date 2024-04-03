@@ -15,10 +15,8 @@ import (
 
 	"gioui.org/app"
 	"gioui.org/io/pointer"
-	"gioui.org/op"
-	"gioui.org/op/clip"
-
 	"gioui.org/layout"
+	"gioui.org/op"
 	"gioui.org/unit"
 )
 
@@ -99,20 +97,32 @@ func (wid *Base) CheckDisabler(gtx C) {
 // position and window size. They are needed to avoid that the tooltip
 // is outside the window frame
 func UpdateMousePos(gtx C, win *app.Window) {
-	eventArea := clip.Rect(image.Rect(0, 0, 99999, 99999)).Push(gtx.Ops)
-	// pointer.InputOp{Kinds: pointer.Move,Tag:   win,}.Add(gtx.Ops)
+	// Pass on all events to the widgets.
+	p := pointer.PassOp{}.Push(gtx.Ops)
 	event.Op(gtx.Ops, win)
-	eventArea.Pop()
 	for {
-		if e, ok := gtx.Event(pointer.Filter{Target: win, Kinds: pointer.Move}); ok {
+		if e, ok := gtx.Event(pointer.Filter{
+			Target: win,
+			Kinds:  pointer.Move | pointer.Scroll,
+			ScrollBounds: image.Rectangle{
+				Min: image.Point{X: -1000, Y: -25000},
+				Max: image.Point{X: 1000, Y: +25000},
+			},
+		}); ok {
 			if ev, ok := e.(pointer.Event); ok {
+				// Catch current mouse position
 				mouseX = int(ev.Position.X)
 				mouseY = int(ev.Position.Y)
+				/*if ev.Kind == pointer.Scroll {
+				    // Print scroll coordinates - used for debugging scrolling
+					fmt.Printf("Scroll x=%0.0f, y=%0.0f\n", ev.Scroll.X, ev.Scroll.Y)
+				}*/
 			}
 		} else {
 			break
 		}
 	}
+	p.Pop()
 }
 
 // Invalidate will force a redraw of the current form
@@ -150,29 +160,26 @@ func Run(win *app.Window, mainForm *layout.Widget, th *Theme) {
 				gtx.Metric.PxPerDp = scale * gtx.Metric.PxPerDp
 				gtx.Metric.PxPerSp = scale * gtx.Metric.PxPerSp
 			}
+			// Draw background color
 			paint.ColorOp{Color: th.Bg[Surface]}.Add(gtx.Ops)
 			paint.PaintOp{}.Add(gtx.Ops)
-
-			// Draw widgets
-			GuiLock.Lock()
-			GuiLock.Unlock()
+			// Disable main form if a dialog is shown
 			ctx := gtx
 			if dialog != nil {
 				ctx = gtx.Disabled()
 			}
+			// Catch mouse position from current event. This is a hack to fetch mouse
+			// position, so we can avoid tooltips going outside the main window area
+			UpdateMousePos(gtx, win)
+			// Call all the widgets in the current form
 			(*mainForm)(ctx)
+			// Draw dialog (if any exist) on top of the current form
 			if dialog != nil {
 				dialog(gtx)
 			}
-
-			// A hack to fetch mouse position and window size, so we can avoid
-			// tooltips going outside the main window area
-			p := pointer.PassOp{}.Push(gtx.Ops)
-			UpdateMousePos(gtx, win)
-			p.Pop()
-
-			// Apply the actual screen drawing
+			// Signal the library to do the actual drawing
 			e.Frame(gtx.Ops)
+
 		}
 	}
 }

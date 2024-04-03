@@ -128,7 +128,7 @@ func onWinChange() {
 func demo(th *wid.Theme) layout.Widget {
 	// Use an auxilary font in some widgets
 	ff := &font.Font{Typeface: "gomono"}
-	return wid.Col(wid.SpaceClose,
+	return wid.List(th, wid.Occupy,
 		wid.Label(th, "Demo", wid.Middle(), wid.Heading(), wid.Bold(), wid.Role(wid.PrimaryContainer)),
 		wid.Separator(th, unit.Dp(1.0)),
 		wid.Row(th, nil, []float32{.5, .5, .8, .5, .5, .5},
