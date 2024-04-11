@@ -23,8 +23,8 @@ import (
 var (
 	SmallFont      bool
 	FixedFont      bool
-	theme          *wid.Theme  // the theme selected
-	win            *app.Window // The main window
+	theme          *wid.Theme // the theme selected
+	win            app.Window // The main window
 	form           layout.Widget
 	name           = "Jan Kåre Vatne"
 	age            = 35
@@ -50,9 +50,9 @@ func main() {
 	homeIcon, _ = wid.NewIcon(icons.ActionHome)
 	theme = wid.NewTheme(gofont.Collection(), 20)
 	theme.DarkMode = false
-	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(1200), unit.Dp(700)))
+	win.Option(app.Title("Gio-v demo"), app.Size(unit.Dp(1200), unit.Dp(700)))
 	form = demo(theme)
-	go wid.Run(win, &form, theme)
+	go wid.Run(&win, &form, theme)
 	go ticker()
 	app.Main()
 }

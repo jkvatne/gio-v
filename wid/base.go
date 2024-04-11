@@ -5,6 +5,7 @@ package wid
 import (
 	"gioui.org/font"
 	"gioui.org/io/event"
+	"gioui.org/op"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"golang.org/x/exp/constraints"
@@ -16,7 +17,6 @@ import (
 	"gioui.org/app"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
-	"gioui.org/op"
 	"gioui.org/unit"
 )
 
@@ -140,7 +140,7 @@ func Run(win *app.Window, mainForm *layout.Widget, th *Theme) {
 	}()
 
 	for {
-		switch e := win.NextEvent().(type) {
+		switch e := win.Event().(type) {
 		case app.DestroyEvent:
 			os.Exit(0)
 		case app.FrameEvent:
