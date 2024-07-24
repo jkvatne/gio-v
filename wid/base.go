@@ -9,7 +9,6 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"golang.org/x/exp/constraints"
-	"image"
 	"image/color"
 	"os"
 	"sync"
@@ -102,13 +101,12 @@ func UpdateMousePos(gtx C, win *app.Window) {
 	event.Op(gtx.Ops, win)
 	for {
 		if e, ok := gtx.Event(pointer.Filter{
-			Target: win,
-			Kinds:  pointer.Move | pointer.Scroll,
-			ScrollBounds: image.Rectangle{
-				Min: image.Point{X: -1000, Y: -25000},
-				Max: image.Point{X: 1000, Y: +25000},
-			},
-		}); ok {
+			Target:  win,
+			Kinds:   pointer.Move | pointer.Scroll,
+			ScrollX: pointer.ScrollRange{Min: -1000, Max: 1000},
+			ScrollY: pointer.ScrollRange{Min: -25000, Max: 25000},
+		},
+		); ok {
 			if ev, ok := e.(pointer.Event); ok {
 				// Catch current mouse position
 				mouseX = int(ev.Position.X)

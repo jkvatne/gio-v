@@ -21,8 +21,8 @@ import (
 )
 
 var (
-	theme     *wid.Theme  // the theme selected
-	win       *app.Window // The main window
+	theme     *wid.Theme // the theme selected
+	win       app.Window // The main window
 	form      layout.Widget
 	entry     float64
 	operator  rune
@@ -37,9 +37,9 @@ func main() {
 	theme.DarkMode = false
 	theme.SecondaryColor = color.NRGBA{100, 200, 100, 255}
 	theme.UpdateColors()
-	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(450), unit.Dp(700)))
+	win.Option(app.Title("Gio-v Calculator"), app.Size(unit.Dp(450), unit.Dp(700)))
 	form = demo(theme)
-	go wid.Run(win, &form, theme)
+	go wid.Run(&win, &form, theme)
 	app.Main()
 }
 

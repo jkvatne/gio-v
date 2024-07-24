@@ -25,7 +25,7 @@ var (
 	checkIcon   *wid.Icon
 	group       string
 	sliderValue float32 = 0.1
-	win         *app.Window
+	win         app.Window
 	progress    float32 = 0.1
 	form        layout.Widget
 	enabledText = "Disabled"
@@ -41,10 +41,10 @@ func main() {
 	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
 	addIcon, _ = wid.NewIcon(icons.ContentAdd)
 	theme = wid.NewTheme(gofont.Collection(), 14)
-	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(650)))
+	win.Option(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(650)))
 	form = kitchen(theme)
 	go ticker()
-	wid.Run(win, &form, theme)
+	wid.Run(&win, &form, theme)
 	app.Main()
 }
 

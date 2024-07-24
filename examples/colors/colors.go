@@ -19,15 +19,15 @@ import (
 var (
 	theme *wid.Theme // the theme selected
 	form  layout.Widget
-	win   *app.Window
+	win   app.Window
 	roles = true
 )
 
 func main() {
 	theme = wid.NewTheme(gofont.Collection(), 20)
 	show()
-	win = app.NewWindow(app.Title("Colors"), app.Size(1024, 620)) // , app.Maximized.Option())
-	go wid.Run(win, &form, theme)
+	win.Option(app.Title("Colors"), app.Size(1024, 620)) // , app.Maximized.Option())
+	go wid.Run(&win, &form, theme)
 	app.Main()
 }
 

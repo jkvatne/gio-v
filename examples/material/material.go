@@ -22,8 +22,8 @@ import (
 var (
 	SmallFont    bool
 	FixedFont    bool
-	theme        *wid.Theme  // the theme selected
-	win          *app.Window // The main window
+	theme        *wid.Theme // the theme selected
+	win          app.Window // The main window
 	form         layout.Widget
 	homeIcon     *wid.Icon
 	saveIcon     *wid.Icon
@@ -43,9 +43,9 @@ func main() {
 		onNo, onYes)
 	theme.Scale = 1
 	go ticker()
-	win = app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(500), unit.Dp(600)))
+	win.Option(app.Title("Gio-v demo"), app.Size(unit.Dp(500), unit.Dp(600)))
 	form = demo(theme)
-	go wid.Run(win, &form, theme)
+	go wid.Run(&win, &form, theme)
 	app.Main()
 }
 

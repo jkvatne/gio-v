@@ -12,12 +12,14 @@ import (
 var (
 	theme *wid.Theme
 	form  layout.Widget
+	win   app.Window
 )
 
 func main() {
 	theme = wid.NewTheme(gofont.Collection(), 14)
 	form = demo(theme)
-	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500))), &form, theme)
+	win.Option(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(500)))
+	wid.Run(&win, &form, theme)
 	app.Main()
 }
 

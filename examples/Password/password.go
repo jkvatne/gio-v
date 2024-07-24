@@ -9,14 +9,19 @@ import (
 	"github.com/jkvatne/gio-v/wid"
 )
 
-var theme *wid.Theme
-var form wid.Wid
-var UserName, Password string
+var (
+	theme              *wid.Theme
+	form               wid.Wid
+	UserName, Password string
+	win                app.Window // The main window
+)
 
 func main() {
 	theme = wid.NewTheme(gofont.Collection(), 14)
 	form = hello(theme)
-	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(500), unit.Dp(170))), &form, theme)
+	win.Option()
+	win.Option(app.Title("Gio-v password demo"), app.Size(unit.Dp(500), unit.Dp(170)))
+	go wid.Run(&win, &form, theme)
 	app.Main()
 }
 

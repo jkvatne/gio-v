@@ -15,6 +15,7 @@ import (
 var (
 	theme     *wid.Theme // the theme selected
 	form      layout.Widget
+	win       app.Window
 	homeIcon  *wid.Icon
 	checkIcon *wid.Icon
 	greenFlag = false // the state variable for the button color
@@ -27,7 +28,8 @@ func main() {
 	checkIcon, _ = wid.NewIcon(icons.NavigationCheck)
 	theme = wid.NewTheme(gofont.Collection(), 14)
 	onClick()
-	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(1100), unit.Dp(520))), &form, theme)
+	win.Option(app.Title("Gio-v demo"), app.Size(unit.Dp(1100), unit.Dp(520)))
+	wid.Run(&win, &form, theme)
 	app.Main()
 }
 

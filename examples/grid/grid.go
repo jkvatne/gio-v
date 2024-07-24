@@ -22,6 +22,7 @@ import (
 var (
 	form        layout.Widget
 	theme       *wid.Theme
+	win         app.Window
 	Alternative = "Fractional"
 	fontSize    = "Medium"
 	// Column widths are given in units of approximately one average character width (en).
@@ -66,7 +67,8 @@ func main() {
 	makePersons(12)
 	theme = wid.NewTheme(gofont.Collection(), 16)
 	onWinChange()
-	go wid.Run(app.NewWindow(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(300))), &form, theme)
+	win.Option(app.Title("Gio-v demo"), app.Size(unit.Dp(900), unit.Dp(300)))
+	wid.Run(&win, &form, theme)
 	app.Main()
 }
 
